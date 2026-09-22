@@ -21,3 +21,4 @@ Not Started
 <!-- Keep this updated. Earliest to latest -->
 
 - W01 Repo & Scaffold: prettier, cleared CNA boilerplate.
+- W02a Design Tokens: tokens.css primitives, motion.ts constants.

@@ -1,0 +1,42 @@
+:root {
+  --pitch-950: #0a0f0c;
+  --pitch-900: #121a15;
+  --pitch-800: #1a241e;
+  --pitch-700: #27352c;
+  --pitch-600: #2f4036;
+
+  --bone: #f2efe6;
+  --muted: #9ba79e;
+  --dim: #5f6d64;
+
+  --floodlight: #ffc043;
+  --away: #4c9aff;
+  --turf: #5fe388;
+  --ember: #ff8a3d;
+  --red-card: #ff4a4a;
+
+  --font-size-12: 12px;
+  --font-size-14: 14px;
+  --font-size-16: 16px;
+  --font-size-20: 20px;
+  --font-size-24: 24px;
+  --font-size-32: 32px;
+  --font-size-48: 48px;
+  --font-size-64: 64px;
+
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+
+  --corner-radius-sm: 4px;
+  --corner-radius-md: 8px;
+  --corner-radius-lg: 12px;
+  --corner-radius-full: 9999px;
+
+  --border-width: 1px;
+}
