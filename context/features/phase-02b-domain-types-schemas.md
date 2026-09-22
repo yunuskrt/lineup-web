@@ -11,11 +11,13 @@ Not Started
   - `sideSchema`: `'home' | 'away'`.
   - `competitionKindSchema`: `'league' | 'ucl' | 'uel' | 'world_cup' | 'euro'`.
   - `eraRangeSchema`: season start years bounded 2000–2025, refined so `from <= to`.
-  - `filtersSchema`: competitions, club ids and era range. **No difficulty field.**
+  - `filtersSchema`: competition ids, club ids and era range. **No difficulty field.**
+  - `webUrlSchema`: `http`/`https` only; the source for every image URL.
 - Create `src/lib/api/schemas/match.ts`:
   - `clubRefSchema`: id, name, short name, nullable crest URL.
   - `maskedMatchSchema`: what the player sees mid-game. Match id, side, the team being guessed and its formation string. Competition and date are omitted.
-  - `matchIdentitySchema`: the full reveal for summary and result screens. Competition, season label, date, stage, home and away clubs, score, and a nullable nickname.
+  - `competitionRefSchema`: id, kind and name.
+  - `matchIdentitySchema`: the full reveal for summary and result screens. Competition ref, season label (`2004-05` or `2006`), date, stage, home and away clubs, score, and a nullable nickname.
 - Create `src/lib/api/schemas/player.ts`:
   - `revealedPlayerSchema`: id, display name, formation slot index 0–10, position group `GK | DF | MF | FW`, nullable image URL.
 - Create `src/lib/api/schemas/game.ts`:
@@ -40,6 +42,14 @@ Not Started
   - `PROTOCOL_VERSION` → W30.
   - Mock data → W07.
 - These shapes are a **provisional transcription**. The backend owns the contract and does not exist yet. Web drafts it here, B09 seeds from the web mock fixtures, and W27 reconciles every schema against the real OpenAPI doc. Where they differ, the backend wins.
+- Contract decisions (settled in review):
+  - The season label is `YYYY-YY` for leagues or `YYYY` for tournaments. `YYYY-YY` alone would reject every World Cup and Euro match.
+  - Filters select by `competitionIds`, not by kind. A single `'league'` kind couldn't tell the Premier League from Serie A. `kind` stays on `CompetitionRef` so the UI can group leagues and tournaments.
+  - Image and crest URLs go through `webUrlSchema` (`http`/`https` only). Plain `z.url()` accepts `javascript:`, `data:` and `file:`.
+- Deferred from review:
+  - The penalty shootout score, for the W21 summary.
+  - A server "now" value for clock skew, for the W10 countdown ring.
+  - Port the throwaway parse checks to Vitest when it lands (W06/W10).
 - Depends on: W02a (only for ordering; there is no code dependency).
 - Constraints:
   - **The squad is never sent to the client** (Hard Constraint 2). No schema may represent the full XI or an unrevealed player's identity. The masked match carries formation only, so the grid can draw 11 empty slots.

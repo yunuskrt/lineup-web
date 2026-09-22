@@ -22,3 +22,4 @@ Not Started
 
 - W01 Repo & Scaffold: prettier, cleared CNA boilerplate.
 - W02a Design Tokens: tokens.css primitives, motion.ts constants.
+- W02b Domain Types & Schemas: zod schemas, z.infer types.
