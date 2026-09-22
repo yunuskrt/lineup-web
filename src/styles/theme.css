@@ -1,0 +1,20 @@
+:root {
+  --surface: var(--pitch-950);
+  --surface-raised: var(--pitch-900);
+  --surface-card: var(--pitch-800);
+
+  --line: var(--pitch-700);
+  --marking: var(--pitch-600);
+
+  --fg: var(--bone);
+  --fg-muted: var(--muted);
+  --fg-dim: var(--dim);
+  --on-accent: var(--pitch-950);
+
+  --brand: var(--floodlight);
+  --you: var(--floodlight);
+  --opponent: var(--away);
+  --found: var(--turf);
+  --warning: var(--ember);
+  --danger: var(--red-card);
+}

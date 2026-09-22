@@ -1,27 +1,60 @@
 @import 'tailwindcss';
 @import '../styles/tokens.css';
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import '../styles/theme.css';
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-*: initial;
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-card: var(--surface-card);
+  --color-line: var(--line);
+  --color-marking: var(--marking);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-dim: var(--fg-dim);
+  --color-on-accent: var(--on-accent);
+  --color-brand: var(--brand);
+  --color-you: var(--you);
+  --color-opponent: var(--opponent);
+  --color-found: var(--found);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --text-*: initial;
+  --text-12: var(--font-size-12);
+  --text-14: var(--font-size-14);
+  --text-16: var(--font-size-16);
+  --text-20: var(--font-size-20);
+  --text-24: var(--font-size-24);
+  --text-32: var(--font-size-32);
+  --text-48: var(--font-size-48);
+  --text-64: var(--font-size-64);
+
+  --spacing: var(--space-4);
+
+  --radius-*: initial;
+  --radius-sm: var(--corner-radius-sm);
+  --radius-md: var(--corner-radius-md);
+  --radius-lg: var(--corner-radius-lg);
+  --radius-full: var(--corner-radius-full);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--fg);
+  }
 }
