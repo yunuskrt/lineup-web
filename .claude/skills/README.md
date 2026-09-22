@@ -6,3 +6,4 @@ Custom Claude Code skills (slash commands) used in the course. These go in your 
 - `todo/` - Tracks build phases in `context/todo.md` - current phase, marking done, remaining work and reordering
 - `research/` - Generates documentation from research spec files into the `docs/` folder
 - `cleanup/` - Runs housekeeping tasks like finding unused imports, stale TODOs and orphaned files
+- `frontend-design/` - Guidance for distinctive, intentional visual design when building or reshaping UI
