@@ -16,7 +16,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 
 - [x] **Phase W01 — Repo & Scaffold**: Next.js App Router, strict TS, eslint and prettier, `@/` alias.
 - [x] **Phase W02 — Tokens & Types**: Local tokens file from `theme.md`, plus base domain types and schemas.
-- [ ] **Phase W03 — Theme Setup**: Tailwind v4 `@theme` fed from tokens, dark-mode-first globals.
+- [x] **Phase W03 — Theme Setup**: Tailwind v4 `@theme` fed from tokens, dark-mode-first globals.
 - [ ] **Phase W04 — Theme Preview Route**: Internal `/dev/theme` rendering palette, type scale and spacing.
 - [ ] **Phase W05 — API Client Interface**: Typed contract for auth, solo, duel and profile, no implementation.
 - [ ] **Phase W06 — Mock API Adapter**: In-memory implementation of that interface, selected by env flag.
