@@ -2,8 +2,13 @@ import { z } from 'zod';
 
 export const FIRST_SEASON_START = 2000;
 export const LAST_SEASON_START = 2025;
+export const SQUAD_SIZE = 11;
 
 export const idSchema = z.string().min(1);
+
+export const ratioSchema = z.number().min(0).max(1);
+
+export const squadCountSchema = z.number().int().min(0).max(SQUAD_SIZE);
 
 export const webUrlSchema = z.url({ protocol: /^https?$/ });
 

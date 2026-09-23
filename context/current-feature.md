@@ -25,3 +25,4 @@ Not Started
 - W02b Domain Types & Schemas: zod schemas, z.infer types.
 - W03 Theme Setup: role layer, Tailwind @theme, Inter + Archivo.
 - W04 Theme Preview Route: /dev/theme palette, type, spacing, radius.
+- W05a REST Contract: result envelope, schemas, ApiClient interface.
