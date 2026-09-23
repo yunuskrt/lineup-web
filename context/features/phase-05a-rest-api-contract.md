@@ -65,6 +65,12 @@ Not Started
   - Types come from `z.infer`, with `ApiResult<T>` the single documented exception. No `any`, no `unknown` leaking out of a public signature.
   - `@/` imports only. Schema constants camelCase `*Schema`, types PascalCase, constants SCREAMING_SNAKE_CASE.
   - No comments beyond short single-line ones where a rule is genuinely non-obvious.
+- **Deviations recorded during implementation:**
+  - **`SoloApi.syncSession(sessionId)` added.** The spec said timer expiry is observed through the next server response, but over REST there is no such response when a player runs out of time without guessing. The client re-reads when its rendered countdown hits zero; the server still decides whether a life was lost, so HC 7 holds.
+  - **`soloSessionSchema` gained `status: 'active' | 'over'`, and `round` became nullable.** Without a terminal flag the client would infer the end from `lives === 0`, which is lives arithmetic. `round` is `null` once over, since `roundTimingSchema` requires `endsAt > startedAt`.
+  - **`historyEntrySchema` is a discriminated union on `mode`**, not the flat `outcome: SoloEndReason | DuelOutcome` the spec described. Same information, but a solo entry can no longer carry `'draw'`. Matches the existing pattern in `game.ts`.
+  - **`SQUAD_SIZE = 11` added to `common.ts`** and used to replace the literal `10` in `player.ts` — a one-line touch of W02b code, taken because leaving a second source of the squad size was worse.
+  - **Review cleanups:** `gameModeSchema` dropped as dead code (`GameMode` now derives as `HistoryEntry['mode']`); `ratioSchema` and `squadCountSchema` hoisted to `common.ts` after the same bounds appeared in two files.
 - Verification:
   - `npm run lint`, `npm run format:check` and `npm run build` all pass; `npx tsc --noEmit` is clean.
   - A throwaway type-level check confirms the interface is implementable: write a `const stub: ApiClient` whose methods all return rejected-free `{ success: false, error }` results, confirm it type-checks, then delete it. Do not commit it — W06 builds the real one.
