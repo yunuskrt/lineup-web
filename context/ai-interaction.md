@@ -28,6 +28,22 @@ This is the common workflow that we will use for every single feature/fix:
 
 Do NOT commit without permission and until the build passes. If build fails, fix the issues first.
 
+### Specs Track Reality
+
+A spec is a record of what was built, not only a plan for it. **Whenever implementation, review or testing departs from the spec, update the spec file in `context/features/` — and `current-feature.md` while it holds that spec — in the same turn the deviation is made.** Never leave the spec describing something that was not built.
+
+This covers:
+
+- A goal implemented differently than written, or solved by a different mechanism
+- A goal dropped, deferred to a later phase, or added because the phase was unbuildable without it
+- A dependency, version or tool swapped for another, and why
+- A tuned value the spec asked to have recorded — thresholds, timings, limits
+- A constraint that turned out to conflict with another, and which one won
+
+Record it as a short bullet under `## Notes`, headed **Deviations recorded during implementation**, naming what changed and the reason in one line. A deviation is not a failure — an unrecorded one is, because the next phase reads the spec and not the diff.
+
+Do not rewrite the original goals to match what happened. The goal stays as written and the deviation sits beside it, so the gap between intent and outcome stays visible.
+
 ## Working Across Repos
 
 Three repos means a change can land in one and break another. Rules:
