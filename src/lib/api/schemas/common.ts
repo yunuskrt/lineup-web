@@ -10,6 +10,10 @@ export const ratioSchema = z.number().min(0).max(1);
 
 export const squadCountSchema = z.number().int().min(0).max(SQUAD_SIZE);
 
+export const MAX_GUESS_LENGTH = 64;
+
+export const guessTextSchema = z.string().trim().min(1).max(MAX_GUESS_LENGTH);
+
 export const webUrlSchema = z.url({ protocol: /^https?$/ });
 
 export const sideSchema = z.enum(['home', 'away']);
