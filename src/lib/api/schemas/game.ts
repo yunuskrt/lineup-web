@@ -18,7 +18,7 @@ export const guessResultSchema = z.discriminatedUnion('outcome', [
 
 export const livesSchema = z.number().int().min(0).max(3);
 
-const epochMsSchema = z.number().int().nonnegative();
+export const epochMsSchema = z.number().int().nonnegative();
 
 export const roundTimingSchema = z
   .object({

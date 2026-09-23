@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  guessTextSchema,
   idSchema,
   ratioSchema,
   squadCountSchema,
@@ -17,10 +18,6 @@ import {
   matchIdentitySchema,
 } from '@/lib/api/schemas/match';
 import { revealedPlayerSchema } from '@/lib/api/schemas/player';
-
-export const MAX_GUESS_LENGTH = 64;
-
-export const guessTextSchema = z.string().trim().min(1).max(MAX_GUESS_LENGTH);
 
 export const soloSessionStatusSchema = z.enum(['active', 'over']);
 

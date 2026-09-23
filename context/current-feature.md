@@ -26,3 +26,4 @@ Not Started
 - W03 Theme Setup: role layer, Tailwind @theme, Inter + Archivo.
 - W04 Theme Preview Route: /dev/theme palette, type, spacing, radius.
 - W05a REST Contract: result envelope, schemas, ApiClient interface.
+- W05b Duel Contract: duel schemas, event map, DuelClient interface.
