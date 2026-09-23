@@ -27,3 +27,4 @@ Not Started
 - W04 Theme Preview Route: /dev/theme palette, type, spacing, radius.
 - W05a REST Contract: result envelope, schemas, ApiClient interface.
 - W05b Duel Contract: duel schemas, event map, DuelClient interface.
+- W06a Mock Engine: vitest, normalize, matcher, clock, rules core.
