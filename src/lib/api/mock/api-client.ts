@@ -1,11 +1,9 @@
 import type { ApiClient } from '@/lib/api/client';
 import {
-  SEED_AWAY_CLUB,
-  SEED_COMPETITION,
-  SEED_HOME_CLUB,
-  SEED_MATCH_IDENTITY,
-  SEED_SQUAD,
-} from '@/lib/api/mock/data/seed';
+  FIXTURES,
+  requireFixture,
+  squadFor,
+} from '@/lib/api/mock/data/fixtures';
 import {
   createEngineState,
   remainingCount,
@@ -13,10 +11,12 @@ import {
   revealedPlayers,
   type EngineState,
 } from '@/lib/api/mock/engine';
+import { filterOptionsFrom, selectFixture } from '@/lib/api/mock/pool';
 import {
+  createIdentity,
   createSession,
   createStore,
-  emptyStats,
+  favouriteClubOf,
   nextId,
   type MockClock,
   type MockStore,
@@ -24,12 +24,14 @@ import {
 } from '@/lib/api/mock/store';
 import {
   ACK,
+  emptyPool,
   fail,
   isGuessable,
   maskedMatchFor,
   ok,
   toGuessResult,
 } from '@/lib/api/mock/shared';
+import type { MockFixture } from '@/lib/api/mock/types';
 import {
   signInRequestSchema,
   signUpRequestSchema,
@@ -39,7 +41,6 @@ import { filtersSchema, SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { historyQuerySchema } from '@/lib/api/schemas/profile';
 import { soloGuessRequestSchema } from '@/lib/api/schemas/solo';
 import type { Session } from '@/types/auth';
-import type { Filters } from '@/types/filters';
 import type { SoloEndReason } from '@/types/game';
 import type { HistoryEntry, HistoryPage } from '@/types/profile';
 import type { RevealedPlayer } from '@/types/player';
@@ -48,38 +49,11 @@ import type { SoloSession, SoloSummary } from '@/types/solo';
 const RATE_LIMIT_WINDOW_MS = 3_000;
 const RATE_LIMIT_MAX_GUESSES = 12;
 
-function seasonStartYear(): number {
-  return Number.parseInt(SEED_MATCH_IDENTITY.season.slice(0, 4), 10);
-}
-
-function narrowFilter(filters: Filters): string | null {
-  if (
-    filters.competitionIds.length > 0 &&
-    !filters.competitionIds.includes(SEED_COMPETITION.id)
-  ) {
-    return 'competition';
-  }
-
-  const seedClubs = [SEED_HOME_CLUB.id, SEED_AWAY_CLUB.id];
-  if (
-    filters.clubIds.length > 0 &&
-    !filters.clubIds.some((id) => seedClubs.includes(id))
-  ) {
-    return 'club';
-  }
-
-  const season = seasonStartYear();
-  if (filters.era.from > season || filters.era.to < season) {
-    return 'era';
-  }
-
-  return null;
-}
-
 export function createMockApiClient(
-  options: { now?: MockClock } = {},
+  options: { now?: MockClock; random?: () => number } = {},
 ): ApiClient {
   const now = options.now ?? (() => Date.now());
+  const random = options.random ?? Math.random;
   const store: MockStore = createStore();
 
   function requireIdentity() {
@@ -91,6 +65,10 @@ export function createMockApiClient(
     return { user: store.identity.user };
   }
 
+  function fixtureOf(session: StoredSession): MockFixture {
+    return requireFixture(session.fixtureId);
+  }
+
   function toSoloSession(session: StoredSession): SoloSession {
     const engine = session.engine;
     if (!engine) throw new Error('Session has no engine state');
@@ -98,7 +76,7 @@ export function createMockApiClient(
     return {
       sessionId: session.id,
       status: engine.status,
-      match: maskedMatchFor(session.side ?? 'home'),
+      match: maskedMatchFor(fixtureOf(session), session.side ?? 'home'),
       lives: engine.lives.you,
       found: revealedPlayers(engine),
       round: engine.round,
@@ -107,15 +85,15 @@ export function createMockApiClient(
 
   function missedPlayers(engine: EngineState): RevealedPlayer[] {
     const foundIds = new Set(engine.found.map((item) => item.playerId));
-    return SEED_SQUAD.filter((entry) => !foundIds.has(entry.playerId)).map(
-      (entry) => ({
+    return engine.squad
+      .filter((entry) => !foundIds.has(entry.playerId))
+      .map((entry) => ({
         id: entry.playerId,
         name: entry.name,
         slot: entry.slot,
         position: entry.position,
         imageUrl: null,
-      }),
-    );
+      }));
   }
 
   function recordRoundTime(
@@ -143,24 +121,31 @@ export function createMockApiClient(
     if (!identity) return;
 
     const isPerfect = reason === 'perfect_clear';
+    const fixture = fixtureOf(session);
     const entry: HistoryEntry = {
       id: nextId(store, 'history'),
       playedAt: new Date(now()).toISOString(),
       mode: 'solo',
-      match: SEED_MATCH_IDENTITY,
+      match: fixture.identity,
       outcome: reason,
       foundCount: session.engine.found.length,
       livesRemaining: session.engine.lives.you,
     };
 
     identity.history = [entry, ...identity.history];
+    if (session.side) {
+      identity.playedAs = [
+        ...identity.playedAs,
+        fixture.identity[session.side],
+      ];
+    }
     identity.stats = {
       ...identity.stats,
       played: identity.stats.played + 1,
       perfectClears: identity.stats.perfectClears + (isPerfect ? 1 : 0),
       bestStreak: Math.max(identity.stats.bestStreak, session.bestStreak),
       accuracy: accuracyOf(session),
-      favouriteClub: SEED_HOME_CLUB,
+      favouriteClub: favouriteClubOf(identity.playedAs),
     };
   }
 
@@ -212,7 +197,7 @@ export function createMockApiClient(
     const missed = missedPlayers(engine);
 
     return {
-      match: SEED_MATCH_IDENTITY,
+      match: fixtureOf(session).identity,
       found: revealedPlayers(engine),
       missedCount: remainingCount(engine),
       missed: isPro ? missed : null,
@@ -232,16 +217,12 @@ export function createMockApiClient(
 
       async continueAsGuest() {
         const id = nextId(store, 'guest');
-        store.identity = {
-          user: {
-            id,
-            handle: `Guest ${id.split('-')[1]}`,
-            isGuest: true,
-            tier: 'free',
-          },
-          stats: emptyStats(),
-          history: [],
-        };
+        store.identity = createIdentity({
+          id,
+          handle: `Guest ${id.split('-')[1]}`,
+          isGuest: true,
+          tier: 'free',
+        });
         return ok(signedInSession());
       },
 
@@ -252,16 +233,12 @@ export function createMockApiClient(
         }
 
         const id = nextId(store, 'user');
-        store.identity = {
-          user: {
-            id,
-            handle: parsed.data.email.split('@')[0],
-            isGuest: false,
-            tier: 'free',
-          },
-          stats: emptyStats(),
-          history: [],
-        };
+        store.identity = createIdentity({
+          id,
+          handle: parsed.data.email.split('@')[0],
+          isGuest: false,
+          tier: 'free',
+        });
         return ok(signedInSession());
       },
 
@@ -272,16 +249,12 @@ export function createMockApiClient(
         }
 
         const id = nextId(store, 'user');
-        store.identity = {
-          user: {
-            id,
-            handle: parsed.data.handle,
-            isGuest: false,
-            tier: 'free',
-          },
-          stats: emptyStats(),
-          history: [],
-        };
+        store.identity = createIdentity({
+          id,
+          handle: parsed.data.handle,
+          isGuest: false,
+          tier: 'free',
+        });
         return ok(signedInSession());
       },
 
@@ -317,12 +290,7 @@ export function createMockApiClient(
 
     catalog: {
       async getFilterOptions() {
-        const season = seasonStartYear();
-        return ok({
-          competitions: [SEED_COMPETITION],
-          clubs: [SEED_HOME_CLUB, SEED_AWAY_CLUB],
-          era: { from: season, to: season },
-        });
+        return ok(filterOptionsFrom(FIXTURES));
       },
     },
 
@@ -338,19 +306,17 @@ export function createMockApiClient(
           return fail('invalid_input', 'Those filters are not valid.');
         }
 
-        const narrow = narrowFilter(parsed.data);
-        if (narrow) {
-          return fail(
-            'empty_pool',
-            `No match fits that ${narrow} filter. Try widening it.`,
-          );
+        const selection = selectFixture(parsed.data, random);
+        if ('emptyBecause' in selection) {
+          return emptyPool(selection.emptyBecause);
         }
 
-        const session = createSession(store, identity.user.id);
+        const { identity: match } = selection.fixture;
+        const session = createSession(store, identity.user.id, match.id);
         return ok({
           sessionId: session.id,
-          home: SEED_HOME_CLUB,
-          away: SEED_AWAY_CLUB,
+          home: match.home,
+          away: match.away,
         });
       },
 
@@ -364,7 +330,11 @@ export function createMockApiClient(
 
         const at = now();
         session.side = side;
-        session.engine = createEngineState('solo', SEED_SQUAD, at);
+        session.engine = createEngineState(
+          'solo',
+          squadFor(fixtureOf(session), side),
+          at,
+        );
         session.roundStartedAt = at;
 
         return ok(toSoloSession(session));

@@ -51,22 +51,34 @@ function matching(
 }
 
 // Blame the first filter whose removal alone refills the pool
+function blame(
+  filters: Filters,
+  fixtures: readonly MockFixture[],
+): EmptyPoolReason {
+  const culprit = FILTER_ORDER.find(
+    (key) => matching(fixtures, filters, key).length > 0,
+  );
+  return culprit ?? 'combination';
+}
+
+export function emptyReason(
+  filters: Filters,
+  fixtures: readonly MockFixture[] = FIXTURES,
+): EmptyPoolReason | null {
+  if (matching(fixtures, filters).length > 0) return null;
+  return blame(filters, fixtures);
+}
+
 export function selectFixture(
   filters: Filters,
   random: () => number,
   fixtures: readonly MockFixture[] = FIXTURES,
 ): FixtureSelection {
   const pool = matching(fixtures, filters);
+  if (pool.length === 0) return { emptyBecause: blame(filters, fixtures) };
 
-  if (pool.length > 0) {
-    const index = Math.min(pool.length - 1, Math.floor(random() * pool.length));
-    return { fixture: pool[index] };
-  }
-
-  const culprit = FILTER_ORDER.find(
-    (key) => matching(fixtures, filters, key).length > 0,
-  );
-  return { emptyBecause: culprit ?? 'combination' };
+  const index = Math.min(pool.length - 1, Math.floor(random() * pool.length));
+  return { fixture: pool[index] };
 }
 
 function uniqueById<T extends { id: string; name: string }>(

@@ -1,14 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DuelClient, DuelEvent } from '@/lib/api/duel-client';
 import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
-import { SEED_SQUAD } from '@/lib/api/mock/data/seed';
+import { squadFor } from '@/lib/api/mock/data/fixtures';
 import {
   createMockDuelClient,
   OPPONENT_FILTER_MS,
+  OPPONENT_FILTERS,
   QUEUE_WAIT_MS,
   RECONNECT_WINDOW_MS,
   type MockDuelOptions,
 } from '@/lib/api/mock/duel-client';
+import { selectFixture } from '@/lib/api/mock/pool';
+import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
+import type { MockFixture, MockSquad } from '@/lib/api/mock/types';
 import type { DuelResult, DuelSession } from '@/types/duel';
 import type { Filters } from '@/types/filters';
 
@@ -17,6 +21,26 @@ const FILTERS: Filters = {
   clubIds: [],
   era: { from: 2000, to: 2025 },
 };
+
+const CROWN_ONLY: Filters = {
+  ...FILTERS,
+  competitionIds: ['comp-crown-league'],
+};
+
+// Replays the adapter's draws: coin flip, fixture, then side
+function expectedFixture(draw: number, yours: Filters = FILTERS): MockFixture {
+  const applied = draw < 0.5 ? yours : OPPONENT_FILTERS;
+  const selection = selectFixture(applied, () => draw);
+  if (!('fixture' in selection)) throw new Error('Expected a fixture');
+  return selection.fixture;
+}
+
+function expectedSquad(draw: number, yours: Filters = FILTERS): MockSquad {
+  return squadFor(expectedFixture(draw, yours), draw < 0.5 ? 'home' : 'away');
+}
+
+// What `scripted()` plays: the opponent's filters, the away XI
+const SQUAD = expectedSquad(0.99);
 
 const EVENTS: DuelEvent[] = [
   'queued',
@@ -122,6 +146,78 @@ describe('mock duel client', () => {
     expect(flip.filters).toEqual(FILTERS);
   });
 
+  it('applies the opponent set whole when the opponent wins', async () => {
+    const client = createMockDuelClient(scripted());
+    const log = record(client);
+
+    await reachMatch(client, CROWN_ONLY);
+
+    const flip = lastOf<{ winner: string; filters: Filters }>(log, 'coinFlip');
+    expect(flip.winner).toBe('opponent');
+    expect(flip.filters).toEqual(OPPONENT_FILTERS);
+
+    const session = lastOf<DuelSession>(log, 'matchReady');
+    const fixture = expectedFixture(0.99, CROWN_ONLY);
+    expect(session.match.id).toBe(fixture.identity.id);
+    expect(fixture.identity.competition.id).not.toBe('comp-crown-league');
+  });
+
+  it('plays a fixture from your set when you win the flip', async () => {
+    const client = createMockDuelClient(scripted({ random: () => 0.1 }));
+    const log = record(client);
+
+    await reachMatch(client, CROWN_ONLY);
+    await client.forfeit();
+
+    const session = lastOf<DuelSession>(log, 'matchReady');
+    expect(session.match.side).toBe('home');
+    expect(session.match.id).toBe(expectedFixture(0.1, CROWN_ONLY).identity.id);
+
+    const result = lastOf<DuelResult>(log, 'finished');
+    expect(result.match.competition.id).toBe('comp-crown-league');
+  });
+
+  it('rejects malformed filters without submitting them', async () => {
+    const client = createMockDuelClient(scripted());
+    const log = record(client);
+    await client.enterQueue();
+    await vi.advanceTimersByTimeAsync(QUEUE_WAIT_MS);
+    log.length = 0;
+
+    const refused = await client.submitFilters({
+      ...FILTERS,
+      era: { from: 2020, to: 2010 },
+    });
+
+    expect(refused.success).toBe(false);
+    if (!refused.success) expect(refused.error.code).toBe('invalid_input');
+    expect(names(log)).toEqual([]);
+  });
+
+  it('refuses filters that match nothing before submitting them', async () => {
+    const client = createMockDuelClient(scripted());
+    const log = record(client);
+    await client.enterQueue();
+    await vi.advanceTimersByTimeAsync(QUEUE_WAIT_MS);
+    log.length = 0;
+
+    const refused = await client.submitFilters({
+      ...FILTERS,
+      era: { from: 2000, to: 2001 },
+    });
+
+    expect(refused.success).toBe(false);
+    if (!refused.success) {
+      expect(refused.error.code).toBe('empty_pool');
+      expect(refused.error.message).toBe(EMPTY_POOL_MESSAGES.era);
+    }
+    expect(names(log)).toEqual([]);
+
+    await client.submitFilters(FILTERS);
+    await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS);
+    expect(names(log)).toContain('matchReady');
+  });
+
   it('emits queueTimedOut instead of pairing on the timeout path', async () => {
     const client = createMockDuelClient(scripted({ scenario: 'queueTimeout' }));
     const log = record(client);
@@ -140,7 +236,10 @@ describe('mock duel client', () => {
     await reachMatch(client);
     log.length = 0;
 
-    const ack = await client.guess({ sessionId: 'duel-1', guess: 'Ferreira' });
+    const ack = await client.guess({
+      sessionId: 'duel-1',
+      guess: SQUAD[3].name,
+    });
     expect(ack.success).toBe(true);
 
     expect(names(log)).toEqual([
@@ -154,7 +253,7 @@ describe('mock duel client', () => {
       log,
       'playerRevealed',
     );
-    expect(revealed.name).toBe('Diego Ferreira');
+    expect(revealed.name).toBe(SQUAD[3].name);
     expect(revealed.foundBy).toBe('you');
 
     const session = lastOf<DuelSession>(log, 'roundStarted');
@@ -165,12 +264,12 @@ describe('mock duel client', () => {
   it('leaves the turn alone for already-found and not-in-XI', async () => {
     const client = createMockDuelClient(scripted());
     await reachMatch(client);
-    await client.guess({ sessionId: 'duel-1', guess: 'Ferreira' });
+    await client.guess({ sessionId: 'duel-1', guess: SQUAD[3].name });
 
     const log = record(client);
     const outOfTurn = await client.guess({
       sessionId: 'duel-1',
-      guess: 'Petrov',
+      guess: SQUAD[9].name,
     });
 
     expect(outOfTurn.success).toBe(false);
@@ -218,7 +317,7 @@ describe('mock duel client', () => {
     await reachMatch(client);
 
     // You always answer; the opponent never does
-    const answers = SEED_SQUAD.map((entry) => entry.name);
+    const answers = SQUAD.map((entry) => entry.name);
     for (let i = 0; i < 3; i += 1) {
       await client.guess({ sessionId: 'duel-1', guess: answers[i] });
       await vi.advanceTimersByTimeAsync(ROUND_DURATION_MS + 1_000);
@@ -311,7 +410,7 @@ describe('mock duel client', () => {
 
     const result = await client.guess({
       sessionId: 'duel-1',
-      guess: 'Ferreira',
+      guess: SQUAD[3].name,
     });
 
     expect(result.success).toBe(false);
@@ -329,13 +428,12 @@ describe('mock duel client', () => {
     const log = record(client);
     await reachMatch(client);
 
-    await client.guess({ sessionId: 'duel-1', guess: 'Petrov' });
+    const [named, ...hidden] = SQUAD;
+    await client.guess({ sessionId: 'duel-1', guess: named.name });
 
     const body = JSON.stringify(log);
-    expect(body).toContain('Nikolai Petrov');
-
-    for (const entry of SEED_SQUAD) {
-      if (entry.playerId === 'pl-10') continue;
+    expect(body).toContain(named.name);
+    for (const entry of hidden) {
       expect(body).not.toContain(entry.name);
     }
   });
@@ -353,7 +451,7 @@ describe('mock duel client', () => {
 
     const result = await client.guess({
       sessionId: 'duel-1',
-      guess: 'Ferreira',
+      guess: SQUAD[3].name,
     });
 
     expect(result.success).toBe(false);

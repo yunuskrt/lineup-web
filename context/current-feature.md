@@ -31,3 +31,4 @@ Not Started
 - W06b Mock REST Adapter: store, ApiClient impl, env-flag registry.
 - W06c Mock Duel Adapter: emitter, scripted opponent, scenarios.
 - W07a Fixture Dataset: fictional XIs, schemas, loader, pool selector.
+- W07b Adapters on Fixtures: solo and duel mocks on dataset, seed removed.

@@ -1,7 +1,7 @@
 // In-memory only. A page reload resets every session, stat and history
 // entry — that is expected of the mock, not a bug.
 import type { EngineState } from '@/lib/api/mock/engine';
-import type { Side } from '@/types/match';
+import type { ClubRef, Side } from '@/types/match';
 import type { HistoryEntry, UserStats } from '@/types/profile';
 import type { SoloEndReason } from '@/types/game';
 import type { User } from '@/types/user';
@@ -11,6 +11,7 @@ export type MockClock = () => number;
 export type StoredSession = {
   id: string;
   userId: string;
+  fixtureId: string;
   side: Side | null;
   engine: EngineState | null;
   totalGuesses: number;
@@ -28,6 +29,7 @@ export type MockIdentity = {
   user: User;
   stats: UserStats;
   history: HistoryEntry[];
+  playedAs: ClubRef[];
 };
 
 export type MockStore = {
@@ -45,7 +47,7 @@ export function nextId(store: MockStore, prefix: string): string {
   return `${prefix}-${store.sequence}`;
 }
 
-export function emptyStats(): UserStats {
+function emptyStats(): UserStats {
   return {
     played: 0,
     wins: 0,
@@ -58,10 +60,31 @@ export function emptyStats(): UserStats {
   };
 }
 
-export function createSession(store: MockStore, userId: string): StoredSession {
+export function createIdentity(user: User): MockIdentity {
+  return { user, stats: emptyStats(), history: [], playedAs: [] };
+}
+
+// Most-played club; a tie goes to the most recent
+export function favouriteClubOf(playedAs: readonly ClubRef[]): ClubRef | null {
+  const counts = new Map<string, number>();
+  for (const club of playedAs) {
+    counts.set(club.id, (counts.get(club.id) ?? 0) + 1);
+  }
+
+  const top = Math.max(0, ...counts.values());
+  const newestFirst = [...playedAs].reverse();
+  return newestFirst.find((club) => counts.get(club.id) === top) ?? null;
+}
+
+export function createSession(
+  store: MockStore,
+  userId: string,
+  fixtureId: string,
+): StoredSession {
   const session: StoredSession = {
     id: nextId(store, 'session'),
     userId,
+    fixtureId,
     side: null,
     engine: null,
     totalGuesses: 0,

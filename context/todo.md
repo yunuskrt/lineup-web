@@ -20,7 +20,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 - [x] **Phase W04 — Theme Preview Route**: Internal `/dev/theme` rendering palette, type scale and spacing.
 - [x] **Phase W05 — API Client Interface**: Typed contract for auth, solo, duel and profile, no implementation.
 - [x] **Phase W06 — Mock API Adapter**: In-memory implementation of that interface, selected by env flag.
-- [ ] **Phase W07 — Mock Fixtures**: Hand-built matches, starting XIs, players and alias sets.
+- [x] **Phase W07 — Mock Fixtures**: Hand-built matches, starting XIs, players and alias sets.
 - [ ] **Phase W08 — App Shell & Layout**: Nav and footer per route; game routes carry no chrome, quit chip only.
 - [ ] **Phase W09 — Pitch & Squad Grid**: CSS/SVG pitch with 11 outlined slots in formation, no raster assets.
 - [ ] **Phase W10 — Countdown Ring**: 64px tabular numeral, linear sweep, three-stage colour escalation.

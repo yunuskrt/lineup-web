@@ -4,6 +4,7 @@ import {
   buildFixtures,
   FIXTURES,
   fixtureById,
+  requireFixture,
   squadFor,
 } from '@/lib/api/mock/data/fixtures';
 import type { FixtureSource } from '@/lib/api/mock/data/fixtures';
@@ -82,6 +83,15 @@ describe('fixture integrity', () => {
 
   it('returns null for an unknown fixture id', () => {
     expect(fixtureById('match-nowhere')).toBeNull();
+  });
+
+  it('throws from requireFixture for an unknown id', () => {
+    expect(requireFixture('match-crown-2003').identity.id).toBe(
+      'match-crown-2003',
+    );
+    expect(() => requireFixture('match-nowhere')).toThrow(
+      'Unknown fixture match-nowhere',
+    );
   });
 
   it('uses every competition, club and player it declares', () => {
