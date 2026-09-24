@@ -30,3 +30,4 @@ Not Started
 - W06a Mock Engine: vitest, normalize, matcher, clock, rules core.
 - W06b Mock REST Adapter: store, ApiClient impl, env-flag registry.
 - W06c Mock Duel Adapter: emitter, scripted opponent, scenarios.
+- W07a Fixture Dataset: fictional XIs, schemas, loader, pool selector.
