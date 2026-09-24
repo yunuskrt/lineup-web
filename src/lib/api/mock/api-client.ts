@@ -23,6 +23,14 @@ import {
   type StoredSession,
 } from '@/lib/api/mock/store';
 import {
+  ACK,
+  fail,
+  isGuessable,
+  maskedMatchFor,
+  ok,
+  toGuessResult,
+} from '@/lib/api/mock/shared';
+import {
   signInRequestSchema,
   signUpRequestSchema,
   upgradeGuestRequestSchema,
@@ -30,42 +38,18 @@ import {
 import { filtersSchema, SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { historyQuerySchema } from '@/lib/api/schemas/profile';
 import { soloGuessRequestSchema } from '@/lib/api/schemas/solo';
-import type { ApiError, ApiResult } from '@/types/api';
 import type { Session } from '@/types/auth';
 import type { Filters } from '@/types/filters';
-import type { GuessResult, SoloEndReason } from '@/types/game';
-import type { Side } from '@/types/match';
+import type { SoloEndReason } from '@/types/game';
 import type { HistoryEntry, HistoryPage } from '@/types/profile';
 import type { RevealedPlayer } from '@/types/player';
-import type { MaskedMatch } from '@/types/match';
 import type { SoloSession, SoloSummary } from '@/types/solo';
 
 const RATE_LIMIT_WINDOW_MS = 3_000;
 const RATE_LIMIT_MAX_GUESSES = 12;
 
-function ok<T>(data: T): ApiResult<T> {
-  return { success: true, data };
-}
-
-function fail<T>(
-  code: ApiError['code'],
-  message: string,
-  retryAfterMs: number | null = null,
-): ApiResult<T> {
-  return { success: false, error: { code, message, retryAfterMs } };
-}
-
 function seasonStartYear(): number {
   return Number.parseInt(SEED_MATCH_IDENTITY.season.slice(0, 4), 10);
-}
-
-function maskedMatchFor(side: Side): MaskedMatch {
-  return {
-    id: SEED_MATCH_IDENTITY.id,
-    side,
-    team: side === 'home' ? SEED_HOME_CLUB : SEED_AWAY_CLUB,
-    formation: '4-4-2',
-  };
 }
 
 function narrowFilter(filters: Filters): string | null {
@@ -327,7 +311,7 @@ export function createMockApiClient(
 
       async signOut() {
         store.identity = null;
-        return ok(undefined);
+        return ACK;
       },
     },
 
@@ -424,6 +408,10 @@ export function createMockApiClient(
         session.engine = step.state;
         recordRoundTime(session, previous, step.state, at);
 
+        if (!isGuessable(step.outcome)) {
+          return fail('session_over', 'That round had already ended.');
+        }
+
         const result = toGuessResult(step.outcome);
         session.totalGuesses += 1;
 
@@ -513,20 +501,6 @@ export function createMockApiClient(
       },
     },
   };
-}
-
-function toGuessResult(
-  outcome: ReturnType<typeof resolveRound>['outcome'],
-): GuessResult {
-  if (outcome.kind === 'correct_new') {
-    return { outcome: 'correct_new', player: outcome.player };
-  }
-
-  if (outcome.kind === 'already_found') {
-    return { outcome: 'already_found', playerId: outcome.playerId };
-  }
-
-  return { outcome: 'not_in_xi' };
 }
 
 function pageOf(

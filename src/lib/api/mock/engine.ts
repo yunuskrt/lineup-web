@@ -60,6 +60,15 @@ export function revealedPlayers(state: EngineState): RevealedPlayer[] {
   return state.found.map((found) => toRevealed(entryOf(state, found.playerId)));
 }
 
+export function foundWithActor(
+  state: EngineState,
+): { player: RevealedPlayer; foundBy: EngineActor }[] {
+  return state.found.map((found) => ({
+    player: toRevealed(entryOf(state, found.playerId)),
+    foundBy: found.foundBy,
+  }));
+}
+
 export function remainingCount(state: EngineState): number {
   return SQUAD_SIZE - state.found.length;
 }

@@ -5,3 +5,5 @@ registerApiClient();
 
 export { getApiClient } from '@/lib/api/client';
 export type { ApiClient } from '@/lib/api/client';
+export { getDuelClient } from '@/lib/api/duel-client';
+export type { DuelClient } from '@/lib/api/duel-client';

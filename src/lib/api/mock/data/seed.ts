@@ -4,7 +4,6 @@ import { mockSquadSchema } from '@/lib/api/mock/types';
 import {
   clubRefSchema,
   competitionRefSchema,
-  maskedMatchSchema,
   matchIdentitySchema,
 } from '@/lib/api/schemas/match';
 
@@ -40,12 +39,7 @@ export const SEED_MATCH_IDENTITY = matchIdentitySchema.parse({
   nickname: 'The Placeholder Derby',
 });
 
-export const SEED_MASKED_MATCH = maskedMatchSchema.parse({
-  id: SEED_MATCH_IDENTITY.id,
-  side: 'home',
-  team: SEED_HOME_CLUB,
-  formation: '4-4-2',
-});
+export const SEED_FORMATION = '4-4-2';
 
 // Moreau appears twice on purpose: a bare surname must stay ambiguous
 export const SEED_SQUAD = mockSquadSchema.parse([
