@@ -35,7 +35,14 @@ If a target file already exists, show what would change and ask before overwriti
 
 ## Spec file structure
 
-Mirror `context/current-feature.md` so the file can be moved into it verbatim when work starts:
+**Do not mirror `context/current-feature.md` mechanically.** Shape each spec to what that phase actually needs. The skeleton below is a reference, not a template:
+
+- **Add sections** when the phase calls for them, e.g. `## Contract` for payload shapes, `## States` for a component's state table, `## Data` for fixture inventories, `## Open Questions` for decisions to settle before building, `## Out of Scope` when the boundary is easy to cross
+- **Remove or merge sections** that would be empty or filler; e.g. fold a one-line dependency into Notes instead of giving it its own block
+- **Keep `## Status`, `## Goals` and `## Notes`.** The `/feature` workflow reads and writes them, and deviations are recorded under `## Notes` per `context/ai-interaction.md`
+- Extra sections go between `## Goals` and `## Notes`, ordered however reads best for that phase
+
+Reference skeleton:
 
 ```markdown
 # Phase <N><letter?> — <Title>
@@ -59,7 +66,7 @@ Not Started
 ## History
 ```
 
-- Leave `## History` empty — it is filled in when the phase completes
+- If `## History` is kept, leave it empty — it is filled in when the phase completes
 - Goals bullets are deliverables, not narration; name real paths (`src/lib/db/queries.ts`, `prisma/schema.prisma`)
 - Carry over the relevant hard constraints from `context/project-overview.md` and the rules from `context/coding-standards.md` that apply to this phase; do not restate the whole standard
 
