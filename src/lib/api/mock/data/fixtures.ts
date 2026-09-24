@@ -113,6 +113,12 @@ export function fixtureById(id: string): MockFixture | null {
   return FIXTURES.find((fixture) => fixture.identity.id === id) ?? null;
 }
 
+export function requireFixture(id: string): MockFixture {
+  const fixture = fixtureById(id);
+  if (!fixture) throw new Error(`Unknown fixture ${id}`);
+  return fixture;
+}
+
 export function squadFor(fixture: MockFixture, side: Side): MockSquad {
   return fixture[side].squad;
 }

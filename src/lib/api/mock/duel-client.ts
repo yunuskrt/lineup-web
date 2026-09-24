@@ -1,6 +1,6 @@
 import type { DuelClient } from '@/lib/api/duel-client';
 import { GRACE_WINDOW_MS } from '@/lib/api/mock/clock';
-import { SEED_MATCH_IDENTITY, SEED_SQUAD } from '@/lib/api/mock/data/seed';
+import { squadFor } from '@/lib/api/mock/data/fixtures';
 import { createEmitter } from '@/lib/api/mock/emitter';
 import {
   createEngineState,
@@ -9,17 +9,25 @@ import {
   type EngineActor,
   type EngineState,
 } from '@/lib/api/mock/engine';
+import { emptyReason, selectFixture } from '@/lib/api/mock/pool';
 import type { DuelScenario } from '@/lib/api/mock/scenarios';
 import type { MockClock } from '@/lib/api/mock/store';
 import {
   ACK,
+  emptyPool,
   fail,
   isGuessable,
   maskedMatchFor,
   toGuessResult,
 } from '@/lib/api/mock/shared';
+import type { MockFixture } from '@/lib/api/mock/types';
 import { duelGuessRequestSchema } from '@/lib/api/schemas/duel';
-import { SQUAD_SIZE } from '@/lib/api/schemas/common';
+import {
+  FIRST_SEASON_START,
+  filtersSchema,
+  LAST_SEASON_START,
+  SQUAD_SIZE,
+} from '@/lib/api/schemas/common';
 import type { ApiError } from '@/types/api';
 import type {
   DuelFoundPlayer,
@@ -29,10 +37,18 @@ import type {
   FilterSubmissionStatus,
 } from '@/types/duel';
 import type { Filters } from '@/types/filters';
+import type { Side } from '@/types/match';
 
 export const QUEUE_WAIT_MS = 2_000;
 export const OPPONENT_FILTER_MS = 1_200;
 export const RECONNECT_WINDOW_MS = 20_000;
+
+// The scripted opponent never narrows, so its set always has a match
+export const OPPONENT_FILTERS: Filters = {
+  competitionIds: [],
+  clubIds: [],
+  era: { from: FIRST_SEASON_START, to: LAST_SEASON_START },
+};
 
 const DEFAULT_THINK_TIME_MS = 6_000;
 const DEFAULT_HIT_RATE = 0.65;
@@ -63,6 +79,8 @@ export function createMockDuelClient(
 
   let phase: Phase = 'idle';
   let engine: EngineState | null = null;
+  let fixture: MockFixture | null = null;
+  let side: Side = 'home';
   let you: DuelPlayer = {
     id: 'you',
     handle: options.handle ?? 'You',
@@ -105,12 +123,17 @@ export function createMockDuelClient(
     }));
   }
 
+  function currentFixture(): MockFixture {
+    if (!fixture) throw new Error('No fixture has been selected');
+    return fixture;
+  }
+
   function sessionOf(state: EngineState): DuelSession {
     if (!state.round) throw new Error('Session has no live round');
 
     return {
       sessionId: 'duel-1',
-      match: maskedMatchFor('home'),
+      match: maskedMatchFor(currentFixture(), side),
       you: { ...you, lives: state.lives.you },
       opponent: { ...opponent, lives: state.lives.opponent },
       turn: state.turn,
@@ -132,7 +155,7 @@ export function createMockDuelClient(
     const state = engine;
     const result: DuelResult = {
       outcome,
-      match: SEED_MATCH_IDENTITY,
+      match: currentFixture().identity,
       found: state ? foundPool(state) : [],
       you,
       opponent,
@@ -202,7 +225,7 @@ export function createMockDuelClient(
 
   function unfoundEntries(state: EngineState) {
     const found = new Set(state.found.map((item) => item.playerId));
-    return SEED_SQUAD.filter((entry) => !found.has(entry.playerId));
+    return state.squad.filter((entry) => !found.has(entry.playerId));
   }
 
   function onOpponentTurn(): void {
@@ -245,9 +268,13 @@ export function createMockDuelClient(
     startRound(step.state);
   }
 
-  function beginMatch(): void {
+  // Side is a coin here; the server weights it by guessability (B32)
+  function beginMatch(selected: MockFixture): void {
     phase = 'playing';
-    const state = createEngineState('duel', SEED_SQUAD, now());
+    fixture = selected;
+    side = random() < 0.5 ? 'home' : 'away';
+
+    const state = createEngineState('duel', squadFor(selected, side), now());
     engine = state;
     syncPlayers(state);
     emitter.emit('matchReady', sessionOf(state));
@@ -309,6 +336,7 @@ export function createMockDuelClient(
       emitter.clear();
       phase = 'idle';
       engine = null;
+      fixture = null;
     },
 
     async enterQueue() {
@@ -354,6 +382,16 @@ export function createMockDuelClient(
         return fail('forbidden', 'Filters are not open right now.');
       }
 
+      const parsed = filtersSchema.safeParse(filters);
+      if (!parsed.success) {
+        return fail('invalid_input', 'Those filters are not valid.');
+      }
+
+      // Refused up front so the coin flip never lands on an empty pool
+      const reason = emptyReason(parsed.data);
+      if (reason) return emptyPool(reason);
+
+      const yours = parsed.data;
       submissions = { ...submissions, yours: 'submitted' };
       emitter.emit('filtersUpdated', submissions);
 
@@ -365,9 +403,20 @@ export function createMockDuelClient(
 
         // One set applied whole, never merged (HC 19)
         const winner = random() < 0.5 ? 'you' : 'opponent';
-        emitter.emit('coinFlip', { winner, filters });
+        const applied = winner === 'you' ? yours : OPPONENT_FILTERS;
+        emitter.emit('coinFlip', { winner, filters: applied });
 
-        beginMatch();
+        const selection = selectFixture(applied, random);
+        if ('emptyBecause' in selection) {
+          emitter.emit('error', {
+            code: 'empty_pool',
+            message: 'No match fits the winning filters.',
+            retryAfterMs: null,
+          });
+          return;
+        }
+
+        beginMatch(selection.fixture);
       });
 
       return ACK;

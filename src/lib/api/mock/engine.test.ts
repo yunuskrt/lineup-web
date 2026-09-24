@@ -8,10 +8,13 @@ import {
   type EngineState,
 } from '@/lib/api/mock/engine';
 import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
-import { SEED_SQUAD } from '@/lib/api/mock/data/seed';
+import { requireFixture, squadFor } from '@/lib/api/mock/data/fixtures';
 
 const T0 = 1_700_000_000_000;
 const AFTER_EXPIRY = T0 + ROUND_DURATION_MS + GRACE_WINDOW_MS + 1;
+
+// Northgate's XI, which holds the deliberate Harlow collision
+const SQUAD = squadFor(requireFixture('match-crown-2003'), 'home');
 
 function guess(state: EngineState, name: string, now = T0) {
   return resolveRound(
@@ -29,7 +32,7 @@ describe('engine — lives', () => {
   let state: EngineState;
 
   beforeEach(() => {
-    state = createEngineState('solo', SEED_SQUAD, T0);
+    state = createEngineState('solo', SQUAD, T0);
   });
 
   it('starts with exactly three lives', () => {
@@ -42,7 +45,7 @@ describe('engine — lives', () => {
     expect(wrong.outcome.kind).toBe('not_in_xi');
     expect(wrong.state.lives.you).toBe(3);
 
-    const repeated = guess(guess(state, 'Ferreira').state, 'Ferreira', T0 + 1);
+    const repeated = guess(guess(state, 'Moss').state, 'Moss', T0 + 1);
     expect(repeated.outcome.kind).toBe('already_found');
     expect(repeated.state.lives.you).toBe(3);
 
@@ -66,8 +69,8 @@ describe('engine — lives', () => {
 
 describe('engine — round resolution', () => {
   it('reveals a new player and resets the round', () => {
-    const state = createEngineState('solo', SEED_SQUAD, T0);
-    const step = guess(state, 'Kerem Şahin');
+    const state = createEngineState('solo', SQUAD, T0);
+    const step = guess(state, "Ciarán O'Donovan");
 
     expect(step.outcome.kind).toBe('correct_new');
     expect(step.state.found).toHaveLength(1);
@@ -76,10 +79,10 @@ describe('engine — round resolution', () => {
   });
 
   it('leaves the round untouched for already-found and not-in-XI', () => {
-    const first = guess(createEngineState('solo', SEED_SQUAD, T0), 'Petrov');
+    const first = guess(createEngineState('solo', SQUAD, T0), 'Tolland');
     const round = first.state.round;
 
-    const again = guess(first.state, 'Petrov', T0 + 500);
+    const again = guess(first.state, 'Tolland', T0 + 500);
     expect(again.outcome.kind).toBe('already_found');
     expect(again.state.round).toEqual(round);
 
@@ -89,46 +92,46 @@ describe('engine — round resolution', () => {
   });
 
   it('treats an ambiguous in-XI surname as not in the XI', () => {
-    const state = createEngineState('solo', SEED_SQUAD, T0);
-    const step = guess(state, 'Moreau');
+    const state = createEngineState('solo', SQUAD, T0);
+    const step = guess(state, 'Harlow');
 
     expect(step.outcome.kind).toBe('not_in_xi');
     expect(step.state.found).toHaveLength(0);
   });
 
   it('ignores input once the session is over', () => {
-    const state = createEngineState('solo', SEED_SQUAD, T0);
+    const state = createEngineState('solo', SQUAD, T0);
     const over = { ...state, status: 'over' as const, round: null };
 
-    expect(guess(over, 'Petrov').outcome.kind).toBe('ignored');
+    expect(guess(over, 'Tolland').outcome.kind).toBe('ignored');
   });
 });
 
 describe('engine — turn order', () => {
   it('passes the turn on a correct new answer in a duel', () => {
-    const state = createEngineState('duel', SEED_SQUAD, T0);
+    const state = createEngineState('duel', SQUAD, T0);
     expect(state.turn).toBe('you');
 
-    const step = guess(state, 'Ferreira');
+    const step = guess(state, 'Moss');
     expect(step.outcome.kind).toBe('correct_new');
     expect(step.state.turn).toBe('opponent');
   });
 
   it('keeps the turn on the two no-penalty outcomes', () => {
-    const state = createEngineState('duel', SEED_SQUAD, T0);
-    const found = guess(state, 'Ferreira').state;
+    const state = createEngineState('duel', SQUAD, T0);
+    const found = guess(state, 'Moss').state;
 
-    expect(guess(found, 'Ferreira', T0 + 1).state.turn).toBe('opponent');
+    expect(guess(found, 'Moss', T0 + 1).state.turn).toBe('opponent');
     expect(guess(found, 'Nobody', T0 + 2).state.turn).toBe('opponent');
   });
 
   it('does not hand over in solo — the same player continues', () => {
-    const state = createEngineState('solo', SEED_SQUAD, T0);
-    expect(guess(state, 'Ferreira').state.turn).toBe('you');
+    const state = createEngineState('solo', SQUAD, T0);
+    expect(guess(state, 'Moss').state.turn).toBe('you');
   });
 
   it('passes the turn when a life is lost', () => {
-    const state = createEngineState('duel', SEED_SQUAD, T0);
+    const state = createEngineState('duel', SQUAD, T0);
     const step = expire(state);
 
     expect(step.state.turn).toBe('opponent');
@@ -137,10 +140,10 @@ describe('engine — turn order', () => {
   });
 
   it('ignores a guess from the player whose turn it is not', () => {
-    const state = createEngineState('duel', SEED_SQUAD, T0);
+    const state = createEngineState('duel', SQUAD, T0);
     const step = resolveRound(
       state,
-      { kind: 'guess', actor: 'opponent', guess: 'Ferreira' },
+      { kind: 'guess', actor: 'opponent', guess: 'Moss' },
       T0,
     );
 
@@ -151,9 +154,9 @@ describe('engine — turn order', () => {
 
 describe('engine — terminal on eleven', () => {
   it('ends as soon as all eleven are named, with lives untouched', () => {
-    let state = createEngineState('duel', SEED_SQUAD, T0);
+    let state = createEngineState('duel', SQUAD, T0);
 
-    for (const entry of SEED_SQUAD) {
+    for (const entry of SQUAD) {
       const step = resolveRound(
         state,
         { kind: 'guess', actor: state.turn, guess: entry.name },
@@ -171,13 +174,13 @@ describe('engine — terminal on eleven', () => {
   });
 
   it('reveals every named player and nobody else', () => {
-    const state = createEngineState('solo', SEED_SQUAD, T0);
-    const step = guess(state, 'Rafa');
+    const state = createEngineState('solo', SQUAD, T0);
+    const step = guess(state, 'Keele');
 
     expect(revealedPlayers(step.state)).toEqual([
       {
-        id: 'pl-11',
-        name: 'Rafael Duarte',
+        id: 'pl-brandon-keele',
+        name: 'Brandon Keele',
         slot: 10,
         position: 'FW',
         imageUrl: null,
@@ -188,12 +191,12 @@ describe('engine — terminal on eleven', () => {
 
 describe('engine — grace window', () => {
   it('does not expire inside the grace window', () => {
-    const state = createEngineState('solo', SEED_SQUAD, T0);
+    const state = createEngineState('solo', SQUAD, T0);
     const withinGrace = T0 + ROUND_DURATION_MS + GRACE_WINDOW_MS;
 
     const step = resolveRound(
       state,
-      { kind: 'guess', actor: 'you', guess: 'Petrov' },
+      { kind: 'guess', actor: 'you', guess: 'Tolland' },
       withinGrace,
     );
 

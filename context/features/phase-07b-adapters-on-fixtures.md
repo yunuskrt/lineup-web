@@ -49,6 +49,16 @@ Carried forward, and not decided here:
   - **Coin flip applies one set whole** (HC 19): never merged, never intersected, and both players are told whose.
   - No contract change. Every shape here already exists in W05a/W05b; if one turns out not to, stop and raise it, don't widen the contract in the mock.
   - `@/` imports only, no `any`, structured `ApiResult` everywhere, no silent catch.
+- **Deviations recorded during implementation:**
+  - **`emptyReason(filters)` added to `pool.ts`.** The duel checks the submitted set with it before accepting. Using `selectFixture` for that check would have used up a `random()` draw, and the seeded tests depend on the exact sequence of draws.
+  - **`EMPTY_POOL_MESSAGES` and `emptyPool()` live in `shared.ts`** so the two adapters word the same reason identically.
+  - **`requireFixture(id)` added to `fixtures.ts`.** The solo adapter and the tests look up fixtures by id with it, where a missing fixture is a bug and should throw.
+  - **Favourite club comes from `MockIdentity.playedAs`**, a club list appended in `finalize`, not from scanning sessions. `createIdentity()` builds all three identity shapes so the new field cannot be forgotten on one path.
+  - **Missed players are read from `engine.squad`**, which already holds the chosen side's XI, so no fixture lookup is needed there.
+  - **Duel draw order is fixed: coin flip, then fixture, then side.** Tests replay it through `selectFixture`, and `OPPONENT_FILTERS` is exported so they can.
+  - **`submitFilters` now validates its input** (`invalid_input`) before the empty-pool check. It previously accepted anything.
+  - **A defensive `error` event follows the coin flip** if the winning set is empty. It cannot fire today: your set is checked at submit and the opponent's is open. It exists so a broken invariant surfaces instead of stalling the lobby.
+  - **Runtime check used a temporary `/dev/w07b-check` route** on the already-running dev server, deleted afterwards. It showed Crown League then Global Nations Cup, with favourite club Ostrenia (a tie, so the most recent wins).
 - Verification:
   - `npm test` passes, with every existing case repointed and the new cases above named.
   - `npm run lint`, `npm run format:check`, `npx tsc --noEmit` and `npm run build` all pass.

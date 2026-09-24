@@ -1,10 +1,6 @@
 import type { EngineOutcome } from '@/lib/api/mock/engine';
-import {
-  SEED_AWAY_CLUB,
-  SEED_FORMATION,
-  SEED_HOME_CLUB,
-  SEED_MATCH_IDENTITY,
-} from '@/lib/api/mock/data/seed';
+import type { EmptyPoolReason } from '@/lib/api/mock/pool';
+import type { MockFixture } from '@/lib/api/mock/types';
 import type { ApiError, ApiResult } from '@/types/api';
 import type { GuessResult } from '@/types/game';
 import type { MaskedMatch, Side } from '@/types/match';
@@ -23,13 +19,26 @@ export function fail<T>(
   return { success: false, error: { code, message, retryAfterMs } };
 }
 
-export function maskedMatchFor(side: Side): MaskedMatch {
+export function maskedMatchFor(fixture: MockFixture, side: Side): MaskedMatch {
   return {
-    id: SEED_MATCH_IDENTITY.id,
+    id: fixture.identity.id,
     side,
-    team: side === 'home' ? SEED_HOME_CLUB : SEED_AWAY_CLUB,
-    formation: SEED_FORMATION,
+    team: fixture.identity[side],
+    formation: fixture[side].formation,
   };
+}
+
+// Names the filter to widen — never a bare "no results"
+export const EMPTY_POOL_MESSAGES: Record<EmptyPoolReason, string> = {
+  competition: 'No match fits that competition. Try adding another one.',
+  club: 'No match fits the clubs you picked. Try adding another.',
+  era: 'No match fits those years. Try widening the era.',
+  combination:
+    'No match fits these filters together. Try widening any one of them.',
+};
+
+export function emptyPool<T>(reason: EmptyPoolReason): ApiResult<T> {
+  return fail('empty_pool', EMPTY_POOL_MESSAGES[reason]);
 }
 
 // Only the three outcomes the contract can express — `expired` and

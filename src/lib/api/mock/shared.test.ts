@@ -1,15 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { EngineOutcome } from '@/lib/api/mock/engine';
 import {
+  EMPTY_POOL_MESSAGES,
   isGuessable,
   maskedMatchFor,
   toGuessResult,
 } from '@/lib/api/mock/shared';
-import {
-  SEED_AWAY_CLUB,
-  SEED_FORMATION,
-  SEED_HOME_CLUB,
-} from '@/lib/api/mock/data/seed';
+import { FIXTURES, requireFixture } from '@/lib/api/mock/data/fixtures';
 
 const PLAYER = {
   id: 'pl-01',
@@ -65,22 +62,45 @@ describe('toGuessResult', () => {
 });
 
 describe('maskedMatchFor', () => {
-  it('returns the chosen side and never the other club', () => {
-    const home = maskedMatchFor('home');
-    expect(home.side).toBe('home');
-    expect(home.team).toEqual(SEED_HOME_CLUB);
-    expect(home.formation).toBe(SEED_FORMATION);
+  // Formations differ by side, so a swap would show
+  const fixture = requireFixture('match-crown-2015');
 
-    const away = maskedMatchFor('away');
+  it('returns the chosen side and never the other club', () => {
+    const home = maskedMatchFor(fixture, 'home');
+    expect(home.id).toBe(fixture.identity.id);
+    expect(home.side).toBe('home');
+    expect(home.team).toEqual(fixture.identity.home);
+    expect(home.formation).toBe('4-2-3-1');
+
+    const away = maskedMatchFor(fixture, 'away');
     expect(away.side).toBe('away');
-    expect(away.team).toEqual(SEED_AWAY_CLUB);
+    expect(away.team).toEqual(fixture.identity.away);
+    expect(away.formation).toBe('3-4-3');
   });
 
-  it('carries no competition, date or score', () => {
-    const body = JSON.stringify(maskedMatchFor('home'));
+  it('carries no competition, date, score or nickname', () => {
+    for (const each of FIXTURES) {
+      for (const side of ['home', 'away'] as const) {
+        const body = JSON.stringify(maskedMatchFor(each, side));
+        const other = each.identity[side === 'home' ? 'away' : 'home'];
 
-    expect(body).not.toContain('Northern League');
-    expect(body).not.toContain('2005-04-16');
-    expect(body).not.toContain('Placeholder Derby');
+        expect(body).not.toContain(each.identity.competition.name);
+        expect(body).not.toContain(each.identity.date);
+        expect(body).not.toContain(other.id);
+        if (each.identity.nickname) {
+          expect(body).not.toContain(each.identity.nickname);
+        }
+      }
+    }
+  });
+});
+
+describe('EMPTY_POOL_MESSAGES', () => {
+  it('gives every reason its own message naming what to widen', () => {
+    const messages = Object.values(EMPTY_POOL_MESSAGES);
+    expect(new Set(messages).size).toBe(4);
+    expect(EMPTY_POOL_MESSAGES.competition).toMatch(/competition/);
+    expect(EMPTY_POOL_MESSAGES.club).toMatch(/club/);
+    expect(EMPTY_POOL_MESSAGES.era).toMatch(/era/);
   });
 });

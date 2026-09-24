@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CLUBS, COMPETITIONS } from '@/lib/api/mock/data/competitions';
 import { FIXTURES } from '@/lib/api/mock/data/fixtures';
 import {
+  emptyReason,
   filterOptionsFrom,
   seasonStart,
   selectFixture,
@@ -135,6 +136,41 @@ describe('selectFixture', () => {
   it('selects from an injected fixture list', () => {
     const only = FIXTURES.slice(0, 1);
     expect(picked(selectFixture(OPEN, () => 0.9, only))).toBe(only[0]);
+  });
+});
+
+describe('emptyReason', () => {
+  it('is null whenever the filters reach a fixture', () => {
+    expect(emptyReason(OPEN)).toBeNull();
+    expect(emptyReason({ ...OPEN, clubIds: ['club-northgate'] })).toBeNull();
+  });
+
+  it('agrees with selectFixture on every empty case', () => {
+    const empties: Filters[] = [
+      { ...OPEN, competitionIds: ['comp-nowhere'] },
+      { ...OPEN, era: { from: 2000, to: 2001 } },
+      {
+        competitionIds: ['comp-crown-league'],
+        clubIds: ['club-yildirimspor'],
+        era: { from: 2020, to: 2025 },
+      },
+    ];
+
+    for (const filters of empties) {
+      const selection = selectFixture(filters, () => 0);
+      expect(selection).toEqual({ emptyBecause: emptyReason(filters) });
+    }
+  });
+
+  // The duel checks with it, and must not shift the seeded draws
+  it('never consumes a random draw', () => {
+    const random = vi.fn(() => 0);
+    emptyReason(OPEN);
+    emptyReason({ ...OPEN, era: { from: 2000, to: 2001 } });
+    expect(random).not.toHaveBeenCalled();
+
+    selectFixture({ ...OPEN, era: { from: 2000, to: 2001 } }, random);
+    expect(random).not.toHaveBeenCalled();
   });
 });
 
