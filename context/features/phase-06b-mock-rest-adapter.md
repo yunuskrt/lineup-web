@@ -51,6 +51,14 @@ Not Started
   - **Client validation is a convenience, never a control** — the adapter still validates its inputs, because it is standing in for the server that would.
   - Nothing under `src/lib/api/mock/` may be imported by a component, hook or route. Screens reach it only through `getApiClient()`.
   - No `any`; `@/` imports only; structured `ApiResult` returns everywhere; no silent catch.
+- **Deviations recorded during implementation:**
+  - **The accessor was not amended; a barrel module does the registration instead.** `client.ts` importing `register.ts` would have made a cycle (`register` → `client` → `register`), which works in ESM only by accident of hoisting and is fragile under bundlers. `src/lib/api/index.ts` calls `registerApiClient()` as an import side effect and re-exports `getApiClient`, so screens `import { getApiClient } from '@/lib/api'` and never bootstrap anything. `client.ts` is untouched and its throw remains the honest fallback if someone imports it directly.
+  - **The store is per-adapter, not a module singleton.** `createMockApiClient({ now })` closes over a fresh store and an injectable clock. `register.ts` creates one instance, so it is still module-scoped in the app, but tests get isolation with no reset hook and determinism with no fake timers.
+  - **`chooseSide` on an already-started session returns `forbidden`**, not an idempotent re-read. The spec did not say; a second side choice is a client bug worth surfacing rather than silently ignoring.
+  - **`getSummary` on a live run returns `forbidden`.** `ApiError` has no "not finished yet" code, and `invalid_input` would misdescribe a well-formed request.
+  - **A guess arriving after expiry settles the expiry first, then evaluates in the fresh round.** The three `GuessResult` outcomes cannot express "your round had already ended", so the alternatives were to lie with `not_in_xi` or to drop the guess silently. If the expiry also ended the run, the call returns `session_over`. **The real backend must define this properly at B31/B33.**
+  - **Pro-only summary fields are unreachable.** `missed` is populated only when `user.tier === 'pro'` and the mock mints every identity as `free`, so W21 cannot build the Pro summary view against this adapter. A tier override belongs with the W06c scenarios; note it there rather than special-casing here.
+  - **`favouriteClub` is always the seed home club** and `wins`/`losses`/`draws` stay zero — there is one match in the seed and no duels yet. W07 and W06c make these real.
 - Verification:
   - `npm test` passes, including the full-run interface test and the HC 2 case.
   - `npm run lint`, `npm run format:check`, `npx tsc --noEmit` and `npm run build` all pass.
