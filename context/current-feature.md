@@ -29,3 +29,4 @@ Not Started
 - W05b Duel Contract: duel schemas, event map, DuelClient interface.
 - W06a Mock Engine: vitest, normalize, matcher, clock, rules core.
 - W06b Mock REST Adapter: store, ApiClient impl, env-flag registry.
+- W06c Mock Duel Adapter: emitter, scripted opponent, scenarios.

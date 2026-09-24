@@ -59,6 +59,8 @@ Not Started
   - **A guess arriving after expiry settles the expiry first, then evaluates in the fresh round.** The three `GuessResult` outcomes cannot express "your round had already ended", so the alternatives were to lie with `not_in_xi` or to drop the guess silently. If the expiry also ended the run, the call returns `session_over`. **The real backend must define this properly at B31/B33.**
   - **Pro-only summary fields are unreachable.** `missed` is populated only when `user.tier === 'pro'` and the mock mints every identity as `free`, so W21 cannot build the Pro summary view against this adapter. A tier override belongs with the W06c scenarios; note it there rather than special-casing here.
   - **`favouriteClub` is always the seed home club** and `wins`/`losses`/`draws` stay zero — there is one match in the seed and no duels yet. W07 and W06c make these real.
+  - **A guess whose round had already ended returns `session_over`** (found in the combined review). `toGuessResult` used to fall through to `not_in_xi` for the engine's `expired` and `ignored` outcomes. The REST path ticks first so it could not reach that in practice, but the conversion was unsound — `isGuessable` now narrows it and the fallthrough is a type error.
+  - **Shared helpers moved to `src/lib/api/mock/shared.ts`** — `ok`, `fail`, `ACK`, `maskedMatchFor` and `toGuessResult` were duplicated in both adapters, which is what let the two drift on expiry handling.
 - Verification:
   - `npm test` passes, including the full-run interface test and the HC 2 case.
   - `npm run lint`, `npm run format:check`, `npx tsc --noEmit` and `npm run build` all pass.
