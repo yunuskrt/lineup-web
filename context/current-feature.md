@@ -32,3 +32,4 @@ Not Started
 - W06c Mock Duel Adapter: emitter, scripted opponent, scenarios.
 - W07a Fixture Dataset: fictional XIs, schemas, loader, pool selector.
 - W07b Adapters on Fixtures: solo and duel mocks on dataset, seed removed.
+- W08 App Shell & Layout: route groups, nav, footers, no-chrome game frame.
