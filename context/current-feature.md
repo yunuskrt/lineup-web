@@ -34,3 +34,4 @@ Not Started
 - W07b Adapters on Fixtures: solo and duel mocks on dataset, seed removed.
 - W08 App Shell & Layout: route groups, nav, footers, no-chrome game frame.
 - W09 Pitch & Squad Grid: SVG pitch, formation layout, 11-slot grid.
+- W10 Countdown Ring: pure timing helpers, linear SVG ring, /dev/ring.
