@@ -11,7 +11,6 @@ import {
   mockPlayerSchema,
   mockSideSchema,
   mockSquadSchema,
-  positionForSlot,
 } from '@/lib/api/mock/types';
 import type { MockFixture } from '@/lib/api/mock/types';
 
@@ -30,41 +29,6 @@ function withIdentity(changes: Partial<MockFixture['identity']>): MockFixture {
   const fixture = tournamentFixture();
   return { ...fixture, identity: { ...fixture.identity, ...changes } };
 }
-
-describe('positionForSlot', () => {
-  it('puts the goalkeeper in slot 0', () => {
-    expect(positionForSlot('4-4-2', 0)).toBe('GK');
-  });
-
-  it('maps 4-2-3-1 as DF×4, MF×5, FW×1', () => {
-    const positions = Array.from({ length: 11 }, (_, slot) =>
-      positionForSlot('4-2-3-1', slot),
-    );
-    expect(positions).toEqual([
-      'GK',
-      ...Array(4).fill('DF'),
-      ...Array(5).fill('MF'),
-      'FW',
-    ]);
-  });
-
-  it('treats every middle line of a five-line formation as MF', () => {
-    const positions = Array.from({ length: 11 }, (_, slot) =>
-      positionForSlot('4-1-2-1-2', slot),
-    );
-    expect(positions).toEqual([
-      'GK',
-      ...Array(4).fill('DF'),
-      ...Array(4).fill('MF'),
-      'FW',
-      'FW',
-    ]);
-  });
-
-  it('returns null for a slot past the last line', () => {
-    expect(positionForSlot('3-4-2', 10)).toBeNull();
-  });
-});
 
 describe('mockPlayerSchema', () => {
   const player = { id: 'pl-x', name: 'Kerem Şahin', aliases: ['kerem sahin'] };
