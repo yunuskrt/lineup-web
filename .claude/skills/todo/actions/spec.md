@@ -69,6 +69,7 @@ Not Started
 - If `## History` is kept, leave it empty — it is filled in when the phase completes
 - Goals bullets are deliverables, not narration; name real paths (`src/lib/db/queries.ts`, `prisma/schema.prisma`)
 - Carry over the relevant hard constraints from `context/project-overview.md` and the rules from `context/coding-standards.md` that apply to this phase; do not restate the whole standard
+- **Referencing project files is optional — decide per spec.** Point to an existing file (a context doc section, a screenshot, a source file the phase extends or mirrors) when it anchors a decision or saves restating detail; leave references out when the spec reads complete without them. Use repo-relative paths, and never add a reference just to have one
 
 ## Reporting
 

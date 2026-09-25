@@ -13,6 +13,6 @@ Loaded on startup:
 - `theme.md` - The palette and visual direction
 - `monetiazation.md` - Monetization, pro/free features, subscription details, revenue options
 - `docs/` - Reference documentation for the engines and designs the phases were built against
-- `features/` - Feature spec files used with the `/feature` command
+- `features/` - Feature spec files used with the `/feature` command. A spec may reference other project files (context docs, screenshots, existing source) where that helps; references are optional and decided per spec when it is written
 - `research/` - Research files used with the `/research` command to generate documentation
 - `screenshots/` - UI screenshots used as visual references for the UI phases. Prototypes from external design tools land here; they guide composition and feel but are not a spec — implementation need not replicate them, and `theme.md` and `design.md` win any conflict (see `design.md` § Scope)
