@@ -14,7 +14,7 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: 'Lineup',
+  title: { template: '%s · Lineup', default: 'Lineup' },
   description: 'Know the XI. Beat the Clock.',
 };
 
