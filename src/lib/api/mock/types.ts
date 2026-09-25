@@ -8,8 +8,8 @@ import {
 } from '@/lib/api/schemas/common';
 import { formationSchema, matchIdentitySchema } from '@/lib/api/schemas/match';
 import { positionGroupSchema } from '@/lib/api/schemas/player';
+import { parseFormation, positionForSlot } from '@/lib/formation';
 import type { MatchIdentity } from '@/types/match';
-import type { PositionGroup } from '@/types/player';
 
 const slotSchema = z
   .number()
@@ -74,39 +74,13 @@ export const mockLineupEntrySchema = z.object({
   position: positionGroupSchema,
 });
 
-function formationLines(formation: string): number[] {
-  return formation.split('-').map(Number);
-}
-
-// Slot 0 is the GK; outfield lines fill defence to attack
-export function positionForSlot(
-  formation: string,
-  slot: number,
-): PositionGroup | null {
-  if (slot === 0) return 'GK';
-
-  const lines = formationLines(formation);
-  let lineStart = 1;
-
-  for (const [index, size] of lines.entries()) {
-    if (slot < lineStart + size) {
-      if (index === 0) return 'DF';
-      return index === lines.length - 1 ? 'FW' : 'MF';
-    }
-    lineStart += size;
-  }
-
-  return null;
-}
-
 export const mockSideSchema = z
   .object({
     formation: formationSchema,
     lineup: z.array(mockLineupEntrySchema).length(SQUAD_SIZE),
   })
   .superRefine((side, ctx) => {
-    const outfield = formationLines(side.formation).reduce((a, b) => a + b, 0);
-    if (outfield !== SQUAD_SIZE - 1) {
+    if (!parseFormation(side.formation)) {
       ctx.addIssue({
         code: 'custom',
         path: ['formation'],
