@@ -16,7 +16,9 @@ export const guessResultSchema = z.discriminatedUnion('outcome', [
   }),
 ]);
 
-export const livesSchema = z.number().int().min(0).max(3);
+export const MAX_LIVES = 3;
+
+export const livesSchema = z.number().int().min(0).max(MAX_LIVES);
 
 export const epochMsSchema = z.number().int().nonnegative();
 

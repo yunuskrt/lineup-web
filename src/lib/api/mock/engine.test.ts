@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/mock/engine';
 import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
 import { requireFixture, squadFor } from '@/lib/api/mock/data/fixtures';
+import { MAX_LIVES } from '@/lib/api/schemas/game';
 
 const T0 = 1_700_000_000_000;
 const AFTER_EXPIRY = T0 + ROUND_DURATION_MS + GRACE_WINDOW_MS + 1;
@@ -37,6 +38,7 @@ describe('engine — lives', () => {
 
   it('starts with exactly three lives', () => {
     expect(STARTING_LIVES).toBe(3);
+    expect(STARTING_LIVES).toBe(MAX_LIVES);
     expect(state.lives.you).toBe(3);
   });
 
