@@ -12,6 +12,8 @@ This file owns the layer above that: page shape per route, what chrome each rout
 
 **Provenance.** The structural decisions below were drawn from studying two live products that solve a near-identical problem — `lichess.org/tv` (a spectator view built around one live board) and `fotmob.com/lineup-builder` (an editable football XI on a pitch). Structure only; no color, type or motion value from either was adopted. Where a finding is a warning rather than a pattern, it's in **Do not build** at the bottom.
 
+**Prototypes.** Screens may be prototyped in an external design tool (Lovable, v0 and the like) and saved as screenshots in `context/screenshots/`. A screenshot is a **reference for composition and feel, not a spec** — implementation does not have to replicate it. Where it disagrees with `theme.md` or this file, those win: tokens over any colour in the image, borders over shadows, tight corners, no chrome on game routes. Never port code or values from the design tool, and never build a feature because it appears in a screenshot — scope comes from the phase spec.
+
 ---
 
 ## 🧭 Page shape per route
