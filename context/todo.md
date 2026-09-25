@@ -23,7 +23,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 - [x] **Phase W07 — Mock Fixtures**: Hand-built matches, starting XIs, players and alias sets.
 - [x] **Phase W08 — App Shell & Layout**: Nav and footer per route; game routes carry no chrome, quit chip only.
 - [x] **Phase W09 — Pitch & Squad Grid**: CSS/SVG pitch with 11 outlined slots in formation, no raster assets.
-- [ ] **Phase W10 — Countdown Ring**: 64px tabular numeral, linear sweep, three-stage colour escalation.
+- [x] **Phase W10 — Countdown Ring**: 64px tabular numeral, linear sweep, three-stage colour escalation.
 - [ ] **Phase W11 — Lives & Turn Indicator**: Three-pip lives display and the amber/blue turn indicator pair.
 - [ ] **Phase W12 — Reveal Card**: Found-player card with turf flash and a 320ms spring settle.
 - [ ] **Phase W13 — Guess Input**: Live, pending, locked and shake states with an inline spinner.
