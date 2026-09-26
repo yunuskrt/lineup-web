@@ -21,12 +21,15 @@ export function slotWidthClass(formation: string): string {
   return SLOT_WIDTH_BY_WIDEST_LINE[widestLine] ?? 'w-[14%]';
 }
 
+type Pulse = { playerId: string; key: number };
+
 type SquadGridProps = {
   formation: string;
   revealed: FoundPlayer[];
+  pulse?: Pulse;
 };
 
-export function SquadGrid({ formation, revealed }: SquadGridProps) {
+export function SquadGrid({ formation, revealed, pulse }: SquadGridProps) {
   const [previousRevealed, setPreviousRevealed] = useState(revealed);
   const [newIds, setNewIds] = useState<ReadonlySet<string>>(() => new Set());
 
@@ -73,6 +76,9 @@ export function SquadGrid({ formation, revealed }: SquadGridProps) {
                         player={player}
                         position={point.position}
                         isNew={newIds.has(player.id)}
+                        pulseKey={
+                          pulse?.playerId === player.id ? pulse.key : undefined
+                        }
                       />
                     ) : (
                       <SquadSlot state="empty" position={point.position} />

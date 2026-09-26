@@ -21,6 +21,7 @@
   --color-danger: var(--danger);
   --color-reveal-flash-you: var(--reveal-flash-you);
   --color-reveal-flash-opponent: var(--reveal-flash-opponent);
+  --color-already-found-pulse: var(--already-found-pulse);
 
   --text-*: initial;
   --text-12: var(--font-size-12);

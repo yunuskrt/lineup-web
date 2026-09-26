@@ -3,6 +3,8 @@ export const MOTION_DURATION_MS = {
   turnHandover: 240,
   lifeLost: 480,
   inputShake: 240,
+  alreadyFoundPulse: 480,
+  toastVisible: 1600,
   timerColorShift: 200,
   skeletonPulse: 1600,
 } as const;

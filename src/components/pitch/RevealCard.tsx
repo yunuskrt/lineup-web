@@ -30,17 +30,41 @@ const FLASH_FADE: Transition = {
   ease: 'easeOut',
 };
 
+const PULSE: Transition = {
+  duration: MOTION_DURATION_MS.alreadyFoundPulse / 1000,
+  ease: 'easeInOut',
+};
+
 type RevealCardProps = {
   player: FoundPlayer;
   position: PositionGroup;
   isNew: boolean;
+  pulseKey?: number;
 };
 
-export function RevealCard({ player, position, isNew }: RevealCardProps) {
+export function RevealCard({
+  player,
+  position,
+  isNew,
+  pulseKey,
+}: RevealCardProps) {
   const isReducedMotion = useReducedMotion();
   // Only the render that mounts the card decides whether it animates
   const [isRevealing] = useState(isNew);
+  const [initialPulseKey] = useState(pulseKey);
   const foundBy = player.foundBy ?? 'you';
+
+  const pulse =
+    pulseKey !== undefined && pulseKey !== initialPulseKey ? (
+      <motion.span
+        key={pulseKey}
+        aria-hidden="true"
+        className="absolute inset-0 rounded-sm border-2 border-already-found-pulse bg-already-found-pulse/50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0] }}
+        transition={PULSE}
+      />
+    ) : null;
 
   const flash = isRevealing ? (
     <motion.span
@@ -66,7 +90,12 @@ export function RevealCard({ player, position, isNew }: RevealCardProps) {
         position={position}
         name={player.name}
         foundBy={player.foundBy}
-        backdrop={flash}
+        backdrop={
+          <>
+            {flash}
+            {pulse}
+          </>
+        }
       />
     </motion.div>
   );
