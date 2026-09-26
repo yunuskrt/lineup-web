@@ -2,10 +2,9 @@
 
 import { motion, useReducedMotion } from 'motion/react';
 import { useState } from 'react';
-import { MOTION_DURATION_MS } from '@/styles/motion';
+import { MOTION_SECONDS } from '@/styles/motion';
 import type { ToastMessage } from '@/types/feedback';
 
-const VISIBLE_SECONDS = MOTION_DURATION_MS.toastVisible / 1000;
 const RISE_PX = 4;
 const RISE_SECONDS = 0.2;
 
@@ -28,7 +27,7 @@ export function FeedbackToast({ toast }: FeedbackToastProps) {
           animate={{ opacity: [0, 1, 1, 0], y: 0 }}
           transition={{
             opacity: {
-              duration: VISIBLE_SECONDS,
+              duration: MOTION_SECONDS.toastVisible,
               times: [0, 0.1, 0.8, 1],
               ease: 'easeOut',
             },

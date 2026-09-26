@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { initials } from '@/lib/initials';
+import { DUEL_ACTOR_BG } from '@/styles/classes';
 import type { DuelActor } from '@/types/duel';
 import type { PositionGroup } from '@/types/player';
 
@@ -8,11 +9,6 @@ const POSITION_NAMES: Record<PositionGroup, string> = {
   DF: 'Defender',
   MF: 'Midfielder',
   FW: 'Forward',
-};
-
-const FINDER_BADGE: Record<DuelActor, string> = {
-  you: 'bg-you',
-  opponent: 'bg-opponent',
 };
 
 const FINDER_NAMES: Record<DuelActor, string> = {
@@ -74,7 +70,7 @@ export function SquadSlot(props: SquadSlotProps) {
       <span aria-hidden="true" className="relative flex items-center gap-1">
         <span
           className={`rounded-sm px-1 text-12 leading-4 font-semibold text-on-accent ${
-            FINDER_BADGE[foundBy ?? 'you']
+            DUEL_ACTOR_BG[foundBy ?? 'you']
           }`}
         >
           {initials(name)}

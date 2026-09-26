@@ -10,6 +10,11 @@ export const MOTION_DURATION_MS = {
   skeletonPulse: 1600,
 } as const;
 
+// Motion takes seconds
+export const MOTION_SECONDS = Object.fromEntries(
+  Object.entries(MOTION_DURATION_MS).map(([key, ms]) => [key, ms / 1000]),
+) as Record<keyof typeof MOTION_DURATION_MS, number>;
+
 export const MOTION_EASING = {
   ringSweep: 'linear',
   turnHandover: 'easeOut',

@@ -1,15 +1,15 @@
 'use client';
 
 import { motion, useAnimate, useReducedMotion } from 'motion/react';
-import { type SubmitEvent, useEffect, useId, useRef, useState } from 'react';
+import { type SubmitEvent, useEffect, useId, useRef } from 'react';
+import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
 import { MAX_GUESS_LENGTH } from '@/lib/api/schemas/common';
 import { prepareGuess } from '@/lib/guess';
 import { FOCUS_RING } from '@/styles/classes';
-import { MOTION_DURATION_MS } from '@/styles/motion';
+import { MOTION_SECONDS } from '@/styles/motion';
 
 export type GuessInputStatus = 'live' | 'pending' | 'locked';
 
-const SHAKE_SECONDS = MOTION_DURATION_MS.inputShake / 1000;
 const SHAKE_X = [0, -6, 6, -4, 4, 0];
 const SPIN_SECONDS = 0.8;
 
@@ -80,7 +80,7 @@ export function GuessInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const isReducedMotion = useReducedMotion();
   const [scope, animate] = useAnimate<HTMLDivElement>();
-  const [initialShakeKey] = useState(shakeKey);
+  const hasShaken = useChangedSinceMount(shakeKey);
   const shakenKey = useRef(shakeKey);
 
   useEffect(() => {
@@ -91,7 +91,11 @@ export function GuessInput({
     if (shakeKey === shakenKey.current) return;
     shakenKey.current = shakeKey;
     if (isReducedMotion) return;
-    animate(scope.current, { x: SHAKE_X }, { duration: SHAKE_SECONDS });
+    animate(
+      scope.current,
+      { x: SHAKE_X },
+      { duration: MOTION_SECONDS.inputShake },
+    );
   }, [animate, isReducedMotion, scope, shakeKey]);
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -133,7 +137,7 @@ export function GuessInput({
           spellCheck={false}
           className={`w-full rounded-sm border bg-surface-card py-2.5 pr-10 pl-3 text-16 font-medium placeholder:text-fg-dim ${STATUS_CLASSES[status]}`}
         />
-        {shakeKey !== initialShakeKey ? (
+        {hasShaken ? (
           <motion.span
             key={shakeKey}
             aria-hidden="true"
@@ -141,7 +145,7 @@ export function GuessInput({
             initial={{ opacity: 1 }}
             animate={{ opacity: REJECT_TINT_OPACITY }}
             transition={{
-              duration: SHAKE_SECONDS,
+              duration: MOTION_SECONDS.inputShake,
               times: [0, 0.5, 1],
               ease: 'easeIn',
             }}

@@ -4,7 +4,7 @@ import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { useState } from 'react';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { LIFE_LOST_FILL_SHIFT } from '@/styles/classes';
-import { MOTION_DURATION_MS } from '@/styles/motion';
+import { MOTION_SECONDS } from '@/styles/motion';
 import type { DuelActor } from '@/types/duel';
 import type { Lives as LivesCount } from '@/types/game';
 
@@ -22,7 +22,7 @@ const SHAKE: Variants = {
   still: { x: 0 },
   shake: {
     x: [0, -4, 4, -3, 3, 0],
-    transition: { duration: MOTION_DURATION_MS.lifeLost / 1000 },
+    transition: { duration: MOTION_SECONDS.lifeLost },
   },
 };
 
