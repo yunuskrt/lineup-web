@@ -10,3 +10,7 @@ export function requireDevEnv(): void {
     notFound();
   }
 }
+
+export function devOnlyParam<T>(value: T): T | undefined {
+  return process.env.NODE_ENV === 'production' ? undefined : value;
+}

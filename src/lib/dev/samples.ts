@@ -1,6 +1,32 @@
 import { slotLayout } from '@/lib/formation';
+import type { DuelPlayer } from '@/types/duel';
 import type { GuessOutcome } from '@/types/game';
+import type { MaskedMatch } from '@/types/match';
 import type { RevealedPlayer } from '@/types/player';
+
+export const SAMPLE_MATCH: MaskedMatch = {
+  id: 'sample-match',
+  side: 'home',
+  team: {
+    id: 'sample-club',
+    name: 'Northgate United',
+    shortName: 'Northgate',
+    crestUrl: null,
+  },
+  formation: '4-4-2',
+};
+
+export const SAMPLE_YOU: DuelPlayer = {
+  id: 'sample-you',
+  handle: 'floodlit_fan',
+  lives: 2,
+};
+
+export const SAMPLE_OPPONENT: DuelPlayer = {
+  id: 'sample-opponent',
+  handle: 'deadball_dan',
+  lives: 3,
+};
 
 // Long names sit mid-pitch, where lines run widest
 export const SAMPLE_NAMES = [

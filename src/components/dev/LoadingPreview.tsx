@@ -6,7 +6,7 @@ import { GuessInput } from '@/components/game/GuessInput';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { samplePlayer } from '@/lib/dev/samples';
 import { LOADING_FORMATION } from '@/lib/formation';
-import { DEV_PREVIEW_BUTTON, FOCUS_RING } from '@/styles/classes';
+import { DEV_PREVIEW_BUTTON, PRIMARY_BUTTON } from '@/styles/classes';
 import type { FoundPlayer } from '@/types/player';
 
 const FORMATIONS = [LOADING_FORMATION, '3-5-2', '4-3-3'];
@@ -31,8 +31,6 @@ const GATES: GateSample[] = [
   },
   { label: 'Pre-match', title: 'Match ready', actionLabel: 'Start' },
 ];
-
-const PRIMARY_BUTTON = `rounded-sm bg-brand px-4 py-1.5 text-14 font-semibold text-on-accent ${FOCUS_RING}`;
 
 function snapshotPlayers(formation: string): FoundPlayer[] {
   return SNAPSHOT_SLOTS.map((slot) => ({
