@@ -40,3 +40,4 @@ Not Started
 - W13 Guess Input: live/pending/locked, shake, inline spinner, /dev/guess.
 - W14 Feedback Channels: grid pulse, verdict mapping, toast, /dev/feedback.
 - W15 Skeletons & Overlays: skeleton grid, canvas gate, /dev/loading.
+- W16 Game Canvas Shell: canvas + rail, match header, ?state= snapshots.

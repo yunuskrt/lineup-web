@@ -1,13 +1,16 @@
 import type { Metadata } from 'next';
+import { CanvasStatePreview } from '@/components/dev/CanvasStatePreview';
+import { devOnlyParam } from '@/lib/dev/route';
 
 export const metadata: Metadata = {
   title: 'Duel',
 };
 
-export default function DuelPage() {
-  return (
-    <div className="flex flex-1 items-center justify-center rounded-lg border border-line">
-      <h1 className="text-14 text-fg-muted">Duel</h1>
-    </div>
-  );
+// Loading canvas until the duel loop is wired
+export default async function DuelPage({
+  searchParams,
+}: PageProps<'/play/duel'>) {
+  const state = devOnlyParam((await searchParams).state);
+
+  return <CanvasStatePreview key={String(state)} mode="duel" state={state} />;
 }
