@@ -17,7 +17,7 @@ const PLAYER = {
 };
 
 describe('isGuessable', () => {
-  // This guard is what stops `expired` being reported as `not_in_xi`
+  // This guard stops `expired` reading as `not_in_xi`
   it('accepts the three outcomes the contract can express', () => {
     const outcomes: EngineOutcome[] = [
       { kind: 'correct_new', player: PLAYER, foundBy: 'you' },

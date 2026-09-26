@@ -14,7 +14,7 @@ import { MAX_LIVES } from '@/lib/api/schemas/game';
 const T0 = 1_700_000_000_000;
 const AFTER_EXPIRY = T0 + ROUND_DURATION_MS + GRACE_WINDOW_MS + 1;
 
-// Northgate's XI, which holds the deliberate Harlow collision
+// Northgate's XI, with the deliberate Harlow clash
 const SQUAD = squadFor(requireFixture('match-crown-2003'), 'home');
 
 function guess(state: EngineState, name: string, now = T0) {

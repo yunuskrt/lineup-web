@@ -49,7 +49,7 @@ export function RevealCard({
   pulseKey,
 }: RevealCardProps) {
   const isReducedMotion = useReducedMotion();
-  // Only the render that mounts the card decides whether it animates
+  // Only the mounting render decides if it animates
   const [isRevealing] = useState(isNew);
   const [initialPulseKey] = useState(pulseKey);
   const foundBy = player.foundBy ?? 'you';

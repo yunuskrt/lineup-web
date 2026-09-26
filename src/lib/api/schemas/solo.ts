@@ -50,7 +50,7 @@ export const soloSummarySchema = z.object({
   match: matchIdentitySchema,
   found: z.array(revealedPlayerSchema).max(SQUAD_SIZE),
   missedCount: squadCountSchema,
-  // Populated for Pro, null for free — the backend decides
+  // Pro gets the list, free gets null; server decides
   missed: z.array(revealedPlayerSchema).max(SQUAD_SIZE).nullable(),
   livesRemaining: livesSchema,
   endReason: soloEndReasonSchema,

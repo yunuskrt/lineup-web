@@ -98,7 +98,7 @@ function isComplete(found: readonly EngineFound[]): boolean {
 }
 
 function handOver(state: EngineState, now: number): EngineState {
-  // Solo has no opponent, so the same player starts the next round
+  // Solo: the same player starts the next round
   const turn = state.mode === 'duel' ? other(state.turn) : state.turn;
   return { ...state, turn, round: startRound(now) };
 }

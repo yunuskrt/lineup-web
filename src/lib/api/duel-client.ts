@@ -15,7 +15,7 @@ import type {
 import type { Filters } from '@/types/filters';
 import type { GuessResult } from '@/types/game';
 
-// `matchReady` and `roundStarted` are authoritative; the rest are cues
+// Only `matchReady`/`roundStarted` are authoritative
 export type DuelEventMap = {
   queued: QueueState;
   queueTimedOut: QueueTimeout;
@@ -48,7 +48,7 @@ export interface DuelClient {
   enterQueue(): Promise<ApiResult<void>>;
   leaveQueue(): Promise<ApiResult<void>>;
   submitFilters(filters: Filters): Promise<ApiResult<void>>;
-  // Acks receipt only — the outcome arrives as `guessResolved`
+  // Acks receipt; the outcome comes as `guessResolved`
   guess(request: DuelGuessRequest): Promise<ApiResult<void>>;
   forfeit(): Promise<ApiResult<void>>;
   on<E extends DuelEvent>(event: E, handler: DuelEventHandler<E>): Unsubscribe;

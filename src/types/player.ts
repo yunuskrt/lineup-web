@@ -8,5 +8,5 @@ import type { DuelActor } from '@/types/duel';
 export type PositionGroup = z.infer<typeof positionGroupSchema>;
 export type RevealedPlayer = z.infer<typeof revealedPlayerSchema>;
 
-// Solo players carry no finder; they are always yours
+// Solo players have no finder; always yours
 export type FoundPlayer = RevealedPlayer & { foundBy?: DuelActor };

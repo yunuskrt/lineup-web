@@ -19,7 +19,7 @@ const FORMATIONS = [
   '4-1-2-1-2',
 ];
 
-// Long and accented names sit in midfield slots, where lines run five wide
+// Long names sit mid-pitch, where lines run widest
 const SAMPLE_NAMES = [
   'Gareth Pennock',
   'Dean Harlow',

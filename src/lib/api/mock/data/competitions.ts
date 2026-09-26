@@ -1,4 +1,4 @@
-// Fictional competitions, clubs and nations — none of it is real data
+// Fictional competitions, clubs, nations; not real
 import type { ClubRef, CompetitionRef } from '@/types/match';
 
 export const COMPETITIONS = [

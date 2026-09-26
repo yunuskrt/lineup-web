@@ -12,7 +12,7 @@ const ROUND_MS = 15_000;
 const subscribe = () => () => {};
 let pageOpenedAt: number | null = null;
 
-// Stable per page load, and null on the server so rings mount client-side
+// Null on the server, so rings mount client-side
 function getPageOpenedAt(): number {
   pageOpenedAt ??= Date.now();
   return pageOpenedAt;

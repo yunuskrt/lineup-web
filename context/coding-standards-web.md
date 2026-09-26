@@ -22,7 +22,7 @@ src/
 
 Everything the app knows about the backend lives in `src/lib/api/`.
 
-- One typed client module per domain (`auth`, `solo`, `duel`, `profile`), each returning data parsed with this repo's own Zod schemas in `src/lib/api/schemas/`.
+- One typed `ApiClient` interface in `src/lib/api/client.ts`, grouped by domain (`auth`, `catalog`, `solo`, `profile`), plus a `DuelClient` in `src/lib/api/duel-client.ts` for the realtime duel. Every call returns data parsed with this repo's own Zod schemas in `src/lib/api/schemas/`.
 - Those schemas are this repo's transcription of the backend contract. When the backend changes, they change here too — there is no shared package to update once.
 - **No component ever calls `fetch` directly.** A component that builds its own URL is a component that cannot be mocked, retried or re-pointed.
 - The client is defined as an **interface with two implementations**: a mock one and the real one. The mock is what the whole UI is built against before the backend exists; going live swaps the implementation and nothing else.

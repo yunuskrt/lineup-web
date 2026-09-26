@@ -28,7 +28,7 @@ function picked(selection: FixtureSelection): MockFixture {
   return selection.fixture;
 }
 
-// Every fixture a filter set can reach, one draw per slot
+// Every fixture a filter set reaches, one per slot
 function reachable(filters: Filters): MockFixture[] {
   const found = new Map<string, MockFixture>();
   for (let step = 0; step < 100; step += 1) {
@@ -162,7 +162,7 @@ describe('emptyReason', () => {
     }
   });
 
-  // The duel checks with it, and must not shift the seeded draws
+  // The duel checks with it; seeded draws must hold
   it('never consumes a random draw', () => {
     const random = vi.fn(() => 0);
     emptyReason(OPEN);

@@ -50,7 +50,7 @@ function matching(
   );
 }
 
-// Blame the first filter whose removal alone refills the pool
+// Blame the first filter whose removal refills it
 function blame(
   filters: Filters,
   fixtures: readonly MockFixture[],
