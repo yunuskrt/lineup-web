@@ -1,13 +1,11 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
+import { devMetadata, requireDevEnv } from '@/lib/dev/route';
+import { samplePlayer } from '@/lib/dev/samples';
 import { slotLayout } from '@/lib/formation';
 import type { RevealedPlayer } from '@/types/player';
 
-export const metadata: Metadata = {
-  title: 'Pitch',
-  robots: { index: false },
-};
+export const metadata = devMetadata('Pitch');
 
 const FORMATIONS = [
   '4-4-2',
@@ -19,21 +17,6 @@ const FORMATIONS = [
   '4-1-2-1-2',
 ];
 
-// Long names sit mid-pitch, where lines run widest
-const SAMPLE_NAMES = [
-  'Gareth Pennock',
-  'Dean Harlow',
-  "Ciarán O'Donovan",
-  'Stuart Fenwick',
-  'Rhys Harlow',
-  'Christophe Delacroix-Morel',
-  'Íñigo Castañeda',
-  'Jasper van der Linde',
-  'Kofi Addo-Mensah',
-  'Tavinho',
-  'Wes Tolland',
-];
-
 const PARTIAL_SLOTS = new Set([0, 3, 5, 9]);
 
 function samplePlayers(formation: string, isFull: boolean): RevealedPlayer[] {
@@ -41,13 +24,7 @@ function samplePlayers(formation: string, isFull: boolean): RevealedPlayer[] {
 
   return points
     .filter((point) => isFull || PARTIAL_SLOTS.has(point.slot))
-    .map((point) => ({
-      id: `sample-${point.slot}`,
-      name: SAMPLE_NAMES[point.slot],
-      slot: point.slot,
-      position: point.position,
-      imageUrl: null,
-    }));
+    .map((point) => samplePlayer(formation, point.slot));
 }
 
 type SpecimenProps = {
@@ -68,18 +45,13 @@ function Specimen({ label, formation, revealed }: SpecimenProps) {
 }
 
 export default function PitchPreviewPage() {
-  if (process.env.NODE_ENV === 'production') {
-    notFound();
-  }
+  requireDevEnv();
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-12">
-      <header className="flex flex-col gap-2">
-        <h1 className="font-display text-32 font-semibold">Pitch</h1>
-        <p className="text-14 text-fg-muted">
-          Dev-only preview of the squad grid in every fixture formation.
-        </p>
-      </header>
+    <DevPreviewShell
+      title="Pitch"
+      description="Dev-only preview of the squad grid in every fixture formation."
+    >
       {FORMATIONS.map((formation) => (
         <section key={formation} className="flex flex-col gap-4">
           <h2 className="font-display text-20 font-semibold">{formation}</h2>
@@ -104,6 +76,6 @@ export default function PitchPreviewPage() {
           <Specimen label="4-4-3" formation="4-4-3" revealed={[]} />
         </div>
       </section>
-    </main>
+    </DevPreviewShell>
   );
 }

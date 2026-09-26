@@ -1,26 +1,18 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { RingPreview } from '@/components/dev/RingPreview';
+import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
-export const metadata: Metadata = {
-  title: 'Ring',
-  robots: { index: false },
-};
+export const metadata = devMetadata('Ring');
 
 export default function RingPreviewPage() {
-  if (process.env.NODE_ENV === 'production') {
-    notFound();
-  }
+  requireDevEnv();
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-12">
-      <header className="flex flex-col gap-2">
-        <h1 className="font-display text-32 font-semibold">Ring</h1>
-        <p className="text-14 text-fg-muted">
-          Dev-only preview of the countdown ring in every mode and stage.
-        </p>
-      </header>
+    <DevPreviewShell
+      title="Ring"
+      description="Dev-only preview of the countdown ring in every mode and stage."
+    >
       <RingPreview />
-    </main>
+    </DevPreviewShell>
   );
 }

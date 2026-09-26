@@ -7,56 +7,24 @@ import {
   type GuessInputStatus,
 } from '@/components/game/GuessInput';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
+import { GUESS_OUTCOME_OPTIONS, samplePlayer } from '@/lib/dev/samples';
 import { guessFeedback } from '@/lib/feedback';
-import { slotLayout } from '@/lib/formation';
-import { FOCUS_RING } from '@/styles/classes';
+import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
 import type { GridPulse, ToastMessage } from '@/types/feedback';
 import type { GuessOutcome, GuessResult } from '@/types/game';
 import type { FoundPlayer } from '@/types/player';
 
 const FORMATION = '4-4-2';
 
-const SAMPLE_NAMES = [
-  'Gareth Pennock',
-  'Dean Harlow',
-  "Ciarán O'Donovan",
-  'Stuart Fenwick',
-  'Rhys Harlow',
-  'Christophe Delacroix-Morel',
-  'Íñigo Castañeda',
-  'Jasper van der Linde',
-  'Kofi Addo-Mensah',
-  'Tavinho',
-  'Wes Tolland',
-];
-
 // Scattered, so reveals land all over the pitch
 const REVEAL_ORDER = [0, 4, 7, 10, 2, 9, 5, 1, 8, 3, 6];
 
 const STARTING_REVEALED = 4;
 
-const OUTCOMES: { value: GuessOutcome; label: string }[] = [
-  { value: 'correct_new', label: 'Correct new' },
-  { value: 'already_found', label: 'Already found' },
-  { value: 'not_in_xi', label: 'Not in XI' },
-];
-
 const SERVER_DELAY_MS = 400;
 
-const BUTTON = `rounded-sm border border-line px-3 py-1.5 text-14 text-fg hover:bg-surface-raised aria-pressed:bg-surface-card ${FOCUS_RING}`;
-
-function samplePlayer(slot: number): FoundPlayer {
-  return {
-    id: `sample-${slot}`,
-    name: SAMPLE_NAMES[slot],
-    slot,
-    position: slotLayout(FORMATION)?.[slot]?.position ?? 'GK',
-    imageUrl: null,
-  };
-}
-
-const INITIAL_REVEALED = REVEAL_ORDER.slice(0, STARTING_REVEALED).map(
-  samplePlayer,
+const INITIAL_REVEALED = REVEAL_ORDER.slice(0, STARTING_REVEALED).map((slot) =>
+  samplePlayer(FORMATION, slot),
 );
 
 export function FeedbackPreview() {
@@ -83,7 +51,7 @@ export function FeedbackPreview() {
       const taken = new Set(revealed.map((player) => player.slot));
       const slot = REVEAL_ORDER.find((candidate) => !taken.has(candidate));
       if (slot !== undefined) {
-        return { outcome, player: samplePlayer(slot) };
+        return { outcome, player: samplePlayer(FORMATION, slot) };
       }
       return { outcome: 'already_found', playerId: revealed[0].id };
     }
@@ -136,18 +104,18 @@ export function FeedbackPreview() {
       <div className="flex flex-col gap-2">
         <p className="text-12 text-fg-muted">Next outcome</p>
         <div className="flex flex-wrap gap-2">
-          {OUTCOMES.map((outcome) => (
+          {GUESS_OUTCOME_OPTIONS.map((outcome) => (
             <button
               key={outcome.value}
               type="button"
               aria-pressed={nextOutcome === outcome.value}
-              className={BUTTON}
+              className={DEV_PREVIEW_BUTTON}
               onClick={() => setNextOutcome(outcome.value)}
             >
               {outcome.label}
             </button>
           ))}
-          <button type="button" className={BUTTON} onClick={reset}>
+          <button type="button" className={DEV_PREVIEW_BUTTON} onClick={reset}>
             Reset
           </button>
         </div>

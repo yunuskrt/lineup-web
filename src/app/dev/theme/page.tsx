@@ -1,6 +1,5 @@
-import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { notFound } from 'next/navigation';
+import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { ResolvedValue } from '@/components/dev/ResolvedValue';
 import {
   COLOR_PRIMITIVES,
@@ -11,11 +10,9 @@ import {
   SPACING_SCALE,
   TYPE_SCALE,
 } from '@/app/dev/theme/theme-preview';
+import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
-export const metadata: Metadata = {
-  title: 'Theme',
-  robots: { index: false },
-};
+export const metadata = devMetadata('Theme');
 
 type SectionProps = {
   title: string;
@@ -194,23 +191,19 @@ function RadiusSection() {
 }
 
 export default function ThemePreviewPage() {
-  if (process.env.NODE_ENV === 'production') {
-    notFound();
-  }
+  requireDevEnv();
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-12 px-4 py-12">
-      <header className="flex flex-col gap-2">
-        <h1 className="font-display text-32 font-semibold">Theme</h1>
-        <p className="text-14 text-fg-muted">
-          Dev-only preview of tokens.css and theme.css.
-        </p>
-      </header>
+    <DevPreviewShell
+      title="Theme"
+      description="Dev-only preview of tokens.css and theme.css."
+      isNarrow
+    >
       <PrimitivesSection />
       <RolesSection />
       <TypeSection />
       <SpacingSection />
       <RadiusSection />
-    </main>
+    </DevPreviewShell>
   );
 }

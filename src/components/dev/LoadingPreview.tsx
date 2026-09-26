@@ -4,27 +4,14 @@ import { useState } from 'react';
 import { CanvasGate } from '@/components/game/CanvasGate';
 import { GuessInput } from '@/components/game/GuessInput';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
-import { LOADING_FORMATION, slotLayout } from '@/lib/formation';
-import { FOCUS_RING } from '@/styles/classes';
+import { samplePlayer } from '@/lib/dev/samples';
+import { LOADING_FORMATION } from '@/lib/formation';
+import { DEV_PREVIEW_BUTTON, FOCUS_RING } from '@/styles/classes';
 import type { FoundPlayer } from '@/types/player';
 
 const FORMATIONS = [LOADING_FORMATION, '3-5-2', '4-3-3'];
 
 const ARRIVAL_FORMATION = '3-5-2';
-
-const SAMPLE_NAMES = [
-  'Gareth Pennock',
-  'Dean Harlow',
-  "Ciarán O'Donovan",
-  'Stuart Fenwick',
-  'Rhys Harlow',
-  'Christophe Delacroix-Morel',
-  'Íñigo Castañeda',
-  'Jasper van der Linde',
-  'Kofi Addo-Mensah',
-  'Tavinho',
-  'Wes Tolland',
-];
 
 const SNAPSHOT_SLOTS = [0, 4, 7, 10];
 
@@ -45,18 +32,11 @@ const GATES: GateSample[] = [
   { label: 'Pre-match', title: 'Match ready', actionLabel: 'Start' },
 ];
 
-const BUTTON = `rounded-sm border border-line px-3 py-1.5 text-14 text-fg hover:bg-surface-raised aria-pressed:bg-surface-card ${FOCUS_RING}`;
-
 const PRIMARY_BUTTON = `rounded-sm bg-brand px-4 py-1.5 text-14 font-semibold text-on-accent ${FOCUS_RING}`;
 
 function snapshotPlayers(formation: string): FoundPlayer[] {
-  const points = slotLayout(formation) ?? [];
   return SNAPSHOT_SLOTS.map((slot) => ({
-    id: `sample-${slot}`,
-    name: SAMPLE_NAMES[slot],
-    slot,
-    position: points[slot]?.position ?? 'GK',
-    imageUrl: null,
+    ...samplePlayer(formation, slot),
     foundBy: slot % 2 === 0 ? 'you' : 'opponent',
   }));
 }
@@ -89,7 +69,7 @@ export function LoadingPreview() {
           <button
             type="button"
             aria-pressed={isLoading}
-            className={BUTTON}
+            className={DEV_PREVIEW_BUTTON}
             onClick={() => (isLoading ? setIsLoading(false) : startLoading())}
           >
             Loading
@@ -99,13 +79,17 @@ export function LoadingPreview() {
               key={option}
               type="button"
               aria-pressed={formation === option}
-              className={BUTTON}
+              className={DEV_PREVIEW_BUTTON}
               onClick={() => setFormation(option)}
             >
               {option}
             </button>
           ))}
-          <button type="button" className={BUTTON} onClick={finishLoading}>
+          <button
+            type="button"
+            className={DEV_PREVIEW_BUTTON}
+            onClick={finishLoading}
+          >
             Finish loading with {SNAPSHOT_SLOTS.length} revealed
           </button>
         </div>
@@ -118,7 +102,7 @@ export function LoadingPreview() {
               key={sample.label}
               type="button"
               aria-pressed={gate?.label === sample.label}
-              className={BUTTON}
+              className={DEV_PREVIEW_BUTTON}
               onClick={() => setGate(sample)}
             >
               {sample.label}
@@ -126,7 +110,7 @@ export function LoadingPreview() {
           ))}
           <button
             type="button"
-            className={BUTTON}
+            className={DEV_PREVIEW_BUTTON}
             onClick={() => setGate(null)}
           >
             Close
