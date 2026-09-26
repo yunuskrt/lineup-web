@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -114,5 +114,6 @@ Defaults stand unless changed at `/feature start`.
   - **Handover easing:** the border transition uses CSS `ease-out`, the CSS equivalent of Motion's `easeOut` token.
   - **Narrow panels:** each panel is a container. Below 14rem, the chip gets its own row under the label, and that row is always reserved. Without this, the chip spilled out of a panel at 375px, and handles would shift on handover.
   - **Mirrored opponent panel:** the opponent panel is right-aligned, with its label on the outer edge, so the pair reads as two sides facing each other.
+  - **Superseded in the 2026-09-26 cleanup (no inline styles):** the pip's `fill` shift and the panel's `border-color` shift are now the Tailwind constants `LIFE_LOST_FILL_SHIFT` and `TURN_BORDER_SHIFT` in `src/styles/classes.ts`, instead of inline `style` objects. The computed transitions (0.48s `ease` and 0.24s `ease-out`) are unchanged, as measured before and after.
 
 ## History

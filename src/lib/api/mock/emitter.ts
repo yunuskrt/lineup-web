@@ -31,7 +31,7 @@ export function createEmitter(): DuelEmitter {
       const listeners = handlers.get(event);
       if (!listeners) return;
 
-      // Copied so a handler may unsubscribe during dispatch
+      // Copied so handlers may unsubscribe mid-dispatch
       for (const handler of [...listeners]) {
         (handler as DuelEventHandler<typeof event>)(payload);
       }

@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from 'motion/react';
 import { Lives } from '@/components/game/Lives';
+import { TURN_BORDER_SHIFT } from '@/styles/classes';
 import { MOTION_DURATION_MS, MOTION_EASING } from '@/styles/motion';
 import type { DuelActor, DuelPlayer } from '@/types/duel';
 
@@ -13,7 +14,7 @@ const SIDES: Record<
     border: string;
     text: string;
     chip: string;
-    // The chip slides in from the side the turn came from
+    // The chip enters from the side the turn came from
     chipFromX: number;
   }
 > = {
@@ -35,12 +36,6 @@ const SIDES: Record<
   },
 };
 
-const BORDER_SHIFT = {
-  transitionProperty: 'border-color',
-  transitionDuration: `${MOTION_DURATION_MS.turnHandover}ms`,
-  transitionTimingFunction: 'ease-out',
-};
-
 type PlayerPanelProps = {
   actor: DuelActor;
   player: DuelPlayer;
@@ -54,12 +49,11 @@ function PlayerPanel({ actor, player, isActive }: PlayerPanelProps) {
 
   return (
     <div
-      className={`@container flex min-w-0 flex-col gap-2 rounded-md border-2 bg-surface-raised p-3 ${
+      className={`@container flex min-w-0 flex-col gap-2 rounded-md border-2 bg-surface-raised p-3 ${TURN_BORDER_SHIFT} ${
         isActive ? side.border : 'border-line'
       } ${isOpponent ? 'items-end text-right' : 'items-start'}`}
-      style={BORDER_SHIFT}
     >
-      {/* Narrow panels stack the chip; its row is always reserved */}
+      {/* Narrow panels stack the chip in a reserved row */}
       <div
         className={`flex w-full flex-col gap-1 @min-[14rem]:flex-row @min-[14rem]:items-center @min-[14rem]:justify-between @min-[14rem]:gap-2 ${
           isOpponent ? 'items-end @min-[14rem]:flex-row-reverse' : 'items-start'

@@ -23,7 +23,7 @@ const SAMPLE_NAMES = [
   'Wes Tolland',
 ];
 
-// Scattered so reveals land across the pitch, not in slot order
+// Scattered, so reveals land all over the pitch
 const REVEAL_ORDER = [4, 9, 0, 5, 10, 2, 7, 1, 6, 3, 8];
 
 const SNAPSHOT_SIZE = 4;

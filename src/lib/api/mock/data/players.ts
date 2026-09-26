@@ -1,4 +1,4 @@
-// Fictional players — invented names, never a real historical XI
+// Fictional players, never a real historical XI
 import type { MockPlayer } from '@/lib/api/mock/types';
 
 export const PLAYERS = [

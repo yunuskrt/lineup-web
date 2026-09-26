@@ -1,7 +1,7 @@
 import { normalizeName } from '@/lib/api/mock/normalize';
 import type { MockSquadEntry } from '@/lib/api/mock/types';
 
-// Tuned so "ronaldo" never reaches "ronaldinho" (0.72 apart)
+// Keeps "ronaldo" off "ronaldinho" (0.72 apart)
 export const FUZZY_THRESHOLD = 0.82;
 
 export type MatchResolution =
@@ -54,7 +54,7 @@ function exactMatches(
   );
 }
 
-// Ties are kept so a typo cannot slip past the collision rule
+// Ties kept so a typo can't dodge the collision rule
 function bestFuzzyMatches(
   normalized: string,
   squad: readonly MockSquadEntry[],

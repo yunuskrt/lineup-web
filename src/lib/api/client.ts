@@ -34,7 +34,7 @@ export interface SoloApi {
   findMatch(filters: Filters): Promise<ApiResult<SoloMatchOffer>>;
   chooseSide(sessionId: string, side: Side): Promise<ApiResult<SoloSession>>;
   guess(request: SoloGuessRequest): Promise<ApiResult<SoloGuessResponse>>;
-  // Re-read server state when the rendered countdown reaches zero
+  // Re-read server state when the countdown hits 0
   syncSession(sessionId: string): Promise<ApiResult<SoloSession>>;
   quit(sessionId: string): Promise<ApiResult<SoloSummary>>;
   getSummary(sessionId: string): Promise<ApiResult<SoloSummary>>;

@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -99,5 +99,8 @@ Defaults stand unless changed at `/feature start`.
   - **Preview split:** the page stays a server component with the `notFound()` guard. The live and static rings live in the client component `src/components/dev/RingPreview.tsx`, which takes its page-open time from `useSyncExternalStore`, so there's no rendering on the server and no setState in an effect.
   - **Static critical specimen is `frozen`,** so it doesn't pulse. The pulse is shown on the live ring.
   - **Tab-switch check:** Playwright's headless page never became hidden (`visibilityState` stayed `visible`). The ring was correct after 4s away, but real background throttling wasn't exercised. Correctness there follows from recomputing from the clock every frame.
+  - **Superseded in the 2026-09-26 cleanup (no inline styles):**
+    - The colour shift is now the Tailwind constant `TIMER_COLOR_SHIFT` in `src/styles/classes.ts`. `classes.test.ts` keeps its duration and curve in step with `motion.ts`, which answers the duplication concern above.
+    - The sweep binds `stroke-dasharray` ("f 1") and `stroke-dashoffset` (f − 1) as Motion-value SVG props, with `pathLength={1}`, instead of passing `pathLength` and `pathOffset` through `style`. The rendered attributes are unchanged, as measured before and after.
 
 ## History

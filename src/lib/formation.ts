@@ -27,7 +27,7 @@ export function parseFormation(formation: string): number[] | null {
   return isWholeLines && outfield === OUTFIELD_SIZE ? lines : null;
 }
 
-// Slot 0 is the GK; outfield lines fill defence to attack
+// Slot 0 is the GK; lines fill defence to attack
 export function positionForSlot(
   formation: string,
   slot: number,
@@ -54,7 +54,7 @@ function lineY(index: number, lineCount: number): number {
   return BACK_LINE_Y - index * step;
 }
 
-// Lineups list the team's right first; attacking up, that is screen right
+// Right first: screen right when the team attacks up
 function lineX(index: number, size: number): number {
   const spacing = (BAND_RIGHT - BAND_LEFT) / size;
   return BAND_RIGHT - (index + 0.5) * spacing;

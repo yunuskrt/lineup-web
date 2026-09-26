@@ -1,5 +1,4 @@
-// In-memory only. A page reload resets every session, stat and history
-// entry — that is expected of the mock, not a bug.
+// In-memory only: a reload resets everything
 import type { EngineState } from '@/lib/api/mock/engine';
 import type { ClubRef, Side } from '@/types/match';
 import type { HistoryEntry, UserStats } from '@/types/profile';

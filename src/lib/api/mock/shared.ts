@@ -28,7 +28,7 @@ export function maskedMatchFor(fixture: MockFixture, side: Side): MaskedMatch {
   };
 }
 
-// Names the filter to widen — never a bare "no results"
+// Names the filter to widen, never a bare no-result
 export const EMPTY_POOL_MESSAGES: Record<EmptyPoolReason, string> = {
   competition: 'No match fits that competition. Try adding another one.',
   club: 'No match fits the clubs you picked. Try adding another.',
@@ -41,8 +41,7 @@ export function emptyPool<T>(reason: EmptyPoolReason): ApiResult<T> {
   return fail('empty_pool', EMPTY_POOL_MESSAGES[reason]);
 }
 
-// Only the three outcomes the contract can express — `expired` and
-// `ignored` have no GuessResult, so callers must handle them first
+// `expired` and `ignored` have no GuessResult
 export type GuessableOutcome = Extract<
   EngineOutcome,
   { kind: 'correct_new' | 'already_found' | 'not_in_xi' }

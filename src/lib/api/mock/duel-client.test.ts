@@ -27,7 +27,7 @@ const CROWN_ONLY: Filters = {
   competitionIds: ['comp-crown-league'],
 };
 
-// Replays the adapter's draws: coin flip, fixture, then side
+// Replays the draws: coin flip, fixture, then side
 function expectedFixture(draw: number, yours: Filters = FILTERS): MockFixture {
   const applied = draw < 0.5 ? yours : OPPONENT_FILTERS;
   const selection = selectFixture(applied, () => draw);
@@ -39,7 +39,7 @@ function expectedSquad(draw: number, yours: Filters = FILTERS): MockSquad {
   return squadFor(expectedFixture(draw, yours), draw < 0.5 ? 'home' : 'away');
 }
 
-// What `scripted()` plays: the opponent's filters, the away XI
+// What `scripted()` plays: their filters, away XI
 const SQUAD = expectedSquad(0.99);
 
 const EVENTS: DuelEvent[] = [
@@ -80,7 +80,7 @@ function lastOf<T>(log: Recorded[], event: DuelEvent): T {
   return found.payload as T;
 }
 
-// Passes an exact sequence through, so the opponent never surprises a test
+// Exact sequence, so the opponent never surprises
 function scripted(overrides: MockDuelOptions = {}): MockDuelOptions {
   return { random: () => 0.99, hitRate: 0, ...overrides };
 }
@@ -444,7 +444,7 @@ describe('mock duel client', () => {
     await reachMatch(client);
     log.length = 0;
 
-    // Past the deadline, but before the expiry timer callback runs
+    // Past the deadline, before the expiry timer runs
     vi.setSystemTime(
       new Date(Date.now() + ROUND_DURATION_MS + GRACE_WINDOW_MS + 100),
     );

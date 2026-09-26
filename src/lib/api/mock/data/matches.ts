@@ -1,4 +1,4 @@
-// Fictional matches — invented fixtures, scores, dates and lineups
+// Fictional matches: invented fixtures and lineups
 import type { MockFixtureRecord } from '@/lib/api/mock/types';
 
 export const MATCHES = [

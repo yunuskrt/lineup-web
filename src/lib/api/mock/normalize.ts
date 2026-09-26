@@ -1,4 +1,4 @@
-// Letters that do not decompose under NFD and need an explicit mapping
+// Letters NFD won't decompose; mapped explicitly
 const NON_DECOMPOSING: Record<string, string> = {
   ı: 'i',
   ø: 'o',

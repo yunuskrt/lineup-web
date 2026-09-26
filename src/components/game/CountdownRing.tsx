@@ -16,7 +16,7 @@ import {
   roundDurationMs,
   sweepFraction,
 } from '@/lib/countdown';
-import { MOTION_DURATION_MS, MOTION_EASING } from '@/styles/motion';
+import { TIMER_COLOR_SHIFT } from '@/styles/classes';
 import type { CountdownStage, RingMode } from '@/types/countdown';
 import type { DuelActor } from '@/types/duel';
 import type { RoundTiming } from '@/types/game';
@@ -32,12 +32,6 @@ const STAGE_TONES: Record<CountdownStage, { stroke: string; text: string }> = {
 
 const OPPONENT_TONE = { stroke: 'stroke-opponent', text: 'text-opponent' };
 const WAITING_TONE = { stroke: 'stroke-fg-dim', text: 'text-fg-dim' };
-
-const COLOR_SHIFT = {
-  transitionProperty: 'stroke, color',
-  transitionDuration: `${MOTION_DURATION_MS.timerColorShift}ms`,
-  transitionTimingFunction: `cubic-bezier(${MOTION_EASING.timerColorShift.join(', ')})`,
-};
 
 const CRITICAL_PULSE: TargetAndTransition = {
   opacity: [1, 0.6, 1],
@@ -61,9 +55,10 @@ export function CountdownRing({
   );
   const hasSynced = useRef(false);
   const fraction = useMotionValue(1);
-  const offset = useTransform(fraction, (value) => 1 - value);
+  const dashArray = useTransform(fraction, (value) => `${value} 1`);
+  const dashOffset = useTransform(fraction, (value) => value - 1);
 
-  // Stopped rings still read the clock once, on their first frame
+  // Stopped rings still read the clock once
   useAnimationFrame(() => {
     if (mode !== 'running' && hasSynced.current) return;
     hasSynced.current = true;
@@ -105,20 +100,21 @@ export function CountdownRing({
           strokeWidth={STROKE_WIDTH}
           className="fill-none stroke-line"
         />
-        {/* The offset moves the start, so the gap grows clockwise from 12 */}
+        {/* Offset moves the start; gap grows clockwise */}
         <motion.circle
           cx="50"
           cy="50"
           r={RADIUS}
           strokeWidth={STROKE_WIDTH}
-          className={`fill-none ${tone.stroke}`}
-          style={{ ...COLOR_SHIFT, pathLength: fraction, pathOffset: offset }}
+          className={`fill-none ${tone.stroke} ${TIMER_COLOR_SHIFT}`}
+          pathLength={1}
+          strokeDasharray={dashArray}
+          strokeDashoffset={dashOffset}
           animate={isPulsing ? CRITICAL_PULSE : { opacity: 1 }}
         />
       </svg>
       <span
-        className={`relative font-display text-64 leading-none font-semibold tabular-nums ${tone.text}`}
-        style={COLOR_SHIFT}
+        className={`relative font-display text-64 leading-none font-semibold tabular-nums ${tone.text} ${TIMER_COLOR_SHIFT}`}
       >
         {seconds}
       </span>

@@ -14,7 +14,7 @@ import {
 import type { GridPulse } from '@/types/feedback';
 import type { FoundPlayer, PositionGroup } from '@/types/player';
 
-// Each width stays under the line spacing slotLayout uses
+// Each width stays under slotLayout's line spacing
 const SLOT_WIDTH_BY_WIDEST_LINE: Record<number, string> = {
   3: 'w-[24%]',
   4: 'w-[22%]',
@@ -123,7 +123,7 @@ export function SquadGrid({
               const player = playersBySlot.get(point.slot);
 
               return (
-                // Full-bleed layer so percent x/y resolve against the pitch
+                // Full-bleed so percent x/y resolve to the pitch
                 <motion.li
                   key={point.slot}
                   initial={false}

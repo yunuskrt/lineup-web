@@ -20,7 +20,7 @@ const ALL_FILTERS: Filters = {
   era: { from: 2000, to: 2025 },
 };
 
-// Northgate v Riverton — the first fixture, drawn by random() === 0
+// Northgate v Riverton, drawn when random() is 0
 const CROWN_2003 = 'match-crown-2003';
 
 function unwrap<T>(result: ApiResult<T>): T {
@@ -35,7 +35,7 @@ function errorOf<T>(result: ApiResult<T>) {
   return result.error;
 }
 
-// The draw that lands on a fixture when no filter narrows the pool
+// The draw that hits a fixture with no filter set
 function drawFor(fixtureId: string): number {
   const index = FIXTURES.findIndex((f) => f.identity.id === fixtureId);
   if (index < 0) throw new Error(`Unknown fixture ${fixtureId}`);

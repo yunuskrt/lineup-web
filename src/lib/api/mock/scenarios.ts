@@ -1,5 +1,4 @@
-// Named situations the duel screens must render but cannot reach by playing.
-// W16's `?state=` override consumes these rather than reinventing them.
+// Duel states unreachable by play; used by ?state=
 export const DUEL_SCENARIOS = [
   'queueTimeout',
   'opponentDisconnects',

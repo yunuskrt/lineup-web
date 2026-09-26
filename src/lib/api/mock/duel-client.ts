@@ -43,7 +43,7 @@ export const QUEUE_WAIT_MS = 2_000;
 export const OPPONENT_FILTER_MS = 1_200;
 export const RECONNECT_WINDOW_MS = 20_000;
 
-// The scripted opponent never narrows, so its set always has a match
+// Scripted filters never narrow, so always match
 export const OPPONENT_FILTERS: Filters = {
   competitionIds: [],
   clubIds: [],
@@ -202,7 +202,7 @@ export function createMockDuelClient(
     armRound(state);
   }
 
-  // Returns true when a life was charged, so callers know the turn moved
+  // True when a life was charged and the turn moved
   function settleExpiry(): boolean {
     if (!engine || phase !== 'playing') return false;
 
@@ -268,7 +268,7 @@ export function createMockDuelClient(
     startRound(step.state);
   }
 
-  // Side is a coin here; the server weights it by guessability (B32)
+  // A coin here; the server weights side (B32)
   function beginMatch(selected: MockFixture): void {
     phase = 'playing';
     fixture = selected;
@@ -387,7 +387,7 @@ export function createMockDuelClient(
         return fail('invalid_input', 'Those filters are not valid.');
       }
 
-      // Refused up front so the coin flip never lands on an empty pool
+      // Refused early so the flip never hits an empty pool
       const reason = emptyReason(parsed.data);
       if (reason) return emptyPool(reason);
 
