@@ -1,10 +1,12 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { useState } from 'react';
 import { Pitch } from '@/components/pitch/Pitch';
+import { RevealCard } from '@/components/pitch/RevealCard';
 import { SquadSlot } from '@/components/pitch/SquadSlot';
 import { parseFormation, slotLayout } from '@/lib/formation';
-import type { RevealedPlayer } from '@/types/player';
+import type { FoundPlayer } from '@/types/player';
 
 // Each width stays under the line spacing slotLayout uses
 const SLOT_WIDTH_BY_WIDEST_LINE: Record<number, string> = {
@@ -21,10 +23,25 @@ export function slotWidthClass(formation: string): string {
 
 type SquadGridProps = {
   formation: string;
-  revealed: RevealedPlayer[];
+  revealed: FoundPlayer[];
 };
 
 export function SquadGrid({ formation, revealed }: SquadGridProps) {
+  const [previousRevealed, setPreviousRevealed] = useState(revealed);
+  const [newIds, setNewIds] = useState<ReadonlySet<string>>(() => new Set());
+
+  if (revealed !== previousRevealed) {
+    const knownIds = new Set(previousRevealed.map((player) => player.id));
+    setPreviousRevealed(revealed);
+    setNewIds(
+      new Set(
+        revealed
+          .filter((player) => !knownIds.has(player.id))
+          .map((player) => player.id),
+      ),
+    );
+  }
+
   const points = slotLayout(formation);
   const widthClass = slotWidthClass(formation);
   const playersBySlot = new Map(
@@ -52,10 +69,10 @@ export function SquadGrid({ formation, revealed }: SquadGridProps) {
                     className={`pointer-events-auto absolute top-0 left-0 max-w-40 -translate-x-1/2 -translate-y-1/2 ${widthClass}`}
                   >
                     {player ? (
-                      <SquadSlot
-                        state="filled"
+                      <RevealCard
+                        player={player}
                         position={point.position}
-                        name={player.name}
+                        isNew={newIds.has(player.id)}
                       />
                     ) : (
                       <SquadSlot state="empty" position={point.position} />

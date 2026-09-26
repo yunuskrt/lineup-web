@@ -3,6 +3,10 @@ import type {
   positionGroupSchema,
   revealedPlayerSchema,
 } from '@/lib/api/schemas/player';
+import type { DuelActor } from '@/types/duel';
 
 export type PositionGroup = z.infer<typeof positionGroupSchema>;
 export type RevealedPlayer = z.infer<typeof revealedPlayerSchema>;
+
+// Solo players carry no finder; they are always yours
+export type FoundPlayer = RevealedPlayer & { foundBy?: DuelActor };
