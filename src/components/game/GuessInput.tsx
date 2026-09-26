@@ -13,7 +13,7 @@ const SHAKE_SECONDS = MOTION_DURATION_MS.inputShake / 1000;
 const SHAKE_X = [0, -6, 6, -4, 4, 0];
 const SPIN_SECONDS = 0.8;
 
-// Focus stays put while read-only, so it needs a quieter ring
+// Read-only keeps focus, so show a quieter ring
 const INERT_FOCUS_RING =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg-dim';
 
@@ -111,7 +111,7 @@ export function GuessInput({
         >
           Guess a player
         </label>
-        <span aria-hidden="true" className="text-12 text-fg-dim">
+        <span aria-hidden="true" className="text-12 text-fg-muted">
           Press Enter ↵
         </span>
       </div>

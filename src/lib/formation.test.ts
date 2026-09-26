@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { parseFormation, positionForSlot, slotLayout } from '@/lib/formation';
+import {
+  LOADING_FORMATION,
+  parseFormation,
+  positionForSlot,
+  slotLayout,
+} from '@/lib/formation';
 import type { SlotPoint } from '@/types/formation';
 
 const FIXTURE_FORMATIONS = [
@@ -75,6 +80,10 @@ describe('positionForSlot', () => {
 describe('slotLayout', () => {
   it.each(['4-4-3', '3-3-3'])('returns null for %s', (formation) => {
     expect(slotLayout(formation)).toBeNull();
+  });
+
+  it('lays out the loading placeholder as a full XI', () => {
+    expect(slotLayout(LOADING_FORMATION)).toHaveLength(11);
   });
 
   describe.each(FIXTURE_FORMATIONS)('%s', (formation) => {

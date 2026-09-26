@@ -26,4 +26,7 @@
   );
 
   --already-found-pulse: var(--fg-muted);
+
+  --skeleton-fill: var(--surface-card);
+  --gate-scrim: color-mix(in oklch, var(--surface) 72%, transparent);
 }
