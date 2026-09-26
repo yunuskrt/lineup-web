@@ -17,4 +17,11 @@
   --found: var(--turf);
   --warning: var(--ember);
   --danger: var(--red-card);
+
+  --reveal-flash-you: var(--found);
+  --reveal-flash-opponent: color-mix(
+    in oklch,
+    var(--found) 60%,
+    var(--opponent)
+  );
 }

@@ -19,6 +19,8 @@
   --color-found: var(--found);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-reveal-flash-you: var(--reveal-flash-you);
+  --color-reveal-flash-opponent: var(--reveal-flash-opponent);
 
   --text-*: initial;
   --text-12: var(--font-size-12);
