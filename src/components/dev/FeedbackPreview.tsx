@@ -10,6 +10,7 @@ import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { guessFeedback } from '@/lib/feedback';
 import { slotLayout } from '@/lib/formation';
 import { FOCUS_RING } from '@/styles/classes';
+import type { GridPulse, ToastMessage } from '@/types/feedback';
 import type { GuessOutcome, GuessResult } from '@/types/game';
 import type { FoundPlayer } from '@/types/player';
 
@@ -63,10 +64,8 @@ export function FeedbackPreview() {
   const [status, setStatus] = useState<GuessInputStatus>('live');
   const [value, setValue] = useState('');
   const [shakeKey, setShakeKey] = useState(0);
-  const [toast, setToast] = useState<{ id: number; message: string } | null>(
-    null,
-  );
-  const [pulse, setPulse] = useState<{ playerId: string; key: number }>();
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+  const [pulse, setPulse] = useState<GridPulse>();
   const [nextOutcome, setNextOutcome] = useState<GuessOutcome>('already_found');
   const [pulseCursor, setPulseCursor] = useState(0);
   const eventCount = useRef(0);

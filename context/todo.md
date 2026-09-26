@@ -28,7 +28,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 - [x] **Phase W12 — Reveal Card**: Found-player card with turf flash and a 320ms spring settle.
 - [x] **Phase W13 — Guess Input**: Live, pending, locked and shake states with an inline spinner.
 - [x] **Phase W14 — Feedback Channels**: Already-found grid pulse vs not-in-XI input shake, each with a toast.
-- [ ] **Phase W15 — Skeletons & Overlays**: Shape-matched skeletons and the dim-the-canvas gate overlay.
+- [x] **Phase W15 — Skeletons & Overlays**: Shape-matched skeletons and the dim-the-canvas gate overlay.
 - [ ] **Phase W16 — Game Canvas Shell**: Composes grid, ring, lives and input with a `?state=` dev override.
 - [ ] **Phase W17 — Home Page**: `/` statement fold, Play CTA, sign-in entry and a closing line.
 - [ ] **Phase W18 — Auth Screens**: Sign in, sign up and continue-as-guest against the mock adapter.

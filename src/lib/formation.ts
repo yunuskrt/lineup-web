@@ -10,6 +10,9 @@ const FRONT_LINE_Y = 13;
 const BAND_LEFT = 3;
 const BAND_RIGHT = 97;
 
+// Stand-in shape until the real formation arrives
+export const LOADING_FORMATION = '4-4-2';
+
 function lineSizes(formation: string): number[] {
   return formation.split('-').map(Number);
 }

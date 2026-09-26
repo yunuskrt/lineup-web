@@ -5,6 +5,7 @@ export const MOTION_DURATION_MS = {
   inputShake: 240,
   alreadyFoundPulse: 480,
   toastVisible: 1600,
+  gateFade: 240,
   timerColorShift: 200,
   skeletonPulse: 1600,
 } as const;

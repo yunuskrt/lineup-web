@@ -3,15 +3,14 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { useState } from 'react';
 import { MOTION_DURATION_MS } from '@/styles/motion';
+import type { ToastMessage } from '@/types/feedback';
 
 const VISIBLE_SECONDS = MOTION_DURATION_MS.toastVisible / 1000;
 const RISE_PX = 4;
 const RISE_SECONDS = 0.2;
 
-type Toast = { id: number; message: string };
-
 type FeedbackToastProps = {
-  toast: Toast | null;
+  toast: ToastMessage | null;
 };
 
 export function FeedbackToast({ toast }: FeedbackToastProps) {

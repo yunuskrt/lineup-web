@@ -28,6 +28,7 @@ const POSITION_LABEL = 'text-12 leading-4 font-medium uppercase';
 type SquadSlotProps = {
   position: PositionGroup;
 } & (
+  | { state: 'loading' }
   | { state: 'empty' }
   | {
       state: 'filled';
@@ -41,6 +42,15 @@ type SquadSlotProps = {
 export function SquadSlot(props: SquadSlotProps) {
   const { position } = props;
   const positionName = POSITION_NAMES[position];
+
+  if (props.state === 'loading') {
+    return (
+      <div
+        aria-hidden="true"
+        className={`${SLOT_BOX} border-skeleton-fill bg-skeleton-fill`}
+      />
+    );
+  }
 
   if (props.state === 'empty') {
     return (
