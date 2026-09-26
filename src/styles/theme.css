@@ -24,4 +24,6 @@
     var(--found) 60%,
     var(--opponent)
   );
+
+  --already-found-pulse: var(--fg-muted);
 }
