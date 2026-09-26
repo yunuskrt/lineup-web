@@ -2,7 +2,7 @@
 
 import { type ReactNode, useState, useSyncExternalStore } from 'react';
 import { CountdownRing } from '@/components/game/CountdownRing';
-import { FOCUS_RING } from '@/styles/classes';
+import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
 import type { RingMode } from '@/types/countdown';
 import type { DuelActor } from '@/types/duel';
 import type { RoundTiming } from '@/types/game';
@@ -57,8 +57,6 @@ function Specimen({ label, children }: SpecimenProps) {
   );
 }
 
-const BUTTON = `rounded-sm border border-line px-3 py-1.5 text-14 text-fg hover:bg-surface-raised aria-pressed:bg-surface-card ${FOCUS_RING}`;
-
 export function RingPreview() {
   const openedAt = useSyncExternalStore(subscribe, getPageOpenedAt, () => null);
   const [restartedAt, setRestartedAt] = useState<number | null>(null);
@@ -79,7 +77,11 @@ export function RingPreview() {
       <section className="flex flex-col gap-4">
         <h2 className="font-display text-20 font-semibold">Live</h2>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className={BUTTON} onClick={restart}>
+          <button
+            type="button"
+            className={DEV_PREVIEW_BUTTON}
+            onClick={restart}
+          >
             Restart
           </button>
           {MODES.map((option) => (
@@ -87,7 +89,7 @@ export function RingPreview() {
               key={option}
               type="button"
               aria-pressed={mode === option}
-              className={BUTTON}
+              className={DEV_PREVIEW_BUTTON}
               onClick={() => setMode(option)}
             >
               {option}

@@ -1,26 +1,18 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { GuessPreview } from '@/components/dev/GuessPreview';
+import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
-export const metadata: Metadata = {
-  title: 'Guess',
-  robots: { index: false },
-};
+export const metadata = devMetadata('Guess');
 
 export default function GuessPreviewPage() {
-  if (process.env.NODE_ENV === 'production') {
-    notFound();
-  }
+  requireDevEnv();
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-12">
-      <header className="flex flex-col gap-2">
-        <h1 className="font-display text-32 font-semibold">Guess</h1>
-        <p className="text-14 text-fg-muted">
-          Dev-only preview of the guess input and its statuses.
-        </p>
-      </header>
+    <DevPreviewShell
+      title="Guess"
+      description="Dev-only preview of the guess input and its statuses."
+    >
       <GuessPreview />
-    </main>
+    </DevPreviewShell>
   );
 }

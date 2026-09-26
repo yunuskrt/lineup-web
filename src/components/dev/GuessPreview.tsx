@@ -5,21 +5,25 @@ import {
   GuessInput,
   type GuessInputStatus,
 } from '@/components/game/GuessInput';
-import { FOCUS_RING } from '@/styles/classes';
-import type { GuessOutcome } from '@/types/game';
-
-const OUTCOMES: { value: GuessOutcome; label: string }[] = [
-  { value: 'correct_new', label: 'Correct new' },
-  { value: 'already_found', label: 'Already found' },
-  { value: 'not_in_xi', label: 'Not in XI' },
-];
+import { GUESS_OUTCOME_OPTIONS, samplePlayer } from '@/lib/dev/samples';
+import { guessFeedback } from '@/lib/feedback';
+import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
+import type { GuessOutcome, GuessResult } from '@/types/game';
 
 const STATUSES: GuessInputStatus[] = ['live', 'pending', 'locked'];
 
 const SERVER_DELAY_MS = 600;
 const NEXT_ROUND_DELAY_MS = 900;
 
-const BUTTON = `rounded-sm border border-line px-3 py-1.5 text-14 text-fg hover:bg-surface-raised aria-pressed:bg-surface-card ${FOCUS_RING}`;
+function verdictFor(outcome: GuessOutcome): GuessResult {
+  if (outcome === 'correct_new') {
+    return { outcome, player: samplePlayer('4-4-2', 0) };
+  }
+  if (outcome === 'already_found') {
+    return { outcome, playerId: 'sample-0' };
+  }
+  return { outcome };
+}
 
 export function GuessPreview() {
   const [status, setStatus] = useState<GuessInputStatus>('live');
@@ -41,22 +45,22 @@ export function GuessPreview() {
     timer.current = setTimeout(action, delayMs);
   }
 
-  function applyOutcome(outcome: GuessOutcome) {
-    if (outcome === 'correct_new') {
-      setValue('');
+  function apply(result: GuessResult) {
+    const feedback = guessFeedback(result);
+    if (feedback.clearInput) setValue('');
+    if (feedback.shakeInput) setShakeKey((key) => key + 1);
+    if (result.outcome === 'correct_new') {
       setStatus('locked');
       schedule(NEXT_ROUND_DELAY_MS, () => setStatus('live'));
       return;
     }
-    if (outcome === 'already_found') setValue('');
-    if (outcome === 'not_in_xi') setShakeKey((key) => key + 1);
     setStatus('live');
   }
 
   function handleSubmit(guess: string) {
     setSubmissions((current) => [guess, ...current]);
     setStatus('pending');
-    schedule(SERVER_DELAY_MS, () => applyOutcome(nextOutcome));
+    schedule(SERVER_DELAY_MS, () => apply(verdictFor(nextOutcome)));
   }
 
   function forceStatus(next: GuessInputStatus) {
@@ -69,12 +73,12 @@ export function GuessPreview() {
       <div className="flex flex-col gap-2">
         <p className="text-12 text-fg-muted">Next outcome</p>
         <div className="flex flex-wrap gap-2">
-          {OUTCOMES.map((outcome) => (
+          {GUESS_OUTCOME_OPTIONS.map((outcome) => (
             <button
               key={outcome.value}
               type="button"
               aria-pressed={nextOutcome === outcome.value}
-              className={BUTTON}
+              className={DEV_PREVIEW_BUTTON}
               onClick={() => setNextOutcome(outcome.value)}
             >
               {outcome.label}
@@ -90,7 +94,7 @@ export function GuessPreview() {
               key={option}
               type="button"
               aria-pressed={status === option}
-              className={BUTTON}
+              className={DEV_PREVIEW_BUTTON}
               onClick={() => forceStatus(option)}
             >
               {option}
@@ -98,7 +102,7 @@ export function GuessPreview() {
           ))}
           <button
             type="button"
-            className={BUTTON}
+            className={DEV_PREVIEW_BUTTON}
             onClick={() => setShakeKey((key) => key + 1)}
           >
             Shake

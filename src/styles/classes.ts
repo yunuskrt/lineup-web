@@ -3,6 +3,8 @@ export const FOCUS_RING =
 
 export const SITE_CONTAINER = 'mx-auto w-full max-w-6xl px-4 sm:px-6';
 
+export const DEV_PREVIEW_BUTTON = `rounded-sm border border-line px-3 py-1.5 text-14 text-fg hover:bg-surface-raised disabled:text-fg-dim disabled:hover:bg-transparent aria-pressed:bg-surface-card ${FOCUS_RING}`;
+
 // Literal for Tailwind; checked against motion.ts
 export const LIFE_LOST_FILL_SHIFT =
   'transition-[fill] duration-480 ease-[ease]';
