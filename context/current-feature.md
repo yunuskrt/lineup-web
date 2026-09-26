@@ -37,3 +37,4 @@ Not Started
 - W10 Countdown Ring: pure timing helpers, linear SVG ring, /dev/ring.
 - W11 Lives & Turn Indicator: shirt pips, red flash, turn pair, /dev/lives.
 - W12 Reveal Card: initials badge, spring-in, turf flash, /dev/reveal.
+- W13 Guess Input: live/pending/locked, shake, inline spinner, /dev/guess.
