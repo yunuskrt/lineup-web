@@ -3,11 +3,11 @@
 import { motion, type Transition, useReducedMotion } from 'motion/react';
 import { useState } from 'react';
 import { SquadSlot } from '@/components/pitch/SquadSlot';
-import { MOTION_DURATION_MS, REVEAL_TRANSITION_TYPE } from '@/styles/motion';
+import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
+import { MOTION_SECONDS, REVEAL_TRANSITION_TYPE } from '@/styles/motion';
 import type { DuelActor } from '@/types/duel';
 import type { FoundPlayer, PositionGroup } from '@/types/player';
 
-const REVEAL_SECONDS = MOTION_DURATION_MS.reveal / 1000;
 const START_SCALE = 0.85;
 
 const FLASH_PEAK_OPACITY = 0.4;
@@ -20,18 +20,18 @@ const FLASH_TONES: Record<DuelActor, string> = {
 
 const SPRING: Transition = {
   type: REVEAL_TRANSITION_TYPE,
-  visualDuration: REVEAL_SECONDS,
+  visualDuration: MOTION_SECONDS.reveal,
   bounce: 0.25,
 };
 
 const FLASH_FADE: Transition = {
-  delay: REVEAL_SECONDS,
+  delay: MOTION_SECONDS.reveal,
   duration: FLASH_FADE_SECONDS,
   ease: 'easeOut',
 };
 
 const PULSE: Transition = {
-  duration: MOTION_DURATION_MS.alreadyFoundPulse / 1000,
+  duration: MOTION_SECONDS.alreadyFoundPulse,
   ease: 'easeInOut',
 };
 
@@ -51,11 +51,11 @@ export function RevealCard({
   const isReducedMotion = useReducedMotion();
   // Only the mounting render decides if it animates
   const [isRevealing] = useState(isNew);
-  const [initialPulseKey] = useState(pulseKey);
+  const hasPulsed = useChangedSinceMount(pulseKey);
   const foundBy = player.foundBy ?? 'you';
 
   const pulse =
-    pulseKey !== undefined && pulseKey !== initialPulseKey ? (
+    pulseKey !== undefined && hasPulsed ? (
       <motion.span
         key={pulseKey}
         aria-hidden="true"
@@ -82,7 +82,7 @@ export function RevealCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={{
         scale: isReducedMotion ? { duration: 0 } : SPRING,
-        opacity: { duration: REVEAL_SECONDS, ease: 'easeOut' },
+        opacity: { duration: MOTION_SECONDS.reveal, ease: 'easeOut' },
       }}
     >
       <SquadSlot

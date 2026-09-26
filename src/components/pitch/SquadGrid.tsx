@@ -7,7 +7,7 @@ import { RevealCard } from '@/components/pitch/RevealCard';
 import { SquadSlot } from '@/components/pitch/SquadSlot';
 import { parseFormation, slotLayout } from '@/lib/formation';
 import {
-  MOTION_DURATION_MS,
+  MOTION_SECONDS,
   MOTION_EASING,
   SKELETON_PULSE_OPACITY,
 } from '@/styles/motion';
@@ -22,7 +22,7 @@ const SLOT_WIDTH_BY_WIDEST_LINE: Record<number, string> = {
 };
 
 const SKELETON_PULSE: Transition = {
-  duration: MOTION_DURATION_MS.skeletonPulse / 1000,
+  duration: MOTION_SECONDS.skeletonPulse,
   ease: MOTION_EASING.skeletonPulse,
   repeat: Infinity,
 };

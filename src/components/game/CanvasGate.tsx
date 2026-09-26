@@ -2,10 +2,10 @@
 
 import { AnimatePresence, motion, useIsPresent } from 'motion/react';
 import { type ReactNode, type RefObject, useLayoutEffect, useRef } from 'react';
-import { MOTION_DURATION_MS } from '@/styles/motion';
+import { MOTION_SECONDS } from '@/styles/motion';
 
 const GATE_FADE = {
-  duration: MOTION_DURATION_MS.gateFade / 1000,
+  duration: MOTION_SECONDS.gateFade,
   ease: 'easeOut',
 } as const;
 

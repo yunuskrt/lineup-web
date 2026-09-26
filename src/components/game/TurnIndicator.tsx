@@ -2,8 +2,8 @@
 
 import { motion, useReducedMotion } from 'motion/react';
 import { Lives } from '@/components/game/Lives';
-import { TURN_BORDER_SHIFT } from '@/styles/classes';
-import { MOTION_DURATION_MS, MOTION_EASING } from '@/styles/motion';
+import { DUEL_ACTOR_BG, TURN_BORDER_SHIFT } from '@/styles/classes';
+import { MOTION_EASING, MOTION_SECONDS } from '@/styles/motion';
 import type { DuelActor, DuelPlayer } from '@/types/duel';
 
 const SIDES: Record<
@@ -13,7 +13,6 @@ const SIDES: Record<
     turnLabel: string;
     border: string;
     text: string;
-    chip: string;
     // The chip enters from the side the turn came from
     chipFromX: number;
   }
@@ -23,7 +22,6 @@ const SIDES: Record<
     turnLabel: 'Your turn',
     border: 'border-you',
     text: 'text-you',
-    chip: 'bg-you',
     chipFromX: 8,
   },
   opponent: {
@@ -31,7 +29,6 @@ const SIDES: Record<
     turnLabel: 'Their turn',
     border: 'border-opponent',
     text: 'text-opponent',
-    chip: 'bg-opponent',
     chipFromX: -8,
   },
 };
@@ -70,11 +67,11 @@ function PlayerPanel({ actor, player, isActive }: PlayerPanelProps) {
           {isActive && (
             <motion.span
               aria-hidden="true"
-              className={`rounded-sm px-2 py-0.5 text-12 font-semibold whitespace-nowrap uppercase text-on-accent ${side.chip}`}
+              className={`rounded-sm px-2 py-0.5 text-12 font-semibold whitespace-nowrap uppercase text-on-accent ${DUEL_ACTOR_BG[actor]}`}
               initial={{ opacity: 0, x: side.chipFromX }}
               animate={{ opacity: 1, x: 0 }}
               transition={{
-                duration: MOTION_DURATION_MS.turnHandover / 1000,
+                duration: MOTION_SECONDS.turnHandover,
                 ease: MOTION_EASING.turnHandover,
                 // Branching `initial` instead would break hydration
                 x: isReducedMotion ? { duration: 0 } : undefined,
