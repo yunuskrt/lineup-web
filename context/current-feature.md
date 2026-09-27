@@ -42,3 +42,4 @@ Not Started
 - W15 Skeletons & Overlays: skeleton grid, canvas gate, /dev/loading.
 - W16 Game Canvas Shell: canvas + rail, match header, ?state= snapshots.
 - W17 Home Page: statement fold, rules strip, footer line, /sign-in stub.
+- W18a Session Layer: TanStack Query, auth hooks, unwrap, mock rejections.

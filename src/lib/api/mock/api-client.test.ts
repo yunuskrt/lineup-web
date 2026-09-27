@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { ApiClient } from '@/lib/api/client';
-import { createMockApiClient } from '@/lib/api/mock/api-client';
+import {
+  createMockApiClient,
+  MOCK_REJECTED_PASSWORD,
+} from '@/lib/api/mock/api-client';
 import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
 import {
   FIXTURES,
@@ -358,6 +361,37 @@ describe('mock api client', () => {
     const stats = unwrap(await api.profile.getProfile()).stats;
     expect(stats.played).toBe(1);
     expect(stats.favouriteClub?.id).toBe('club-northgate');
+  });
+
+  it('rejects the reserved password on sign in', async () => {
+    const error = errorOf(
+      await api.auth.signIn({
+        email: 'player@example.com',
+        password: MOCK_REJECTED_PASSWORD,
+      }),
+    );
+    expect(error.code).toBe('unauthorized');
+    expect(error.message).toBe('Email or password is incorrect.');
+    expect(unwrap(await api.auth.getSession())).toBeNull();
+  });
+
+  it('rejects the taken handle on sign up and upgrade', async () => {
+    const request = {
+      email: 'player@example.com',
+      password: 'a-good-password',
+      handle: ' Taken ',
+    };
+
+    const signUpError = errorOf(await api.auth.signUp(request));
+    expect(signUpError.code).toBe('invalid_input');
+    expect(signUpError.message).toBe('That handle is taken.');
+
+    const guest = unwrap(await api.auth.continueAsGuest());
+    const upgradeError = errorOf(await api.auth.upgradeGuest(request));
+    expect(upgradeError.code).toBe('invalid_input');
+
+    const session = unwrap(await api.auth.getSession());
+    expect(session?.user).toEqual(guest.user);
   });
 
   it('pages history with a cursor', async () => {

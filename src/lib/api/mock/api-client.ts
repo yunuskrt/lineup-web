@@ -49,6 +49,14 @@ import type { SoloSession, SoloSummary } from '@/types/solo';
 const RATE_LIMIT_WINDOW_MS = 3_000;
 const RATE_LIMIT_MAX_GUESSES = 12;
 
+// Deterministic rejections so auth errors show
+export const MOCK_REJECTED_PASSWORD = 'wrong-password';
+export const MOCK_TAKEN_HANDLE = 'taken';
+
+function isTakenHandle(handle: string): boolean {
+  return handle.toLowerCase() === MOCK_TAKEN_HANDLE;
+}
+
 export function createMockApiClient(
   options: { now?: MockClock; random?: () => number } = {},
 ): ApiClient {
@@ -232,6 +240,10 @@ export function createMockApiClient(
           return fail('invalid_input', 'Check your email and password.');
         }
 
+        if (parsed.data.password === MOCK_REJECTED_PASSWORD) {
+          return fail('unauthorized', 'Email or password is incorrect.');
+        }
+
         const id = nextId(store, 'user');
         store.identity = createIdentity({
           id,
@@ -248,6 +260,10 @@ export function createMockApiClient(
           return fail('invalid_input', 'Check the form and try again.');
         }
 
+        if (isTakenHandle(parsed.data.handle)) {
+          return fail('invalid_input', 'That handle is taken.');
+        }
+
         const id = nextId(store, 'user');
         store.identity = createIdentity({
           id,
@@ -262,6 +278,10 @@ export function createMockApiClient(
         const parsed = upgradeGuestRequestSchema.safeParse(request);
         if (!parsed.success) {
           return fail('invalid_input', 'Check the form and try again.');
+        }
+
+        if (isTakenHandle(parsed.data.handle)) {
+          return fail('invalid_input', 'That handle is taken.');
         }
 
         const identity = requireIdentity();
