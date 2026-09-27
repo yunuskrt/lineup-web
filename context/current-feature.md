@@ -46,3 +46,4 @@ Not Started
 - W18b Auth Screens: /sign-in forms, guest and upgrade, nav account.
 - W19 Mode & Filter Screen: /play diptych, URL filters, guest on start.
 - W20 Solo Loop (Mock): side-pick gate, 15s loop, sync at 0, quit dialog.
+- W21a Summary Panel: rail summary, turf takeover, missed slots, snapshots.

@@ -11,6 +11,7 @@ import {
 } from '@/lib/api/schemas/game';
 import { maskedMatchSchema } from '@/lib/api/schemas/match';
 import { revealedPlayerSchema } from '@/lib/api/schemas/player';
+import { soloSummarySchema } from '@/lib/api/schemas/solo';
 import {
   AFTER_GATE_STATE,
   CANVAS_STATES,
@@ -22,6 +23,13 @@ import type { CanvasMode, CanvasView } from '@/types/canvas';
 const NOW = 1_700_000_000_000;
 
 const MODES: CanvasMode[] = ['solo', 'duel'];
+
+const SUMMARY_STATES = [
+  'run-over',
+  'run-over-pro',
+  'perfect-clear',
+  'quit',
+] as const;
 
 // What each `next` swap is there to demonstrate
 const EXPECTED_CHANGES: Record<CanvasMode, Record<string, string[]>> = {
@@ -205,6 +213,80 @@ describe('duel snapshots', () => {
       const flashed = next.view.lifeLostKey !== frame.view.lifeLostKey;
       const youLost = next.view.you.lives < frame.view.you.lives;
       expect(flashed, name).toBe(youLost);
+    }
+  });
+});
+
+describe('solo summary snapshots', () => {
+  function summaryOf(name: string) {
+    const { view } = CANVAS_STATES.solo[name].build(NOW).frame;
+    if (view.mode !== 'solo' || view.end?.status !== 'ready') {
+      throw new Error(`${name} has no summary`);
+    }
+    return { view, summary: view.end.summary };
+  }
+
+  it('only carry summaries the backend could send', () => {
+    for (const name of SUMMARY_STATES) {
+      const { summary } = summaryOf(name);
+      expect(soloSummarySchema.safeParse(summary).success, name).toBe(true);
+    }
+  });
+
+  it('account for all eleven starters', () => {
+    for (const name of SUMMARY_STATES) {
+      const { summary } = summaryOf(name);
+      expect(summary.found.length + summary.missedCount, name).toBe(SQUAD_SIZE);
+    }
+  });
+
+  it('never list a found slot as missed', () => {
+    for (const name of SUMMARY_STATES) {
+      const { summary } = summaryOf(name);
+      const foundSlots = new Set(summary.found.map((player) => player.slot));
+      for (const player of summary.missed ?? []) {
+        expect(foundSlots.has(player.slot), name).toBe(false);
+      }
+      if (summary.missed) {
+        expect(summary.missed.length, name).toBe(summary.missedCount);
+      }
+    }
+  });
+
+  it('match the canvas to the summary', () => {
+    for (const name of SUMMARY_STATES) {
+      const { view, summary } = summaryOf(name);
+      expect(view.found, name).toEqual(summary.found);
+      expect(view.lives, name).toBe(summary.livesRemaining);
+      expect(view.input, name).toBe('locked');
+      expect(view.clock.round, name).toBeNull();
+    }
+  });
+
+  it('send the missed list only to the Pro snapshot', () => {
+    const withList = SUMMARY_STATES.filter(
+      (name) => summaryOf(name).summary.missed !== null,
+    );
+    expect(withList).toEqual(['run-over-pro']);
+  });
+
+  it('end each run the way its name says', () => {
+    expect(summaryOf('run-over').summary.endReason).toBe('lives_out');
+    expect(summaryOf('perfect-clear').summary.endReason).toBe('perfect_clear');
+    expect(summaryOf('quit').summary.endReason).toBe('quit');
+  });
+
+  it('load the summary with the run already over', () => {
+    const { view } = CANVAS_STATES.solo['summary-loading'].build(NOW).frame;
+    expect(view.mode === 'solo' && view.end).toEqual({ status: 'loading' });
+    expect(view.input).toBe('locked');
+  });
+
+  it('leave every live state without a summary', () => {
+    for (const [name, view] of viewsOf('solo')) {
+      if (view.mode !== 'solo' || name.startsWith('summary')) continue;
+      if ((SUMMARY_STATES as readonly string[]).includes(name)) continue;
+      expect(view.end, name).toBeNull();
     }
   });
 });

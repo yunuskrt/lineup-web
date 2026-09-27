@@ -26,6 +26,8 @@ type SquadSlotProps = {
 } & (
   | { state: 'loading' }
   | { state: 'empty' }
+  // Shown once the run is over, if the server sent it
+  | { state: 'missed'; name: string }
   | {
       state: 'filled';
       name: string;
@@ -55,6 +57,25 @@ export function SquadSlot(props: SquadSlotProps) {
           {position}
         </span>
         <span className="sr-only">{positionName}, not yet named</span>
+      </div>
+    );
+  }
+
+  if (props.state === 'missed') {
+    return (
+      <div className={`${SLOT_BOX} border-marking bg-surface`}>
+        <span aria-hidden="true" className={`${POSITION_LABEL} text-fg-dim`}>
+          {position}
+        </span>
+        <span
+          aria-hidden="true"
+          className="line-clamp-2 w-full leading-tight font-medium break-words hyphens-auto text-fg-muted"
+        >
+          {props.name}
+        </span>
+        <span className="sr-only">
+          {positionName}, {props.name}, missed
+        </span>
       </div>
     );
   }

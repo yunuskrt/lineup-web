@@ -5,6 +5,7 @@ import type { GridPulse, ToastMessage } from '@/types/feedback';
 import type { Lives, RoundTiming } from '@/types/game';
 import type { MaskedMatch } from '@/types/match';
 import type { FoundPlayer } from '@/types/player';
+import type { SoloSummary } from '@/types/solo';
 
 export type CanvasMode = 'solo' | 'duel';
 
@@ -36,9 +37,14 @@ export type CanvasViewBase = {
   gate: CanvasGateView | null;
 };
 
+export type SoloEndView =
+  { status: 'loading' } | { status: 'ready'; summary: SoloSummary };
+
 export type SoloCanvasView = CanvasViewBase & {
   mode: 'solo';
   lives: Lives;
+  // Set once the run is over
+  end: SoloEndView | null;
 };
 
 export type DuelCanvasView = CanvasViewBase & {

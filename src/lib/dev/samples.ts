@@ -1,7 +1,7 @@
 import { slotLayout } from '@/lib/formation';
 import type { DuelPlayer } from '@/types/duel';
 import type { GuessOutcome } from '@/types/game';
-import type { MaskedMatch } from '@/types/match';
+import type { MaskedMatch, MatchIdentity } from '@/types/match';
 import type { RevealedPlayer } from '@/types/player';
 
 export const SAMPLE_MATCH: MaskedMatch = {
@@ -14,6 +14,24 @@ export const SAMPLE_MATCH: MaskedMatch = {
     crestUrl: null,
   },
   formation: '4-4-2',
+};
+
+// The match SAMPLE_MATCH masks, revealed at the end
+export const SAMPLE_IDENTITY: MatchIdentity = {
+  id: SAMPLE_MATCH.id,
+  competition: { id: 'sample-cup', kind: 'ucl', name: 'Continental Cup' },
+  season: '2004-05',
+  date: '2005-05-25',
+  stage: 'Final',
+  home: SAMPLE_MATCH.team,
+  away: {
+    id: 'sample-away',
+    name: 'Real Solvara',
+    shortName: 'Solvara',
+    crestUrl: null,
+  },
+  score: { home: 3, away: 3 },
+  nickname: null,
 };
 
 export const SAMPLE_YOU: DuelPlayer = {
