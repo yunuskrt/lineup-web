@@ -41,3 +41,4 @@ Not Started
 - W14 Feedback Channels: grid pulse, verdict mapping, toast, /dev/feedback.
 - W15 Skeletons & Overlays: skeleton grid, canvas gate, /dev/loading.
 - W16 Game Canvas Shell: canvas + rail, match header, ?state= snapshots.
+- W17 Home Page: statement fold, rules strip, footer line, /sign-in stub.

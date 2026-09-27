@@ -30,7 +30,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 - [x] **Phase W14 — Feedback Channels**: Already-found grid pulse vs not-in-XI input shake, each with a toast.
 - [x] **Phase W15 — Skeletons & Overlays**: Shape-matched skeletons and the dim-the-canvas gate overlay.
 - [x] **Phase W16 — Game Canvas Shell**: Composes grid, ring, lives and input with a `?state=` dev override.
-- [ ] **Phase W17 — Home Page**: `/` statement fold, Play CTA, sign-in entry and a closing line.
+- [x] **Phase W17 — Home Page**: `/` statement fold, Play CTA, sign-in entry and a closing line.
 - [ ] **Phase W18 — Auth Screens**: Sign in, sign up and continue-as-guest against the mock adapter.
 - [ ] **Phase W19 — Mode & Filter Screen**: `/play` diptych with competition, club and era filter controls.
 - [ ] **Phase W20 — Solo Loop (Mock)**: `/play/solo` full 15s loop, lives and reveals off the mock adapter.

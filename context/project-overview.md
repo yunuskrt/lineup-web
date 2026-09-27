@@ -209,6 +209,7 @@ The naive approach — ingest 26 seasons × 24 clubs × ~50 matches — is rough
 
 ```text
 /                     Home — what the game is, Play CTA, sign in / continue as guest
+/sign-in              Sign in, sign up, continue as guest
 /play                 Mode select + filter preferences
 /play/solo            Filters → match → guessing loop → summary
 /play/duel            Lobby → matchmaking → live duel → result
