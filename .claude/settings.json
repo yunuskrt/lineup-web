@@ -9,7 +9,9 @@
       "mcp__playwright__browser_evaluate",
       "mcp__playwright__browser_snapshot",
       "mcp__playwright__browser_emulate_media",
-      "mcp__playwright__browser_press_key"
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_fill_form"
     ]
   }
 }

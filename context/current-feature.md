@@ -43,3 +43,4 @@ Not Started
 - W16 Game Canvas Shell: canvas + rail, match header, ?state= snapshots.
 - W17 Home Page: statement fold, rules strip, footer line, /sign-in stub.
 - W18a Session Layer: TanStack Query, auth hooks, unwrap, mock rejections.
+- W18b Auth Screens: /sign-in forms, guest and upgrade, nav account.

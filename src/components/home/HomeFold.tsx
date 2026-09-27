@@ -1,5 +1,9 @@
 import Link from 'next/link';
-import { FOCUS_RING, SITE_CONTAINER } from '@/styles/classes';
+import {
+  PRIMARY_BUTTON_LARGE,
+  SITE_CONTAINER,
+  TEXT_LINK,
+} from '@/styles/classes';
 
 export function HomeFold() {
   return (
@@ -20,18 +24,12 @@ export function HomeFold() {
           the clock runs down.
         </p>
         <div className="mt-10 flex flex-col items-start gap-4">
-          <Link
-            href="/play"
-            className={`rounded-sm bg-brand px-8 py-3 text-16 font-semibold text-on-accent ${FOCUS_RING}`}
-          >
+          <Link href="/play" className={PRIMARY_BUTTON_LARGE}>
             Play
           </Link>
           <p className="text-14 text-fg-muted">
             No sign-up needed. Have an account?{' '}
-            <Link
-              href="/sign-in"
-              className={`rounded-sm font-medium text-fg underline decoration-line underline-offset-4 hover:decoration-fg ${FOCUS_RING}`}
-            >
+            <Link href="/sign-in" className={TEXT_LINK}>
               Sign in
             </Link>
           </p>
