@@ -16,8 +16,10 @@ import {
   AFTER_GATE_STATE,
   CANVAS_STATES,
   DEFAULT_CANVAS_STATE,
+  LOBBY_STATES,
   resolveCanvasState,
 } from '@/lib/dev/canvas-states';
+import { SAMPLE_OPPONENT } from '@/lib/dev/samples';
 import type { CanvasMode, CanvasView } from '@/types/canvas';
 
 const NOW = 1_700_000_000_000;
@@ -64,7 +66,9 @@ function viewsOf(mode: CanvasMode): [string, CanvasView][] {
 function livesOf(view: CanvasView): number[] {
   return view.mode === 'solo'
     ? [view.lives]
-    : [view.you.lives, view.opponent.lives];
+    : [view.you, view.opponent].flatMap((player) =>
+        player ? [player.lives] : [],
+      );
 }
 
 function changedKeys(before: CanvasView, after: CanvasView): string[] {
@@ -179,6 +183,7 @@ describe.each(MODES)('%s snapshots against the contract', (mode) => {
         }
       } else {
         for (const player of [view.you, view.opponent]) {
+          if (!player) continue;
           expect(duelPlayerSchema.safeParse(player).success, name).toBe(true);
         }
         for (const player of view.found) {
@@ -287,6 +292,105 @@ describe('solo summary snapshots', () => {
       if (view.mode !== 'solo' || name.startsWith('summary')) continue;
       if ((SUMMARY_STATES as readonly string[]).includes(name)) continue;
       expect(view.end, name).toBeNull();
+    }
+  });
+});
+
+describe('duel lobby snapshots', () => {
+  const LOBBY_NAMES = Object.keys(LOBBY_STATES);
+
+  function lobbyViewOf(name: string) {
+    const { view } = CANVAS_STATES.duel[name].build(NOW).frame;
+    if (view.mode !== 'duel') throw new Error(`${name} is not a duel`);
+    return view;
+  }
+
+  it('cover every lobby step', () => {
+    const steps = new Set(
+      LOBBY_NAMES.map((name) => lobbyViewOf(name).lobby?.step),
+    );
+    expect([...steps].sort()).toEqual([
+      'coinFlip',
+      'filters',
+      'noOpponent',
+      'paired',
+      'searching',
+    ]);
+  });
+
+  it('gate the loading canvas with no turn and no clock', () => {
+    for (const name of LOBBY_NAMES) {
+      const view = lobbyViewOf(name);
+      expect(view.lobby, name).not.toBeNull();
+      expect(view.gate, name).not.toBeNull();
+      expect(view.match, name).toBeNull();
+      expect(view.clock.round, name).toBeNull();
+      expect(view.turn, name).toBeNull();
+      expect(view.input, name).toBe('locked');
+    }
+  });
+
+  it('leave the opponent unknown only before pairing', () => {
+    const unpaired = LOBBY_NAMES.filter(
+      (name) => lobbyViewOf(name).opponent === null,
+    );
+    expect(unpaired.sort()).toEqual(['no-opponent', 'searching']);
+  });
+
+  it('name each winner of the coin flip', () => {
+    const won = lobbyViewOf('coin-flip-won');
+    const lost = lobbyViewOf('coin-flip-lost');
+    expect(won.lobby?.step === 'coinFlip' && won.lobby.winner).toBe('you');
+    expect(lost.lobby?.step === 'coinFlip' && lost.lobby.winner).toBe(
+      'opponent',
+    );
+    expect(won.gate?.title).toBe('Your filters won');
+    expect(lost.gate?.title).toContain(SAMPLE_OPPONENT.handle);
+  });
+
+  it('show the set the flip applied, whole', () => {
+    const won = lobbyViewOf('coin-flip-won').lobby;
+    const lost = lobbyViewOf('coin-flip-lost').lobby;
+    const filters = lobbyViewOf('filters').lobby;
+    if (
+      won?.step !== 'coinFlip' ||
+      lost?.step !== 'coinFlip' ||
+      filters?.step !== 'filters'
+    ) {
+      throw new Error('missing lobby steps');
+    }
+    expect(won.applied).toEqual(filters.yours);
+    // Their set replaces yours; nothing is merged
+    for (const [index, line] of lost.applied.entries()) {
+      expect(line.label).toBe(filters.yours[index].label);
+      expect(line.value).not.toBe(filters.yours[index].value);
+    }
+  });
+
+  it('lock filters in the order the names say', () => {
+    const submissionOf = (name: string) => {
+      const lobby = lobbyViewOf(name).lobby;
+      return lobby?.step === 'filters' ? lobby.submission : null;
+    };
+    expect(submissionOf('filters')).toEqual({
+      yours: 'pending',
+      theirs: 'pending',
+    });
+    expect(submissionOf('filters-locked')).toEqual({
+      yours: 'submitted',
+      theirs: 'pending',
+    });
+    expect(submissionOf('filters-both')).toEqual({
+      yours: 'submitted',
+      theirs: 'submitted',
+    });
+  });
+
+  it('leave every live-play state without a lobby', () => {
+    for (const [name, view] of viewsOf('duel')) {
+      if (LOBBY_NAMES.includes(name) || view.mode !== 'duel') continue;
+      expect(view.lobby, name).toBeNull();
+      expect(view.opponent, name).not.toBeNull();
     }
   });
 });

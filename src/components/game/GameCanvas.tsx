@@ -1,5 +1,6 @@
 'use client';
 
+import { LOBBY_GATE_SIZE, LobbyPanel } from '@/components/duel/LobbyPanel';
 import { CanvasGate } from '@/components/game/CanvasGate';
 import { CountdownRing } from '@/components/game/CountdownRing';
 import { FeedbackToast } from '@/components/game/FeedbackToast';
@@ -15,6 +16,7 @@ import { ringSetups } from '@/lib/canvas';
 import { LOADING_FORMATION } from '@/lib/formation';
 import { CHOICE_BUTTON, PRIMARY_BUTTON } from '@/styles/classes';
 import type { CanvasGateView, CanvasView } from '@/types/canvas';
+import type { LobbyAction } from '@/types/duel-lobby';
 
 const PANEL = 'rounded-lg border bg-surface-raised';
 
@@ -121,7 +123,7 @@ function ActiveRail({
           </div>
           {view.mode === 'duel' && isTheirTurn ? (
             <p className="col-start-1 row-start-1 self-center text-center text-14 text-fg-muted">
-              Waiting for {view.opponent.handle}
+              Waiting for {view.opponent?.handle ?? 'your opponent'}
             </p>
           ) : null}
         </div>
@@ -140,6 +142,7 @@ type GameCanvasProps = {
   onQuit?: () => void;
   onPlayAgain?: () => void;
   onChangeFilters?: () => void;
+  onLobbyAction?: (action: LobbyAction) => void;
 };
 
 export function GameCanvas({
@@ -151,8 +154,10 @@ export function GameCanvas({
   onQuit,
   onPlayAgain = () => {},
   onChangeFilters = () => {},
+  onLobbyAction = () => {},
 }: GameCanvasProps) {
   const end = view.mode === 'solo' ? view.end : null;
+  const lobby = view.mode === 'duel' ? view.lobby : null;
   const summary = end?.status === 'ready' ? end.summary : null;
   const isPerfectClear = summary?.endReason === 'perfect_clear';
   // The summary's own links take over from quit
@@ -176,6 +181,17 @@ export function GameCanvas({
           isOpen={view.gate !== null}
           title={view.gate?.title ?? ''}
           detail={view.gate?.detail}
+          size={lobby ? LOBBY_GATE_SIZE[lobby.step] : 'narrow'}
+          body={
+            view.mode === 'duel' && lobby ? (
+              <LobbyPanel
+                lobby={lobby}
+                you={view.you}
+                opponent={view.opponent}
+                onAction={onLobbyAction}
+              />
+            ) : undefined
+          }
           action={
             view.gate?.actionLabel || view.gate?.choices ? (
               <GateAction gate={view.gate} onGateAction={onGateAction} />

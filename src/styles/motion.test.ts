@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { MOTION_DURATION_MS, MOTION_SECONDS } from '@/styles/motion';
+import {
+  MOTION_DURATION_MS,
+  MOTION_SECONDS,
+  REVEAL_SPRING,
+} from '@/styles/motion';
 
 describe('MOTION_SECONDS', () => {
   it('mirrors every duration, in seconds', () => {
@@ -11,5 +15,12 @@ describe('MOTION_SECONDS', () => {
         ms / 1000,
       );
     }
+  });
+});
+
+describe('REVEAL_SPRING', () => {
+  it('springs over the 320ms reveal from theme.md', () => {
+    expect(REVEAL_SPRING.type).toBe('spring');
+    expect(REVEAL_SPRING.visualDuration).toBe(MOTION_DURATION_MS.reveal / 1000);
   });
 });

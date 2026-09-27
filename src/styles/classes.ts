@@ -10,6 +10,16 @@ export const DUEL_ACTOR_BG: Record<DuelActor, string> = {
   opponent: 'bg-opponent',
 };
 
+export const DUEL_ACTOR_TEXT: Record<DuelActor, string> = {
+  you: 'text-you',
+  opponent: 'text-opponent',
+};
+
+export const DUEL_ACTOR_BORDER: Record<DuelActor, string> = {
+  you: 'border-you',
+  opponent: 'border-opponent',
+};
+
 export const PRIMARY_BUTTON = `rounded-sm bg-brand px-4 py-1.5 text-14 font-semibold text-on-accent ${FOCUS_RING}`;
 
 export const PRIMARY_BUTTON_LARGE = `rounded-sm bg-brand px-8 py-3 text-16 font-semibold text-on-accent disabled:opacity-70 ${FOCUS_RING}`;

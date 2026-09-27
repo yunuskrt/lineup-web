@@ -2,7 +2,12 @@
 
 import { motion, useReducedMotion } from 'motion/react';
 import { Lives } from '@/components/game/Lives';
-import { DUEL_ACTOR_BG, TURN_BORDER_SHIFT } from '@/styles/classes';
+import {
+  DUEL_ACTOR_BG,
+  DUEL_ACTOR_BORDER,
+  DUEL_ACTOR_TEXT,
+  TURN_BORDER_SHIFT,
+} from '@/styles/classes';
 import { MOTION_EASING, MOTION_SECONDS } from '@/styles/motion';
 import type { DuelActor, DuelPlayer } from '@/types/duel';
 
@@ -11,8 +16,6 @@ const SIDES: Record<
   {
     label: string;
     turnLabel: string;
-    border: string;
-    text: string;
     // The chip enters from the side the turn came from
     chipFromX: number;
   }
@@ -20,22 +23,18 @@ const SIDES: Record<
   you: {
     label: 'You',
     turnLabel: 'Your turn',
-    border: 'border-you',
-    text: 'text-you',
     chipFromX: 8,
   },
   opponent: {
     label: 'Opponent',
     turnLabel: 'Their turn',
-    border: 'border-opponent',
-    text: 'text-opponent',
     chipFromX: -8,
   },
 };
 
 type PlayerPanelProps = {
   actor: DuelActor;
-  player: DuelPlayer;
+  player: DuelPlayer | null;
   isActive: boolean;
 };
 
@@ -47,7 +46,7 @@ function PlayerPanel({ actor, player, isActive }: PlayerPanelProps) {
   return (
     <div
       className={`@container flex min-w-0 flex-col gap-2 rounded-md border-2 bg-surface-raised p-3 ${TURN_BORDER_SHIFT} ${
-        isActive ? side.border : 'border-line'
+        isActive ? DUEL_ACTOR_BORDER[actor] : 'border-line'
       } ${isOpponent ? 'items-end text-right' : 'items-start'}`}
     >
       {/* Narrow panels stack the chip in a reserved row */}
@@ -58,7 +57,7 @@ function PlayerPanel({ actor, player, isActive }: PlayerPanelProps) {
       >
         <span
           className={`text-12 leading-6 font-semibold uppercase ${
-            isActive ? side.text : 'text-fg-muted'
+            isActive ? DUEL_ACTOR_TEXT[actor] : 'text-fg-muted'
           }`}
         >
           {side.label}
@@ -82,22 +81,37 @@ function PlayerPanel({ actor, player, isActive }: PlayerPanelProps) {
           )}
         </span>
       </div>
-      <span
-        className={`w-full truncate text-16 font-medium ${
-          isActive ? 'text-fg' : 'text-fg-muted'
-        }`}
-      >
-        {player.handle}
-      </span>
-      <Lives lives={player.lives} owner={actor} />
+      {player ? (
+        <>
+          <span
+            className={`w-full truncate text-16 font-medium ${
+              isActive ? 'text-fg' : 'text-fg-muted'
+            }`}
+          >
+            {player.handle}
+          </span>
+          <Lives lives={player.lives} owner={actor} />
+        </>
+      ) : (
+        <>
+          {/* Same boxes as the handle and pips */}
+          <span className="flex h-6 w-full items-center justify-end">
+            <span className="h-4 w-24 rounded-sm bg-skeleton-fill" />
+            <span className="sr-only">Waiting for an opponent</span>
+          </span>
+          <div aria-hidden="true">
+            <Lives lives={0} owner={actor} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 type TurnIndicatorProps = {
   you: DuelPlayer;
-  opponent: DuelPlayer;
-  turn: DuelActor;
+  opponent: DuelPlayer | null;
+  turn: DuelActor | null;
 };
 
 export function TurnIndicator({ you, opponent, turn }: TurnIndicatorProps) {
@@ -110,7 +124,7 @@ export function TurnIndicator({ you, opponent, turn }: TurnIndicatorProps) {
         isActive={turn === 'opponent'}
       />
       <p className="sr-only" aria-live="polite">
-        {SIDES[turn].turnLabel}
+        {turn ? SIDES[turn].turnLabel : ''}
       </p>
     </div>
   );

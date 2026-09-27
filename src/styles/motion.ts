@@ -25,4 +25,10 @@ export const MOTION_EASING = {
 
 export const REVEAL_TRANSITION_TYPE = 'spring';
 
+export const REVEAL_SPRING = {
+  type: REVEAL_TRANSITION_TYPE,
+  visualDuration: MOTION_SECONDS.reveal,
+  bounce: 0.25,
+} as const;
+
 export const SKELETON_PULSE_OPACITY = [1, 0.6, 1] as const;

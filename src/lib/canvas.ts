@@ -18,9 +18,11 @@ const IDLE_RING: RingSetup = { round: UNSTARTED_ROUND, mode: 'waiting' };
 
 export function ringSetups(
   clock: CanvasClock,
-  turn: DuelActor,
+  turn: DuelActor | null,
 ): Record<DuelActor, RingSetup> {
-  if (clock.round === null) return { you: IDLE_RING, opponent: IDLE_RING };
+  if (clock.round === null || turn === null) {
+    return { you: IDLE_RING, opponent: IDLE_RING };
+  }
 
   const live: RingSetup = {
     round: clock.round,

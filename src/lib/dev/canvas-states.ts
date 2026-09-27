@@ -1,13 +1,17 @@
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { ROUND_MS } from '@/lib/canvas';
 import {
+  SAMPLE_FILTER_OPTIONS,
+  SAMPLE_FILTERS,
   SAMPLE_IDENTITY,
   SAMPLE_MATCH,
+  SAMPLE_OPEN_FILTERS,
   SAMPLE_OPPONENT,
   SAMPLE_YOU,
   samplePlayer,
 } from '@/lib/dev/samples';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
+import { filterSummary, lobbyGate } from '@/lib/lobby';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import type {
   CanvasGateView,
@@ -18,7 +22,8 @@ import type {
   SoloCanvasView,
   SoloEndView,
 } from '@/types/canvas';
-import type { DuelActor } from '@/types/duel';
+import type { DuelActor, FilterSubmission } from '@/types/duel';
+import type { DuelLobbyView } from '@/types/duel-lobby';
 import type { Lives, RoundTiming } from '@/types/game';
 import type { FoundPlayer, RevealedPlayer } from '@/types/player';
 import type { SoloSummary } from '@/types/solo';
@@ -204,7 +209,9 @@ const QUIT_SUMMARY: SoloSummary = {
 
 function toDuel(
   base: CanvasViewBase,
-  players: Partial<Pick<DuelCanvasView, 'you' | 'opponent' | 'turn'>> = {},
+  players: Partial<
+    Pick<DuelCanvasView, 'you' | 'opponent' | 'turn' | 'lobby'>
+  > = {},
 ): DuelCanvasView {
   return {
     ...base,
@@ -212,6 +219,7 @@ function toDuel(
     you: SAMPLE_YOU,
     opponent: SAMPLE_OPPONENT,
     turn: 'you',
+    lobby: null,
     ...players,
   };
 }
@@ -401,6 +409,83 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
   quit: summaryState('Quit with 6 named: "Run ended", 5 missed.', QUIT_SUMMARY),
 };
 
+const FRESH_OPPONENT = { ...SAMPLE_OPPONENT, lives: MAX_LIVES };
+
+const YOUR_SUMMARY = filterSummary(SAMPLE_FILTERS, SAMPLE_FILTER_OPTIONS);
+
+function filtersStep(submission: FilterSubmission): DuelLobbyView {
+  return { step: 'filters', yours: YOUR_SUMMARY, submission };
+}
+
+function coinFlipStep(winner: DuelActor): DuelLobbyView {
+  const applied = winner === 'you' ? SAMPLE_FILTERS : SAMPLE_OPEN_FILTERS;
+  return {
+    step: 'coinFlip',
+    winner,
+    applied: filterSummary(applied, SAMPLE_FILTER_OPTIONS),
+    opponent: FRESH_OPPONENT,
+  };
+}
+
+// Every lobby step sits over the loading canvas
+function lobbyState(
+  description: string,
+  lobby: DuelLobbyView,
+): CanvasState<DuelCanvasView> {
+  const isPaired = lobby.step !== 'searching' && lobby.step !== 'noOpponent';
+
+  return {
+    description,
+    build: () => ({
+      frame: {
+        view: toDuel(
+          { ...loadingFields(), gate: lobbyGate(lobby) },
+          {
+            you: { ...SAMPLE_YOU, lives: MAX_LIVES },
+            opponent: isPaired ? FRESH_OPPONENT : null,
+            turn: null,
+            lobby,
+          },
+        ),
+        guess: '',
+      },
+    }),
+  };
+}
+
+export const LOBBY_STATES = {
+  searching: lobbyState('In the queue: an ambient pulse, no ring, Cancel.', {
+    step: 'searching',
+  }),
+  paired: lobbyState('Opponent found: both handles in their colours.', {
+    step: 'paired',
+    opponent: FRESH_OPPONENT,
+  }),
+  filters: lobbyState(
+    'Your filters to lock in; theirs still choosing.',
+    filtersStep({ yours: 'pending', theirs: 'pending' }),
+  ),
+  'filters-locked': lobbyState(
+    'You locked in; they are still choosing.',
+    filtersStep({ yours: 'submitted', theirs: 'pending' }),
+  ),
+  'filters-both': lobbyState(
+    'Both locked in, waiting on the coin flip.',
+    filtersStep({ yours: 'submitted', theirs: 'submitted' }),
+  ),
+  'coin-flip-won': lobbyState(
+    'The flip went your way: your set is used.',
+    coinFlipStep('you'),
+  ),
+  'coin-flip-lost': lobbyState(
+    'The flip went their way: their set is used.',
+    coinFlipStep('opponent'),
+  ),
+  'no-opponent': lobbyState('The queue timed out: play solo or search again.', {
+    step: 'noOpponent',
+  }),
+} satisfies Record<string, CanvasState<DuelCanvasView>>;
+
 const THEIR_TURN = { turn: 'opponent' } as const;
 
 export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
@@ -416,6 +501,7 @@ export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
       },
     }),
   },
+  ...LOBBY_STATES,
   idle: duel(SHARED.idle),
   warning: duel(SHARED.warning),
   critical: duel(SHARED.critical),

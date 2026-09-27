@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DUEL_ACTOR_BG,
+  DUEL_ACTOR_BORDER,
+  DUEL_ACTOR_TEXT,
   LIFE_LOST_FILL_SHIFT,
   TIMER_COLOR_SHIFT,
   TURN_BORDER_SHIFT,
@@ -25,5 +28,19 @@ describe('transition classes', () => {
     expect(TIMER_COLOR_SHIFT.split(' ')).toContain(
       `ease-[cubic-bezier(${curve})]`,
     );
+  });
+});
+
+describe('duel actor classes', () => {
+  // Swapping amber and blue is the worst duel failure
+  it.each([
+    ['background', DUEL_ACTOR_BG, 'bg'],
+    ['text', DUEL_ACTOR_TEXT, 'text'],
+    ['border', DUEL_ACTOR_BORDER, 'border'],
+  ])('gives each actor its own %s token', (_, classes, prefix) => {
+    expect(classes).toEqual({
+      you: `${prefix}-you`,
+      opponent: `${prefix}-opponent`,
+    });
   });
 });
