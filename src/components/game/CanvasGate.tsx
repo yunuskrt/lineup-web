@@ -43,7 +43,7 @@ function GatePanel({ panelRef, title, detail, action }: GatePanelProps) {
           {title}
         </p>
         {detail ? <p className="text-14 text-fg-muted">{detail}</p> : null}
-        {action ? <div className="mt-2">{action}</div> : null}
+        {action ? <div className="mt-2 self-stretch">{action}</div> : null}
       </div>
     </motion.div>
   );

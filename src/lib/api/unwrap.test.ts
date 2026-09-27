@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ApiRequestError, unwrap } from '@/lib/api/unwrap';
+import { apiErrorOf, ApiRequestError, unwrap } from '@/lib/api/unwrap';
 import type { ApiError, ApiResult } from '@/types/api';
 
 const RATE_LIMITED: ApiError = {
@@ -39,5 +39,16 @@ describe('unwrap', () => {
       expect(thrown.message).toBe('Slow down.');
       expect(thrown.name).toBe('ApiRequestError');
     }
+  });
+});
+
+describe('apiErrorOf', () => {
+  it('reads the api error off an ApiRequestError', () => {
+    expect(apiErrorOf(new ApiRequestError(RATE_LIMITED))).toEqual(RATE_LIMITED);
+  });
+
+  it('treats anything else as a server error', () => {
+    expect(apiErrorOf(new TypeError('boom')).code).toBe('server_error');
+    expect(apiErrorOf('nope').retryAfterMs).toBeNull();
   });
 });

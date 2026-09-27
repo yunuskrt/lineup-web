@@ -16,6 +16,8 @@ export const PRIMARY_BUTTON_LARGE = `rounded-sm bg-brand px-8 py-3 text-16 font-
 
 export const SECONDARY_BUTTON = `rounded-sm border border-line px-4 py-2 text-14 font-semibold text-fg hover:bg-surface-raised disabled:text-fg-muted disabled:hover:bg-transparent ${FOCUS_RING}`;
 
+export const CHOICE_BUTTON = `rounded-sm border border-line bg-surface-card px-4 py-2 text-14 font-semibold text-fg hover:border-brand ${FOCUS_RING}`;
+
 export const TEXT_INPUT = `w-full rounded-sm border border-line bg-surface-card px-3 py-2.5 text-16 text-fg aria-invalid:border-danger read-only:text-fg-muted ${FOCUS_RING}`;
 
 export const TEXT_LINK = `rounded-sm font-medium text-fg underline decoration-line underline-offset-4 hover:decoration-fg ${FOCUS_RING}`;

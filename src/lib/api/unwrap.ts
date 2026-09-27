@@ -14,3 +14,13 @@ export function unwrap<T>(result: ApiResult<T>): T {
   if (!result.success) throw new ApiRequestError(result.error);
   return result.data;
 }
+
+// Anything thrown outside the API is our own failure
+export function apiErrorOf(error: unknown): ApiError {
+  if (error instanceof ApiRequestError) return error.error;
+  return {
+    code: 'server_error',
+    message: 'Unexpected client error.',
+    retryAfterMs: null,
+  };
+}

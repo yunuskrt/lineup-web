@@ -45,3 +45,4 @@ Not Started
 - W18a Session Layer: TanStack Query, auth hooks, unwrap, mock rejections.
 - W18b Auth Screens: /sign-in forms, guest and upgrade, nav account.
 - W19 Mode & Filter Screen: /play diptych, URL filters, guest on start.
+- W20 Solo Loop (Mock): side-pick gate, 15s loop, sync at 0, quit dialog.
