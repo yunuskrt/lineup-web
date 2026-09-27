@@ -44,3 +44,4 @@ Not Started
 - W17 Home Page: statement fold, rules strip, footer line, /sign-in stub.
 - W18a Session Layer: TanStack Query, auth hooks, unwrap, mock rejections.
 - W18b Auth Screens: /sign-in forms, guest and upgrade, nav account.
+- W19 Mode & Filter Screen: /play diptych, URL filters, guest on start.

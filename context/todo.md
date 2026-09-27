@@ -32,7 +32,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 - [x] **Phase W16 — Game Canvas Shell**: Composes grid, ring, lives and input with a `?state=` dev override.
 - [x] **Phase W17 — Home Page**: `/` statement fold, Play CTA, sign-in entry and a closing line.
 - [x] **Phase W18 — Auth Screens**: Sign in, sign up and continue-as-guest against the mock adapter.
-- [ ] **Phase W19 — Mode & Filter Screen**: `/play` diptych with competition, club and era filter controls.
+- [x] **Phase W19 — Mode & Filter Screen**: `/play` diptych with competition, club and era filter controls.
 - [ ] **Phase W20 — Solo Loop (Mock)**: `/play/solo` full 15s loop, lives and reveals off the mock adapter.
 - [ ] **Phase W21 — Run Summary**: Named vs missed, accuracy, streak, perfect clear and run-over states.
 - [ ] **Phase W22 — Duel Lobby (Mock)**: Searching, opponent found, filter submit and coin-flip reveal.
