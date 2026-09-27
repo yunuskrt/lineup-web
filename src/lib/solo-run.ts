@@ -1,10 +1,13 @@
 import type { GuessInputStatus } from '@/components/game/GuessInput';
-import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { authErrorMessage } from '@/lib/auth';
 import { guessFeedback } from '@/lib/feedback';
 import type { ApiError } from '@/types/api';
-import type { CanvasGateView, SoloCanvasView } from '@/types/canvas';
+import type {
+  CanvasGateView,
+  SoloCanvasView,
+  SoloEndView,
+} from '@/types/canvas';
 import type { RoundTiming } from '@/types/game';
 import type { SoloSession } from '@/types/solo';
 import type {
@@ -22,8 +25,6 @@ export const SOLO_GATE_COPY = {
     title: 'Pick your side',
     detail: "You'll name the starting XI of the team you pick.",
   },
-  perfectClear: 'Perfect clear',
-  runOver: 'Run over',
   backToFilters: 'Back to filters',
   noMatch: 'No match found',
   changeFilters: 'Change filters',
@@ -35,6 +36,7 @@ const FAILED_TITLES: Record<SoloRunStep, string> = {
   choose: "Couldn't start the run",
   sync: "Couldn't update the run",
   quit: "Couldn't end the run",
+  summary: "Couldn't load the summary",
 };
 
 // Errors a retry can't fix send the player back
@@ -47,7 +49,9 @@ export const INITIAL_SOLO_RUN: SoloRunState = {
   phase: 'finding',
   offer: null,
   session: null,
+  summary: null,
   isGuessing: false,
+  isQuitting: false,
   failure: null,
   toast: null,
   shakeKey: 0,
@@ -77,6 +81,10 @@ function applySession(state: SoloRunState, session: SoloSession): SoloRunState {
     failure: null,
     lifeLostKey: state.lifeLostKey + (hasLostLife ? 1 : 0),
   };
+}
+
+function isForHeldRun(state: SoloRunState, sessionId: string): boolean {
+  return state.session?.sessionId === sessionId;
 }
 
 function resolveGuess(
@@ -117,6 +125,25 @@ export function soloRunReducer(
       return applySession(state, event.session);
     case 'guessSubmitted':
       return { ...state, isGuessing: true };
+    case 'quitting':
+      return { ...state, isQuitting: true };
+    case 'summaryReceived':
+      if (!isForHeldRun(state, event.sessionId)) return state;
+      return {
+        ...state,
+        phase: 'over',
+        summary: event.summary,
+        isGuessing: false,
+        isQuitting: false,
+        failure: null,
+      };
+    case 'summaryFailed':
+      if (!isForHeldRun(state, event.sessionId)) return state;
+      return soloRunReducer(state, {
+        type: 'failed',
+        step: 'summary',
+        error: event.error,
+      });
     case 'guessResolved':
       return resolveGuess(state, event);
     case 'guessFailed': {
@@ -130,6 +157,7 @@ export function soloRunReducer(
         ...state,
         phase: 'failed',
         isGuessing: false,
+        isQuitting: false,
         failure: { step: event.step, error: event.error },
       };
     case 'retried':
@@ -151,7 +179,7 @@ export function needsResync(held: RoundTiming, synced: SoloSession): boolean {
 }
 
 function inputStatus(state: SoloRunState): GuessInputStatus {
-  if (state.phase !== 'playing') return 'locked';
+  if (state.phase !== 'playing' || state.isQuitting) return 'locked';
   return state.isGuessing ? 'pending' : 'live';
 }
 
@@ -159,8 +187,6 @@ export function soloGateAction(state: SoloRunState): SoloGateAction | null {
   switch (state.phase) {
     case 'choosing':
       return 'choose';
-    case 'over':
-      return 'leave';
     case 'failed':
       return state.failure && LEAVING_ERRORS.has(state.failure.error.code)
         ? 'leave'
@@ -168,18 +194,6 @@ export function soloGateAction(state: SoloRunState): SoloGateAction | null {
     default:
       return null;
   }
-}
-
-function overGate(session: SoloSession | null): CanvasGateView {
-  const found = session?.found.length ?? 0;
-  return {
-    title:
-      found >= SQUAD_SIZE
-        ? SOLO_GATE_COPY.perfectClear
-        : SOLO_GATE_COPY.runOver,
-    detail: `You named ${found} of ${SQUAD_SIZE}.`,
-    actionLabel: SOLO_GATE_COPY.backToFilters,
-  };
 }
 
 function failedGate(state: SoloRunState): CanvasGateView | null {
@@ -215,8 +229,6 @@ function gateOf(state: SoloRunState): CanvasGateView | null {
           { id: 'away', label: state.offer.away.name },
         ],
       };
-    case 'over':
-      return overGate(state.session);
     case 'failed':
       return failedGate(state);
     default:
@@ -224,13 +236,22 @@ function gateOf(state: SoloRunState): CanvasGateView | null {
   }
 }
 
+// A failed fetch keeps the skeleton under its gate
+function endOf(state: SoloRunState): SoloEndView | null {
+  const isEnding = state.phase === 'over' || state.failure?.step === 'summary';
+  if (!isEnding) return null;
+  return state.summary
+    ? { status: 'ready', summary: state.summary }
+    : { status: 'loading' };
+}
+
 export function soloCanvasView(state: SoloRunState): SoloCanvasView {
-  const { session } = state;
+  const { session, summary } = state;
   return {
     mode: 'solo',
     match: session?.match ?? null,
-    found: session?.found ?? [],
-    lives: session?.lives ?? MAX_LIVES,
+    found: summary?.found ?? session?.found ?? [],
+    lives: summary?.livesRemaining ?? session?.lives ?? MAX_LIVES,
     clock: { round: session?.round ?? null, isFrozen: false },
     input: inputStatus(state),
     toast: state.toast,
@@ -238,6 +259,6 @@ export function soloCanvasView(state: SoloRunState): SoloCanvasView {
     shakeKey: state.shakeKey,
     lifeLostKey: state.lifeLostKey,
     gate: gateOf(state),
-    end: null,
+    end: endOf(state),
   };
 }

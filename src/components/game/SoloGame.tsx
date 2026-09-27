@@ -13,11 +13,15 @@ export function SoloGame() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [params] = useState(() => new URLSearchParams(searchParams));
-  const { state, chooseSide, submitGuess, quit, retry } = useSoloRun(params);
+  const { state, chooseSide, submitGuess, quit, playAgain, retry } =
+    useSoloRun(params);
   const [guess, setGuess] = useState('');
   const [isQuitOpen, setIsQuitOpen] = useState(false);
-  const [isQuitting, setIsQuitting] = useState(false);
-  const hasActiveRun = state.session?.status === 'active';
+  // Mid-play only; a gate or summary has its own exit
+  const canConfirmQuit =
+    state.phase === 'playing' &&
+    state.session?.status === 'active' &&
+    state.summary === null;
 
   function leave() {
     router.push(withQuery('/play', params));
@@ -46,16 +50,18 @@ export function SoloGame() {
   }
 
   function handleQuit() {
-    if (hasActiveRun) setIsQuitOpen(true);
+    if (canConfirmQuit) setIsQuitOpen(true);
     else leave();
   }
 
   async function confirmQuit() {
-    setIsQuitting(true);
-    const isEnded = await quit();
-    setIsQuitting(false);
+    await quit();
     setIsQuitOpen(false);
-    if (isEnded) leave();
+  }
+
+  function handlePlayAgain() {
+    setGuess('');
+    playAgain();
   }
 
   return (
@@ -67,10 +73,13 @@ export function SoloGame() {
         onGuessSubmit={handleGuess}
         onGateAction={handleGateAction}
         onQuit={handleQuit}
+        onPlayAgain={handlePlayAgain}
+        onChangeFilters={leave}
       />
       <QuitDialog
-        isOpen={isQuitOpen}
-        isQuitting={isQuitting}
+        // Closes in the render the run ends in
+        isOpen={isQuitOpen && canConfirmQuit}
+        isQuitting={state.isQuitting}
         onDismiss={() => setIsQuitOpen(false)}
         onConfirm={confirmQuit}
       />

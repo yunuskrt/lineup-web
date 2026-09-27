@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef } from 'react';
+import { useId, useLayoutEffect, useRef } from 'react';
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/styles/classes';
 
 type QuitDialogProps = {
@@ -20,7 +20,8 @@ export function QuitDialog({
   const titleId = useId();
   const detailId = useId();
 
-  useEffect(() => {
+  // Closes before the summary takes focus
+  useLayoutEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (isOpen && !dialog.open) dialog.showModal();

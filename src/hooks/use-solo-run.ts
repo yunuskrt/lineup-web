@@ -21,14 +21,19 @@ export function useSoloRun(params: URLSearchParams) {
   const { mutateAsync: ensureSession } = useEnsureSession();
   const [state, dispatch] = useReducer(soloRunReducer, INITIAL_SOLO_RUN);
   const hasStarted = useRef(false);
+  const isFinding = useRef(false);
   const isChoosing = useRef(false);
+  const summaryRequestedFor = useRef<string | null>(null);
 
   const sessionId = state.session?.sessionId ?? null;
   const startedAt = state.session?.round?.startedAt ?? null;
   const endsAt = state.session?.round?.endsAt ?? null;
   const isPlaying = state.phase === 'playing';
+  const isAwaitingSummary = state.phase === 'over' && state.summary === null;
 
   async function find() {
+    if (isFinding.current) return;
+    isFinding.current = true;
     dispatch({ type: 'finding' });
     try {
       await ensureSession();
@@ -38,6 +43,8 @@ export function useSoloRun(params: URLSearchParams) {
       dispatch({ type: 'offerReceived', offer });
     } catch (error) {
       dispatch({ type: 'failed', step: 'find', error: apiErrorOf(error) });
+    } finally {
+      isFinding.current = false;
     }
   }
 
@@ -92,6 +99,26 @@ export function useSoloRun(params: URLSearchParams) {
     };
   }, [isPlaying, state.isGuessing, sessionId, startedAt, endsAt]);
 
+  // Not cancelled on cleanup: StrictMode would drop it
+  useEffect(() => {
+    if (!isAwaitingSummary || sessionId === null) return;
+    if (summaryRequestedFor.current === sessionId) return;
+    summaryRequestedFor.current = sessionId;
+
+    void (async () => {
+      try {
+        const summary = unwrap(await getApiClient().solo.getSummary(sessionId));
+        dispatch({ type: 'summaryReceived', sessionId, summary });
+      } catch (error) {
+        dispatch({
+          type: 'summaryFailed',
+          sessionId,
+          error: apiErrorOf(error),
+        });
+      }
+    })();
+  }, [isAwaitingSummary, sessionId]);
+
   async function chooseSide(side: Side) {
     const { offer } = state;
     if (!offer || state.phase !== 'choosing' || isChoosing.current) return;
@@ -129,17 +156,23 @@ export function useSoloRun(params: URLSearchParams) {
     }
   }
 
-  // Resolves true once there is no run left to end
-  async function quit(): Promise<boolean> {
-    if (sessionId === null || state.phase === 'over') return true;
+  // Ends on the summary, like a run that ran out
+  async function quit() {
+    if (sessionId === null || state.phase === 'over') return;
+    if (state.isQuitting) return;
 
+    dispatch({ type: 'quitting' });
     try {
-      unwrap(await getApiClient().solo.quit(sessionId));
-      return true;
+      const summary = unwrap(await getApiClient().solo.quit(sessionId));
+      dispatch({ type: 'summaryReceived', sessionId, summary });
     } catch (error) {
       dispatch({ type: 'failed', step: 'quit', error: apiErrorOf(error) });
-      return false;
     }
+  }
+
+  function playAgain() {
+    if (state.phase !== 'over') return;
+    void find();
   }
 
   function retry() {
@@ -147,8 +180,10 @@ export function useSoloRun(params: URLSearchParams) {
       void find();
       return;
     }
+    // Lets the summary effect ask again
+    if (state.failure?.step === 'summary') summaryRequestedFor.current = null;
     dispatch({ type: 'retried' });
   }
 
-  return { state, chooseSide, submitGuess, quit, retry };
+  return { state, chooseSide, submitGuess, quit, playAgain, retry };
 }

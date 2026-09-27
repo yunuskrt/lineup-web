@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -81,5 +81,36 @@ Defaults stand unless changed at `/feature start`.
     - Press Enter straight after the final guess, and check that it doesn't start a new run.
     - With a temporary mock patch, since reverted, a failed `getSummary` shows the retry gate.
     - StrictMode fetches the summary once per run.
+
+**Deviations recorded during implementation**
+
+- Summary events carry `sessionId`, so a late reply can't land on a new run. `summaryFailed` was added beside `summaryReceived`, and it maps to the `summary` failed step.
+- The summary fetch isn't cancelled on cleanup, since StrictMode would drop it. A `summaryRequestedFor` ref dedupes it, and "Try again" clears the ref.
+- `find` is guarded by an `isFinding` ref, and `playAgain` only runs from `over`.
+- `isQuitting` moved into the reducer, and the dialog reads it. `quit()` returns nothing, and does nothing once the run is over.
+- At `over`, the view takes found players and lives from the summary, not the session.
+- A failed summary keeps the skeleton (`end: loading`) under its gate.
+- `QuitDialog`:
+  - It's open only while `isQuitOpen` holds and the phase is `playing`.
+  - It closes in a layout effect.
+  - Without both, the modal blocked focus on the title, then sent focus to the hidden chip, which left it on the body.
+  - It also closes if the clock ends the run while it's open.
+- Quit outside of play (a failure gate) leaves instead of opening the dialog. The `phase === 'playing'` guard had made it a dead click there.
+- The quit chip (carried from W21a) hides once the summary is ready, and its row keeps `h-7` so the card doesn't move. It stays during loading and failure as the way out.
+- Review nit: in `endOf`, the local `isAwaitingSummary` became `isEnding`, since the hook uses that name for a narrower check.
+- The summary title is `outline-none`, since it only takes programmatic focus.
+- Tests: `solo-run.test.ts` has 38 tests, 11 of them new (2 added at `/feature test`: a lost run's summary, and a quit racing the clock), and the W20 end-gate test was removed. 395 in total.
+- Verified in the browser with Yıldırımspor:
+  - Perfect clear, and run over from three expiries.
+  - A quit mid-run gives "Run ended".
+  - Focus lands on the title every time.
+  - Stray Enter and Space after the final guess do nothing.
+  - Play again keeps the same URL and clears the text.
+  - Change filters keeps the filters.
+  - Esc and Keep playing cancel. A quit before the side pick leaves.
+  - A patched `getSummary` failure shows the retry gate.
+- `getSummary` runs once per run that ends naturally, under StrictMode. Quits never call it.
+- Expired rounds record about 15.5s (the grace window), and their bars clamp to full.
+- Temporary aids were reverted: the `getSummary` log and the failure patch.
 
 ## History
