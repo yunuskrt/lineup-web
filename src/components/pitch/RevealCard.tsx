@@ -4,7 +4,7 @@ import { motion, type Transition, useReducedMotion } from 'motion/react';
 import { useState } from 'react';
 import { SquadSlot } from '@/components/pitch/SquadSlot';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
-import { MOTION_SECONDS, REVEAL_TRANSITION_TYPE } from '@/styles/motion';
+import { MOTION_SECONDS, REVEAL_SPRING } from '@/styles/motion';
 import type { DuelActor } from '@/types/duel';
 import type { FoundPlayer, PositionGroup } from '@/types/player';
 
@@ -16,12 +16,6 @@ const FLASH_FADE_SECONDS = 0.64;
 const FLASH_TONES: Record<DuelActor, string> = {
   you: 'bg-reveal-flash-you',
   opponent: 'bg-reveal-flash-opponent',
-};
-
-const SPRING: Transition = {
-  type: REVEAL_TRANSITION_TYPE,
-  visualDuration: MOTION_SECONDS.reveal,
-  bounce: 0.25,
 };
 
 const FLASH_FADE: Transition = {
@@ -81,7 +75,7 @@ export function RevealCard({
       initial={isRevealing ? { opacity: 0, scale: START_SCALE } : false}
       animate={{ opacity: 1, scale: 1 }}
       transition={{
-        scale: isReducedMotion ? { duration: 0 } : SPRING,
+        scale: isReducedMotion ? { duration: 0 } : REVEAL_SPRING,
         opacity: { duration: MOTION_SECONDS.reveal, ease: 'easeOut' },
       }}
     >

@@ -41,6 +41,12 @@ describe('ringSetups', () => {
     });
   });
 
+  it('stops both rings while no one has a turn', () => {
+    const setups = ringSetups({ round: ROUND, isFrozen: false }, null);
+    expect(setups.you.mode).toBe('waiting');
+    expect(setups.opponent.mode).toBe('waiting');
+  });
+
   it('runs the ring of the side whose turn it is', () => {
     const clock = { round: ROUND, isFrozen: false };
     expect(ringSetups(clock, 'you').you).toEqual({

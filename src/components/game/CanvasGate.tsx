@@ -12,14 +12,30 @@ const GATE_FADE = {
 const FOCUSABLE =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
+export type GateSize = 'narrow' | 'wide';
+
+const PANEL_SIZES: Record<GateSize, string> = {
+  narrow: 'max-w-64 items-center text-center',
+  wide: 'max-w-xl items-stretch text-left sm:p-6',
+};
+
 type GatePanelProps = {
   panelRef: RefObject<HTMLDivElement | null>;
   title: string;
   detail?: string;
+  body?: ReactNode;
   action?: ReactNode;
+  size: GateSize;
 };
 
-function GatePanel({ panelRef, title, detail, action }: GatePanelProps) {
+function GatePanel({
+  panelRef,
+  title,
+  detail,
+  body,
+  action,
+  size,
+}: GatePanelProps) {
   // A fading-out panel must not take clicks or focus
   const isPresent = useIsPresent();
 
@@ -37,12 +53,13 @@ function GatePanel({ panelRef, title, detail, action }: GatePanelProps) {
         role="group"
         aria-label={title}
         tabIndex={-1}
-        className="flex w-full max-w-64 flex-col items-center gap-2 rounded-lg border border-line bg-surface-raised p-4 text-center outline-none"
+        className={`flex w-full flex-col gap-2 rounded-lg border border-line bg-surface-raised p-4 outline-none ${PANEL_SIZES[size]}`}
       >
         <p aria-hidden="true" className="text-16 font-semibold text-fg">
           {title}
         </p>
         {detail ? <p className="text-14 text-fg-muted">{detail}</p> : null}
+        {body ? <div className="mt-2 self-stretch">{body}</div> : null}
         {action ? <div className="mt-2 self-stretch">{action}</div> : null}
       </div>
     </motion.div>
@@ -53,7 +70,10 @@ type CanvasGateProps = {
   isOpen: boolean;
   title: string;
   detail?: string;
+  // Content beyond one action, under the detail
+  body?: ReactNode;
   action?: ReactNode;
+  size?: GateSize;
   children: ReactNode;
 };
 
@@ -61,7 +81,9 @@ export function CanvasGate({
   isOpen,
   title,
   detail,
+  body,
   action,
+  size = 'narrow',
   children,
 }: CanvasGateProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -107,7 +129,9 @@ export function CanvasGate({
             panelRef={panelRef}
             title={title}
             detail={detail}
+            body={body}
             action={action}
+            size={size}
           />
         ) : null}
       </AnimatePresence>

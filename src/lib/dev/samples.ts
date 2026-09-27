@@ -1,5 +1,11 @@
+import {
+  FIRST_SEASON_START,
+  LAST_SEASON_START,
+} from '@/lib/api/schemas/common';
 import { slotLayout } from '@/lib/formation';
+import type { FilterOptions } from '@/types/catalog';
 import type { DuelPlayer } from '@/types/duel';
+import type { Filters } from '@/types/filters';
 import type { GuessOutcome } from '@/types/game';
 import type { MaskedMatch, MatchIdentity } from '@/types/match';
 import type { RevealedPlayer } from '@/types/player';
@@ -44,6 +50,37 @@ export const SAMPLE_OPPONENT: DuelPlayer = {
   id: 'sample-opponent',
   handle: 'deadball_dan',
   lives: 3,
+};
+
+export const SAMPLE_FILTER_OPTIONS: FilterOptions = {
+  competitions: [
+    SAMPLE_IDENTITY.competition,
+    { id: 'sample-league', kind: 'league', name: 'Premier Division' },
+  ],
+  clubs: [
+    SAMPLE_MATCH.team,
+    SAMPLE_IDENTITY.away,
+    {
+      id: 'sample-third',
+      name: 'Athletic Varenna',
+      shortName: 'Varenna',
+      crestUrl: null,
+    },
+  ],
+  era: { from: FIRST_SEASON_START, to: LAST_SEASON_START },
+};
+
+export const SAMPLE_FILTERS: Filters = {
+  competitionIds: [SAMPLE_IDENTITY.competition.id],
+  clubIds: [SAMPLE_MATCH.team.id],
+  era: { from: 2003, to: 2008 },
+};
+
+// What a player who never narrows sends
+export const SAMPLE_OPEN_FILTERS: Filters = {
+  competitionIds: [],
+  clubIds: [],
+  era: { ...SAMPLE_FILTER_OPTIONS.era },
 };
 
 // Long names sit mid-pitch, where lines run widest
