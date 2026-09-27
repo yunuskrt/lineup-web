@@ -11,7 +11,7 @@ export function SiteFooter({ variant }: SiteFooterProps) {
         <p
           className={`${SITE_CONTAINER} py-16 font-display text-24 font-bold uppercase font-stretch-expanded sm:text-32`}
         >
-          Know the XI. Beat the Clock.
+          Eleven names. Fifteen seconds.
         </p>
       </footer>
     );
