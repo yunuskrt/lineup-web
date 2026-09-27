@@ -238,5 +238,6 @@ export function soloCanvasView(state: SoloRunState): SoloCanvasView {
     shakeKey: state.shakeKey,
     lifeLostKey: state.lifeLostKey,
     gate: gateOf(state),
+    end: null,
   };
 }

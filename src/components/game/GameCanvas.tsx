@@ -7,6 +7,7 @@ import { GuessInput } from '@/components/game/GuessInput';
 import { LifeLostFlash } from '@/components/game/LifeLostFlash';
 import { Lives } from '@/components/game/Lives';
 import { MatchHeader } from '@/components/game/MatchHeader';
+import { RunSummary } from '@/components/game/RunSummary';
 import { TurnIndicator } from '@/components/game/TurnIndicator';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { QuitChip } from '@/components/shell/QuitChip';
@@ -15,7 +16,7 @@ import { LOADING_FORMATION } from '@/lib/formation';
 import { CHOICE_BUTTON, PRIMARY_BUTTON } from '@/styles/classes';
 import type { CanvasGateView, CanvasView } from '@/types/canvas';
 
-const PANEL = 'rounded-lg border border-line bg-surface-raised';
+const PANEL = 'rounded-lg border bg-surface-raised';
 
 const HEADINGS: Record<CanvasView['mode'], string> = {
   solo: 'Solo game',
@@ -81,6 +82,54 @@ function GateAction({ gate, onGateAction }: GateActionProps) {
   );
 }
 
+type ActiveRailProps = {
+  view: CanvasView;
+  guess: string;
+  onGuessChange: (value: string) => void;
+  onGuessSubmit: (guess: string) => void;
+};
+
+function ActiveRail({
+  view,
+  guess,
+  onGuessChange,
+  onGuessSubmit,
+}: ActiveRailProps) {
+  const isTheirTurn = view.mode === 'duel' && view.turn === 'opponent';
+
+  return (
+    <>
+      <ClockRow view={view} />
+      <div className="relative flex flex-col gap-2 lg:mt-auto">
+        {/* Phones: floats over the clock row's bottom */}
+        <div className="pointer-events-none max-sm:absolute max-sm:inset-x-0 max-sm:bottom-full max-sm:mb-2">
+          <FeedbackToast toast={view.toast} />
+        </div>
+        {/* Both layers share one cell: no shift on handover */}
+        <div className="grid">
+          <div
+            inert={isTheirTurn}
+            className={`col-start-1 row-start-1 ${isTheirTurn ? 'invisible' : ''}`}
+          >
+            <GuessInput
+              status={view.input}
+              value={guess}
+              onValueChange={onGuessChange}
+              onSubmit={onGuessSubmit}
+              shakeKey={view.shakeKey}
+            />
+          </div>
+          {view.mode === 'duel' && isTheirTurn ? (
+            <p className="col-start-1 row-start-1 self-center text-center text-14 text-fg-muted">
+              Waiting for {view.opponent.handle}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </>
+  );
+}
+
 type GameCanvasProps = {
   view: CanvasView;
   guess: string;
@@ -89,6 +138,8 @@ type GameCanvasProps = {
   onGateAction: (choiceId?: string) => void;
   // Without it, quitting is a plain link to /play
   onQuit?: () => void;
+  onPlayAgain?: () => void;
+  onChangeFilters?: () => void;
 };
 
 export function GameCanvas({
@@ -98,8 +149,12 @@ export function GameCanvas({
   onGuessSubmit,
   onGateAction,
   onQuit,
+  onPlayAgain = () => {},
+  onChangeFilters = () => {},
 }: GameCanvasProps) {
-  const isTheirTurn = view.mode === 'duel' && view.turn === 'opponent';
+  const end = view.mode === 'solo' ? view.end : null;
+  const summary = end?.status === 'ready' ? end.summary : null;
+  const isPerfectClear = summary?.endReason === 'perfect_clear';
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4">
@@ -116,7 +171,7 @@ export function GameCanvas({
         />
       ) : null}
       {/* Grid, so the gate's full-size box resolves */}
-      <div className="relative grid flex-1">
+      <div className="relative grid flex-1 grid-cols-1">
         <CanvasGate
           isOpen={view.gate !== null}
           title={view.gate?.title ?? ''}
@@ -130,48 +185,42 @@ export function GameCanvas({
           <div className="flex size-full flex-col gap-4 lg:flex-row">
             <section
               aria-label="Match"
-              className={`flex min-w-0 flex-1 flex-col gap-2 p-2 ${PANEL}`}
+              className={`flex min-w-0 flex-1 flex-col gap-2 p-2 ${PANEL} ${
+                isPerfectClear ? 'border-found' : 'border-line'
+              }`}
             >
-              <MatchHeader match={view.match} found={view.found} />
+              <MatchHeader
+                match={view.match}
+                found={view.found}
+                identity={summary?.match}
+              />
               <div className="min-h-72 flex-1 sm:min-h-80">
                 <SquadGrid
                   formation={view.match?.formation ?? LOADING_FORMATION}
                   revealed={view.found}
+                  missed={summary?.missed ?? undefined}
                   pulse={view.pulse}
                   isLoading={view.match === null}
                 />
               </div>
             </section>
             <div
-              className={`flex shrink-0 flex-col gap-2 p-3 sm:gap-3 sm:p-4 lg:w-88 ${PANEL}`}
+              className={`flex shrink-0 flex-col gap-2 p-3 sm:gap-3 sm:p-4 lg:w-88 border-line ${PANEL}`}
             >
-              <ClockRow view={view} />
-              <div className="relative flex flex-col gap-2 lg:mt-auto">
-                {/* Phones: floats over the clock row's bottom */}
-                <div className="pointer-events-none max-sm:absolute max-sm:inset-x-0 max-sm:bottom-full max-sm:mb-2">
-                  <FeedbackToast toast={view.toast} />
-                </div>
-                {/* Both layers share one cell: no shift on handover */}
-                <div className="grid">
-                  <div
-                    inert={isTheirTurn}
-                    className={`col-start-1 row-start-1 ${isTheirTurn ? 'invisible' : ''}`}
-                  >
-                    <GuessInput
-                      status={view.input}
-                      value={guess}
-                      onValueChange={onGuessChange}
-                      onSubmit={onGuessSubmit}
-                      shakeKey={view.shakeKey}
-                    />
-                  </div>
-                  {view.mode === 'duel' && isTheirTurn ? (
-                    <p className="col-start-1 row-start-1 self-center text-center text-14 text-fg-muted">
-                      Waiting for {view.opponent.handle}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
+              {end ? (
+                <RunSummary
+                  end={end}
+                  onPlayAgain={onPlayAgain}
+                  onChangeFilters={onChangeFilters}
+                />
+              ) : (
+                <ActiveRail
+                  view={view}
+                  guess={guess}
+                  onGuessChange={onGuessChange}
+                  onGuessSubmit={onGuessSubmit}
+                />
+              )}
             </div>
           </div>
         </CanvasGate>

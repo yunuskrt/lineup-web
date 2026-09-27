@@ -1,12 +1,14 @@
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { ROUND_MS } from '@/lib/canvas';
 import {
+  SAMPLE_IDENTITY,
   SAMPLE_MATCH,
   SAMPLE_OPPONENT,
   SAMPLE_YOU,
   samplePlayer,
 } from '@/lib/dev/samples';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
+import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import type {
   CanvasGateView,
   CanvasMode,
@@ -14,10 +16,12 @@ import type {
   CanvasViewBase,
   DuelCanvasView,
   SoloCanvasView,
+  SoloEndView,
 } from '@/types/canvas';
 import type { DuelActor } from '@/types/duel';
 import type { Lives, RoundTiming } from '@/types/game';
-import type { FoundPlayer } from '@/types/player';
+import type { FoundPlayer, RevealedPlayer } from '@/types/player';
+import type { SoloSummary } from '@/types/solo';
 
 export const SNAPSHOT_EVENT_DELAY_MS = 600;
 
@@ -68,7 +72,11 @@ const PRE_MATCH_GATE: CanvasGateView = {
   actionLabel: 'Start',
 };
 
-const SOLO_FOUND = [0, 4, 7, 10].map((slot) => samplePlayer(FORMATION, slot));
+const SOLO_FOUND_SLOTS = [0, 4, 7, 10];
+const QUIT_FOUND_SLOTS = [0, 2, 4, 7, 9, 10];
+const ALL_SLOTS = Array.from({ length: SQUAD_SIZE }, (_, slot) => slot);
+
+const SOLO_FOUND = playersAt(SOLO_FOUND_SLOTS);
 
 const DUEL_FINDERS: [number, DuelActor][] = [
   [0, 'you'],
@@ -80,6 +88,14 @@ const DUEL_FINDERS: [number, DuelActor][] = [
 const DUEL_FOUND = DUEL_FINDERS.map(([slot, foundBy]) =>
   revealed(slot, foundBy),
 );
+
+function playersAt(slots: number[]): RevealedPlayer[] {
+  return slots.map((slot) => samplePlayer(FORMATION, slot));
+}
+
+function playersBesides(slots: number[]): RevealedPlayer[] {
+  return playersAt(ALL_SLOTS.filter((slot) => !slots.includes(slot)));
+}
 
 function revealed(slot: number, foundBy?: DuelActor): FoundPlayer {
   const player = samplePlayer(FORMATION, slot);
@@ -117,8 +133,74 @@ function frame(base: CanvasViewBase, guess = ''): BaseFrame {
 }
 
 function toSolo(base: CanvasViewBase, lives = SOLO_LIVES): SoloCanvasView {
-  return { ...base, mode: 'solo', lives };
+  return { ...base, mode: 'solo', lives, end: null };
 }
+
+function endedView(
+  found: FoundPlayer[],
+  lives: Lives,
+  end: SoloEndView,
+): SoloCanvasView {
+  return { ...toSolo(fields(null, found, { input: 'locked' }), lives), end };
+}
+
+function summaryState(
+  description: string,
+  summary: SoloSummary,
+): CanvasState<SoloCanvasView> {
+  return {
+    description,
+    build: () => ({
+      frame: {
+        view: endedView(summary.found, summary.livesRemaining, {
+          status: 'ready',
+          summary,
+        }),
+        guess: '',
+      },
+    }),
+  };
+}
+
+// Out of lives: 4 named rounds, 3 that ran out
+const RUN_OVER_SUMMARY: SoloSummary = {
+  match: SAMPLE_IDENTITY,
+  found: SOLO_FOUND,
+  missedCount: SQUAD_SIZE - SOLO_FOUND.length,
+  missed: null,
+  livesRemaining: 0,
+  endReason: 'lives_out',
+  accuracy: 0.4,
+  bestStreak: 2,
+  roundTimesMs: [3_200, 15_000, 6_100, 15_000, 2_400, 8_800, 15_000],
+};
+
+const PERFECT_CLEAR_SUMMARY: SoloSummary = {
+  match: { ...SAMPLE_IDENTITY, nickname: 'The Long Night' },
+  found: playersAt(ALL_SLOTS),
+  missedCount: 0,
+  missed: null,
+  livesRemaining: 2,
+  endReason: 'perfect_clear',
+  accuracy: 0.85,
+  bestStreak: 7,
+  roundTimesMs: [
+    2_100, 4_300, 3_800, 6_900, 15_000, 5_200, 2_700, 9_400, 3_300, 7_600,
+    4_100, 11_200,
+  ],
+};
+
+const QUIT_SUMMARY: SoloSummary = {
+  match: SAMPLE_IDENTITY,
+  found: playersAt(QUIT_FOUND_SLOTS),
+  missedCount: SQUAD_SIZE - QUIT_FOUND_SLOTS.length,
+  missed: null,
+  livesRemaining: 2,
+  endReason: 'quit',
+  accuracy: 0.6,
+  bestStreak: 3,
+  roundTimesMs: [4_800, 3_100, 15_000, 7_200, 2_900, 5_600, 8_300, 5_200],
+};
 
 function toDuel(
   base: CanvasViewBase,
@@ -295,6 +377,28 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
       },
     }),
   },
+  'summary-loading': {
+    description: 'The run is over: the summary skeleton holds the rail.',
+    build: () => ({
+      frame: {
+        view: endedView(SOLO_FOUND, 0, { status: 'loading' }),
+        guess: '',
+      },
+    }),
+  },
+  'run-over': summaryState(
+    'Out of lives with 4 named: stats, round times, 7 missed.',
+    RUN_OVER_SUMMARY,
+  ),
+  'run-over-pro': summaryState(
+    'As run-over, with the 7 missed names on the pitch (Pro).',
+    { ...RUN_OVER_SUMMARY, missed: playersBesides(SOLO_FOUND_SLOTS) },
+  ),
+  'perfect-clear': summaryState(
+    'All 11 named with 2 lives left: the turf takeover.',
+    PERFECT_CLEAR_SUMMARY,
+  ),
+  quit: summaryState('Quit with 6 named: "Run ended", 5 missed.', QUIT_SUMMARY),
 };
 
 const THEIR_TURN = { turn: 'opponent' } as const;

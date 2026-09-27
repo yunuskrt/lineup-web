@@ -12,7 +12,11 @@ import {
   SKELETON_PULSE_OPACITY,
 } from '@/styles/motion';
 import type { GridPulse } from '@/types/feedback';
-import type { FoundPlayer, PositionGroup } from '@/types/player';
+import type {
+  FoundPlayer,
+  PositionGroup,
+  RevealedPlayer,
+} from '@/types/player';
 
 // Each width stays under slotLayout's line spacing
 const SLOT_WIDTH_BY_WIDEST_LINE: Record<number, string> = {
@@ -38,6 +42,7 @@ export function slotWidthClass(formation: string): string {
 type GridSlotProps = {
   position: PositionGroup;
   player: FoundPlayer | undefined;
+  missedPlayer: RevealedPlayer | undefined;
   isLoading: boolean;
   isNew: boolean;
   pulseKey: number | undefined;
@@ -46,11 +51,17 @@ type GridSlotProps = {
 function GridSlot({
   position,
   player,
+  missedPlayer,
   isLoading,
   isNew,
   pulseKey,
 }: GridSlotProps) {
   if (isLoading) return <SquadSlot state="loading" position={position} />;
+  if (!player && missedPlayer) {
+    return (
+      <SquadSlot state="missed" position={position} name={missedPlayer.name} />
+    );
+  }
   if (!player) return <SquadSlot state="empty" position={position} />;
 
   return (
@@ -66,6 +77,8 @@ function GridSlot({
 type SquadGridProps = {
   formation: string;
   revealed: FoundPlayer[];
+  // Pro summaries only; free runs leave slots empty
+  missed?: RevealedPlayer[];
   pulse?: GridPulse;
   isLoading?: boolean;
 };
@@ -73,6 +86,7 @@ type SquadGridProps = {
 export function SquadGrid({
   formation,
   revealed,
+  missed,
   pulse,
   isLoading = false,
 }: SquadGridProps) {
@@ -102,6 +116,9 @@ export function SquadGrid({
   const widthClass = slotWidthClass(formation);
   const playersBySlot = new Map(
     revealed.map((player) => [player.slot, player]),
+  );
+  const missedBySlot = new Map(
+    (missed ?? []).map((player) => [player.slot, player]),
   );
   const isPulsing = isLoading && !isReducedMotion;
 
@@ -136,6 +153,7 @@ export function SquadGrid({
                     <GridSlot
                       position={point.position}
                       player={player}
+                      missedPlayer={missedBySlot.get(point.slot)}
                       isLoading={isLoading}
                       isNew={player !== undefined && newIds.has(player.id)}
                       pulseKey={
