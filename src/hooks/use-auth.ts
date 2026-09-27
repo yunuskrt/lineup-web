@@ -1,4 +1,5 @@
 import {
+  queryOptions,
   useMutation,
   useQuery,
   useQueryClient,
@@ -24,12 +25,14 @@ function useSessionWriter() {
     queryClient.setQueryData(SESSION_QUERY_KEY, session);
 }
 
+const sessionQuery = queryOptions({
+  queryKey: SESSION_QUERY_KEY,
+  queryFn: async () => unwrap(await getApiClient().auth.getSession()),
+  staleTime: SESSION_STALE_TIME_MS,
+});
+
 export function useSession() {
-  return useQuery({
-    queryKey: SESSION_QUERY_KEY,
-    queryFn: async () => unwrap(await getApiClient().auth.getSession()),
-    staleTime: SESSION_STALE_TIME_MS,
-  });
+  return useQuery(sessionQuery);
 }
 
 export function useSignIn() {
@@ -62,6 +65,20 @@ export function useContinueAsGuest() {
   const writeSession = useSessionWriter();
   return useMutation({
     mutationFn: async () => unwrap(await getApiClient().auth.continueAsGuest()),
+    onSuccess: writeSession,
+  });
+}
+
+// A signed-out player starts as a guest, no wall
+export function useEnsureSession() {
+  const queryClient = useQueryClient();
+  const writeSession = useSessionWriter();
+  return useMutation({
+    mutationFn: async () => {
+      const session = await queryClient.query(sessionQuery);
+      if (session) return session;
+      return unwrap(await getApiClient().auth.continueAsGuest());
+    },
     onSuccess: writeSession,
   });
 }
