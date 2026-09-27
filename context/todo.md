@@ -34,7 +34,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 - [x] **Phase W18 — Auth Screens**: Sign in, sign up and continue-as-guest against the mock adapter.
 - [x] **Phase W19 — Mode & Filter Screen**: `/play` diptych with competition, club and era filter controls.
 - [x] **Phase W20 — Solo Loop (Mock)**: `/play/solo` full 15s loop, lives and reveals off the mock adapter.
-- [ ] **Phase W21 — Run Summary**: Named vs missed, accuracy, streak, perfect clear and run-over states.
+- [x] **Phase W21 — Run Summary**: Named vs missed, accuracy, streak, perfect clear and run-over states.
 - [ ] **Phase W22 — Duel Lobby (Mock)**: Searching, opponent found, filter submit and coin-flip reveal.
 - [ ] **Phase W23 — Duel Loop (Mock)**: Alternating rounds, shared found-pool and terminal states, faked.
 - [ ] **Phase W24 — Profile Screen (Mock)**: History, win/loss/draw, accuracy and favourite-club stats.

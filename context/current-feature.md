@@ -47,3 +47,4 @@ Not Started
 - W19 Mode & Filter Screen: /play diptych, URL filters, guest on start.
 - W20 Solo Loop (Mock): side-pick gate, 15s loop, sync at 0, quit dialog.
 - W21a Summary Panel: rail summary, turf takeover, missed slots, snapshots.
+- W21b Summary Wiring: summary fetch, quit to summary, play again, focus.

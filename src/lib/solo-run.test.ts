@@ -11,7 +11,7 @@ import {
 import type { ApiError } from '@/types/api';
 import type { Lives } from '@/types/game';
 import type { RevealedPlayer } from '@/types/player';
-import type { SoloMatchOffer, SoloSession } from '@/types/solo';
+import type { SoloMatchOffer, SoloSession, SoloSummary } from '@/types/solo';
 import type { SoloRunEvent, SoloRunState } from '@/types/solo-run';
 
 const ROUND = { startedAt: 1_000, endsAt: 16_000 };
@@ -58,6 +58,53 @@ const PLAYING: SoloRunEvent[] = [
   { type: 'offerReceived', offer: OFFER },
   { type: 'sessionReceived', session: session() },
 ];
+
+const ALL_FOUND = Array.from({ length: 11 }, (_, slot) => player(slot));
+
+const OVER: SoloRunEvent = {
+  type: 'synced',
+  session: session({
+    status: 'over',
+    lives: 0,
+    found: ALL_FOUND.slice(0, 4),
+    round: null,
+  }),
+};
+
+function summary(overrides: Partial<SoloSummary> = {}): SoloSummary {
+  return {
+    match: {
+      id: 'match-1',
+      competition: { id: 'cup', kind: 'ucl', name: 'Continental Cup' },
+      season: '2004-05',
+      date: '2005-05-25',
+      stage: 'Final',
+      home: OFFER.home,
+      away: OFFER.away,
+      score: { home: 3, away: 3 },
+      nickname: null,
+    },
+    found: ALL_FOUND.slice(0, 4),
+    missedCount: 7,
+    missed: null,
+    livesRemaining: 0,
+    endReason: 'lives_out',
+    accuracy: 0.5,
+    bestStreak: 2,
+    roundTimesMs: [4_000, 15_000],
+    ...overrides,
+  };
+}
+
+function received(value: SoloSummary, sessionId = 'session-1'): SoloRunEvent {
+  return { type: 'summaryReceived', sessionId, summary: value };
+}
+
+const NETWORK: ApiError = {
+  code: 'network',
+  message: 'offline',
+  retryAfterMs: null,
+};
 
 const RATE_LIMITED: ApiError = {
   code: 'rate_limited',
@@ -329,29 +376,6 @@ describe('soloCanvasView', () => {
     expect(soloGateAction(run(...PLAYING))).toBeNull();
   });
 
-  it('names a perfect clear apart from a run over', () => {
-    const all = Array.from({ length: 11 }, (_, slot) => player(slot));
-    const clear = run(...PLAYING, {
-      type: 'synced',
-      session: session({ status: 'over', found: all, round: null }),
-    });
-    expect(soloCanvasView(clear).gate?.title).toBe(SOLO_GATE_COPY.perfectClear);
-    expect(soloCanvasView(clear).gate?.detail).toBe('You named 11 of 11.');
-
-    const out = run(...PLAYING, {
-      type: 'synced',
-      session: session({
-        status: 'over',
-        lives: 0,
-        found: all.slice(0, 4),
-        round: null,
-      }),
-    });
-    expect(soloCanvasView(out).gate?.title).toBe(SOLO_GATE_COPY.runOver);
-    expect(soloCanvasView(out).gate?.detail).toBe('You named 4 of 11.');
-    expect(soloGateAction(out)).toBe('leave');
-  });
-
   it('sends an empty pool back to the filters', () => {
     const state = run({
       type: 'failed',
@@ -408,5 +432,128 @@ describe('soloCanvasView', () => {
       SOLO_GATE_COPY.backToFilters,
     );
     expect(soloGateAction(state)).toBe('leave');
+  });
+});
+
+describe('the run summary', () => {
+  it('shows the skeleton once the server ends the run', () => {
+    const view = soloCanvasView(run(...PLAYING, OVER));
+    expect(view.end).toEqual({ status: 'loading' });
+    expect(view.gate).toBeNull();
+    expect(view.input).toBe('locked');
+  });
+
+  it('opens no gate when the run is over', () => {
+    const over = run(...PLAYING, OVER);
+    expect(soloGateAction(over)).toBeNull();
+    expect(soloGateAction(run(...PLAYING, OVER, received(summary())))).toBe(
+      null,
+    );
+  });
+
+  it('shows the summary once it arrives, trusting its numbers', () => {
+    const value = summary({ livesRemaining: 1, found: ALL_FOUND.slice(0, 5) });
+    const view = soloCanvasView(run(...PLAYING, OVER, received(value)));
+    expect(view.end).toEqual({ status: 'ready', summary: value });
+    expect(view.found).toBe(value.found);
+    expect(view.lives).toBe(1);
+    expect(view.gate).toBeNull();
+  });
+
+  it('ends a quit on the summary quit returned', () => {
+    const quit = summary({ endReason: 'quit', livesRemaining: 2 });
+    const state = run(...PLAYING, { type: 'quitting' }, received(quit));
+    expect(state.phase).toBe('over');
+    expect(state.isQuitting).toBe(false);
+    expect(soloCanvasView(state).end).toEqual({
+      status: 'ready',
+      summary: quit,
+    });
+  });
+
+  it('locks the input while a quit is in flight', () => {
+    const state = run(...PLAYING, { type: 'quitting' });
+    expect(state.isQuitting).toBe(true);
+    expect(soloCanvasView(state).input).toBe('locked');
+  });
+
+  it('drops a failed quit back to a retry gate', () => {
+    const state = run(
+      ...PLAYING,
+      { type: 'quitting' },
+      {
+        type: 'failed',
+        step: 'quit',
+        error: NETWORK,
+      },
+    );
+    expect(state.isQuitting).toBe(false);
+    expect(soloCanvasView(state).gate?.title).toBe("Couldn't end the run");
+    expect(soloGateAction(state)).toBe('retry');
+  });
+
+  it('ignores a summary for a run it no longer holds', () => {
+    const state = run(...PLAYING, OVER);
+    expect(soloRunReducer(state, received(summary(), 'session-old'))).toBe(
+      state,
+    );
+    const failed = soloRunReducer(state, {
+      type: 'summaryFailed',
+      sessionId: 'session-old',
+      error: NETWORK,
+    });
+    expect(failed).toBe(state);
+  });
+
+  it('gates a failed summary over its skeleton, then retries', () => {
+    const failed = run(...PLAYING, OVER, {
+      type: 'summaryFailed',
+      sessionId: 'session-1',
+      error: NETWORK,
+    });
+    const view = soloCanvasView(failed);
+    expect(view.gate?.title).toBe("Couldn't load the summary");
+    expect(view.gate?.actionLabel).toBe(SOLO_GATE_COPY.tryAgain);
+    expect(view.end).toEqual({ status: 'loading' });
+    expect(soloGateAction(failed)).toBe('retry');
+
+    const retried = soloRunReducer(failed, { type: 'retried' });
+    expect(retried.phase).toBe('over');
+    expect(soloCanvasView(retried).gate).toBeNull();
+    expect(soloCanvasView(retried).end).toEqual({ status: 'loading' });
+  });
+
+  it('sends a lost run back to the filters from the summary', () => {
+    const lost = run(...PLAYING, OVER, {
+      type: 'summaryFailed',
+      sessionId: 'session-1',
+      error: {
+        code: 'not_found',
+        message: 'That run no longer exists.',
+        retryAfterMs: null,
+      },
+    });
+    expect(soloGateAction(lost)).toBe('leave');
+    expect(soloCanvasView(lost).gate?.actionLabel).toBe(
+      SOLO_GATE_COPY.backToFilters,
+    );
+  });
+
+  it('settles a quit that races the clock on one summary', () => {
+    const raced = run(...PLAYING, { type: 'quitting' }, OVER);
+    expect(raced.phase).toBe('over');
+    expect(soloCanvasView(raced).input).toBe('locked');
+    expect(soloCanvasView(raced).end).toEqual({ status: 'loading' });
+
+    const settled = soloRunReducer(raced, received(summary()));
+    expect(settled.isQuitting).toBe(false);
+    expect(soloCanvasView(settled).end?.status).toBe('ready');
+  });
+
+  it('starts over from finding on play again', () => {
+    const over = run(...PLAYING, OVER, received(summary()));
+    const again = soloRunReducer(over, { type: 'finding' });
+    expect(again).toEqual(INITIAL_SOLO_RUN);
+    expect(soloCanvasView(again).end).toBeNull();
   });
 });

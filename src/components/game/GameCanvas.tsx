@@ -155,14 +155,14 @@ export function GameCanvas({
   const end = view.mode === 'solo' ? view.end : null;
   const summary = end?.status === 'ready' ? end.summary : null;
   const isPerfectClear = summary?.endReason === 'perfect_clear';
+  // The summary's own links take over from quit
+  const quitChip = summary ? null : <QuitChip onQuit={onQuit} />;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4">
       <h1 className="sr-only">{HEADINGS[view.mode]}</h1>
       {/* Phones get the chip in the canvas header row */}
-      <div className="hidden justify-end sm:flex">
-        <QuitChip onQuit={onQuit} />
-      </div>
+      <div className="hidden h-7 justify-end sm:flex">{quitChip}</div>
       {view.mode === 'duel' ? (
         <TurnIndicator
           you={view.you}
@@ -226,9 +226,7 @@ export function GameCanvas({
         </CanvasGate>
         {/* Phones: in the header row, outside the gate */}
         <div className="pointer-events-none absolute inset-x-2 top-2 flex h-14 items-center justify-end px-2 sm:hidden">
-          <div className="pointer-events-auto">
-            <QuitChip onQuit={onQuit} />
-          </div>
+          <div className="pointer-events-auto">{quitChip}</div>
         </div>
       </div>
       <LifeLostFlash flashKey={view.lifeLostKey} />

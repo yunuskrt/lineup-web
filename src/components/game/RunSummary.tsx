@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, type Transition, useReducedMotion } from 'motion/react';
-import { useId } from 'react';
+import { type RefObject, useEffect, useId, useRef } from 'react';
 import { Lives } from '@/components/game/Lives';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import {
@@ -37,9 +37,10 @@ const SKELETON_PULSE: Transition = {
 type OutcomeProps = {
   summary: SoloSummary;
   titleId: string;
+  titleRef: RefObject<HTMLHeadingElement | null>;
 };
 
-function Outcome({ summary, titleId }: OutcomeProps) {
+function Outcome({ summary, titleId, titleRef }: OutcomeProps) {
   const isPerfect = summary.endReason === 'perfect_clear';
   const lives = summary.livesRemaining;
 
@@ -53,8 +54,10 @@ function Outcome({ summary, titleId }: OutcomeProps) {
     >
       <div className="flex min-w-0 flex-col">
         <h2
+          ref={titleRef}
           id={titleId}
-          className="font-display text-32 leading-10 font-semibold"
+          tabIndex={-1}
+          className="font-display text-32 leading-10 font-semibold outline-none"
         >
           {summaryTitle(summary.endReason)}
         </h2>
@@ -223,6 +226,13 @@ export function RunSummary({
   onChangeFilters,
 }: RunSummaryProps) {
   const titleId = useId();
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const isReady = end.status === 'ready';
+
+  // Not Play again: a held Enter would start a run
+  useEffect(() => {
+    if (isReady) titleRef.current?.focus();
+  }, [isReady]);
 
   if (end.status === 'loading') return <SummarySkeleton />;
 
@@ -230,7 +240,7 @@ export function RunSummary({
 
   return (
     <section aria-labelledby={titleId} className="flex flex-1 flex-col gap-6">
-      <Outcome summary={summary} titleId={titleId} />
+      <Outcome summary={summary} titleId={titleId} titleRef={titleRef} />
       <Stats summary={summary} />
       <RoundStrip roundTimesMs={summary.roundTimesMs} />
       <SummaryActions
