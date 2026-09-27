@@ -13,10 +13,14 @@ export type CanvasClock = {
   isFrozen: boolean;
 };
 
+export type CanvasGateChoice = { id: string; label: string };
+
 export type CanvasGateView = {
   title: string;
   detail?: string;
   actionLabel?: string;
+  // One decision across equal options
+  choices?: CanvasGateChoice[];
 };
 
 export type CanvasViewBase = {

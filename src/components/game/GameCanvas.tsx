@@ -12,8 +12,8 @@ import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { QuitChip } from '@/components/shell/QuitChip';
 import { ringSetups } from '@/lib/canvas';
 import { LOADING_FORMATION } from '@/lib/formation';
-import { PRIMARY_BUTTON } from '@/styles/classes';
-import type { CanvasView } from '@/types/canvas';
+import { CHOICE_BUTTON, PRIMARY_BUTTON } from '@/styles/classes';
+import type { CanvasGateView, CanvasView } from '@/types/canvas';
 
 const PANEL = 'rounded-lg border border-line bg-surface-raised';
 
@@ -47,12 +47,48 @@ function ClockRow({ view }: { view: CanvasView }) {
   );
 }
 
+type GateActionProps = {
+  gate: CanvasGateView;
+  onGateAction: (choiceId?: string) => void;
+};
+
+function GateAction({ gate, onGateAction }: GateActionProps) {
+  if (gate.choices) {
+    return (
+      <div className="flex flex-col gap-2">
+        {gate.choices.map((choice) => (
+          <button
+            key={choice.id}
+            type="button"
+            className={CHOICE_BUTTON}
+            onClick={() => onGateAction(choice.id)}
+          >
+            {choice.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={PRIMARY_BUTTON}
+      onClick={() => onGateAction()}
+    >
+      {gate.actionLabel}
+    </button>
+  );
+}
+
 type GameCanvasProps = {
   view: CanvasView;
   guess: string;
   onGuessChange: (value: string) => void;
   onGuessSubmit: (guess: string) => void;
-  onGateAction: () => void;
+  onGateAction: (choiceId?: string) => void;
+  // Without it, quitting is a plain link to /play
+  onQuit?: () => void;
 };
 
 export function GameCanvas({
@@ -61,12 +97,17 @@ export function GameCanvas({
   onGuessChange,
   onGuessSubmit,
   onGateAction,
+  onQuit,
 }: GameCanvasProps) {
   const isTheirTurn = view.mode === 'duel' && view.turn === 'opponent';
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4">
       <h1 className="sr-only">{HEADINGS[view.mode]}</h1>
+      {/* Phones get the chip in the canvas header row */}
+      <div className="hidden justify-end sm:flex">
+        <QuitChip onQuit={onQuit} />
+      </div>
       {view.mode === 'duel' ? (
         <TurnIndicator
           you={view.you}
@@ -81,14 +122,8 @@ export function GameCanvas({
           title={view.gate?.title ?? ''}
           detail={view.gate?.detail}
           action={
-            view.gate?.actionLabel ? (
-              <button
-                type="button"
-                className={PRIMARY_BUTTON}
-                onClick={onGateAction}
-              >
-                {view.gate.actionLabel}
-              </button>
+            view.gate?.actionLabel || view.gate?.choices ? (
+              <GateAction gate={view.gate} onGateAction={onGateAction} />
             ) : undefined
           }
         >
@@ -143,7 +178,7 @@ export function GameCanvas({
         {/* Phones: in the header row, outside the gate */}
         <div className="pointer-events-none absolute inset-x-2 top-2 flex h-14 items-center justify-end px-2 sm:hidden">
           <div className="pointer-events-auto">
-            <QuitChip />
+            <QuitChip onQuit={onQuit} />
           </div>
         </div>
       </div>
