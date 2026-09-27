@@ -8,9 +8,12 @@ import {
   AUTH_ERROR_MESSAGES,
   AUTH_FIELD_MESSAGES,
   authErrorMessage,
+  authErrorMessageOf,
   authFieldErrors,
+  authModeFrom,
   signUpTarget,
 } from '@/lib/auth';
+import { ApiRequestError } from '@/lib/api/unwrap';
 import type { ApiError, ApiErrorCode } from '@/types/api';
 import type { Session } from '@/types/auth';
 
@@ -165,5 +168,28 @@ describe('signUpTarget', () => {
   it('signs up when signed out or already registered', () => {
     expect(signUpTarget(null)).toBe('signUp');
     expect(signUpTarget(sessionFor(false))).toBe('signUp');
+  });
+});
+
+describe('authErrorMessageOf', () => {
+  it('maps an api error through authErrorMessage', () => {
+    const error = new ApiRequestError(apiError('unauthorized'));
+    expect(authErrorMessageOf(error)).toBe('Backend says unauthorized.');
+  });
+
+  it('falls back to server error copy for anything else', () => {
+    for (const error of [new Error('boom'), 'boom', undefined]) {
+      expect(authErrorMessageOf(error)).toBe(AUTH_ERROR_MESSAGES.serverError);
+    }
+  });
+});
+
+describe('authModeFrom', () => {
+  it('reads sign-up and defaults everything else to sign-in', () => {
+    expect(authModeFrom('sign-up')).toBe('sign-up');
+    expect(authModeFrom('sign-in')).toBe('sign-in');
+    expect(authModeFrom(undefined)).toBe('sign-in');
+    expect(authModeFrom('SIGN-UP')).toBe('sign-in');
+    expect(authModeFrom(['sign-up', 'sign-in'])).toBe('sign-in');
   });
 });

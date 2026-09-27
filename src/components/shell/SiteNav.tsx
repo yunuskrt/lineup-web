@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { NavAccount } from '@/components/shell/NavAccount';
 import { NavCta } from '@/components/shell/NavCta';
 import { FOCUS_RING, SITE_CONTAINER } from '@/styles/classes';
 
@@ -15,7 +16,10 @@ export function SiteNav() {
         >
           Lineup
         </Link>
-        <NavCta />
+        <div className="flex min-w-0 items-center gap-5">
+          <NavAccount />
+          <NavCta />
+        </div>
       </nav>
     </header>
   );

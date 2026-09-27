@@ -5,12 +5,13 @@ import {
   MIN_HANDLE_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from '@/lib/api/schemas/auth';
+import { ApiRequestError } from '@/lib/api/unwrap';
 import type { ApiError } from '@/types/api';
 import type {
   AuthField,
   AuthFieldErrors,
   AuthFieldValues,
-  AuthRequestSchema,
+  AuthMode,
   Session,
   SignUpTarget,
 } from '@/types/auth';
@@ -41,6 +42,13 @@ export function authErrorMessage(error: ApiError): string {
   }
 }
 
+// Anything not from the API is our own failure
+export function authErrorMessageOf(error: unknown): string {
+  return error instanceof ApiRequestError
+    ? authErrorMessage(error.error)
+    : AUTH_ERROR_MESSAGES.serverError;
+}
+
 function rateLimitedMessage(retryAfterMs: number | null): string {
   if (retryAfterMs === null) return AUTH_ERROR_MESSAGES.rateLimitedSoon;
 
@@ -50,7 +58,7 @@ function rateLimitedMessage(retryAfterMs: number | null): string {
 }
 
 export function authFieldErrors(
-  schema: AuthRequestSchema,
+  schema: z.ZodType,
   values: AuthFieldValues,
 ): AuthFieldErrors {
   const parsed = schema.safeParse(values);
@@ -79,4 +87,8 @@ function fieldMessage(field: AuthField, issue: z.core.$ZodIssue): string {
 
 export function signUpTarget(session: Session | null): SignUpTarget {
   return session?.user.isGuest ? 'upgradeGuest' : 'signUp';
+}
+
+export function authModeFrom(param: string | string[] | undefined): AuthMode {
+  return param === 'sign-up' ? 'sign-up' : 'sign-in';
 }

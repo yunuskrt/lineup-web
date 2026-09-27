@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -97,5 +97,25 @@ Defaults stand unless changed at `/feature start`.
     - The nav's "Sign in" link doesn't appear on `/sign-in`.
   - At 375, 834 and 1440 wide there's no horizontal scroll, the nav doesn't wrap with a 24-character handle, and the skeleton-to-form swap doesn't shift the layout.
   - Tabbing covers the mode switch, the fields, submit and continue-as-guest in order, each with a focus ring. Password managers offer to fill the fields (autocomplete attributes are present).
+- **Deviations recorded during implementation**
+  - **The `h1` lives in `AuthPanel`, not the page.** Only the client knows the session, and a registered user would otherwise read "Sign in" above their signed-in view. The headings are "Sign in", "Create account" and "Signed in". The page stays a server component and passes `mode`.
+  - **`SignedInPanel` copy:** "You're playing as {handle}." rather than "Signed in as {handle}", so it doesn't repeat the "Signed in" heading. It matches the guest line.
+  - **A shared `AuthForm`** holds the values, errors, focus and submit logic. `SignInForm` and `SignUpForm` are thin wrappers that pass a schema and a field list. `AuthField` also takes an optional hint, and the handle's hint is "Your name in duels."
+  - **Schema generics widened:** `AuthForm` and `authFieldErrors` take any `z.ZodType`, and `AuthRequestSchema` (moved to types in W18a's review) is deleted. With a union bound, `safeParse` lost the link from a schema to its output type, which would have needed a cast.
+  - **Added to `src/lib/auth.ts`, with tests:** `authModeFrom(param)` parses `?mode=`, and `authErrorMessageOf(error: unknown)` handles thrown values that aren't an `ApiRequestError`, falling back to the server-error copy.
+  - **Submit uses `mutateAsync`, then `router.push`.** A per-call `onSuccess` can be skipped if the form unmounts first, and it does, because the session write swaps the panel.
+  - **Session load failure:** if `getSession` fails, the panel shows the alert line and a secondary "Try again" button, so it never fails silently. The mock can't reach this.
+  - **Shared classes added:** `PRIMARY_BUTTON_LARGE` and `TEXT_LINK` as well. `HomeFold` now uses both, because its inline strings were the second use.
+  - **Skeleton heights were measured, not guessed.** 14px text renders 21px tall and 12px renders 18px, so the bars are `h-5.25`, `h-4.5`, `h-8.75` and `h-9.75`. The loaded height matches exactly: 510px sign-in, 627px sign-up.
+  - **Spec conflict:** Verification said sign-out makes the nav show "Sign in" again, but the nav hides that link on `/sign-in`. The hiding rule wins: the link comes back as soon as you leave `/sign-in`.
+  - **Pending state seen with a temporary 1.5s mock delay,** since reverted. The "Signing in…" label, the disabled button and the read-only inputs all work.
+    - Clicking submit drops focus to `<body>` because the button becomes `disabled`, and it stays there after a failure. Enter from a field keeps focus in the field.
+    - With `getSession` forced to fail, the alert takes about 7.5s to appear (the library's default retries). "Try again" recovers.
+    - On a successful sign in, the heading runs "Sign in", then "Signed in", then "Play": the signed-in view shows briefly before navigation.
+  - **Open Questions:** every default stands: `/play` after success, no warning when a guest signs in, and `/` stays static.
+  - **Left open at completion:**
+    - `aria-disabled` on submit, to keep focus after a failure → W26.
+    - `retry: 1` on the session query, to show the error faster → W27.
+    - Hiding the nav's Play button on `/sign-in`, where it's a second brand button next to the submit.
 
 ## History

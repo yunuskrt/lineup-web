@@ -1,14 +1,22 @@
 import type { Metadata } from 'next';
+import { AuthPanel } from '@/components/auth/AuthPanel';
+import { authModeFrom } from '@/lib/auth';
 import { SITE_CONTAINER } from '@/styles/classes';
 
 export const metadata: Metadata = {
   title: 'Sign in',
 };
 
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: PageProps<'/sign-in'>) {
+  const mode = authModeFrom((await searchParams).mode);
+
   return (
     <div className={`${SITE_CONTAINER} py-12`}>
-      <h1 className="font-display text-32 font-bold">Sign in</h1>
+      <div className="flex max-w-md flex-col gap-8">
+        <AuthPanel mode={mode} />
+      </div>
     </div>
   );
 }
