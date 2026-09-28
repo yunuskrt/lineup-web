@@ -53,15 +53,16 @@ export function CountdownRing({
   const [seconds, setSeconds] = useState(() =>
     displaySeconds(roundDurationMs(round)),
   );
-  const hasSynced = useRef(false);
+  // A stopped ring re-reads when handed a new round
+  const syncedRound = useRef<RoundTiming | null>(null);
   const fraction = useMotionValue(1);
   const dashArray = useTransform(fraction, (value) => `${value} 1`);
   const dashOffset = useTransform(fraction, (value) => value - 1);
 
   // Stopped rings still read the clock once
   useAnimationFrame(() => {
-    if (mode !== 'running' && hasSynced.current) return;
-    hasSynced.current = true;
+    if (mode !== 'running' && syncedRound.current === round) return;
+    syncedRound.current = round;
 
     const remaining = remainingMs(round, Date.now());
     fraction.set(sweepFraction(remaining, round));

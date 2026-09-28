@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -114,5 +114,67 @@ Defaults stand unless changed at `/feature start`.
     - The `opponentDisconnects` scenario shows the badge counting down, then "Opponent left".
   - StrictMode subscribes once. Leaving mid-duel disconnects, and no events arrive after the page is gone.
   - At 1440×900, 834×1194 and 390×844: no horizontal scroll, and the quit chip is reachable.
+- **Deviations recorded during implementation**
+  - **Open Questions:** every default stood. The state stays in `useReducer`; Play again re-runs the lobby; the scenarios were reached with temporary patches.
+  - **Renames, as the default said:**
+    - `duel-lobby.ts` (and its test) became `duel-session.ts`, and `use-duel-lobby.ts` became `use-duel.ts`.
+    - The session types moved to a new `src/types/duel-session.ts`: `DuelSessionState`, `DuelSessionEvent`, `DuelSessionPhase`, `DuelFailureStep`, `DuelFailure` and `DuelGateAction`.
+    - `src/types/duel-lobby.ts` keeps only W22a's view types.
+    - The reducer is `duelSessionReducer`, starting from `INITIAL_DUEL_SESSION`, and the hook is `useDuel`.
+  - **`ready` became `playing`,** and the handoff copy (`matchFound`, `backToFilters`) left `DUEL_GATE_COPY`.
+  - **Clearing the input is a `clearKey`.** The verdict arrives as a `guessResolved` event, not from the guess ack, so the reducer bumps `clearKey` when the feedback says to clear. `DuelGame` clears its text when the key changes, adjusting state during render as `Lives` does.
+  - **Event payloads:**
+    - `lifeLost` carries the `cue`, and `opponentConnection` carries the `connection`.
+    - `connected` and `forfeited` both clear the badge; `finished` follows a forfeit.
+  - **Match events are gated by `isLive`** (a session and no result yet). Anything after `finished` leaves the state untouched, and a test asserts it.
+  - **Added, all tested:**
+    - `canGuess` and `canForfeit`.
+    - An `isForfeiting` flag that locks the input while the forfeit is in flight.
+    - A `forfeit` failure step: "Couldn't forfeit the duel" with "Try again", with the match still held underneath.
+    - A `handover` that ends any guess still in flight.
+    - `restart()` in the hook, shared by `retry` and `playAgain`.
+  - **`QuitDialog` takes a `copy` prop.** `SOLO_QUIT_COPY` is the default, so solo is unchanged. `DUEL_FORFEIT_COPY` has a "Forfeiting…" pending label beside the spec's lines.
+  - **CountdownRing fix (W10).** A stopped ring read the clock only once, ever. After a handover the waiting ring kept its last number: your ring still read "3" through their turn, and theirs "9" through yours. It now re-reads whenever it's handed a new round, so a handed-over ring resets to a dimmed 15, as `theme.md` says ("Freezes, then resets on handover"). The frozen state keeps the same round object, so it still holds.
+  - **Mock limitation, as in W22b:** your handle reads "You" once the match starts, because the mock duel adapter holds no identity.
+  - **Temporary test aids, both reverted:** the `drawOnEleven` and `opponentDisconnects` scenarios in `register.ts`.
+  - **Browser checks:**
+    - A full duel as FC Weerdam, with Yıldırımspor as the club filter:
+      - "Nobody Anybody" shook the input, kept the text and toasted "Not in this XI".
+      - A correct name filled the slot and handed the turn over: "Their turn.", "Waiting for Rival", the input hidden.
+      - Their reveal tinted blue.
+      - A repeat pulsed the slot, cleared the input and toasted "Already named".
+    - My clock running out took me to 2 lives, handed the turn over and reset my ring to 15.
+    - A loss showed "Yıldırımspor 2–1 FC Weerdam, The Rain Final".
+    - The forfeit dialog focused "Keep playing", and Esc and "Keep playing" both cancelled. "Forfeit" ended on "You left", with focus on the title and the quit chip gone.
+    - Play again searched again on the same URL, and Change filters led to `/play?club=…&mode=duel`.
+    - Draw patch: "Draw" with 11/11 and both players on 3 lives.
+    - Disconnect patch: the badge counted down from 20s, the announcement changed at the handover, and "Opponent left" came at about 21s.
+    - No horizontal scroll at 834 and 390, the quit chip was visible, and the console was clean. The solo quit dialog still reads "Quit this run?" and "Quit run".
+  - **Tests:** `duel-session.test.ts` has 55. Among them:
+    - Every loop event.
+    - The flash only for your lost life.
+    - Pending on and off, and each outcome's view keys.
+    - A mid-match `error` as a toast.
+    - Late events ignored after the result.
+    - Forfeit and its failure.
+    - Drive tests against the mock: a win after three of their expiries, a loss after three of yours, a miss-then-correct handover, the draw with lives untouched, your forfeit, and their reconnect ending in a forfeit win.
+    - That makes 503 in total.
+  - **Review fixes:**
+    - **Bug: "Forfeiting…" never showed.** The dialog stayed open only while `canForfeit` held, and that turns false the moment the forfeit is in flight. So the dialog closed on click, focus jumped back to the quit chip, and on a real network the only sign was a locked input. The new `canConfirmForfeit(state)` (playing and live) keeps the dialog open through the pending forfeit; the result or a failure closes it.
+    - **Bug: a retried forfeit stayed stuck in `failed`.** "Try again" cleared the gate but left the phase `failed`, which kept the input locked and made the quit chip leave instead of confirming. `forfeiting` during a live match now returns the phase to `playing`.
+    - **Exhaustiveness:** `lobbyReducer` takes a typed `LobbyEvent` subset, and the main reducer lists every lobby event and ends in a `never` check, so an unhandled new event is a type error again.
+    - **Checked with a temporary patch, since reverted:** the first forfeit failed and later ones waited 1.5s.
+      - The first forfeit showed "Couldn't forfeit the duel", and "Try again" returned to the match with the input locked, then "You left".
+      - On the next duel the dialog stayed open reading "Forfeiting…" with both buttons disabled, then closed on "You left" with focus on the title.
+    - Two tests added (the confirm staying open while pending, and the retry resuming play), for 505 in total.
+    - **Known and left:** a rate-limited guess toasts twice (the `error` event and the failed ack). W06c double-signals that scenario on purpose, and the second toast replaces the first. The designed lockout is W25's.
+  - **Tests (`/feature test`):** 5 more, for 510 in total:
+    - A `forfeited` connection clears the badge.
+    - No guess is allowed while one is pending or a forfeit is in flight.
+    - A forfeit started during the lobby leaves the lobby phase alone.
+    - Two tests drive the reducer from the real mock adapter:
+      - A guess made on their turn ends on the adapter's "Wait for your turn." toast, with the input unlocked.
+      - The `rateLimited` scenario toasts "Try again in 2 seconds" and keeps the match `playing` with the input live, with no failure gate.
+    - `CountdownRing`, `QuitDialog`, the hook and `DuelGame` stay browser-verified, per the standards.
 
 ## History
