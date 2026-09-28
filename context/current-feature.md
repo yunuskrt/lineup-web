@@ -50,3 +50,4 @@ Not Started
 - W21b Summary Wiring: summary fetch, quit to summary, play again, focus.
 - W22a Lobby Panels: lobby gate steps, filter cards, coin flip, snapshots.
 - W22b Lobby Wiring: lobby reducer, queue hook, flip beat, match handoff.
+- W23a Duel Result Panel: result card, tally, reconnect badge, snapshots.

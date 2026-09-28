@@ -1,7 +1,13 @@
 'use client';
 
 import { motion, useReducedMotion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { Lives } from '@/components/game/Lives';
+import {
+  reconnectSecondsLeft,
+  TURN_LABELS,
+  turnAnnouncement,
+} from '@/lib/duel-status';
 import {
   DUEL_ACTOR_BG,
   DUEL_ACTOR_BORDER,
@@ -9,45 +15,75 @@ import {
   TURN_BORDER_SHIFT,
 } from '@/styles/classes';
 import { MOTION_EASING, MOTION_SECONDS } from '@/styles/motion';
-import type { DuelActor, DuelPlayer } from '@/types/duel';
+import type { ConnectionState, DuelActor, DuelPlayer } from '@/types/duel';
+
+const RECONNECT_TICK_MS = 250;
 
 const SIDES: Record<
   DuelActor,
   {
     label: string;
-    turnLabel: string;
     // The chip enters from the side the turn came from
     chipFromX: number;
   }
 > = {
   you: {
     label: 'You',
-    turnLabel: 'Your turn',
     chipFromX: 8,
   },
   opponent: {
     label: 'Opponent',
-    turnLabel: 'Their turn',
     chipFromX: -8,
   },
 };
+
+// Ticks from the server deadline; decides nothing
+function ReconnectChip({ deadline }: { deadline: number }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), RECONNECT_TICK_MS);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <span className="rounded-sm bg-warning px-2 py-0.5 text-12 font-semibold whitespace-nowrap text-on-accent">
+      {/* Server and client clocks may differ by a tick */}
+      <span suppressHydrationWarning>
+        Reconnecting, {reconnectSecondsLeft(deadline, now)}s
+      </span>
+    </span>
+  );
+}
 
 type PlayerPanelProps = {
   actor: DuelActor;
   player: DuelPlayer | null;
   isActive: boolean;
+  reconnectDeadline?: number | null;
 };
 
-function PlayerPanel({ actor, player, isActive }: PlayerPanelProps) {
+function PlayerPanel({
+  actor,
+  player,
+  isActive,
+  reconnectDeadline = null,
+}: PlayerPanelProps) {
   const isReducedMotion = useReducedMotion();
   const side = SIDES[actor];
   const isOpponent = actor === 'opponent';
+  const isReconnecting = reconnectDeadline !== null;
+  const border = isReconnecting
+    ? 'border-warning'
+    : isActive
+      ? DUEL_ACTOR_BORDER[actor]
+      : 'border-line';
 
   return (
     <div
-      className={`@container flex min-w-0 flex-col gap-2 rounded-md border-2 bg-surface-raised p-3 ${TURN_BORDER_SHIFT} ${
-        isActive ? DUEL_ACTOR_BORDER[actor] : 'border-line'
-      } ${isOpponent ? 'items-end text-right' : 'items-start'}`}
+      className={`@container flex min-w-0 flex-col gap-2 rounded-md border-2 bg-surface-raised p-3 ${TURN_BORDER_SHIFT} ${border} ${
+        isOpponent ? 'items-end text-right' : 'items-start'
+      }`}
     >
       {/* Narrow panels stack the chip in a reserved row */}
       <div
@@ -63,21 +99,25 @@ function PlayerPanel({ actor, player, isActive }: PlayerPanelProps) {
           {side.label}
         </span>
         <span className="flex h-6 items-center">
-          {isActive && (
-            <motion.span
-              aria-hidden="true"
-              className={`rounded-sm px-2 py-0.5 text-12 font-semibold whitespace-nowrap uppercase text-on-accent ${DUEL_ACTOR_BG[actor]}`}
-              initial={{ opacity: 0, x: side.chipFromX }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                duration: MOTION_SECONDS.turnHandover,
-                ease: MOTION_EASING.turnHandover,
-                // Branching `initial` instead would break hydration
-                x: isReducedMotion ? { duration: 0 } : undefined,
-              }}
-            >
-              {side.turnLabel}
-            </motion.span>
+          {isReconnecting ? (
+            <ReconnectChip deadline={reconnectDeadline} />
+          ) : (
+            isActive && (
+              <motion.span
+                aria-hidden="true"
+                className={`rounded-sm px-2 py-0.5 text-12 font-semibold whitespace-nowrap uppercase text-on-accent ${DUEL_ACTOR_BG[actor]}`}
+                initial={{ opacity: 0, x: side.chipFromX }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  duration: MOTION_SECONDS.turnHandover,
+                  ease: MOTION_EASING.turnHandover,
+                  // Branching `initial` instead would break hydration
+                  x: isReducedMotion ? { duration: 0 } : undefined,
+                }}
+              >
+                {TURN_LABELS[actor]}
+              </motion.span>
+            )
           )}
         </span>
       </div>
@@ -112,9 +152,20 @@ type TurnIndicatorProps = {
   you: DuelPlayer;
   opponent: DuelPlayer | null;
   turn: DuelActor | null;
+  opponentConnection?: ConnectionState | null;
 };
 
-export function TurnIndicator({ you, opponent, turn }: TurnIndicatorProps) {
+export function TurnIndicator({
+  you,
+  opponent,
+  turn,
+  opponentConnection = null,
+}: TurnIndicatorProps) {
+  const reconnectDeadline =
+    opponentConnection?.status === 'reconnecting'
+      ? opponentConnection.reconnectDeadline
+      : null;
+
   return (
     <div className="grid grid-cols-2 gap-2">
       <PlayerPanel actor="you" player={you} isActive={turn === 'you'} />
@@ -122,9 +173,10 @@ export function TurnIndicator({ you, opponent, turn }: TurnIndicatorProps) {
         actor="opponent"
         player={opponent}
         isActive={turn === 'opponent'}
+        reconnectDeadline={reconnectDeadline}
       />
       <p className="sr-only" aria-live="polite">
-        {turn ? SIDES[turn].turnLabel : ''}
+        {turnAnnouncement(turn, reconnectDeadline !== null)}
       </p>
     </div>
   );

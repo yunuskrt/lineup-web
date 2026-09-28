@@ -22,7 +22,12 @@ import type {
   SoloCanvasView,
   SoloEndView,
 } from '@/types/canvas';
-import type { DuelActor, FilterSubmission } from '@/types/duel';
+import type {
+  DuelActor,
+  DuelFoundPlayer,
+  DuelResult,
+  FilterSubmission,
+} from '@/types/duel';
 import type { DuelLobbyView } from '@/types/duel-lobby';
 import type { Lives, RoundTiming } from '@/types/game';
 import type { FoundPlayer, RevealedPlayer } from '@/types/player';
@@ -210,7 +215,10 @@ const QUIT_SUMMARY: SoloSummary = {
 function toDuel(
   base: CanvasViewBase,
   players: Partial<
-    Pick<DuelCanvasView, 'you' | 'opponent' | 'turn' | 'lobby'>
+    Pick<
+      DuelCanvasView,
+      'you' | 'opponent' | 'turn' | 'lobby' | 'opponentConnection' | 'end'
+    >
   > = {},
 ): DuelCanvasView {
   return {
@@ -220,6 +228,8 @@ function toDuel(
     opponent: SAMPLE_OPPONENT,
     turn: 'you',
     lobby: null,
+    opponentConnection: null,
+    end: null,
     ...players,
   };
 }
@@ -486,6 +496,104 @@ export const LOBBY_STATES = {
   }),
 } satisfies Record<string, CanvasState<DuelCanvasView>>;
 
+// Finder per slot; a draw splits all eleven
+const DRAW_FINDERS: DuelActor[] = [
+  'you',
+  'opponent',
+  'you',
+  'you',
+  'opponent',
+  'opponent',
+  'you',
+  'opponent',
+  'you',
+  'you',
+  'opponent',
+];
+
+const LOSS_FINDERS: [number, DuelActor][] = [
+  ...DUEL_FINDERS,
+  [2, 'opponent'],
+  [6, 'opponent'],
+];
+
+const FORFEIT_FINDERS: [number, DuelActor][] = [
+  [0, 'you'],
+  [4, 'opponent'],
+  [9, 'you'],
+];
+
+function foundBy(finders: [number, DuelActor][]): DuelFoundPlayer[] {
+  return finders.map(([slot, finder]) => ({
+    ...samplePlayer(FORMATION, slot),
+    foundBy: finder,
+  }));
+}
+
+function resultOf(
+  outcome: DuelResult['outcome'],
+  finders: [number, DuelActor][],
+  lives: { you: Lives; opponent: Lives },
+  isForfeit = false,
+): DuelResult {
+  return {
+    outcome,
+    match: SAMPLE_IDENTITY,
+    found: foundBy(finders),
+    you: { ...SAMPLE_YOU, lives: lives.you },
+    opponent: { ...SAMPLE_OPPONENT, lives: lives.opponent },
+    isForfeit,
+  };
+}
+
+// The rail swaps for the result; no clock runs
+function resultState(
+  description: string,
+  result: DuelResult,
+): CanvasState<DuelCanvasView> {
+  return {
+    description,
+    build: () => ({
+      frame: {
+        view: toDuel(fields(null, result.found, { input: 'locked' }), {
+          you: result.you,
+          opponent: result.opponent,
+          turn: null,
+          end: result,
+        }),
+        guess: '',
+      },
+    }),
+  };
+}
+
+export const RESULT_STATES = {
+  'result-win': resultState(
+    'They ran out of lives: the floodlight win card.',
+    resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 }),
+  ),
+  'result-loss': resultState(
+    'You ran out of lives: the loss card, same full reveal.',
+    resultOf('loss', LOSS_FINDERS, { you: 0, opponent: 1 }),
+  ),
+  'result-draw': resultState(
+    'All eleven named: both colours, neither leading.',
+    resultOf(
+      'draw',
+      DRAW_FINDERS.map((finder, slot) => [slot, finder]),
+      { you: 2, opponent: 1 },
+    ),
+  ),
+  'result-forfeit-win': resultState(
+    'They left: a win card marked as a forfeit.',
+    resultOf('forfeit_win', FORFEIT_FINDERS, { you: 3, opponent: 2 }, true),
+  ),
+  'result-forfeit-loss': resultState(
+    'You left: a loss card marked as a forfeit.',
+    resultOf('loss', FORFEIT_FINDERS, { you: 2, opponent: 3 }, true),
+  ),
+} satisfies Record<string, CanvasState<DuelCanvasView>>;
+
 const THEIR_TURN = { turn: 'opponent' } as const;
 
 export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
@@ -591,6 +699,25 @@ export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
       };
     },
   },
+  'opponent-reconnecting': {
+    description: 'Their socket dropped: ember badge, their clock runs on.',
+    build: (now) => ({
+      frame: {
+        view: toDuel(
+          fields(roundLeaving(11_000, now), DUEL_FOUND, { input: 'locked' }),
+          {
+            ...THEIR_TURN,
+            opponentConnection: {
+              status: 'reconnecting',
+              reconnectDeadline: now + 18_000,
+            },
+          },
+        ),
+        guess: '',
+      },
+    }),
+  },
+  ...RESULT_STATES,
   'their-life-lost': {
     description: 'Their clock runs out: their pip empties, no flash.',
     build: (now) => ({

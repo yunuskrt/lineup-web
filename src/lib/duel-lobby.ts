@@ -262,5 +262,7 @@ export function duelCanvasView(
     // A turn chip with no clock would read as live
     turn: null,
     lobby,
+    opponentConnection: null,
+    end: null,
   };
 }

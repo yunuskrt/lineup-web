@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import {
+  connectionStateSchema,
   duelFoundPlayerSchema,
   duelPlayerSchema,
+  duelResultSchema,
 } from '@/lib/api/schemas/duel';
 import {
   livesSchema,
@@ -17,6 +19,7 @@ import {
   CANVAS_STATES,
   DEFAULT_CANVAS_STATE,
   LOBBY_STATES,
+  RESULT_STATES,
   resolveCanvasState,
 } from '@/lib/dev/canvas-states';
 import { SAMPLE_OPPONENT } from '@/lib/dev/samples';
@@ -392,5 +395,82 @@ describe('duel lobby snapshots', () => {
       expect(view.lobby, name).toBeNull();
       expect(view.opponent, name).not.toBeNull();
     }
+  });
+});
+
+describe('duel result snapshots', () => {
+  const RESULT_NAMES = Object.keys(RESULT_STATES);
+
+  function resultViewOf(name: string) {
+    const { view } = CANVAS_STATES.duel[name].build(NOW).frame;
+    if (view.mode !== 'duel' || !view.end) {
+      throw new Error(`${name} has no result`);
+    }
+    return { view, result: view.end };
+  }
+
+  it('only carry results the backend could send', () => {
+    for (const name of RESULT_NAMES) {
+      const { result } = resultViewOf(name);
+      expect(duelResultSchema.safeParse(result).success, name).toBe(true);
+    }
+  });
+
+  it('cover every outcome, and both forfeits', () => {
+    const outcomes = RESULT_NAMES.map((name) => {
+      const { result } = resultViewOf(name);
+      return `${result.outcome}${result.isForfeit ? '+forfeit' : ''}`;
+    });
+    expect(outcomes.sort()).toEqual([
+      'draw',
+      'forfeit_win+forfeit',
+      'loss',
+      'loss+forfeit',
+      'win',
+    ]);
+  });
+
+  it('name all eleven in the draw, split between both', () => {
+    const { result } = resultViewOf('result-draw');
+    const finders = new Set(result.found.map((player) => player.foundBy));
+    expect(result.found).toHaveLength(SQUAD_SIZE);
+    expect(finders).toEqual(new Set(['you', 'opponent']));
+  });
+
+  it('end the side that ran out on zero lives', () => {
+    expect(resultViewOf('result-win').result.opponent.lives).toBe(0);
+    expect(resultViewOf('result-loss').result.you.lives).toBe(0);
+  });
+
+  it('match the canvas to the result', () => {
+    for (const name of RESULT_NAMES) {
+      const { view, result } = resultViewOf(name);
+      expect(view.found, name).toEqual(result.found);
+      expect(view.you, name).toEqual(result.you);
+      expect(view.opponent, name).toEqual(result.opponent);
+      expect(view.turn, name).toBeNull();
+      expect(view.clock.round, name).toBeNull();
+      expect(view.input, name).toBe('locked');
+      expect(view.gate, name).toBeNull();
+    }
+  });
+
+  it('leave every live duel state without a result', () => {
+    for (const [name, view] of viewsOf('duel')) {
+      if (RESULT_NAMES.includes(name) || view.mode !== 'duel') continue;
+      expect(view.end, name).toBeNull();
+    }
+  });
+
+  it('report the reconnecting opponent with a future deadline', () => {
+    const { view } =
+      CANVAS_STATES.duel['opponent-reconnecting'].build(NOW).frame;
+    if (view.mode !== 'duel') throw new Error('not a duel');
+    expect(
+      connectionStateSchema.safeParse(view.opponentConnection).success,
+    ).toBe(true);
+    expect(view.opponentConnection?.reconnectDeadline).toBeGreaterThan(NOW);
+    expect(view.turn).toBe('opponent');
+    expect(view.clock.round).not.toBeNull();
   });
 });

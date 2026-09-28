@@ -1,6 +1,11 @@
 import type { GuessInputStatus } from '@/components/game/GuessInput';
 import type { RingMode } from '@/types/countdown';
-import type { DuelActor, DuelPlayer } from '@/types/duel';
+import type {
+  ConnectionState,
+  DuelActor,
+  DuelPlayer,
+  DuelResult,
+} from '@/types/duel';
 import type { DuelLobbyView } from '@/types/duel-lobby';
 import type { GridPulse, ToastMessage } from '@/types/feedback';
 import type { Lives, RoundTiming } from '@/types/game';
@@ -57,6 +62,10 @@ export type DuelCanvasView = CanvasViewBase & {
   turn: DuelActor | null;
   // Set while the duel is being arranged
   lobby: DuelLobbyView | null;
+  // Set while the server reports them reconnecting
+  opponentConnection: ConnectionState | null;
+  // Arrives whole with `finished`; no loading state
+  end: DuelResult | null;
 };
 
 export type CanvasView = SoloCanvasView | DuelCanvasView;
