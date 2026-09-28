@@ -41,6 +41,8 @@ import type { Side } from '@/types/match';
 
 export const QUEUE_WAIT_MS = 2_000;
 export const OPPONENT_FILTER_MS = 1_200;
+// The flip shows before any clock starts
+export const COIN_FLIP_REVEAL_MS = 2_000;
 export const RECONNECT_WINDOW_MS = 20_000;
 
 // Scripted filters never narrow, so always match
@@ -416,7 +418,9 @@ export function createMockDuelClient(
           return;
         }
 
-        beginMatch(selection.fixture);
+        schedule(COIN_FLIP_REVEAL_MS, () => {
+          if (phase === 'filters') beginMatch(selection.fixture);
+        });
       });
 
       return ACK;

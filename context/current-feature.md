@@ -49,3 +49,4 @@ Not Started
 - W21a Summary Panel: rail summary, turf takeover, missed slots, snapshots.
 - W21b Summary Wiring: summary fetch, quit to summary, play again, focus.
 - W22a Lobby Panels: lobby gate steps, filter cards, coin flip, snapshots.
+- W22b Lobby Wiring: lobby reducer, queue hook, flip beat, match handoff.

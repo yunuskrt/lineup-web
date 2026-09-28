@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -117,5 +117,57 @@ Defaults stand unless changed at `/feature start`.
   - StrictMode in dev calls `enterQueue` once per visit. Leaving and returning queues again cleanly, with no stale events from the last visit.
   - The Network tab and React DevTools show no squad data.
   - At 1440×900, 834×1194 and 390×844, nothing scrolls horizontally, and the quit chip is reachable in every phase.
+- **Deviations recorded during implementation**
+  - **The paired beat's timer lives in `useDuelLobby`, not `DuelGame`.** It dispatches a `filtersOpened` reducer event, which is only honoured while still `paired`. `DuelGame` stays a pure mapping from actions to the hook. A `filtersUpdated` that arrives during the beat opens the filters early.
+  - **The handoff shows no turn.** The spec took the turn from the session, but a "Your turn" chip with no clock running reads as live time being spent. `turn` stays `null` until W23 wires the clock.
+  - **Mock limitation: the handoff shows the session's `you`, whose handle is "You".** The mock duel adapter holds no identity (W06c), so the lobby's "Guest 1" becomes "You" at `matchReady`. The session is authoritative, and the real server sends the real handle.
+  - **Event set:**
+    - Added `started` (a restart that keeps the filters read), `prepared` (filters and catalog), `filtersOpened` and `error`.
+    - A server `error` becomes `failed`, with the step inferred from the phase: `queue` before pairing, `match` after.
+    - `searchedAgain` is `started` followed by `enterQueue`.
+    - There's no `retried` event: `locking` doubles as the retry after a failed lock and returns the lobby to `filters`.
+  - **Failure steps are `connect`, `queue`, `lock` and `match`.** Their titles are "Couldn't start the duel", "Couldn't join the queue", "Couldn't lock in your filters" and "Couldn't set up the match". `empty_pool` gets "No match found" with "Change filters".
+  - **Added helpers, all tested:**
+    - `canLockFilters(state)` and `youFrom(user)`, which uses the signed-in handle, or "You" before the session loads.
+    - `DuelGateAction` (`leave` | `retry`) for the gates. The lobby's own buttons still go through W22a's `LobbyAction`.
+    - The state holds `filters` and `options` from `prepared`, so the view can summarise both sets.
+  - **The filter view gained an optional `isLocking`.** The button disables and reads "Locking in…" while the submission is in flight. The mock confirms instantly, but a real network won't.
+  - **StrictMode and restarts:**
+    - The start is deferred one tick (`setTimeout`), so StrictMode's first mount never starts. Running `useEnsureSession` twice could otherwise create two guests.
+    - Each start carries a run token, and cleanup cancels it, so late replies land nowhere.
+    - "Try again" (other than after a failed lock) releases everything, resubscribes and starts again. It has to, because the mock's `disconnect()` drops every handler.
+  - **Leaving** awaits `leaveQueue()` while searching, then unsubscribes and disconnects, and only then navigates.
+  - **`filterSummary`: an era that covers the whole catalog reads "Any season".** The mock opponent's 2000–2025 range is wider than the catalog's, and it read "2000–01 to 2025–26". One test was added.
+  - **Mock:**
+    - `COIN_FLIP_REVEAL_MS = 2_000`, with `beginMatch` guarded by the adapter phase.
+    - Two tests: the flip holds with no `matchReady` or `roundStarted` until the beat ends, and the round's clock starts only then. A disconnect mid-flip drops the pending match.
+  - **Copy:** the handoff detail is "Your filters picked this match." or "`<handle>`'s filters picked this match."
+  - **Open Questions:** every default stood. The filters are read-only with "Lock in filters", the server owns the flip beat, the state stays in `useReducer`, "Cancel" after pairing disconnects, and the timeout was reached with a temporary patch.
+  - **Measured on the mock:** searching, then paired at 2.0s, filters 1.2s later, the flip 1.2s after the lock, and Match found 2.0s after the flip.
+  - **Temporary test aids, all reverted:**
+    - An `enterQueue` log: one call per visit, under StrictMode and across five in-app returns to `/play`.
+    - The `queueTimeout` scenario in `register.ts`.
+    - A failure on the first `submitFilters`.
+    - A failure on the first `connect`.
+  - **Browser checks:**
+    - Both coin-flip winners appeared across runs. "Your filters won" showed the URL's filters (a Yıldırımspor club pick), and the match came from them.
+    - Cancel while searching and the quit chip after pairing both returned to `/play?…&mode=duel` with the filters kept.
+    - No opponent: focus lands on "Play solo with these filters", which opened `/play/solo` on the same club. "Search again" searched again.
+    - A failed lock and a failed connect each showed their titled gate, with focus on "Try again", and recovered.
+    - No horizontal scroll at 1440, 834 or 390, and the quit chip was visible throughout. The console stayed clean, and `?state=` previews still render.
+  - **Tests:** `duel-lobby.test.ts` (30), 2 in the mock adapter and 1 in `lobby.test.ts`, for 453 in total.
+  - **Review fixes:**
+    - **Bug:** unmounting cancelled only the run started on mount. A run from "Try again" kept going if you left with Back or a link while it was starting. It then connected and joined the queue on the shared adapter after the page had gone, so the next visit would get "Already in a duel". Cleanup now cancels `run.current` through a `stopLobby` effect event.
+      - Checked with a temporary patch, since reverted: the first `connect` failed and later ones waited 1.5s. I pressed "Try again", went Back mid-retry, then ran "Find an opponent" again. The abandoned run never called `enterQueue`, and the new visit queued cleanly.
+    - The connect-step title is now "Couldn't start the duel". That step also covers creating the guest and loading the catalog, not only `connect()`.
+    - The `send` wrapper in `subscribe` is gone; the handlers call `dispatch` directly.
+    - `goTo` types its mode as `PlayMode`.
+  - **Tests (`/feature test`):** 4 more, for 457 in total:
+    - A late `filtersUpdated` leaves the coin flip on screen.
+    - Three tests drive the reducer from the real mock adapter under fake timers, wired the way the hook wires it:
+      - The phases run connecting → searching → paired → filters → coinFlip → ready, with no session until the reveal ends.
+      - The timeout scenario offers solo and times out again after "Search again".
+      - A refused narrow submission ends on "Change filters" (`leave`).
+    - The hook and components stay browser-verified, per the standards.
 
 ## History
