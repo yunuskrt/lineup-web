@@ -21,7 +21,8 @@ function picked(
 }
 
 function eraValue(era: EraRange, full: EraRange): string {
-  if (era.from === full.from && era.to === full.to) return 'Any season';
+  // A range past the catalog still means any season
+  if (era.from <= full.from && era.to >= full.to) return 'Any season';
   if (era.from === era.to) return seasonLabel(era.from);
   return `${seasonLabel(era.from)} to ${seasonLabel(era.to)}`;
 }

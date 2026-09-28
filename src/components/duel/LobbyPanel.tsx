@@ -204,10 +204,11 @@ function Filters({ lobby, opponent, onAction }: FiltersProps) {
           ) : (
             <button
               type="button"
-              className={`h-8 w-full ${PRIMARY_BUTTON}`}
+              disabled={lobby.isLocking}
+              className={`h-8 w-full disabled:opacity-70 ${PRIMARY_BUTTON}`}
               onClick={() => onAction('lock')}
             >
-              Lock in filters
+              {lobby.isLocking ? 'Locking in…' : 'Lock in filters'}
             </button>
           )
         }

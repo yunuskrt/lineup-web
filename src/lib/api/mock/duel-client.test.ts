@@ -3,6 +3,7 @@ import type { DuelClient, DuelEvent } from '@/lib/api/duel-client';
 import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
 import { squadFor } from '@/lib/api/mock/data/fixtures';
 import {
+  COIN_FLIP_REVEAL_MS,
   createMockDuelClient,
   OPPONENT_FILTER_MS,
   OPPONENT_FILTERS,
@@ -92,7 +93,7 @@ async function reachMatch(
   await client.enterQueue();
   await vi.advanceTimersByTimeAsync(QUEUE_WAIT_MS);
   await client.submitFilters(filters);
-  await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS);
+  await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS + COIN_FLIP_REVEAL_MS);
 }
 
 describe('mock duel client', () => {
@@ -117,7 +118,7 @@ describe('mock duel client', () => {
     expect(names(log)).toEqual(['queued', 'paired']);
 
     await client.submitFilters(FILTERS);
-    await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS);
+    await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS + COIN_FLIP_REVEAL_MS);
 
     expect(names(log)).toEqual([
       'queued',
@@ -214,8 +215,42 @@ describe('mock duel client', () => {
     expect(names(log)).toEqual([]);
 
     await client.submitFilters(FILTERS);
-    await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS);
+    await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS + COIN_FLIP_REVEAL_MS);
     expect(names(log)).toContain('matchReady');
+  });
+
+  it('holds the coin flip before any round starts', async () => {
+    const client = createMockDuelClient(scripted());
+    const log = record(client);
+    await client.enterQueue();
+    await vi.advanceTimersByTimeAsync(QUEUE_WAIT_MS);
+    await client.submitFilters(FILTERS);
+    await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS);
+
+    expect(names(log).at(-1)).toBe('coinFlip');
+    await vi.advanceTimersByTimeAsync(COIN_FLIP_REVEAL_MS - 1);
+    expect(names(log)).not.toContain('matchReady');
+    expect(names(log)).not.toContain('roundStarted');
+
+    await vi.advanceTimersByTimeAsync(1);
+    const session = lastOf<DuelSession>(log, 'matchReady');
+    // The first round's clock starts only now
+    expect(session.round.startedAt).toBe(Date.now());
+  });
+
+  it('drops the pending match when you disconnect mid-flip', async () => {
+    const client = createMockDuelClient(scripted());
+    const log = record(client);
+    await client.enterQueue();
+    await vi.advanceTimersByTimeAsync(QUEUE_WAIT_MS);
+    await client.submitFilters(FILTERS);
+    await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS);
+
+    client.disconnect();
+    const after = record(client);
+    await vi.advanceTimersByTimeAsync(COIN_FLIP_REVEAL_MS);
+    expect(names(after)).toEqual([]);
+    expect(names(log).at(-1)).toBe('coinFlip');
   });
 
   it('emits queueTimedOut instead of pairing on the timeout path', async () => {

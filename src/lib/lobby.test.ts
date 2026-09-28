@@ -64,6 +64,11 @@ describe('filterSummary', () => {
     expect(summaryOf({ era: { from: 2009, to: 2009 } }).Era).toBe('2009–10');
   });
 
+  it('reads an era past the catalog as any season', () => {
+    const era = { from: OPTIONS.era.from - 2, to: OPTIONS.era.to + 1 };
+    expect(summaryOf({ era }).Era).toBe('Any season');
+  });
+
   it('keeps an era that touches one end as a range', () => {
     expect(summaryOf({ era: { from: OPTIONS.era.from, to: 2005 } }).Era).toBe(
       '2000–01 to 2005–06',
