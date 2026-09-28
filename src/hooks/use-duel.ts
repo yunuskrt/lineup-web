@@ -5,23 +5,32 @@ import { filterOptionsQuery } from '@/hooks/use-filter-options';
 import { getDuelClient, type Unsubscribe } from '@/lib/api/duel-client';
 import { apiErrorOf, unwrap } from '@/lib/api/unwrap';
 import {
+  canForfeit,
+  canGuess,
   canLockFilters,
-  duelLobbyReducer,
-  INITIAL_DUEL_LOBBY,
+  duelSessionReducer,
+  INITIAL_DUEL_SESSION,
   PAIRED_BEAT_MS,
   youFrom,
-} from '@/lib/duel-lobby';
+} from '@/lib/duel-session';
 import { filtersFromParams } from '@/lib/filters';
+import { prepareGuess } from '@/lib/guess';
+
 type Run = { isCancelled: boolean };
 
-export function useDuelLobby(params: URLSearchParams) {
+export function useDuel(params: URLSearchParams) {
   const queryClient = useQueryClient();
   const { mutateAsync: ensureSession } = useEnsureSession();
   const session = useSession();
-  const [state, dispatch] = useReducer(duelLobbyReducer, INITIAL_DUEL_LOBBY);
+  const [state, dispatch] = useReducer(
+    duelSessionReducer,
+    INITIAL_DUEL_SESSION,
+  );
   const run = useRef<Run>({ isCancelled: false });
   const subscriptions = useRef<Unsubscribe[]>([]);
   const isLocking = useRef(false);
+  const isGuessing = useRef(false);
+  const isForfeiting = useRef(false);
 
   function subscribe() {
     const client = getDuelClient();
@@ -38,6 +47,20 @@ export function useDuelLobby(params: URLSearchParams) {
       client.on('matchReady', (duel) =>
         dispatch({ type: 'matchReady', session: duel }),
       ),
+      client.on('roundStarted', (duel) =>
+        dispatch({ type: 'roundStarted', session: duel }),
+      ),
+      client.on('turnChanged', (duel) =>
+        dispatch({ type: 'turnChanged', session: duel }),
+      ),
+      client.on('guessResolved', (result) =>
+        dispatch({ type: 'guessResolved', result }),
+      ),
+      client.on('lifeLost', (cue) => dispatch({ type: 'lifeLost', cue })),
+      client.on('opponentConnection', (connection) =>
+        dispatch({ type: 'opponentConnection', connection }),
+      ),
+      client.on('finished', (result) => dispatch({ type: 'finished', result })),
       client.on('error', (error) => dispatch({ type: 'error', error })),
     ];
   }
@@ -79,12 +102,21 @@ export function useDuelLobby(params: URLSearchParams) {
     await enterQueue(current);
   }
 
+  // Drops whatever ran before and starts fresh
+  function restart() {
+    release();
+    const current: Run = { isCancelled: false };
+    run.current = current;
+    subscribe();
+    void start(current);
+  }
+
   const startLobby = useEffectEvent((current: Run) => {
     subscribe();
     void start(current);
   });
 
-  // The latest run, which a retry may have replaced
+  // The latest run, which a restart may have replaced
   const stopLobby = useEffectEvent(() => {
     run.current.isCancelled = true;
     release();
@@ -127,10 +159,52 @@ export function useDuelLobby(params: URLSearchParams) {
     }
   }
 
+  // The verdict arrives as `guessResolved`, not here
+  async function submitGuess(raw: string) {
+    const guess = prepareGuess(raw);
+    const sessionId = state.session?.sessionId;
+    if (guess === null || !sessionId || !canGuess(state)) return;
+    if (isGuessing.current) return;
+
+    isGuessing.current = true;
+    dispatch({ type: 'guessSubmitted' });
+    try {
+      unwrap(await getDuelClient().guess({ sessionId, guess }));
+    } catch (error) {
+      if (!run.current.isCancelled) {
+        dispatch({ type: 'guessFailed', error: apiErrorOf(error) });
+      }
+    } finally {
+      isGuessing.current = false;
+    }
+  }
+
+  // Ends on the result the server sends back
+  async function forfeit() {
+    if (!canForfeit(state) || isForfeiting.current) return;
+
+    isForfeiting.current = true;
+    dispatch({ type: 'forfeiting' });
+    try {
+      unwrap(await getDuelClient().forfeit());
+    } catch (error) {
+      if (!run.current.isCancelled) {
+        dispatch({ type: 'failed', step: 'forfeit', error: apiErrorOf(error) });
+      }
+    } finally {
+      isForfeiting.current = false;
+    }
+  }
+
   function searchAgain() {
     if (state.phase !== 'noOpponent') return;
     dispatch({ type: 'started' });
     void enterQueue(run.current);
+  }
+
+  function playAgain() {
+    if (state.phase !== 'finished') return;
+    restart();
   }
 
   // Leaving the queue is best-effort; disconnect ends it
@@ -142,22 +216,26 @@ export function useDuelLobby(params: URLSearchParams) {
   }
 
   function retry() {
-    if (state.failure?.step === 'lock') {
-      void lockFilters();
-      return;
+    switch (state.failure?.step) {
+      case 'lock':
+        void lockFilters();
+        return;
+      case 'forfeit':
+        void forfeit();
+        return;
+      default:
+        restart();
     }
-    release();
-    const current: Run = { isCancelled: false };
-    run.current = current;
-    subscribe();
-    void start(current);
   }
 
   return {
     state,
     you: youFrom(session.data?.user ?? null),
     lockFilters,
+    submitGuess,
+    forfeit,
     searchAgain,
+    playAgain,
     leave,
     retry,
   };
