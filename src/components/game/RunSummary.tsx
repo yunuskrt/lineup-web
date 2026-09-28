@@ -3,6 +3,10 @@
 import { motion, type Transition, useReducedMotion } from 'motion/react';
 import { type RefObject, useEffect, useId, useRef } from 'react';
 import { Lives } from '@/components/game/Lives';
+import {
+  ResultActions,
+  type ResultActionsProps,
+} from '@/components/game/ResultActions';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import {
   accuracyLabel,
@@ -11,7 +15,6 @@ import {
   roundTimeStats,
   summaryTitle,
 } from '@/lib/summary';
-import { PRIMARY_BUTTON_LARGE, TEXT_LINK } from '@/styles/classes';
 import {
   MOTION_EASING,
   MOTION_SECONDS,
@@ -148,32 +151,6 @@ function RoundStrip({ roundTimesMs }: { roundTimesMs: number[] }) {
   );
 }
 
-type SummaryActionsProps = {
-  onPlayAgain: () => void;
-  onChangeFilters: () => void;
-};
-
-function SummaryActions({ onPlayAgain, onChangeFilters }: SummaryActionsProps) {
-  return (
-    <div className="flex flex-col items-center gap-3 lg:mt-auto">
-      <button
-        type="button"
-        onClick={onPlayAgain}
-        className={`w-full ${PRIMARY_BUTTON_LARGE}`}
-      >
-        Play again
-      </button>
-      <button
-        type="button"
-        onClick={onChangeFilters}
-        className={`text-14 leading-5 ${TEXT_LINK}`}
-      >
-        Change filters
-      </button>
-    </div>
-  );
-}
-
 function SummarySkeleton() {
   const isReducedMotion = useReducedMotion();
 
@@ -216,7 +193,7 @@ function SummarySkeleton() {
   );
 }
 
-type RunSummaryProps = SummaryActionsProps & {
+type RunSummaryProps = ResultActionsProps & {
   end: SoloEndView;
 };
 
@@ -243,7 +220,7 @@ export function RunSummary({
       <Outcome summary={summary} titleId={titleId} titleRef={titleRef} />
       <Stats summary={summary} />
       <RoundStrip roundTimesMs={summary.roundTimesMs} />
-      <SummaryActions
+      <ResultActions
         onPlayAgain={onPlayAgain}
         onChangeFilters={onChangeFilters}
       />

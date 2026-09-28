@@ -3,6 +3,7 @@
 import { LOBBY_GATE_SIZE, LobbyPanel } from '@/components/duel/LobbyPanel';
 import { CanvasGate } from '@/components/game/CanvasGate';
 import { CountdownRing } from '@/components/game/CountdownRing';
+import { DuelResultPanel } from '@/components/game/DuelResultPanel';
 import { FeedbackToast } from '@/components/game/FeedbackToast';
 import { GuessInput } from '@/components/game/GuessInput';
 import { LifeLostFlash } from '@/components/game/LifeLostFlash';
@@ -13,6 +14,7 @@ import { TurnIndicator } from '@/components/game/TurnIndicator';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { QuitChip } from '@/components/shell/QuitChip';
 import { ringSetups } from '@/lib/canvas';
+import { waitingLine } from '@/lib/duel-status';
 import { LOADING_FORMATION } from '@/lib/formation';
 import { CHOICE_BUTTON, PRIMARY_BUTTON } from '@/styles/classes';
 import type { CanvasGateView, CanvasView } from '@/types/canvas';
@@ -123,7 +125,10 @@ function ActiveRail({
           </div>
           {view.mode === 'duel' && isTheirTurn ? (
             <p className="col-start-1 row-start-1 self-center text-center text-14 text-fg-muted">
-              Waiting for {view.opponent?.handle ?? 'your opponent'}
+              {waitingLine(
+                view.opponent?.handle ?? null,
+                view.opponentConnection?.status === 'reconnecting',
+              )}
             </p>
           ) : null}
         </div>
@@ -156,12 +161,14 @@ export function GameCanvas({
   onChangeFilters = () => {},
   onLobbyAction = () => {},
 }: GameCanvasProps) {
-  const end = view.mode === 'solo' ? view.end : null;
+  const soloEnd = view.mode === 'solo' ? view.end : null;
   const lobby = view.mode === 'duel' ? view.lobby : null;
-  const summary = end?.status === 'ready' ? end.summary : null;
+  const result = view.mode === 'duel' ? view.end : null;
+  const summary = soloEnd?.status === 'ready' ? soloEnd.summary : null;
   const isPerfectClear = summary?.endReason === 'perfect_clear';
-  // The summary's own links take over from quit
-  const quitChip = summary ? null : <QuitChip onQuit={onQuit} />;
+  // The result's own links take over from quit
+  const quitChip = summary || result ? null : <QuitChip onQuit={onQuit} />;
+  const found = result?.found ?? view.found;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4">
@@ -173,6 +180,7 @@ export function GameCanvas({
           you={view.you}
           opponent={view.opponent}
           turn={view.turn}
+          opponentConnection={view.opponentConnection}
         />
       ) : null}
       {/* Grid, so the gate's full-size box resolves */}
@@ -207,13 +215,13 @@ export function GameCanvas({
             >
               <MatchHeader
                 match={view.match}
-                found={view.found}
-                identity={summary?.match}
+                found={found}
+                identity={summary?.match ?? result?.match}
               />
               <div className="min-h-72 flex-1 sm:min-h-80">
                 <SquadGrid
                   formation={view.match?.formation ?? LOADING_FORMATION}
-                  revealed={view.found}
+                  revealed={found}
                   missed={summary?.missed ?? undefined}
                   pulse={view.pulse}
                   isLoading={view.match === null}
@@ -223,9 +231,15 @@ export function GameCanvas({
             <div
               className={`flex shrink-0 flex-col gap-2 p-3 sm:gap-3 sm:p-4 lg:w-88 border-line ${PANEL}`}
             >
-              {end ? (
+              {soloEnd ? (
                 <RunSummary
-                  end={end}
+                  end={soloEnd}
+                  onPlayAgain={onPlayAgain}
+                  onChangeFilters={onChangeFilters}
+                />
+              ) : result ? (
+                <DuelResultPanel
+                  result={result}
                   onPlayAgain={onPlayAgain}
                   onChangeFilters={onChangeFilters}
                 />
