@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { useState } from 'react';
+import { SHIRT_PATH } from '@/components/game/shirt';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { LIFE_LOST_FILL_SHIFT } from '@/styles/classes';
 import { MOTION_SECONDS } from '@/styles/motion';
@@ -14,9 +15,6 @@ const OWNER_FILL: Record<DuelActor, string> = {
   you: 'fill-you',
   opponent: 'fill-opponent',
 };
-
-const SHIRT_PATH =
-  'M8 3 4 5 1 9l3 2.5L6 10v11h12V10l2 1.5L23 9l-3-4-4-2c-.5 1.7-2.1 3-4 3S8.5 4.7 8 3Z';
 
 const SHAKE: Variants = {
   still: { x: 0 },

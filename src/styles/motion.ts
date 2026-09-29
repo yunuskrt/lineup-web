@@ -32,3 +32,9 @@ export const REVEAL_SPRING = {
 } as const;
 
 export const SKELETON_PULSE_OPACITY = [1, 0.6, 1] as const;
+
+export const SKELETON_PULSE = {
+  duration: MOTION_SECONDS.skeletonPulse,
+  ease: MOTION_EASING.skeletonPulse,
+  repeat: Infinity,
+} as const;
