@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, type Transition, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { type RefObject, useEffect, useId, useRef } from 'react';
 import { Lives } from '@/components/game/Lives';
 import {
@@ -15,11 +15,7 @@ import {
   roundTimeStats,
   summaryTitle,
 } from '@/lib/summary';
-import {
-  MOTION_EASING,
-  MOTION_SECONDS,
-  SKELETON_PULSE_OPACITY,
-} from '@/styles/motion';
+import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 import type { SoloEndView } from '@/types/canvas';
 import type { SoloSummary } from '@/types/solo';
 
@@ -30,12 +26,6 @@ const STAT_LABEL = 'text-12 leading-4 text-fg-muted';
 const STAT_VALUE = 'font-display text-24 leading-8 font-semibold tabular-nums';
 const STRIP_BOX = 'flex h-16 gap-1';
 const SKELETON = 'rounded-sm bg-skeleton-fill';
-
-const SKELETON_PULSE: Transition = {
-  duration: MOTION_SECONDS.skeletonPulse,
-  ease: MOTION_EASING.skeletonPulse,
-  repeat: Infinity,
-};
 
 type OutcomeProps = {
   summary: SoloSummary;

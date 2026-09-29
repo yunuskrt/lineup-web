@@ -6,11 +6,7 @@ import { Pitch } from '@/components/pitch/Pitch';
 import { RevealCard } from '@/components/pitch/RevealCard';
 import { SquadSlot } from '@/components/pitch/SquadSlot';
 import { parseFormation, slotLayout } from '@/lib/formation';
-import {
-  MOTION_SECONDS,
-  MOTION_EASING,
-  SKELETON_PULSE_OPACITY,
-} from '@/styles/motion';
+import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 import type { GridPulse } from '@/types/feedback';
 import type {
   FoundPlayer,
@@ -23,12 +19,6 @@ const SLOT_WIDTH_BY_WIDEST_LINE: Record<number, string> = {
   3: 'w-[24%]',
   4: 'w-[22%]',
   5: 'w-[18%]',
-};
-
-const SKELETON_PULSE: Transition = {
-  duration: MOTION_SECONDS.skeletonPulse,
-  ease: MOTION_EASING.skeletonPulse,
-  repeat: Infinity,
 };
 
 const SETTLE: Transition = { duration: 0.2 };

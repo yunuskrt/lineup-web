@@ -52,3 +52,4 @@ Not Started
 - W22b Lobby Wiring: lobby reducer, queue hook, flip beat, match handoff.
 - W23a Duel Result Panel: result card, tally, reconnect badge, snapshots.
 - W23b Duel Loop Wiring: turns, guesses, forfeit dialog, result, replay.
+- W24a Profile Panels: record, stats, history rows, guest strip, snapshots.

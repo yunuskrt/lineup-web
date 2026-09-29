@@ -6,9 +6,16 @@ import { slotLayout } from '@/lib/formation';
 import type { FilterOptions } from '@/types/catalog';
 import type { DuelPlayer } from '@/types/duel';
 import type { Filters } from '@/types/filters';
-import type { GuessOutcome } from '@/types/game';
-import type { MaskedMatch, MatchIdentity } from '@/types/match';
+import type { DuelOutcome, GuessOutcome, SoloEndReason } from '@/types/game';
+import type {
+  ClubRef,
+  CompetitionRef,
+  MaskedMatch,
+  MatchIdentity,
+} from '@/types/match';
 import type { RevealedPlayer } from '@/types/player';
+import type { HistoryEntry, UserStats } from '@/types/profile';
+import type { User } from '@/types/user';
 
 export const SAMPLE_MATCH: MaskedMatch = {
   id: 'sample-match',
@@ -112,4 +119,295 @@ export function samplePlayer(formation: string, slot: number): RevealedPlayer {
     position: slotLayout(formation)?.[slot]?.position ?? 'GK',
     imageUrl: null,
   };
+}
+
+function club(id: string, name: string, shortName: string): ClubRef {
+  return { id, name, shortName, crestUrl: null };
+}
+
+// Fictional, like the mock fixtures; codes are short names
+const CLUBS = {
+  ngu: club('club-northgate', 'Northgate United', 'NGU'),
+  rso: club('club-real-solvara', 'Real Solvara', 'RSO'),
+  kmc: club('club-kingsmere', 'Kingsmere City', 'KMC'),
+  riv: club('club-riverton', 'Riverton Athletic', 'RIV'),
+  yld: club('club-yildirimspor', 'Yıldırımspor', 'YLD'),
+  aca: club('club-castellmar', 'Atlético Castellmar', 'ACA'),
+  wee: club('club-weerdam', 'FC Weerdam', 'WEE'),
+  val: club('nat-valdoria', 'Valdoria', 'VAL'),
+  srv: club('nat-serevia', 'Serevia', 'SRV'),
+  ost: club('nat-ostrenia', 'Ostrenia', 'OST'),
+} as const;
+
+const COMPETITIONS = {
+  cup: {
+    id: 'comp-continental-cup',
+    kind: 'ucl',
+    name: 'Continental Champions Cup',
+  },
+  crown: { id: 'comp-crown-league', kind: 'league', name: 'Crown League' },
+  meridiana: {
+    id: 'comp-liga-meridiana',
+    kind: 'league',
+    name: 'Liga Meridiana',
+  },
+  nations: {
+    id: 'comp-nations-cup',
+    kind: 'world_cup',
+    name: 'Global Nations Cup',
+  },
+  championship: {
+    id: 'comp-nations-championship',
+    kind: 'euro',
+    name: 'Continental Nations Championship',
+  },
+} as const satisfies Record<string, CompetitionRef>;
+
+type HistoryMatchSeed = [
+  id: string,
+  competition: CompetitionRef,
+  season: string,
+  date: string,
+  stage: string | null,
+  home: ClubRef,
+  away: ClubRef,
+  score: [number, number],
+  nickname: string | null,
+];
+
+const HISTORY_MATCH_SEEDS: HistoryMatchSeed[] = [
+  [
+    'h-1',
+    COMPETITIONS.cup,
+    '2004-05',
+    '2005-05-03',
+    'Semi-final',
+    CLUBS.ngu,
+    CLUBS.rso,
+    [3, 2],
+    'The Comeback at Northgate',
+  ],
+  [
+    'h-2',
+    COMPETITIONS.crown,
+    '2011-12',
+    '2012-05-13',
+    'Matchday 38',
+    CLUBS.kmc,
+    CLUBS.riv,
+    [1, 0],
+    null,
+  ],
+  [
+    'h-3',
+    COMPETITIONS.meridiana,
+    '2009-10',
+    '2010-01-17',
+    'Matchday 19',
+    CLUBS.yld,
+    CLUBS.aca,
+    [2, 2],
+    'The Mudbath Derby',
+  ],
+  [
+    'h-4',
+    COMPETITIONS.cup,
+    '2014-15',
+    '2014-10-22',
+    'Group stage',
+    CLUBS.wee,
+    CLUBS.ngu,
+    [0, 1],
+    null,
+  ],
+  [
+    'h-5',
+    COMPETITIONS.nations,
+    '2006',
+    '2006-07-05',
+    'Semi-final',
+    CLUBS.val,
+    CLUBS.srv,
+    [4, 3],
+    'The Night of the Six',
+  ],
+  [
+    'h-6',
+    COMPETITIONS.championship,
+    '2012',
+    '2012-07-01',
+    'Final',
+    CLUBS.ost,
+    CLUBS.val,
+    [1, 1],
+    'The Rain Final',
+  ],
+  [
+    'h-7',
+    COMPETITIONS.cup,
+    '2018-19',
+    '2019-05-25',
+    'Final',
+    CLUBS.rso,
+    CLUBS.ngu,
+    [2, 0],
+    null,
+  ],
+  [
+    'h-8',
+    COMPETITIONS.crown,
+    '2023-24',
+    '2024-05-19',
+    'Matchday 38',
+    CLUBS.riv,
+    CLUBS.kmc,
+    [1, 3],
+    'The Final-Day Swing',
+  ],
+];
+
+export const SAMPLE_HISTORY_MATCHES: MatchIdentity[] = HISTORY_MATCH_SEEDS.map(
+  ([id, competition, season, date, stage, home, away, score, nickname]) => ({
+    id,
+    competition,
+    season,
+    date,
+    stage,
+    home,
+    away,
+    score: { home: score[0], away: score[1] },
+    nickname,
+  }),
+);
+
+export const SAMPLE_USER: User = {
+  id: SAMPLE_YOU.id,
+  handle: SAMPLE_YOU.handle,
+  isGuest: false,
+  tier: 'free',
+};
+
+export const SAMPLE_GUEST: User = { ...SAMPLE_USER, isGuest: true };
+
+// The prototype's numbers: 22 duels, 12 solo runs
+export const SAMPLE_STATS: UserStats = {
+  played: 34,
+  wins: 14,
+  draws: 2,
+  losses: 6,
+  accuracy: 0.64,
+  bestStreak: 7,
+  perfectClears: 1,
+  favouriteClub: CLUBS.ngu,
+};
+
+export const SAMPLE_EMPTY_STATS: UserStats = {
+  played: 0,
+  wins: 0,
+  draws: 0,
+  losses: 0,
+  accuracy: 0,
+  bestStreak: 0,
+  perfectClears: 0,
+  favouriteClub: null,
+};
+
+type HistoryResult =
+  | { mode: 'solo'; outcome: SoloEndReason }
+  | { mode: 'duel'; outcome: DuelOutcome };
+
+type HistorySeed = HistoryResult & {
+  found: number;
+  lives: number;
+  // How long ago, so Today and Yesterday stay true
+  minutesAgo: number;
+};
+
+const MINUTES_PER_DAY = 24 * 60;
+
+function days(count: number): number {
+  return count * MINUTES_PER_DAY;
+}
+
+const HISTORY_SEEDS: HistorySeed[] = [
+  { mode: 'duel', outcome: 'win', found: 6, lives: 2, minutesAgo: 5 },
+  {
+    mode: 'solo',
+    outcome: 'perfect_clear',
+    found: 11,
+    lives: 1,
+    minutesAgo: 40,
+  },
+  { mode: 'duel', outcome: 'loss', found: 4, lives: 0, minutesAgo: days(1) },
+  {
+    mode: 'duel',
+    outcome: 'forfeit_win',
+    found: 3,
+    lives: 3,
+    minutesAgo: days(1) + 30,
+  },
+  {
+    mode: 'solo',
+    outcome: 'lives_out',
+    found: 7,
+    lives: 0,
+    minutesAgo: days(17),
+  },
+  { mode: 'duel', outcome: 'draw', found: 11, lives: 1, minutesAgo: days(21) },
+  { mode: 'solo', outcome: 'quit', found: 5, lives: 2, minutesAgo: days(30) },
+  { mode: 'duel', outcome: 'win', found: 8, lives: 1, minutesAgo: days(34) },
+  { mode: 'duel', outcome: 'win', found: 5, lives: 3, minutesAgo: days(41) },
+  {
+    mode: 'solo',
+    outcome: 'lives_out',
+    found: 9,
+    lives: 0,
+    minutesAgo: days(45),
+  },
+  { mode: 'duel', outcome: 'loss', found: 2, lives: 0, minutesAgo: days(52) },
+  { mode: 'duel', outcome: 'win', found: 7, lives: 2, minutesAgo: days(60) },
+  {
+    mode: 'solo',
+    outcome: 'lives_out',
+    found: 6,
+    lives: 0,
+    minutesAgo: days(66),
+  },
+  { mode: 'duel', outcome: 'draw', found: 11, lives: 2, minutesAgo: days(73) },
+  {
+    mode: 'duel',
+    outcome: 'forfeit_win',
+    found: 1,
+    lives: 3,
+    minutesAgo: days(80),
+  },
+  { mode: 'solo', outcome: 'quit', found: 3, lives: 3, minutesAgo: days(88) },
+  { mode: 'duel', outcome: 'win', found: 6, lives: 1, minutesAgo: days(97) },
+  { mode: 'duel', outcome: 'loss', found: 5, lives: 0, minutesAgo: days(380) },
+  {
+    mode: 'solo',
+    outcome: 'lives_out',
+    found: 8,
+    lives: 0,
+    minutesAgo: days(392),
+  },
+  { mode: 'duel', outcome: 'win', found: 4, lives: 2, minutesAgo: days(410) },
+];
+
+function resultOf(seed: HistorySeed): HistoryResult {
+  return seed.mode === 'solo'
+    ? { mode: 'solo', outcome: seed.outcome }
+    : { mode: 'duel', outcome: seed.outcome };
+}
+
+// Newest first, like the history endpoint
+export function sampleHistory(now: number): HistoryEntry[] {
+  return HISTORY_SEEDS.map((seed, index) => ({
+    ...resultOf(seed),
+    id: `history-${index + 1}`,
+    playedAt: new Date(now - seed.minutesAgo * 60_000).toISOString(),
+    match: SAMPLE_HISTORY_MATCHES[index % SAMPLE_HISTORY_MATCHES.length],
+    foundCount: seed.found,
+    livesRemaining: seed.lives,
+  }));
 }

@@ -3,6 +3,7 @@ import {
   MOTION_DURATION_MS,
   MOTION_SECONDS,
   REVEAL_SPRING,
+  SKELETON_PULSE,
 } from '@/styles/motion';
 
 describe('MOTION_SECONDS', () => {
@@ -22,5 +23,13 @@ describe('REVEAL_SPRING', () => {
   it('springs over the 320ms reveal from theme.md', () => {
     expect(REVEAL_SPRING.type).toBe('spring');
     expect(REVEAL_SPRING.visualDuration).toBe(MOTION_DURATION_MS.reveal / 1000);
+  });
+});
+
+describe('SKELETON_PULSE', () => {
+  it('loops the 1.6s ease-in-out pulse from theme.md', () => {
+    expect(SKELETON_PULSE.duration).toBe(1.6);
+    expect(SKELETON_PULSE.ease).toBe('easeInOut');
+    expect(SKELETON_PULSE.repeat).toBe(Infinity);
   });
 });
