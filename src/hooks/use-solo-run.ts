@@ -5,14 +5,16 @@ import { filterOptionsQuery } from '@/hooks/use-filter-options';
 import { getApiClient } from '@/lib/api';
 import { apiErrorOf, unwrap } from '@/lib/api/unwrap';
 import { guessFeedback } from '@/lib/feedback';
-import { filtersFromParams } from '@/lib/filters';
+import { filtersFromParams, widenFilters, withFilters } from '@/lib/filters';
 import { prepareGuess } from '@/lib/guess';
 import {
+  canGuessSolo,
   INITIAL_SOLO_RUN,
   needsResync,
   soloRunReducer,
   SYNC_RETRY_MS,
 } from '@/lib/solo-run';
+import { widenReasonOf } from '@/lib/system-states';
 import type { GuessFeedback } from '@/types/feedback';
 import type { Side } from '@/types/match';
 
@@ -31,14 +33,14 @@ export function useSoloRun(params: URLSearchParams) {
   const isPlaying = state.phase === 'playing';
   const isAwaitingSummary = state.phase === 'over' && state.summary === null;
 
-  async function find() {
+  async function find(from: URLSearchParams = params) {
     if (isFinding.current) return;
     isFinding.current = true;
     dispatch({ type: 'finding' });
     try {
       await ensureSession();
       const options = await queryClient.query(filterOptionsQuery);
-      const filters = filtersFromParams(params, options);
+      const filters = filtersFromParams(from, options);
       const offer = unwrap(await getApiClient().solo.findMatch(filters));
       dispatch({ type: 'offerReceived', offer });
     } catch (error) {
@@ -99,6 +101,16 @@ export function useSoloRun(params: URLSearchParams) {
     };
   }, [isPlaying, state.isGuessing, sessionId, startedAt, endsAt]);
 
+  // The server set the time; this only unlocks
+  useEffect(() => {
+    if (state.cooldownUntil === null) return;
+    const timer = setTimeout(
+      () => dispatch({ type: 'cooldownEnded' }),
+      Math.max(0, state.cooldownUntil - Date.now()),
+    );
+    return () => clearTimeout(timer);
+  }, [state.cooldownUntil]);
+
   // Not cancelled on cleanup: StrictMode would drop it
   useEffect(() => {
     if (!isAwaitingSummary || sessionId === null) return;
@@ -139,7 +151,7 @@ export function useSoloRun(params: URLSearchParams) {
   async function submitGuess(raw: string): Promise<GuessFeedback | null> {
     const guess = prepareGuess(raw);
     if (guess === null || sessionId === null) return null;
-    if (!isPlaying || state.isGuessing) return null;
+    if (!canGuessSolo(state)) return null;
 
     dispatch({ type: 'guessSubmitted' });
     try {
@@ -150,7 +162,7 @@ export function useSoloRun(params: URLSearchParams) {
       return guessFeedback(response.result);
     } catch (error) {
       const apiError = apiErrorOf(error);
-      dispatch({ type: 'guessFailed', error: apiError });
+      dispatch({ type: 'guessFailed', error: apiError, at: Date.now() });
       if (apiError.code === 'session_over') await syncNow(sessionId);
       return null;
     }
@@ -175,6 +187,26 @@ export function useSoloRun(params: URLSearchParams) {
     void find();
   }
 
+  // Returns the new params, so the URL can follow
+  async function widen(): Promise<URLSearchParams | null> {
+    const reason = state.failure ? widenReasonOf(state.failure.error) : null;
+    if (!reason || isFinding.current) return null;
+
+    try {
+      const options = await queryClient.query(filterOptionsQuery);
+      const filters = filtersFromParams(params, options);
+      const widened = widenFilters(filters, reason, options);
+      if (!widened) return null;
+
+      const next = withFilters(params, widened, options);
+      void find(next);
+      return next;
+    } catch (error) {
+      dispatch({ type: 'failed', step: 'find', error: apiErrorOf(error) });
+      return null;
+    }
+  }
+
   function retry() {
     if (state.failure?.step === 'find') {
       void find();
@@ -185,5 +217,5 @@ export function useSoloRun(params: URLSearchParams) {
     dispatch({ type: 'retried' });
   }
 
-  return { state, chooseSide, submitGuess, quit, playAgain, retry };
+  return { state, chooseSide, submitGuess, quit, playAgain, retry, widen };
 }

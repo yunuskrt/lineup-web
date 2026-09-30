@@ -26,6 +26,8 @@ export type CanvasGateView = {
   title: string;
   detail?: string;
   actionLabel?: string;
+  // A quieter way out, as a text link
+  secondaryActionLabel?: string;
   // One decision across equal options
   choices?: CanvasGateChoice[];
 };
@@ -36,6 +38,8 @@ export type CanvasViewBase = {
   found: FoundPlayer[];
   clock: CanvasClock;
   input: GuessInputStatus;
+  // The server's retry time while input is `cooldown`
+  cooldownUntil?: number;
   toast: ToastMessage | null;
   pulse?: GridPulse;
   shakeKey: number;

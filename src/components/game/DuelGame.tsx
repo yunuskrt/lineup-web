@@ -17,7 +17,7 @@ import type { PlayMode } from '@/types/play';
 export function DuelGame() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [params] = useState(() => new URLSearchParams(searchParams));
+  const [params, setParams] = useState(() => new URLSearchParams(searchParams));
   const {
     state,
     you,
@@ -28,6 +28,7 @@ export function DuelGame() {
     playAgain,
     leave,
     retry,
+    widen,
   } = useDuel(params);
   const [guess, setGuess] = useState('');
   const [clearKey, setClearKey] = useState(state.clearKey);
@@ -69,6 +70,14 @@ export function DuelGame() {
 
   function handleGateAction() {
     switch (duelGateAction(state)) {
+      case 'widen': {
+        // Play again and Change filters use the wider set
+        const next = widen();
+        if (!next) return;
+        setParams(next);
+        router.replace(withQuery('/play/duel', next));
+        return;
+      }
       case 'leave':
         backToFilters();
         return;
@@ -101,6 +110,7 @@ export function DuelGame() {
         onGuessChange={setGuess}
         onGuessSubmit={(text) => void submitGuess(text)}
         onGateAction={handleGateAction}
+        onGateSecondaryAction={backToFilters}
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
         onChangeFilters={backToFilters}

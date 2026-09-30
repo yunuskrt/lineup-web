@@ -54,3 +54,4 @@ Not Started
 - W23b Duel Loop Wiring: turns, guesses, forfeit dialog, result, replay.
 - W24a Profile Panels: record, stats, history rows, guest strip, snapshots.
 - W24b Profile Wiring: shared mock store, profile hooks, paging, upgrade.
+- W25a Empty Pool & Rate Limit: widen gate, cooldown input, ?scenario=.

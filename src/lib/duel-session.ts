@@ -3,6 +3,12 @@ import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { authErrorMessage } from '@/lib/auth';
 import { guessFeedback } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
+import {
+  emptyPoolGate,
+  heldCooldown,
+  widenReasonOf,
+} from '@/lib/system-states';
+import type { ApiError } from '@/types/api';
 import type { CanvasGateView, DuelCanvasView } from '@/types/canvas';
 import type { DuelPlayer, DuelSession } from '@/types/duel';
 import type { DuelLobbyView, FilterSummary } from '@/types/duel-lobby';
@@ -21,8 +27,6 @@ import type { User } from '@/types/user';
 export const PAIRED_BEAT_MS = 1_200;
 
 export const DUEL_GATE_COPY = {
-  noMatch: 'No match found',
-  changeFilters: 'Change filters',
   tryAgain: 'Try again',
 } as const;
 
@@ -49,6 +53,7 @@ export const INITIAL_DUEL_SESSION: DuelSessionState = {
   isLocking: false,
   isGuessing: false,
   isForfeiting: false,
+  cooldownUntil: null,
   failure: null,
   toast: null,
   shakeKey: 0,
@@ -75,6 +80,22 @@ function isLive(state: DuelSessionState): boolean {
 
 function withToast(state: DuelSessionState, message: string): DuelSessionState {
   return { ...state, toast: { id: (state.toast?.id ?? 0) + 1, message } };
+}
+
+// A lockout speaks through the input, not a toast
+function rejectGuess(
+  state: DuelSessionState,
+  error: ApiError,
+  at: number,
+): DuelSessionState {
+  const next = { ...state, isGuessing: false };
+  if (error.code !== 'rate_limited') {
+    return withToast(next, authErrorMessage(error));
+  }
+  return {
+    ...next,
+    cooldownUntil: heldCooldown(state.cooldownUntil, error, at),
+  };
 }
 
 function applySession(
@@ -202,10 +223,11 @@ export function duelSessionReducer(
       return resolveGuess(state, event.result);
     case 'guessFailed':
       if (!isLive(state)) return state;
-      return withToast(
-        { ...state, isGuessing: false },
-        authErrorMessage(event.error),
-      );
+      return rejectGuess(state, event.error, event.at);
+    case 'cooldownEnded':
+      return { ...state, cooldownUntil: null };
+    case 'filtersWidened':
+      return { ...state, filters: event.filters };
     case 'lifeLost':
       if (!isLive(state) || event.cue.who !== 'you') return state;
       return { ...state, lifeLostKey: state.lifeLostKey + 1 };
@@ -233,16 +255,12 @@ export function duelSessionReducer(
         isGuessing: false,
         isForfeiting: false,
         opponentConnection: null,
+        cooldownUntil: null,
         failure: null,
       };
     case 'error':
-      // Mid-match a server rejection is a toast, not a gate
-      if (isLive(state)) {
-        return withToast(
-          { ...state, isGuessing: false },
-          authErrorMessage(event.error),
-        );
-      }
+      // Mid-match a server rejection is not a gate
+      if (isLive(state)) return rejectGuess(state, event.error, event.at);
       if (state.result) return state;
       return duelSessionReducer(state, {
         type: 'failed',
@@ -287,7 +305,8 @@ export function canGuess(state: DuelSessionState): boolean {
     state.phase === 'playing' &&
     state.session?.turn === 'you' &&
     !state.isGuessing &&
-    !state.isForfeiting
+    !state.isForfeiting &&
+    state.cooldownUntil === null
   );
 }
 
@@ -346,8 +365,15 @@ function lobbyOf(state: DuelSessionState): DuelLobbyView | null {
 }
 
 export function duelGateAction(state: DuelSessionState): DuelGateAction | null {
-  if (state.phase !== 'failed') return null;
-  return state.failure?.error.code === 'empty_pool' ? 'leave' : 'retry';
+  if (state.phase !== 'failed' || !state.failure) return null;
+  const { error } = state.failure;
+  if (canWidenLock(state) && widenReasonOf(error)) return 'widen';
+  return error.code === 'empty_pool' ? 'leave' : 'retry';
+}
+
+// Only your own refused lock can be widened
+function canWidenLock(state: DuelSessionState): boolean {
+  return state.failure?.step === 'lock';
 }
 
 function failedGate(state: DuelSessionState): CanvasGateView | null {
@@ -355,11 +381,7 @@ function failedGate(state: DuelSessionState): CanvasGateView | null {
   if (!failure) return null;
 
   if (failure.error.code === 'empty_pool') {
-    return {
-      title: DUEL_GATE_COPY.noMatch,
-      detail: failure.error.message,
-      actionLabel: DUEL_GATE_COPY.changeFilters,
-    };
+    return emptyPoolGate(failure.error, canWidenLock(state));
   }
 
   return {
@@ -374,7 +396,8 @@ function inputOf(state: DuelSessionState): GuessInputStatus {
     return 'locked';
   }
   if (state.isForfeiting) return 'locked';
-  return state.isGuessing ? 'pending' : 'live';
+  if (state.isGuessing) return 'pending';
+  return state.cooldownUntil === null ? 'live' : 'cooldown';
 }
 
 export function duelCanvasView(
@@ -391,6 +414,7 @@ export function duelCanvasView(
     found: result?.found ?? session?.found ?? [],
     clock: { round, isFrozen: false },
     input: inputOf(state),
+    cooldownUntil: state.cooldownUntil ?? undefined,
     toast: state.toast,
     pulse: state.pulse,
     shakeKey: state.shakeKey,

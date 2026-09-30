@@ -7,14 +7,17 @@ import { apiErrorOf, unwrap } from '@/lib/api/unwrap';
 import {
   canForfeit,
   canGuess,
+  duelGateAction,
   canLockFilters,
   duelSessionReducer,
   INITIAL_DUEL_SESSION,
   PAIRED_BEAT_MS,
   youFrom,
 } from '@/lib/duel-session';
-import { filtersFromParams } from '@/lib/filters';
+import { filtersFromParams, widenFilters, withFilters } from '@/lib/filters';
 import { prepareGuess } from '@/lib/guess';
+import { widenReasonOf } from '@/lib/system-states';
+import type { Filters } from '@/types/filters';
 
 type Run = { isCancelled: boolean };
 
@@ -61,7 +64,9 @@ export function useDuel(params: URLSearchParams) {
         dispatch({ type: 'opponentConnection', connection }),
       ),
       client.on('finished', (result) => dispatch({ type: 'finished', result })),
-      client.on('error', (error) => dispatch({ type: 'error', error })),
+      client.on('error', (error) =>
+        dispatch({ type: 'error', error, at: Date.now() }),
+      ),
     ];
   }
 
@@ -142,8 +147,17 @@ export function useDuel(params: URLSearchParams) {
     return () => clearTimeout(timer);
   }, [state.phase]);
 
-  async function lockFilters() {
-    const { filters } = state;
+  // The server set the time; this only unlocks
+  useEffect(() => {
+    if (state.cooldownUntil === null) return;
+    const timer = setTimeout(
+      () => dispatch({ type: 'cooldownEnded' }),
+      Math.max(0, state.cooldownUntil - Date.now()),
+    );
+    return () => clearTimeout(timer);
+  }, [state.cooldownUntil]);
+
+  async function lockFilters(filters: Filters | null = state.filters) {
     if (!canLockFilters(state) || !filters || isLocking.current) return;
 
     isLocking.current = true;
@@ -172,7 +186,11 @@ export function useDuel(params: URLSearchParams) {
       unwrap(await getDuelClient().guess({ sessionId, guess }));
     } catch (error) {
       if (!run.current.isCancelled) {
-        dispatch({ type: 'guessFailed', error: apiErrorOf(error) });
+        dispatch({
+          type: 'guessFailed',
+          error: apiErrorOf(error),
+          at: Date.now(),
+        });
       }
     } finally {
       isGuessing.current = false;
@@ -194,6 +212,20 @@ export function useDuel(params: URLSearchParams) {
     } finally {
       isForfeiting.current = false;
     }
+  }
+
+  // Returns the new params, so the URL can follow
+  function widen(): URLSearchParams | null {
+    const { filters, options, failure } = state;
+    if (duelGateAction(state) !== 'widen' || !failure) return null;
+    const reason = widenReasonOf(failure.error);
+    if (!reason || !filters || !options) return null;
+
+    const widened = widenFilters(filters, reason, options);
+    if (!widened) return null;
+    dispatch({ type: 'filtersWidened', filters: widened });
+    void lockFilters(widened);
+    return withFilters(params, widened, options);
   }
 
   function searchAgain() {
@@ -231,12 +263,13 @@ export function useDuel(params: URLSearchParams) {
   return {
     state,
     you: youFrom(session.data?.user ?? null),
-    lockFilters,
+    lockFilters: () => lockFilters(),
     submitGuess,
     forfeit,
     searchAgain,
     playAgain,
     leave,
     retry,
+    widen,
   };
 }

@@ -2,6 +2,11 @@ import type { GuessInputStatus } from '@/components/game/GuessInput';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { authErrorMessage } from '@/lib/auth';
 import { guessFeedback } from '@/lib/feedback';
+import {
+  cooldownUntil,
+  emptyPoolGate,
+  widenReasonOf,
+} from '@/lib/system-states';
 import type { ApiError } from '@/types/api';
 import type {
   CanvasGateView,
@@ -26,8 +31,6 @@ export const SOLO_GATE_COPY = {
     detail: "You'll name the starting XI of the team you pick.",
   },
   backToFilters: 'Back to filters',
-  noMatch: 'No match found',
-  changeFilters: 'Change filters',
   tryAgain: 'Try again',
 } as const;
 
@@ -52,6 +55,7 @@ export const INITIAL_SOLO_RUN: SoloRunState = {
   summary: null,
   isGuessing: false,
   isQuitting: false,
+  cooldownUntil: null,
   failure: null,
   toast: null,
   shakeKey: 0,
@@ -150,8 +154,14 @@ export function soloRunReducer(
       const next = { ...state, isGuessing: false };
       // The hook syncs instead of toasting this one
       if (event.error.code === 'session_over') return next;
+      // The input says why; no toast on top
+      if (event.error.code === 'rate_limited') {
+        return { ...next, cooldownUntil: cooldownUntil(event.error, event.at) };
+      }
       return withToast(next, authErrorMessage(event.error));
     }
+    case 'cooldownEnded':
+      return { ...state, cooldownUntil: null };
     case 'failed':
       return {
         ...state,
@@ -180,17 +190,24 @@ export function needsResync(held: RoundTiming, synced: SoloSession): boolean {
 
 function inputStatus(state: SoloRunState): GuessInputStatus {
   if (state.phase !== 'playing' || state.isQuitting) return 'locked';
-  return state.isGuessing ? 'pending' : 'live';
+  if (state.isGuessing) return 'pending';
+  return state.cooldownUntil === null ? 'live' : 'cooldown';
+}
+
+export function canGuessSolo(state: SoloRunState): boolean {
+  return inputStatus(state) === 'live';
 }
 
 export function soloGateAction(state: SoloRunState): SoloGateAction | null {
   switch (state.phase) {
     case 'choosing':
       return 'choose';
-    case 'failed':
-      return state.failure && LEAVING_ERRORS.has(state.failure.error.code)
-        ? 'leave'
-        : 'retry';
+    case 'failed': {
+      const error = state.failure?.error;
+      if (!error) return 'retry';
+      if (widenReasonOf(error)) return 'widen';
+      return LEAVING_ERRORS.has(error.code) ? 'leave' : 'retry';
+    }
     default:
       return null;
   }
@@ -200,13 +217,7 @@ function failedGate(state: SoloRunState): CanvasGateView | null {
   const { failure } = state;
   if (!failure) return null;
 
-  if (failure.error.code === 'empty_pool') {
-    return {
-      title: SOLO_GATE_COPY.noMatch,
-      detail: failure.error.message,
-      actionLabel: SOLO_GATE_COPY.changeFilters,
-    };
-  }
+  if (failure.error.code === 'empty_pool') return emptyPoolGate(failure.error);
 
   return {
     title: FAILED_TITLES[failure.step],
@@ -254,6 +265,7 @@ export function soloCanvasView(state: SoloRunState): SoloCanvasView {
     lives: summary?.livesRemaining ?? session?.lives ?? MAX_LIVES,
     clock: { round: session?.round ?? null, isFrozen: false },
     input: inputStatus(state),
+    cooldownUntil: state.cooldownUntil ?? undefined,
     toast: state.toast,
     pulse: state.pulse,
     shakeKey: state.shakeKey,
