@@ -8,6 +8,7 @@ import {
 import { getApiClient } from '@/lib/api';
 import { unwrap } from '@/lib/api/unwrap';
 import { signUpTarget } from '@/lib/auth';
+import { HISTORY_QUERY_KEY, PROFILE_QUERY_KEY } from '@/lib/query-keys';
 import type { Session, SignInRequest, SignUpRequest } from '@/types/auth';
 
 export const SESSION_QUERY_KEY = ['session'] as const;
@@ -84,9 +85,14 @@ export function useEnsureSession() {
 }
 
 export function useSignOut() {
+  const queryClient = useQueryClient();
   const writeSession = useSessionWriter();
   return useMutation({
     mutationFn: async () => unwrap(await getApiClient().auth.signOut()),
-    onSuccess: () => writeSession(null),
+    onSuccess: () => {
+      writeSession(null);
+      queryClient.removeQueries({ queryKey: PROFILE_QUERY_KEY });
+      queryClient.removeQueries({ queryKey: HISTORY_QUERY_KEY });
+    },
   });
 }

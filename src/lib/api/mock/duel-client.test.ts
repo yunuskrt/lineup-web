@@ -11,7 +11,13 @@ import {
   RECONNECT_WINDOW_MS,
   type MockDuelOptions,
 } from '@/lib/api/mock/duel-client';
+import { createMockApiClient } from '@/lib/api/mock/api-client';
 import { selectFixture } from '@/lib/api/mock/pool';
+import {
+  createIdentity,
+  createStore,
+  type MockStore,
+} from '@/lib/api/mock/store';
 import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
 import type { MockFixture, MockSquad } from '@/lib/api/mock/types';
 import type { DuelResult, DuelSession } from '@/types/duel';
@@ -507,5 +513,173 @@ describe('mock duel client', () => {
     await vi.advanceTimersByTimeAsync(ROUND_DURATION_MS * 4);
 
     expect(names(log)).not.toContain('lifeLost');
+  });
+});
+
+describe('mock duel client recording', () => {
+  let store: MockStore;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    store = createStore();
+    store.identity = createIdentity({
+      id: 'guest-1',
+      handle: 'Guest 1',
+      isGuest: true,
+      tier: 'free',
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function identity() {
+    if (!store.identity) throw new Error('Expected an identity');
+    return store.identity;
+  }
+
+  async function win(client: DuelClient): Promise<void> {
+    for (let i = 0; i < 3; i += 1) {
+      await client.guess({ sessionId: 'duel-1', guess: SQUAD[i].name });
+      await vi.advanceTimersByTimeAsync(ROUND_DURATION_MS + 1_000);
+    }
+  }
+
+  it('records a won duel as a history entry and a win', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    await reachMatch(client);
+    await win(client);
+
+    const [entry] = identity().history;
+    expect(entry).toMatchObject({
+      mode: 'duel',
+      outcome: 'win',
+      foundCount: 3,
+      livesRemaining: 3,
+      match: expectedFixture(0.99).identity,
+    });
+
+    const { stats } = identity();
+    expect(stats.played).toBe(1);
+    expect(stats.wins).toBe(1);
+    // `scripted()` plays the away XI
+    expect(stats.favouriteClub).toEqual(expectedFixture(0.99).identity.away);
+  });
+
+  it.each([
+    ['your forfeit', undefined, 'losses'],
+    ['their forfeit', 'opponentForfeits', 'wins'],
+    ['a draw', 'drawOnEleven', 'draws'],
+  ] as const)('counts %s under %s', async (_, scenario, counter) => {
+    const client = createMockDuelClient(scripted({ store, scenario }));
+    await reachMatch(client);
+
+    if (scenario) await vi.advanceTimersByTimeAsync(1_000);
+    else await client.forfeit();
+
+    const { wins, losses, draws, played } = identity().stats;
+    expect({ wins, losses, draws, played }).toEqual({
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      played: 1,
+      [counter]: 1,
+    });
+  });
+
+  it('counts only your guesses toward accuracy', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    await reachMatch(client);
+
+    await client.guess({ sessionId: 'duel-1', guess: 'Not A Player' });
+    await client.guess({ sessionId: 'duel-1', guess: SQUAD[0].name });
+    await client.forfeit();
+
+    expect(identity().guessCount).toBe(2);
+    expect(identity().hitCount).toBe(1);
+    expect(identity().stats.accuracy).toBe(0.5);
+  });
+
+  it('starts each duel with a fresh guess tally', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    await reachMatch(client);
+    await client.guess({ sessionId: 'duel-1', guess: 'Not A Player' });
+    await client.forfeit();
+
+    // Play again: the hook disconnects, then queues anew
+    client.disconnect();
+    await reachMatch(client);
+    await client.guess({ sessionId: 'duel-1', guess: SQUAD[0].name });
+    await client.forfeit();
+
+    expect(identity().history).toHaveLength(2);
+    expect(identity().guessCount).toBe(2);
+    expect(identity().hitCount).toBe(1);
+  });
+
+  it('keeps a duel in history when the guest upgrades (HC 12)', async () => {
+    const api = createMockApiClient({ store });
+    const client = createMockDuelClient(scripted({ store }));
+    await reachMatch(client);
+    await win(client);
+
+    const upgraded = await api.auth.upgradeGuest({
+      email: 'player@example.com',
+      password: 'a-good-password',
+      handle: 'keeper',
+    });
+    expect(upgraded.success).toBe(true);
+
+    const profile = await api.profile.getProfile();
+    if (!profile.success) throw new Error('Expected a profile');
+    expect(profile.data.user.isGuest).toBe(false);
+    expect(profile.data.stats.wins).toBe(1);
+    expect(identity().history.map((entry) => entry.outcome)).toEqual(['win']);
+  });
+
+  it('records each duel once, even if finished twice', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    await reachMatch(client);
+    await client.forfeit();
+    await client.forfeit();
+
+    expect(identity().history).toHaveLength(1);
+  });
+
+  it('records nothing without a signed-in identity', async () => {
+    store.identity = null;
+    const client = createMockDuelClient(scripted({ store }));
+    const log = record(client);
+    await reachMatch(client);
+    await client.forfeit();
+
+    expect(names(log)).toContain('finished');
+    expect(store.identity).toBeNull();
+  });
+
+  it('shares one history with the REST mock, newest first', async () => {
+    const api = createMockApiClient({ store, random: () => 0 });
+    const offer = await api.solo.findMatch(FILTERS);
+    if (!offer.success) throw new Error('Expected a match offer');
+    await api.solo.chooseSide(offer.data.sessionId, 'home');
+    await api.solo.quit(offer.data.sessionId);
+
+    const client = createMockDuelClient(scripted({ store }));
+    await reachMatch(client);
+    await client.forfeit();
+
+    const page = await api.profile.getHistory({ cursor: null, limit: 20 });
+    if (!page.success) throw new Error('Expected history');
+    expect(page.data.entries.map((entry) => entry.mode)).toEqual([
+      'duel',
+      'solo',
+    ]);
+
+    const profile = await api.profile.getProfile();
+    if (!profile.success) throw new Error('Expected a profile');
+    expect(profile.data.stats.played).toBe(2);
+    expect(profile.data.stats.losses).toBe(1);
   });
 });

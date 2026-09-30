@@ -11,7 +11,13 @@ import {
 } from '@/lib/api/mock/engine';
 import { emptyReason, selectFixture } from '@/lib/api/mock/pool';
 import type { DuelScenario } from '@/lib/api/mock/scenarios';
-import type { MockClock } from '@/lib/api/mock/store';
+import {
+  createStore,
+  nextId,
+  recordGame,
+  type MockClock,
+  type MockStore,
+} from '@/lib/api/mock/store';
 import {
   ACK,
   emptyPool,
@@ -63,6 +69,8 @@ export type MockDuelOptions = {
   opponentHandle?: string;
   thinkTimeMs?: number;
   hitRate?: number;
+  // Shared with the REST mock, so duels reach the profile
+  store?: MockStore;
 };
 
 type Phase = 'idle' | 'queued' | 'filters' | 'playing' | 'finished';
@@ -75,6 +83,7 @@ export function createMockDuelClient(
   const scenario = options.scenario;
   const thinkTimeMs = options.thinkTimeMs ?? DEFAULT_THINK_TIME_MS;
   const hitRate = options.hitRate ?? DEFAULT_HIT_RATE;
+  const store = options.store ?? createStore();
 
   const emitter = createEmitter();
   const timers = new Set<ReturnType<typeof setTimeout>>();
@@ -100,6 +109,7 @@ export function createMockDuelClient(
     yours: 'pending',
     theirs: 'pending',
   };
+  let tally = { guesses: 0, hits: 0 };
   let expiryTimer: ReturnType<typeof setTimeout> | null = null;
   let opponentTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -164,7 +174,30 @@ export function createMockDuelClient(
       isForfeit,
     };
 
+    record(result);
     emitter.emit('finished', result);
+  }
+
+  function record(result: DuelResult): void {
+    const identity = store.identity;
+    if (!identity) return;
+
+    recordGame(identity, {
+      entry: {
+        id: nextId(store, 'history'),
+        playedAt: new Date(now()).toISOString(),
+        mode: 'duel',
+        match: result.match,
+        outcome: result.outcome,
+        foundCount: result.found.length,
+        livesRemaining: result.you.lives,
+      },
+      club: result.match[side],
+      guesses: tally.guesses,
+      hits: tally.hits,
+      // A correct name ends the turn, so no streaks
+      bestStreak: 0,
+    });
   }
 
   function terminalOutcome(state: EngineState): DuelResult['outcome'] | null {
@@ -251,6 +284,10 @@ export function createMockDuelClient(
     if (!isGuessable(step.outcome)) return;
 
     if (actor === 'you') {
+      tally = {
+        guesses: tally.guesses + 1,
+        hits: tally.hits + (step.outcome.kind === 'correct_new' ? 1 : 0),
+      };
       emitter.emit('guessResolved', toGuessResult(step.outcome));
     }
 
@@ -275,6 +312,7 @@ export function createMockDuelClient(
     phase = 'playing';
     fixture = selected;
     side = random() < 0.5 ? 'home' : 'away';
+    tally = { guesses: 0, hits: 0 };
 
     const state = createEngineState('duel', squadFor(selected, side), now());
     engine = state;

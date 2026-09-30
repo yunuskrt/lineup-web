@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -75,6 +75,18 @@ Not Started
   - History entries don't carry the side or team the player named, so rows show both clubs.
   - `played` mixes solo and duel.
   - Your own forfeit is stored as a plain `loss`.
+- Deviations recorded during implementation:
+  - Both mocks record through one `recordGame(identity, record)` helper in `src/lib/api/mock/store.ts`, so solo and duel counters can't drift. Solo `finalize` now calls it too. The duel mock keeps a per-match `tally` of your guesses and hits.
+  - A duel records a best streak of 0: a correct name ends the turn, so there's no in-turn streak.
+  - `useProfile()` and `useHistory()` read the session themselves, rather than taking a user id, so callers can't pass the wrong one.
+  - A failed session query also gives `error`, a case the spec didn't list. A failed background refetch keeps the data it already has, so only a query with no data shows the error page.
+  - TanStack's default three retries are kept, like every other query. A failing profile shows the skeleton for about 7 seconds before the error notice.
+  - The sr-only status reads "Showing N games" (W24a's `HistoryMore`), not "N more games". It announces the total, which also reads correctly after a retry.
+  - Paging was checked in the browser with the page size temporarily set to 1, then reverted.
+  - Creating an account from the guest strip lands on `/play` (W18b's existing redirect). The nav handle leads back to the profile, as the Out of Scope list expected.
+  - With games played but no guesses, accuracy reads "0%", because the contract only carries the ratio.
+  - The ready view takes `user` from the session, not the cached profile. After a guest upgrades, the sign-up writes the session at once, but the profile cache would show the Guest tag and strip until the refetch.
+  - Signing out removes the cached profile and history, so a previous identity's data doesn't stay in memory. The keys live in `src/lib/query-keys.ts`, since `use-auth` importing `use-profile` would be a cycle.
 - Verification:
   - `npm test`.
   - In the browser, at 1440, 834 and 390, walk every row of the Flows table on the mock. For paging, temporarily lower the limit, then revert.

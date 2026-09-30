@@ -29,6 +29,17 @@ export type MockIdentity = {
   stats: UserStats;
   history: HistoryEntry[];
   playedAs: ClubRef[];
+  // Lifetime, so accuracy spans every game
+  guessCount: number;
+  hitCount: number;
+};
+
+export type GameRecord = {
+  entry: HistoryEntry;
+  club: ClubRef | null;
+  guesses: number;
+  hits: number;
+  bestStreak: number;
 };
 
 export type MockStore = {
@@ -60,7 +71,14 @@ function emptyStats(): UserStats {
 }
 
 export function createIdentity(user: User): MockIdentity {
-  return { user, stats: emptyStats(), history: [], playedAs: [] };
+  return {
+    user,
+    stats: emptyStats(),
+    history: [],
+    playedAs: [],
+    guessCount: 0,
+    hitCount: 0,
+  };
 }
 
 // Most-played club; a tie goes to the most recent
@@ -73,6 +91,45 @@ export function favouriteClubOf(playedAs: readonly ClubRef[]): ClubRef | null {
   const top = Math.max(0, ...counts.values());
   const newestFirst = [...playedAs].reverse();
   return newestFirst.find((club) => counts.get(club.id) === top) ?? null;
+}
+
+// Your own forfeit arrives here as a plain loss
+function recordCounts(stats: UserStats, entry: HistoryEntry): UserStats {
+  if (entry.mode === 'solo') {
+    return {
+      ...stats,
+      perfectClears:
+        stats.perfectClears + (entry.outcome === 'perfect_clear' ? 1 : 0),
+    };
+  }
+
+  switch (entry.outcome) {
+    case 'win':
+    case 'forfeit_win':
+      return { ...stats, wins: stats.wins + 1 };
+    case 'loss':
+      return { ...stats, losses: stats.losses + 1 };
+    case 'draw':
+      return { ...stats, draws: stats.draws + 1 };
+  }
+}
+
+// What B34 and B41 persist when a game ends
+export function recordGame(identity: MockIdentity, record: GameRecord): void {
+  identity.history = [record.entry, ...identity.history];
+  if (record.club) identity.playedAs = [...identity.playedAs, record.club];
+  identity.guessCount += record.guesses;
+  identity.hitCount += record.hits;
+
+  const stats = recordCounts(identity.stats, record.entry);
+  identity.stats = {
+    ...stats,
+    played: stats.played + 1,
+    bestStreak: Math.max(stats.bestStreak, record.bestStreak),
+    accuracy:
+      identity.guessCount === 0 ? 0 : identity.hitCount / identity.guessCount,
+    favouriteClub: favouriteClubOf(identity.playedAs),
+  };
 }
 
 export function createSession(
