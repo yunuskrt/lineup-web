@@ -30,7 +30,7 @@ Do NOT commit without permission and until the build passes. If build fails, fix
 
 ### Specs Track Reality
 
-A spec is a record of what was built, not only a plan for it. **Whenever implementation, review or testing departs from the spec, update the spec file in `context/features/` — and `current-feature.md` while it holds that spec — in the same turn the deviation is made.** Never leave the spec describing something that was not built.
+A spec is a record of what was built, not only a plan for it. **Whenever implementation, review or testing departs from the spec, update the spec file in `context/features/` or `context/fixes/` — and `current-feature.md` while it holds that spec — in the same turn the deviation is made.** Never leave the spec describing something that was not built.
 
 This covers:
 

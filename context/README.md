@@ -18,6 +18,7 @@ Read on demand:
 - `coding-standards-web.md` - The Next.js-specific rules, read alongside `coding-standards.md`
 - `docs/` - Reference documentation for the engines and designs the phases were built against
 - `features/` - Feature spec files used with the `/feature` command. A spec may reference other project files (context docs, screenshots, existing source) where that helps; references are optional and decided per spec when it is written
+- `fixes/` - Fix spec files used with `/feature load`, shaped like `features/`. They reshape or correct screens already built, outside the `todo.md` phases
 - `screenshots/` - UI screenshots used as visual references for the UI phases. Prototypes from external design tools land here; they guide composition and feel but are not a spec — implementation need not replicate them, and `theme.md` and `design.md` win any conflict (see `design.md` § Scope)
 - `research/` - Research files used with the `/research` command to generate documentation; created the first time `/research` runs
 
