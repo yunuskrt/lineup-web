@@ -417,16 +417,19 @@ describe('duel result snapshots', () => {
     }
   });
 
-  it('cover every outcome, and both forfeits', () => {
+  it('cover every outcome, both forfeits and a lost connection', () => {
     const outcomes = RESULT_NAMES.map((name) => {
-      const { result } = resultViewOf(name);
-      return `${result.outcome}${result.isForfeit ? '+forfeit' : ''}`;
+      const { view, result } = resultViewOf(name);
+      const forfeit = result.isForfeit ? '+forfeit' : '';
+      const reason = view.endReason ? `+${view.endReason}` : '';
+      return `${result.outcome}${forfeit}${reason}`;
     });
     expect(outcomes.sort()).toEqual([
       'draw',
       'forfeit_win+forfeit',
       'loss',
       'loss+forfeit',
+      'loss+forfeit+connectionLost',
       'win',
     ]);
   });
@@ -527,6 +530,21 @@ describe('system state snapshots', () => {
     expect(frame.view.clock.round?.endsAt).toBeGreaterThan(NOW);
     expect(frame.view.toast).toBeNull();
     expect(frame.guess).not.toBe('');
+  });
+
+  it('gates your reconnect over a running clock, with no action', () => {
+    const { view } = CANVAS_STATES.duel['you-reconnecting'].build(NOW).frame;
+    if (view.mode !== 'duel') throw new Error('Expected a duel');
+    expect(view.gate?.title).toBe('Reconnecting');
+    expect(view.gate?.actionLabel).toBeUndefined();
+    expect(view.gate?.countdown?.deadline).toBe(
+      view.yourConnection?.reconnectDeadline,
+    );
+    expect(view.gate?.countdown?.label(18)).toMatch(/18s, you forfeit/);
+    expect(view.clock.round?.endsAt).toBeGreaterThan(NOW);
+    expect(view.clock.isFrozen).toBe(false);
+    expect(view.turn).toBe('you');
+    expect(view.input).toBe('locked');
   });
 
   it('only sets a cooldown time on cooldown input', () => {

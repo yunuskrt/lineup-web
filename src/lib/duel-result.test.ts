@@ -48,6 +48,26 @@ describe('duelResultTitle', () => {
   });
 });
 
+describe('a lost connection', () => {
+  const yourForfeit = result({ outcome: 'loss', isForfeit: true });
+
+  it('reads your forfeit as a dropped connection', () => {
+    const options = { isConnectionLost: true };
+    expect(duelResultTitle(yourForfeit, options)).toBe('Disconnected');
+    expect(duelResultDetail(yourForfeit, options)).toBe(
+      "You didn't reconnect in time.",
+    );
+  });
+
+  it('never relabels a result that was not your forfeit', () => {
+    const options = { isConnectionLost: true };
+    expect(duelResultTitle(result(), options)).toBe('You won');
+    expect(duelResultTitle(result({ outcome: 'loss' }), options)).toBe(
+      'You lost',
+    );
+  });
+});
+
 describe('duelResultDetail', () => {
   it('names the opponent who ran out', () => {
     expect(duelResultDetail(result())).toBe(`${HANDLE} ran out of lives.`);

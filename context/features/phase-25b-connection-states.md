@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -89,5 +89,15 @@ Defaults stand unless changed at load:
     - `/play/duel?scenario=protocolRefused`: the full-screen prompt; "Reload" reloads.
     - The new `?state=` snapshots.
   - `npm run build`.
+- **Deviations recorded during implementation**
+  - Connection-lost copy is "Disconnected" / "You didn't reconnect in time." (user's pick). The spec's "Connection lost" and its longer detail overflowed the fixed 96px result box beside the Forfeit tag at 1440 and 390. `endReason: 'connectionLost'` keeps the state's name.
+  - The gate's ticking detail is a `countdown: { deadline, label }` on `CanvasGateView`, rendered by a `GateCountdown` in `GameCanvas`. The pure view has no clock to tick with; `CanvasGate.detail` now takes a node.
+  - `reconnectingGate`, `reconnectingDetail` and `RECONNECTING_TITLE` live in `system-states.ts`, so the snapshot and `duelCanvasView` share one gate. Without a deadline, the gate keeps only its title.
+  - Connection lost is marked only on your own forfeit loss, and never when you forfeited yourself (`isForfeiting`), so a quit during the reconnect still reads "You left". A reconnect-time win stays a win.
+  - `isYourForfeit` is exported from `duel-result.ts` for the reducer's inference.
+  - `connection-lost` sits in `RESULT_STATES`, so the existing result checks cover it; `resultState` takes an optional `endReason`.
+  - The `protocol-refused` dev state is handled in the duel page itself, since it isn't a canvas state.
+  - Mock timings are named: `DISCONNECT_AFTER_MS` (1s) and `RECONNECT_AFTER_MS` (5s).
+  - The server's `forfeited` event keeps your connection state until `finished` clears it, so the gate and the locked input hold through any gap before the result (review fix).
 
 ## History

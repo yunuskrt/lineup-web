@@ -4,10 +4,12 @@ import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
 import { squadFor } from '@/lib/api/mock/data/fixtures';
 import {
   COIN_FLIP_REVEAL_MS,
+  DISCONNECT_AFTER_MS,
   createMockDuelClient,
   OPPONENT_FILTER_MS,
   OPPONENT_FILTERS,
   QUEUE_WAIT_MS,
+  RECONNECT_AFTER_MS,
   RECONNECT_WINDOW_MS,
   type MockDuelOptions,
 } from '@/lib/api/mock/duel-client';
@@ -434,6 +436,43 @@ describe('mock duel client', () => {
     expect(dropped.reconnectDeadline).toBeGreaterThan(Date.now());
   });
 
+  it('forfeits you as a loss once the window closes', async () => {
+    const client = createMockDuelClient(
+      scripted({ scenario: 'youDisconnect' }),
+    );
+    const log = record(client);
+    await reachMatch(client);
+
+    await vi.advanceTimersByTimeAsync(
+      DISCONNECT_AFTER_MS + RECONNECT_WINDOW_MS - 1,
+    );
+    expect(log.some((entry) => entry.event === 'finished')).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    const closed = lastOf<{ status: string }>(log, 'disconnected');
+    expect(closed.status).toBe('forfeited');
+    const result = lastOf<DuelResult>(log, 'finished');
+    expect(result.outcome).toBe('loss');
+    expect(result.isForfeit).toBe(true);
+  });
+
+  it('brings you back inside the window under youReconnect', async () => {
+    const client = createMockDuelClient(scripted({ scenario: 'youReconnect' }));
+    const log = record(client);
+    await reachMatch(client);
+
+    await vi.advanceTimersByTimeAsync(DISCONNECT_AFTER_MS + RECONNECT_AFTER_MS);
+    const back = lastOf<{
+      status: string;
+      reconnectDeadline: number | null;
+    }>(log, 'disconnected');
+    expect(back).toEqual({ status: 'connected', reconnectDeadline: null });
+
+    await vi.advanceTimersByTimeAsync(RECONNECT_WINDOW_MS);
+    expect(log.some((entry) => entry.event === 'finished')).toBe(false);
+    client.disconnect();
+  });
+
   it('refuses an out-of-date protocol on connect', async () => {
     const client = createMockDuelClient(
       scripted({ scenario: 'protocolRefused' }),
@@ -441,7 +480,7 @@ describe('mock duel client', () => {
 
     const result = await client.connect();
     expect(result.success).toBe(false);
-    if (!result.success) expect(result.error.code).toBe('forbidden');
+    if (!result.success) expect(result.error.code).toBe('protocol_refused');
   });
 
   it('surfaces a rate limit as an event and a failed ack', async () => {

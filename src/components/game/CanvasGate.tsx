@@ -22,7 +22,7 @@ const PANEL_SIZES: Record<GateSize, string> = {
 type GatePanelProps = {
   panelRef: RefObject<HTMLDivElement | null>;
   title: string;
-  detail?: string;
+  detail?: ReactNode;
   body?: ReactNode;
   action?: ReactNode;
   size: GateSize;
@@ -69,7 +69,8 @@ function GatePanel({
 type CanvasGateProps = {
   isOpen: boolean;
   title: string;
-  detail?: string;
+  // May tick; the title is what gets announced
+  detail?: ReactNode;
   // Content beyond one action, under the detail
   body?: ReactNode;
   action?: ReactNode;

@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { GameCanvas } from '@/components/game/GameCanvas';
+import { ProtocolRefused } from '@/components/game/ProtocolRefused';
 import { DUEL_FORFEIT_COPY, QuitDialog } from '@/components/game/QuitDialog';
 import { useDuel } from '@/hooks/use-duel';
 import {
@@ -100,6 +101,14 @@ export function DuelGame() {
   function handlePlayAgain() {
     setGuess('');
     playAgain();
+  }
+
+  if (state.phase === 'refused') {
+    return (
+      <ProtocolRefused
+        backHref={withQuery('/play', withMode(params, 'duel'))}
+      />
+    );
   }
 
   return (
