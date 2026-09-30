@@ -1,7 +1,5 @@
 import Link from 'next/link';
-import { FOCUS_RING } from '@/styles/classes';
-
-const QUIT_CHIP = `rounded-sm border border-line px-3 py-1 text-12 font-medium uppercase text-fg-muted hover:text-fg ${FOCUS_RING}`;
+import { QUIT_CHIP } from '@/styles/classes';
 
 type QuitChipProps = {
   // Without a handler the chip just leaves

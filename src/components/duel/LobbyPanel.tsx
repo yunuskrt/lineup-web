@@ -130,7 +130,7 @@ function Paired({ you, opponent }: { you: DuelPlayer; opponent: DuelPlayer }) {
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
       <Handle actor="you" player={you} />
-      <span className="text-14 text-fg-dim">vs</span>
+      <span className="text-14 text-fg-muted">vs</span>
       <Handle actor="opponent" player={opponent} />
     </div>
   );
