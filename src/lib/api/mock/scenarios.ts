@@ -4,6 +4,7 @@ export const DUEL_SCENARIOS = [
   'opponentDisconnects',
   'opponentForfeits',
   'youDisconnect',
+  'youReconnect',
   'drawOnEleven',
   'rateLimited',
   'protocolRefused',

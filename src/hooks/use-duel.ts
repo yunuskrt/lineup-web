@@ -63,6 +63,9 @@ export function useDuel(params: URLSearchParams) {
       client.on('opponentConnection', (connection) =>
         dispatch({ type: 'opponentConnection', connection }),
       ),
+      client.on('disconnected', (connection) =>
+        dispatch({ type: 'disconnected', connection }),
+      ),
       client.on('finished', (result) => dispatch({ type: 'finished', result })),
       client.on('error', (error) =>
         dispatch({ type: 'error', error, at: Date.now() }),

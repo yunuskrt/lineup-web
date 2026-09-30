@@ -28,11 +28,17 @@ const OUTCOME_TONES: Record<DuelOutcome, string> = {
 
 type OutcomeProps = {
   result: DuelResult;
+  isConnectionLost: boolean;
   titleId: string;
   titleRef: RefObject<HTMLHeadingElement | null>;
 };
 
-function Outcome({ result, titleId, titleRef }: OutcomeProps) {
+function Outcome({
+  result,
+  isConnectionLost,
+  titleId,
+  titleRef,
+}: OutcomeProps) {
   const isWin = result.outcome === 'win' || result.outcome === 'forfeit_win';
 
   return (
@@ -51,10 +57,10 @@ function Outcome({ result, titleId, titleRef }: OutcomeProps) {
           tabIndex={-1}
           className="font-display text-32 leading-10 font-semibold outline-none"
         >
-          {duelResultTitle(result)}
+          {duelResultTitle(result, { isConnectionLost })}
         </h2>
         <p className={`text-14 leading-5 ${isWin ? '' : 'text-fg-muted'}`}>
-          {duelResultDetail(result)}
+          {duelResultDetail(result, { isConnectionLost })}
         </p>
       </div>
       {result.isForfeit ? (
@@ -103,10 +109,13 @@ function Tally({ result }: { result: DuelResult }) {
 
 type DuelResultPanelProps = ResultActionsProps & {
   result: DuelResult;
+  // Your forfeit came from a dropped connection
+  isConnectionLost?: boolean;
 };
 
 export function DuelResultPanel({
   result,
+  isConnectionLost = false,
   onPlayAgain,
   onChangeFilters,
 }: DuelResultPanelProps) {
@@ -120,7 +129,12 @@ export function DuelResultPanel({
 
   return (
     <section aria-labelledby={titleId} className="flex flex-1 flex-col gap-6">
-      <Outcome result={result} titleId={titleId} titleRef={titleRef} />
+      <Outcome
+        result={result}
+        isConnectionLost={isConnectionLost}
+        titleId={titleId}
+        titleRef={titleRef}
+      />
       <Tally result={result} />
       <ResultActions
         onPlayAgain={onPlayAgain}

@@ -22,7 +22,9 @@ export type DuelSessionPhase =
   | 'playing'
   | 'finished'
   | 'noOpponent'
-  | 'failed';
+  | 'failed'
+  // The server turned this build away
+  | 'refused';
 
 export type DuelFailureStep =
   'connect' | 'queue' | 'lock' | 'match' | 'forfeit';
@@ -40,6 +42,10 @@ export type DuelSessionState = {
   session: DuelSession | null;
   result: DuelResult | null;
   opponentConnection: ConnectionState | null;
+  // Set while the server reports you reconnecting
+  yourConnection: ConnectionState | null;
+  // Your forfeit came from a dropped connection
+  isConnectionLost: boolean;
   isLocking: boolean;
   isGuessing: boolean;
   isForfeiting: boolean;
@@ -74,6 +80,7 @@ export type DuelSessionEvent =
   | { type: 'cooldownEnded' }
   | { type: 'lifeLost'; cue: DuelLifeLost }
   | { type: 'opponentConnection'; connection: ConnectionState }
+  | { type: 'disconnected'; connection: ConnectionState }
   | { type: 'forfeiting' }
   | { type: 'finished'; result: DuelResult }
   | { type: 'error'; error: ApiError; at: number }

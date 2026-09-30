@@ -126,6 +126,16 @@ describe('emptyPool', () => {
     }
   });
 
+  it('accepts a refused protocol as its own code', () => {
+    expect(
+      apiErrorSchema.safeParse({
+        code: 'protocol_refused',
+        message: 'Out of date.',
+        retryAfterMs: null,
+      }).success,
+    ).toBe(true);
+  });
+
   it('keeps the reason optional and closed in the contract', () => {
     const base = { code: 'empty_pool', message: 'None.', retryAfterMs: null };
     expect(apiErrorSchema.safeParse(base).success).toBe(true);

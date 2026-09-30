@@ -4,10 +4,12 @@ import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
 import { squadFor } from '@/lib/api/mock/data/fixtures';
 import {
   COIN_FLIP_REVEAL_MS,
+  DISCONNECT_AFTER_MS,
   createMockDuelClient,
   OPPONENT_FILTER_MS,
   OPPONENT_FILTERS,
   QUEUE_WAIT_MS,
+  RECONNECT_AFTER_MS,
   RECONNECT_WINDOW_MS,
   type MockDuelOptions,
 } from '@/lib/api/mock/duel-client';
@@ -774,6 +776,141 @@ describe('youFrom', () => {
   });
 });
 
+describe('your connection', () => {
+  const RECONNECTING = {
+    type: 'disconnected',
+    connection: { status: 'reconnecting', reconnectDeadline: AT + 20_000 },
+  } as const satisfies DuelSessionEvent;
+  const FORFEITED = {
+    type: 'disconnected',
+    connection: { status: 'forfeited', reconnectDeadline: null },
+  } as const satisfies DuelSessionEvent;
+  const YOUR_FORFEIT: DuelSessionEvent = {
+    type: 'finished',
+    result: { ...RESULT, outcome: 'loss', isForfeit: true },
+  };
+
+  it('gates the canvas while you reconnect, clock still running', () => {
+    const state = play(...TO_PLAYING, RECONNECTING);
+    const view = viewOf(state);
+    expect(view.gate?.title).toBe('Reconnecting');
+    expect(view.gate?.countdown?.deadline).toBe(AT + 20_000);
+    expect(view.gate?.actionLabel).toBeUndefined();
+    expect(view.clock.round).toEqual(YOUR_TURN.round);
+    expect(view.input).toBe('locked');
+    expect(canGuess(state)).toBe(false);
+  });
+
+  it('clears the gate when the server says you are back', () => {
+    const state = play(...TO_PLAYING, RECONNECTING, {
+      type: 'disconnected',
+      connection: { status: 'connected', reconnectDeadline: null },
+    });
+    expect(viewOf(state).gate).toBeNull();
+    expect(canGuess(state)).toBe(true);
+  });
+
+  it('ends as disconnected when the window closes', () => {
+    const state = play(...TO_PLAYING, RECONNECTING, FORFEITED, YOUR_FORFEIT);
+    const view = viewOf(state);
+    expect(view.endReason).toBe('connectionLost');
+    expect(view.yourConnection).toBeNull();
+    expect(view.gate).toBeNull();
+  });
+
+  it('stays gated and locked between the forfeit and the result', () => {
+    const state = play(...TO_PLAYING, RECONNECTING, FORFEITED);
+    const view = viewOf(state);
+    expect(view.gate?.title).toBe('Reconnecting');
+    expect(view.input).toBe('locked');
+    expect(canGuess(state)).toBe(false);
+    expect(state.phase).toBe('playing');
+  });
+
+  it('reads a forfeit mid-reconnect as a lost connection too', () => {
+    const state = play(...TO_PLAYING, RECONNECTING, YOUR_FORFEIT);
+    expect(viewOf(state).endReason).toBe('connectionLost');
+  });
+
+  it('keeps your own forfeit as leaving', () => {
+    const state = play(
+      ...TO_PLAYING,
+      RECONNECTING,
+      { type: 'forfeiting' },
+      YOUR_FORFEIT,
+    );
+    expect(viewOf(state).endReason).toBeUndefined();
+  });
+
+  it('never marks a result you did not forfeit', () => {
+    const state = play(...TO_PLAYING, RECONNECTING, {
+      type: 'finished',
+      result: RESULT,
+    });
+    expect(viewOf(state).endReason).toBeUndefined();
+  });
+
+  it('keeps the gate across a handover while the clock runs on', () => {
+    const state = play(
+      ...TO_PLAYING,
+      RECONNECTING,
+      { type: 'lifeLost', cue: { who: 'you', lives: 2 } },
+      { type: 'turnChanged', session: THEIR_TURN },
+      { type: 'roundStarted', session: THEIR_TURN },
+    );
+    const view = viewOf(state);
+    expect(view.gate?.title).toBe('Reconnecting');
+    expect(view.turn).toBe('opponent');
+    expect(view.clock.round).toEqual(THEIR_TURN.round);
+  });
+
+  it('starts the next duel without the lost connection', () => {
+    const lost = play(...TO_PLAYING, RECONNECTING, FORFEITED, YOUR_FORFEIT);
+    const next = duelSessionReducer(lost, { type: 'started' });
+    expect(next.isConnectionLost).toBe(false);
+    expect(next.yourConnection).toBeNull();
+
+    const replayed = play(...TO_PLAYING, YOUR_FORFEIT);
+    expect(viewOf(replayed).endReason).toBeUndefined();
+  });
+
+  it('ignores your connection outside a live match', () => {
+    expect(play(...TO_FILTERS, RECONNECTING).yourConnection).toBeNull();
+    const finished = play(...TO_FINISHED);
+    expect(duelSessionReducer(finished, RECONNECTING)).toBe(finished);
+  });
+
+  it('turns a refused handshake into its own phase', () => {
+    const state = play(
+      { type: 'started' },
+      {
+        type: 'failed',
+        step: 'connect',
+        error: {
+          code: 'protocol_refused',
+          message: 'Out of date.',
+          retryAfterMs: null,
+        },
+      },
+    );
+    expect(state.phase).toBe('refused');
+    expect(duelGateAction(state)).toBeNull();
+  });
+
+  it('keeps other connect failures on the retry gate', () => {
+    const state = play(
+      { type: 'started' },
+      {
+        type: 'failed',
+        step: 'connect',
+        error: NETWORK,
+      },
+    );
+    expect(state.phase).toBe('failed');
+    expect(duelGateAction(state)).toBe('retry');
+  });
+});
+
 describe('against the mock adapter', () => {
   const OPEN = SAMPLE_OPEN_FILTERS;
   const NOTHING_FITS = { ...OPEN, era: { from: 2000, to: 2001 } };
@@ -833,6 +970,9 @@ describe('against the mock adapter', () => {
     client.on('lifeLost', (cue) => apply({ type: 'lifeLost', cue }));
     client.on('opponentConnection', (connection) =>
       apply({ type: 'opponentConnection', connection }),
+    );
+    client.on('disconnected', (connection) =>
+      apply({ type: 'disconnected', connection }),
     );
     client.on('finished', (result) => apply({ type: 'finished', result }));
     client.on('error', (error) =>
@@ -1018,6 +1158,59 @@ describe('against the mock adapter', () => {
     expect(duel.current().phase).toBe('searching');
     await vi.advanceTimersByTimeAsync(QUEUE_WAIT_MS);
     expect(duel.current().phase).toBe('noOpponent');
+  });
+
+  it('resumes play once you reconnect', async () => {
+    const client = createMockDuelClient(scripted({ scenario: 'youReconnect' }));
+    const duel = await reachMatch(client);
+
+    await vi.advanceTimersByTimeAsync(DISCONNECT_AFTER_MS);
+    expect(viewOf(duel.current()).gate?.title).toBe('Reconnecting');
+    expect(canGuess(duel.current())).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(RECONNECT_AFTER_MS);
+    expect(viewOf(duel.current()).gate).toBeNull();
+    expect(duel.current().phase).toBe('playing');
+    client.disconnect();
+  });
+
+  it('ends as disconnected when you never come back', async () => {
+    const client = createMockDuelClient(
+      scripted({ scenario: 'youDisconnect' }),
+    );
+    const duel = await reachMatch(client);
+
+    await vi.advanceTimersByTimeAsync(
+      DISCONNECT_AFTER_MS + RECONNECT_WINDOW_MS,
+    );
+    const state = duel.current();
+    expect(state.result?.outcome).toBe('loss');
+    expect(state.result?.isForfeit).toBe(true);
+    expect(viewOf(state).endReason).toBe('connectionLost');
+  });
+
+  it('refuses a guess locally while you reconnect', async () => {
+    const client = createMockDuelClient(
+      scripted({ scenario: 'youDisconnect' }),
+    );
+    const duel = await reachMatch(client);
+    await vi.advanceTimersByTimeAsync(DISCONNECT_AFTER_MS);
+
+    // What useDuel checks before sending
+    expect(canGuess(duel.current())).toBe(false);
+    expect(viewOf(duel.current()).input).toBe('locked');
+    client.disconnect();
+  });
+
+  it('turns away an out-of-date build on connect', async () => {
+    const client = createMockDuelClient(
+      scripted({ scenario: 'protocolRefused' }),
+    );
+    const duel = drive(client);
+    const result = await client.connect();
+    if (result.success) throw new Error('Expected a refusal');
+    duel.apply({ type: 'failed', step: 'connect', error: result.error });
+    expect(duel.current().phase).toBe('refused');
   });
 
   it('widens filters that match nothing, then plays', async () => {

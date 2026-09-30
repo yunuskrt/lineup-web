@@ -12,7 +12,7 @@ import {
 } from '@/lib/dev/samples';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
-import { emptyPoolGate } from '@/lib/system-states';
+import { emptyPoolGate, reconnectingGate } from '@/lib/system-states';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import type { ApiError, EmptyPoolReason } from '@/types/api';
 import type {
@@ -21,6 +21,7 @@ import type {
   CanvasView,
   CanvasViewBase,
   DuelCanvasView,
+  DuelEndReason,
   SoloCanvasView,
   SoloEndView,
 } from '@/types/canvas';
@@ -219,7 +220,14 @@ function toDuel(
   players: Partial<
     Pick<
       DuelCanvasView,
-      'you' | 'opponent' | 'turn' | 'lobby' | 'opponentConnection' | 'end'
+      | 'you'
+      | 'opponent'
+      | 'turn'
+      | 'lobby'
+      | 'opponentConnection'
+      | 'yourConnection'
+      | 'end'
+      | 'endReason'
     >
   > = {},
 ): DuelCanvasView {
@@ -231,6 +239,7 @@ function toDuel(
     turn: 'you',
     lobby: null,
     opponentConnection: null,
+    yourConnection: null,
     end: null,
     ...players,
   };
@@ -622,6 +631,7 @@ function resultOf(
 function resultState(
   description: string,
   result: DuelResult,
+  endReason?: DuelEndReason,
 ): CanvasState<DuelCanvasView> {
   return {
     description,
@@ -632,6 +642,7 @@ function resultState(
           opponent: result.opponent,
           turn: null,
           end: result,
+          endReason,
         }),
         guess: '',
       },
@@ -663,6 +674,11 @@ export const RESULT_STATES = {
   'result-forfeit-loss': resultState(
     'You left: a loss card marked as a forfeit.',
     resultOf('loss', FORFEIT_FINDERS, { you: 2, opponent: 3 }, true),
+  ),
+  'connection-lost': resultState(
+    'You never came back: a forfeit loss, "Disconnected".',
+    resultOf('loss', FORFEIT_FINDERS, { you: 2, opponent: 3 }, true),
+    'connectionLost',
   ),
 } satisfies Record<string, CanvasState<DuelCanvasView>>;
 
@@ -804,6 +820,27 @@ export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
     }),
   },
   'duel-rate-limited': duel(RATE_LIMITED),
+  'you-reconnecting': {
+    description: 'Your socket dropped: the gate counts down, clock runs on.',
+    build: (now) => {
+      const yourConnection = {
+        status: 'reconnecting',
+        reconnectDeadline: now + 18_000,
+      } as const;
+      return {
+        frame: {
+          view: toDuel(
+            fields(roundLeaving(9_000, now), DUEL_FOUND, {
+              input: 'locked',
+              gate: reconnectingGate(yourConnection),
+            }),
+            { yourConnection },
+          ),
+          guess: '',
+        },
+      };
+    },
+  },
   'their-life-lost': {
     description: 'Their clock runs out: their pip empties, no flash.',
     build: (now) => ({

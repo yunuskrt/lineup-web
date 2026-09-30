@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { LOBBY_GATE_SIZE, LobbyPanel } from '@/components/duel/LobbyPanel';
 import { CanvasGate } from '@/components/game/CanvasGate';
 import { CountdownRing } from '@/components/game/CountdownRing';
@@ -14,10 +15,14 @@ import { TurnIndicator } from '@/components/game/TurnIndicator';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { QuitChip } from '@/components/shell/QuitChip';
 import { ringSetups } from '@/lib/canvas';
-import { waitingLine } from '@/lib/duel-status';
+import { reconnectSecondsLeft, waitingLine } from '@/lib/duel-status';
 import { LOADING_FORMATION } from '@/lib/formation';
 import { CHOICE_BUTTON, PRIMARY_BUTTON, TEXT_LINK } from '@/styles/classes';
-import type { CanvasGateView, CanvasView } from '@/types/canvas';
+import type {
+  CanvasGateCountdown,
+  CanvasGateView,
+  CanvasView,
+} from '@/types/canvas';
 import type { LobbyAction } from '@/types/duel-lobby';
 
 const PANEL = 'rounded-lg border bg-surface-raised';
@@ -49,6 +54,25 @@ function ClockRow({ view }: { view: CanvasView }) {
         owner="opponent"
       />
     </div>
+  );
+}
+
+const COUNTDOWN_TICK_MS = 250;
+
+// Ticks to the server deadline; decides nothing
+function GateCountdown({ countdown }: { countdown: CanvasGateCountdown }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), COUNTDOWN_TICK_MS);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    // Server and client clocks may differ by a tick
+    <span suppressHydrationWarning>
+      {countdown.label(reconnectSecondsLeft(countdown.deadline, now))}
+    </span>
   );
 }
 
@@ -217,7 +241,13 @@ export function GameCanvas({
         <CanvasGate
           isOpen={view.gate !== null}
           title={view.gate?.title ?? ''}
-          detail={view.gate?.detail}
+          detail={
+            view.gate?.countdown ? (
+              <GateCountdown countdown={view.gate.countdown} />
+            ) : (
+              view.gate?.detail
+            )
+          }
           size={lobby ? LOBBY_GATE_SIZE[lobby.step] : 'narrow'}
           body={
             view.mode === 'duel' && lobby ? (
@@ -273,6 +303,9 @@ export function GameCanvas({
               ) : result ? (
                 <DuelResultPanel
                   result={result}
+                  isConnectionLost={
+                    view.mode === 'duel' && view.endReason === 'connectionLost'
+                  }
                   onPlayAgain={onPlayAgain}
                   onChangeFilters={onChangeFilters}
                 />

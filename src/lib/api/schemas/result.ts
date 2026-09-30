@@ -10,6 +10,8 @@ export const apiErrorCodeSchema = z.enum([
   'session_over',
   'network',
   'server_error',
+  // This build is older than the server accepts
+  'protocol_refused',
 ]);
 
 // Which filter emptied the pool, to offer a widen

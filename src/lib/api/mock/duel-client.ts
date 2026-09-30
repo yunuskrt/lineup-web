@@ -50,6 +50,9 @@ export const OPPONENT_FILTER_MS = 1_200;
 // The flip shows before any clock starts
 export const COIN_FLIP_REVEAL_MS = 2_000;
 export const RECONNECT_WINDOW_MS = 20_000;
+export const DISCONNECT_AFTER_MS = 1_000;
+// `youReconnect` comes back well inside the window
+export const RECONNECT_AFTER_MS = 5_000;
 
 // Scripted filters never narrow, so always match
 export const OPPONENT_FILTERS: Filters = {
@@ -326,14 +329,35 @@ export function createMockDuelClient(
     if (scenario === 'opponentForfeits') {
       schedule(1_000, () => finish('forfeit_win', true));
     }
-    if (scenario === 'youDisconnect') {
-      schedule(1_000, () => {
+    if (scenario === 'youDisconnect' || scenario === 'youReconnect') {
+      schedule(DISCONNECT_AFTER_MS, () => runYourDisconnect());
+    }
+  }
+
+  // The round clock keeps running throughout
+  function runYourDisconnect(): void {
+    emitter.emit('disconnected', {
+      status: 'reconnecting',
+      reconnectDeadline: now() + RECONNECT_WINDOW_MS,
+    });
+
+    if (scenario === 'youReconnect') {
+      schedule(RECONNECT_AFTER_MS, () => {
         emitter.emit('disconnected', {
-          status: 'reconnecting',
-          reconnectDeadline: now() + RECONNECT_WINDOW_MS,
+          status: 'connected',
+          reconnectDeadline: null,
         });
       });
+      return;
     }
+
+    schedule(RECONNECT_WINDOW_MS, () => {
+      emitter.emit('disconnected', {
+        status: 'forfeited',
+        reconnectDeadline: null,
+      });
+      finish('loss', true);
+    });
   }
 
   function runDrawScenario(): void {
@@ -364,7 +388,7 @@ export function createMockDuelClient(
     async connect() {
       if (scenario === 'protocolRefused') {
         return fail(
-          'forbidden',
+          'protocol_refused',
           'This version of Lineup is out of date. Update to keep playing.',
         );
       }

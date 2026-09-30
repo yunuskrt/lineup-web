@@ -1,12 +1,19 @@
 import type { DuelActor, DuelFoundPlayer, DuelResult } from '@/types/duel';
 
+export type DuelResultCopyOptions = { isConnectionLost?: boolean };
+
 // Your forfeit arrives as a loss marked isForfeit
-function isYourForfeit(result: DuelResult): boolean {
+export function isYourForfeit(result: DuelResult): boolean {
   return result.outcome === 'loss' && result.isForfeit;
 }
 
-export function duelResultTitle(result: DuelResult): string {
-  if (isYourForfeit(result)) return 'You left';
+export function duelResultTitle(
+  result: DuelResult,
+  { isConnectionLost = false }: DuelResultCopyOptions = {},
+): string {
+  if (isYourForfeit(result)) {
+    return isConnectionLost ? 'Disconnected' : 'You left';
+  }
 
   switch (result.outcome) {
     case 'win':
@@ -20,8 +27,15 @@ export function duelResultTitle(result: DuelResult): string {
   }
 }
 
-export function duelResultDetail(result: DuelResult): string {
-  if (isYourForfeit(result)) return 'You left the duel.';
+export function duelResultDetail(
+  result: DuelResult,
+  { isConnectionLost = false }: DuelResultCopyOptions = {},
+): string {
+  if (isYourForfeit(result)) {
+    return isConnectionLost
+      ? "You didn't reconnect in time."
+      : 'You left the duel.';
+  }
 
   const { handle } = result.opponent;
   switch (result.outcome) {

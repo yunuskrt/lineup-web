@@ -1,16 +1,23 @@
 import type { GuessInputStatus } from '@/components/game/GuessInput';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { authErrorMessage } from '@/lib/auth';
+import { isYourForfeit } from '@/lib/duel-result';
 import { guessFeedback } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
 import {
   emptyPoolGate,
   heldCooldown,
+  reconnectingGate,
   widenReasonOf,
 } from '@/lib/system-states';
 import type { ApiError } from '@/types/api';
 import type { CanvasGateView, DuelCanvasView } from '@/types/canvas';
-import type { DuelPlayer, DuelSession } from '@/types/duel';
+import type {
+  ConnectionState,
+  DuelPlayer,
+  DuelResult,
+  DuelSession,
+} from '@/types/duel';
 import type { DuelLobbyView, FilterSummary } from '@/types/duel-lobby';
 import type {
   DuelFailureStep,
@@ -50,6 +57,8 @@ export const INITIAL_DUEL_SESSION: DuelSessionState = {
   session: null,
   result: null,
   opponentConnection: null,
+  yourConnection: null,
+  isConnectionLost: false,
   isLocking: false,
   isGuessing: false,
   isForfeiting: false,
@@ -96,6 +105,31 @@ function rejectGuess(
     ...next,
     cooldownUntil: heldCooldown(state.cooldownUntil, error, at),
   };
+}
+
+function applyYourConnection(
+  state: DuelSessionState,
+  connection: ConnectionState,
+): DuelSessionState {
+  if (!isLive(state)) return state;
+  switch (connection.status) {
+    case 'reconnecting':
+      return { ...state, yourConnection: connection, isGuessing: false };
+    case 'connected':
+      return { ...state, yourConnection: null };
+    case 'forfeited':
+      // Stays locked until the result arrives
+      return { ...state, isConnectionLost: true };
+  }
+}
+
+// Inferred until the result names why (B40)
+function wasConnectionLost(
+  state: DuelSessionState,
+  result: DuelResult,
+): boolean {
+  if (!isYourForfeit(result) || state.isForfeiting) return false;
+  return state.isConnectionLost || state.yourConnection !== null;
 }
 
 function applySession(
@@ -238,6 +272,8 @@ export function duelSessionReducer(
         opponentConnection:
           event.connection.status === 'reconnecting' ? event.connection : null,
       };
+    case 'disconnected':
+      return applyYourConnection(state, event.connection);
     case 'forfeiting':
       // A retry after a failed forfeit resumes play
       return {
@@ -255,6 +291,8 @@ export function duelSessionReducer(
         isGuessing: false,
         isForfeiting: false,
         opponentConnection: null,
+        yourConnection: null,
+        isConnectionLost: wasConnectionLost(state, event.result),
         cooldownUntil: null,
         failure: null,
       };
@@ -270,7 +308,10 @@ export function duelSessionReducer(
     case 'failed':
       return {
         ...state,
-        phase: 'failed',
+        phase:
+          event.error.code === 'protocol_refused' && event.step === 'connect'
+            ? 'refused'
+            : 'failed',
         isLocking: false,
         isGuessing: false,
         isForfeiting: false,
@@ -306,7 +347,8 @@ export function canGuess(state: DuelSessionState): boolean {
     state.session?.turn === 'you' &&
     !state.isGuessing &&
     !state.isForfeiting &&
-    state.cooldownUntil === null
+    state.cooldownUntil === null &&
+    state.yourConnection === null
   );
 }
 
@@ -391,11 +433,19 @@ function failedGate(state: DuelSessionState): CanvasGateView | null {
   };
 }
 
+function gateOf(
+  state: DuelSessionState,
+  lobby: DuelLobbyView | null,
+): CanvasGateView | null {
+  if (lobby) return lobbyGate(lobby);
+  return reconnectingGate(state.yourConnection) ?? failedGate(state);
+}
+
 function inputOf(state: DuelSessionState): GuessInputStatus {
   if (state.phase !== 'playing' || state.session?.turn !== 'you') {
     return 'locked';
   }
-  if (state.isForfeiting) return 'locked';
+  if (state.isForfeiting || state.yourConnection) return 'locked';
   if (state.isGuessing) return 'pending';
   return state.cooldownUntil === null ? 'live' : 'cooldown';
 }
@@ -419,12 +469,14 @@ export function duelCanvasView(
     pulse: state.pulse,
     shakeKey: state.shakeKey,
     lifeLostKey: state.lifeLostKey,
-    gate: lobby ? lobbyGate(lobby) : failedGate(state),
+    gate: gateOf(state, lobby),
     you: result?.you ?? session?.you ?? you,
     opponent: result?.opponent ?? session?.opponent ?? state.opponent,
     turn: result ? null : (session?.turn ?? null),
     lobby,
     opponentConnection: result ? null : state.opponentConnection,
+    yourConnection: result ? null : state.yourConnection,
     end: result,
+    endReason: result && state.isConnectionLost ? 'connectionLost' : undefined,
   };
 }

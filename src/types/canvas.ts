@@ -22,12 +22,19 @@ export type CanvasClock = {
 
 export type CanvasGateChoice = { id: string; label: string };
 
+export type CanvasGateCountdown = {
+  deadline: number;
+  label: (secondsLeft: number) => string;
+};
+
 export type CanvasGateView = {
   title: string;
   detail?: string;
   actionLabel?: string;
   // A quieter way out, as a text link
   secondaryActionLabel?: string;
+  // Replaces `detail` with a ticking countdown
+  countdown?: CanvasGateCountdown;
   // One decision across equal options
   choices?: CanvasGateChoice[];
 };
@@ -68,9 +75,14 @@ export type DuelCanvasView = CanvasViewBase & {
   lobby: DuelLobbyView | null;
   // Set while the server reports them reconnecting
   opponentConnection: ConnectionState | null;
+  // Set while the server reports you reconnecting
+  yourConnection: ConnectionState | null;
   // Arrives whole with `finished`; no loading state
   end: DuelResult | null;
+  endReason?: DuelEndReason;
 };
+
+export type DuelEndReason = 'connectionLost';
 
 export type CanvasView = SoloCanvasView | DuelCanvasView;
 

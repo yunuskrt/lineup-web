@@ -5,6 +5,8 @@ import {
   cooldownUntil,
   emptyPoolGate,
   heldCooldown,
+  reconnectingDetail,
+  reconnectingGate,
   widenReasonOf,
 } from '@/lib/system-states';
 import type { ApiError, EmptyPoolReason } from '@/types/api';
@@ -122,6 +124,41 @@ describe('cooldown copy', () => {
     );
     expect(cooldownAnnouncement(800)).toBe(
       'Too many guesses. Try again in 1 second.',
+    );
+  });
+});
+
+describe('reconnectingGate', () => {
+  it('counts down to the server deadline, with no action', () => {
+    const gate = reconnectingGate({
+      status: 'reconnecting',
+      reconnectDeadline: NOW + 18_000,
+    });
+    expect(gate?.title).toBe('Reconnecting');
+    expect(gate?.countdown?.deadline).toBe(NOW + 18_000);
+    expect(gate?.actionLabel).toBeUndefined();
+    expect(gate?.detail).toBeUndefined();
+  });
+
+  it('keeps a stable title without a deadline', () => {
+    expect(
+      reconnectingGate({ status: 'reconnecting', reconnectDeadline: null }),
+    ).toEqual({ title: 'Reconnecting' });
+  });
+
+  it('has no gate unless you are reconnecting', () => {
+    expect(reconnectingGate(null)).toBeNull();
+    expect(
+      reconnectingGate({ status: 'connected', reconnectDeadline: null }),
+    ).toBeNull();
+    expect(
+      reconnectingGate({ status: 'forfeited', reconnectDeadline: null }),
+    ).toBeNull();
+  });
+
+  it('says the clock keeps running and what happens at zero', () => {
+    expect(reconnectingDetail(18)).toBe(
+      "The clock keeps running. If you're not back in 18s, you forfeit the duel.",
     );
   });
 });

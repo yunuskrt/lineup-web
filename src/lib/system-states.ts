@@ -1,5 +1,6 @@
 import type { ApiError, EmptyPoolReason } from '@/types/api';
 import type { CanvasGateView } from '@/types/canvas';
+import type { ConnectionState } from '@/types/duel';
 
 export type WidenReason = Exclude<EmptyPoolReason, 'combination'>;
 
@@ -75,4 +76,24 @@ export function cooldownAnnouncement(msLeft: number): string {
   const seconds = cooldownSecondsLeft(msLeft);
   const unit = seconds === 1 ? 'second' : 'seconds';
   return `Too many guesses. Try again in ${seconds} ${unit}.`;
+}
+
+export const RECONNECTING_TITLE = 'Reconnecting';
+
+// Said outright, or the dim reads as a freeze
+export function reconnectingDetail(secondsLeft: number): string {
+  return `The clock keeps running. If you're not back in ${secondsLeft}s, you forfeit the duel.`;
+}
+
+// No action: the server decides when you're back
+export function reconnectingGate(
+  connection: ConnectionState | null,
+): CanvasGateView | null {
+  if (connection?.status !== 'reconnecting') return null;
+  const deadline = connection.reconnectDeadline;
+  if (deadline === null) return { title: RECONNECTING_TITLE };
+  return {
+    title: RECONNECTING_TITLE,
+    countdown: { deadline, label: reconnectingDetail },
+  };
 }
