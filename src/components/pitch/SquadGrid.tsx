@@ -1,10 +1,11 @@
 'use client';
 
-import { motion, type Transition, useReducedMotion } from 'motion/react';
+import { motion, type Transition } from 'motion/react';
 import { useState } from 'react';
 import { Pitch } from '@/components/pitch/Pitch';
 import { RevealCard } from '@/components/pitch/RevealCard';
 import { SquadSlot } from '@/components/pitch/SquadSlot';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { parseFormation, slotLayout } from '@/lib/formation';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 import type { GridPulse } from '@/types/feedback';
@@ -22,6 +23,7 @@ const SLOT_WIDTH_BY_WIDEST_LINE: Record<number, string> = {
 };
 
 const SETTLE: Transition = { duration: 0.2 };
+const INSTANT: Transition = { duration: 0 };
 
 export function slotWidthClass(formation: string): string {
   const widestLine = Math.max(...(parseFormation(formation) ?? []));
@@ -80,7 +82,7 @@ export function SquadGrid({
   pulse,
   isLoading = false,
 }: SquadGridProps) {
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
   const [previousRevealed, setPreviousRevealed] = useState(revealed);
   const [wasLoading, setWasLoading] = useState(isLoading);
   const [newIds, setNewIds] = useState<ReadonlySet<string>>(() => new Set());
@@ -110,7 +112,7 @@ export function SquadGrid({
   const missedBySlot = new Map(
     (missed ?? []).map((player) => [player.slot, player]),
   );
-  const isPulsing = isLoading && !isReducedMotion;
+  const isPulsing = isLoading && runs('skeletonPulse');
 
   return (
     <div className="flex size-full items-center justify-center @container-size">
@@ -135,6 +137,7 @@ export function SquadGrid({
                   key={point.slot}
                   initial={false}
                   animate={{ x: `${point.x}%`, y: `${point.y}%` }}
+                  transition={runs('slotMove') ? undefined : INSTANT}
                   className="pointer-events-none absolute inset-0"
                 >
                   <div

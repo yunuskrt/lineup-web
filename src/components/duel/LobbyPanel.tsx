@@ -1,8 +1,9 @@
 'use client';
 
-import { motion, type Transition, useReducedMotion } from 'motion/react';
+import { motion, type Transition } from 'motion/react';
 import type { ReactNode } from 'react';
 import type { GateSize } from '@/components/game/CanvasGate';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import {
   DUEL_ACTOR_BG,
   DUEL_ACTOR_BORDER,
@@ -77,7 +78,8 @@ function SummaryList({ summary }: { summary: FilterSummary }) {
 }
 
 function Searching({ onAction }: { onAction: (action: LobbyAction) => void }) {
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
+  const isPulsing = runs('lobbyPulse');
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -88,9 +90,9 @@ function Searching({ onAction }: { onAction: (action: LobbyAction) => void }) {
           className="h-1 w-8 bg-fg-dim"
           initial={false}
           animate={{
-            opacity: isReducedMotion ? 1 : [...SKELETON_PULSE_OPACITY],
+            opacity: isPulsing ? [...SKELETON_PULSE_OPACITY] : 1,
           }}
-          transition={isReducedMotion ? undefined : AMBIENT_PULSE}
+          transition={isPulsing ? AMBIENT_PULSE : undefined}
         />
       </span>
       <button
@@ -238,7 +240,7 @@ function CoinFlip({
 }: {
   lobby: Extract<DuelLobbyView, { step: 'coinFlip' }>;
 }) {
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
   const { winner } = lobby;
   const title =
     winner === 'you' ? 'Your filters' : `${lobby.opponent.handle}'s filters`;
@@ -247,12 +249,12 @@ function CoinFlip({
     <motion.section
       aria-label={title}
       className={`${CARD} border-2 ${DUEL_ACTOR_BORDER[winner]}`}
-      initial={{ opacity: 0, scale: 0.96 }}
+      initial={{ opacity: 0, scale: runs('coinFlipScale') ? 0.96 : 1 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{
         ...REVEAL_SPRING,
-        // Branching `initial` instead would break hydration
-        scale: isReducedMotion ? { duration: 0 } : undefined,
+        // Snaps a card that hydrated at its start
+        scale: runs('coinFlipScale') ? undefined : { duration: 0 },
       }}
     >
       {/* Both marks stay; the winner's leads */}

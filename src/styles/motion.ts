@@ -38,3 +38,65 @@ export const SKELETON_PULSE = {
   ease: MOTION_EASING.skeletonPulse,
   repeat: Infinity,
 } as const;
+
+// Every animated effect, as theme.md names it
+export const MOTION_EFFECTS = [
+  'ringSweep',
+  'ringCriticalPulse',
+  'timerColorShift',
+  'revealSpring',
+  'revealFlash',
+  'alreadyFoundPulse',
+  'slotMove',
+  'skeletonPulse',
+  'lifeShake',
+  'lifeFill',
+  'lifeLostFlash',
+  'inputShake',
+  'inputRejectTint',
+  'inputSpinner',
+  'toastRise',
+  'toastFade',
+  'turnChipSlide',
+  'turnBorderShift',
+  'gateFade',
+  'lobbyPulse',
+  'coinFlipScale',
+] as const;
+
+export type MotionEffect = (typeof MOTION_EFFECTS)[number];
+
+export type ReducedMotion = 'keep' | 'drop';
+
+// A scalpel: drop movement, keep information
+export const REDUCED_MOTION_POLICY: Record<MotionEffect, ReducedMotion> = {
+  ringSweep: 'keep',
+  ringCriticalPulse: 'drop',
+  timerColorShift: 'keep',
+  revealSpring: 'drop',
+  revealFlash: 'keep',
+  alreadyFoundPulse: 'keep',
+  slotMove: 'drop',
+  skeletonPulse: 'drop',
+  lifeShake: 'drop',
+  lifeFill: 'keep',
+  lifeLostFlash: 'keep',
+  inputShake: 'drop',
+  inputRejectTint: 'keep',
+  inputSpinner: 'keep',
+  toastRise: 'drop',
+  toastFade: 'keep',
+  turnChipSlide: 'drop',
+  turnBorderShift: 'keep',
+  gateFade: 'keep',
+  lobbyPulse: 'drop',
+  coinFlipScale: 'drop',
+};
+
+// Null before the preference is read: animate
+export function motionFor(
+  effect: MotionEffect,
+  isReduced: boolean | null,
+): boolean {
+  return REDUCED_MOTION_POLICY[effect] === 'keep' || !isReduced;
+}

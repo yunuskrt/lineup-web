@@ -2,6 +2,7 @@
 
 import { motion } from 'motion/react';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MOTION_SECONDS } from '@/styles/motion';
 
 const PEAK_OPACITY = 0.25;
@@ -11,9 +12,10 @@ type LifeLostFlashProps = {
 };
 
 export function LifeLostFlash({ flashKey }: LifeLostFlashProps) {
+  const runs = useMotionPolicy();
   const hasFlashed = useChangedSinceMount(flashKey);
 
-  if (!hasFlashed) return null;
+  if (!hasFlashed || !runs('lifeLostFlash')) return null;
 
   return (
     <motion.div

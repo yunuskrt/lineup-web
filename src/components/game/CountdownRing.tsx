@@ -5,10 +5,10 @@ import {
   type TargetAndTransition,
   useAnimationFrame,
   useMotionValue,
-  useReducedMotion,
   useTransform,
 } from 'motion/react';
 import { useRef, useState } from 'react';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import {
   countdownStage,
   displaySeconds,
@@ -49,7 +49,7 @@ export function CountdownRing({
   mode,
   owner = 'you',
 }: CountdownRingProps) {
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
   const [seconds, setSeconds] = useState(() =>
     displaySeconds(roundDurationMs(round)),
   );
@@ -80,7 +80,7 @@ export function CountdownRing({
     mode === 'running' &&
     owner === 'you' &&
     stage === 'critical' &&
-    !isReducedMotion;
+    runs('ringCriticalPulse');
 
   return (
     <div

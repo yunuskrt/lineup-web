@@ -56,3 +56,4 @@ Not Started
 - W24b Profile Wiring: shared mock store, profile hooks, paging, upgrade.
 - W25a Empty Pool & Rate Limit: widen gate, cooldown input, ?scenario=.
 - W25b Connection States: reconnect gate, disconnected result, update page.
+- W26a Reduced Motion: motion policy, useMotionPolicy, kill-switch guard.
