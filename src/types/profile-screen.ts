@@ -1,4 +1,5 @@
-import type { HistoryEntry, Profile } from '@/types/profile';
+import type { Session } from '@/types/auth';
+import type { HistoryEntry, HistoryPage, Profile } from '@/types/profile';
 
 export type HistoryMoreState = 'idle' | 'loading' | 'failed' | 'end';
 
@@ -27,4 +28,21 @@ export type RecordShares = {
   wins: number;
   draws: number;
   losses: number;
+};
+
+// The query fields the screen reads, not TanStack's types
+type QueryState<T> = {
+  data: T | undefined;
+  error: unknown;
+  isPending: boolean;
+};
+
+export type ProfileScreenInput = {
+  session: QueryState<Session | null>;
+  profile: QueryState<Profile>;
+  history: QueryState<HistoryPage[]> & {
+    hasNextPage: boolean;
+    isFetchingNextPage: boolean;
+    isFetchNextPageError: boolean;
+  };
 };

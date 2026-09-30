@@ -1,9 +1,13 @@
+import { authErrorMessageOf } from '@/lib/auth';
 import { accuracyLabel, summaryTitle } from '@/lib/summary';
 import type { DuelOutcome } from '@/types/game';
 import type { HistoryEntry, UserStats } from '@/types/profile';
 import type {
   DuelRecord,
+  HistoryMoreState,
   HistoryTone,
+  ProfileScreenInput,
+  ProfileScreenView,
   RecordShares,
 } from '@/types/profile-screen';
 
@@ -99,4 +103,45 @@ export function accuracyStat(stats: UserStats): string {
 
 export function favouriteClubStat(stats: UserStats): string {
   return stats.favouriteClub?.name ?? 'None yet';
+}
+
+function moreState(history: ProfileScreenInput['history']): HistoryMoreState {
+  if (history.isFetchingNextPage) return 'loading';
+  if (history.isFetchNextPageError) return 'failed';
+  return history.hasNextPage ? 'idle' : 'end';
+}
+
+// A failed refetch keeps the data it already has
+export function profileScreenView({
+  session,
+  profile,
+  history,
+}: ProfileScreenInput): ProfileScreenView {
+  if (session.isPending) return { status: 'loading', isGuest: false };
+  if (session.error) {
+    return { status: 'error', message: authErrorMessageOf(session.error) };
+  }
+
+  const user = session.data?.user;
+  // A disabled query stays pending, so check first
+  if (!user) return { status: 'signedOut' };
+
+  const failure =
+    (profile.data ? null : profile.error) ??
+    (history.data ? null : history.error);
+  if (failure) {
+    return { status: 'error', message: authErrorMessageOf(failure) };
+  }
+
+  if (!profile.data || !history.data) {
+    return { status: 'loading', isGuest: user.isGuest };
+  }
+
+  return {
+    status: 'ready',
+    // The session updates at once; the cached profile lags
+    profile: { ...profile.data, user },
+    history: history.data.flatMap((page) => page.entries),
+    more: moreState(history),
+  };
 }

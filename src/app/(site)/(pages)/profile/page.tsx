@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ProfileStatePreview } from '@/components/dev/ProfileStatePreview';
+import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { devOnlyParam } from '@/lib/dev/route';
 import { SITE_CONTAINER } from '@/styles/classes';
 
@@ -17,7 +18,7 @@ export default async function ProfilePage({
       {state !== undefined ? (
         <ProfileStatePreview key={String(state)} state={state} />
       ) : (
-        <h1 className="font-display text-32 font-bold">Profile</h1>
+        <ProfileScreen />
       )}
     </div>
   );

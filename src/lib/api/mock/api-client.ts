@@ -16,8 +16,8 @@ import {
   createIdentity,
   createSession,
   createStore,
-  favouriteClubOf,
   nextId,
+  recordGame,
   type MockClock,
   type MockStore,
   type StoredSession,
@@ -57,12 +57,17 @@ function isTakenHandle(handle: string): boolean {
   return handle.toLowerCase() === MOCK_TAKEN_HANDLE;
 }
 
-export function createMockApiClient(
-  options: { now?: MockClock; random?: () => number } = {},
-): ApiClient {
+export type MockApiOptions = {
+  now?: MockClock;
+  random?: () => number;
+  // Shared with the duel mock, so duels reach the profile
+  store?: MockStore;
+};
+
+export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
   const now = options.now ?? (() => Date.now());
   const random = options.random ?? Math.random;
-  const store: MockStore = createStore();
+  const store: MockStore = options.store ?? createStore();
 
   function requireIdentity() {
     return store.identity;
@@ -128,33 +133,22 @@ export function createMockApiClient(
     const identity = store.identity;
     if (!identity) return;
 
-    const isPerfect = reason === 'perfect_clear';
     const fixture = fixtureOf(session);
-    const entry: HistoryEntry = {
-      id: nextId(store, 'history'),
-      playedAt: new Date(now()).toISOString(),
-      mode: 'solo',
-      match: fixture.identity,
-      outcome: reason,
-      foundCount: session.engine.found.length,
-      livesRemaining: session.engine.lives.you,
-    };
-
-    identity.history = [entry, ...identity.history];
-    if (session.side) {
-      identity.playedAs = [
-        ...identity.playedAs,
-        fixture.identity[session.side],
-      ];
-    }
-    identity.stats = {
-      ...identity.stats,
-      played: identity.stats.played + 1,
-      perfectClears: identity.stats.perfectClears + (isPerfect ? 1 : 0),
-      bestStreak: Math.max(identity.stats.bestStreak, session.bestStreak),
-      accuracy: accuracyOf(session),
-      favouriteClub: favouriteClubOf(identity.playedAs),
-    };
+    recordGame(identity, {
+      entry: {
+        id: nextId(store, 'history'),
+        playedAt: new Date(now()).toISOString(),
+        mode: 'solo',
+        match: fixture.identity,
+        outcome: reason,
+        foundCount: session.engine.found.length,
+        livesRemaining: session.engine.lives.you,
+      },
+      club: session.side ? fixture.identity[session.side] : null,
+      guesses: session.totalGuesses,
+      hits: session.correctGuesses,
+      bestStreak: session.bestStreak,
+    });
   }
 
   function accuracyOf(session: StoredSession): number {

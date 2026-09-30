@@ -7,12 +7,16 @@ import {
   historyOutcomeLabel,
   historyTone,
   playedAtLabel,
+  profileScreenView,
   recordShares,
   soloRunCount,
 } from '@/lib/profile';
+import { ApiRequestError } from '@/lib/api/unwrap';
+import { AUTH_ERROR_MESSAGES } from '@/lib/auth';
 import { SAMPLE_IDENTITY } from '@/lib/dev/samples';
 import type { DuelOutcome, SoloEndReason } from '@/types/game';
-import type { HistoryEntry, UserStats } from '@/types/profile';
+import type { HistoryEntry, Profile, UserStats } from '@/types/profile';
+import type { ProfileScreenInput } from '@/types/profile-screen';
 
 const STATS: UserStats = {
   played: 34,
@@ -211,5 +215,129 @@ describe('favouriteClubStat', () => {
 
   it('reads None yet without one', () => {
     expect(favouriteClubStat(NO_GAMES)).toBe('None yet');
+  });
+});
+
+describe('profileScreenView', () => {
+  const user = {
+    id: 'guest-1',
+    handle: 'Guest 1',
+    isGuest: true,
+    tier: 'free',
+  } as const;
+  const profile: Profile = { user, stats: STATS };
+  const networkError = new ApiRequestError({
+    code: 'network',
+    message: 'fetch failed',
+    retryAfterMs: null,
+  });
+  const idle = { data: undefined, error: null, isPending: false };
+  const pending = { data: undefined, error: null, isPending: true };
+
+  function input(
+    overrides: Partial<ProfileScreenInput> = {},
+  ): ProfileScreenInput {
+    return {
+      session: { ...idle, data: { user } },
+      profile: { ...idle, data: profile },
+      history: {
+        ...idle,
+        data: [
+          { entries: [solo('quit')], nextCursor: 'history-2' },
+          { entries: [duel('win')], nextCursor: null },
+        ],
+        hasNextPage: false,
+        isFetchingNextPage: false,
+        isFetchNextPageError: false,
+      },
+      ...overrides,
+    };
+  }
+
+  function history(overrides: Partial<ProfileScreenInput['history']>) {
+    return { ...input().history, ...overrides };
+  }
+
+  it('loads while the session is pending, without a guest strip', () => {
+    expect(profileScreenView(input({ session: pending }))).toEqual({
+      status: 'loading',
+      isGuest: false,
+    });
+  });
+
+  it('is signed out with no session, even while queries are disabled', () => {
+    const view = profileScreenView(
+      input({
+        session: { ...idle, data: null },
+        profile: pending,
+        history: history(pending),
+      }),
+    );
+    expect(view).toEqual({ status: 'signedOut' });
+  });
+
+  it('loads with the guest strip while the first pages are pending', () => {
+    expect(profileScreenView(input({ profile: pending }))).toEqual({
+      status: 'loading',
+      isGuest: true,
+    });
+    expect(profileScreenView(input({ history: history(pending) }))).toEqual({
+      status: 'loading',
+      isGuest: true,
+    });
+  });
+
+  it('shows an error when the profile or first page fails', () => {
+    const expected = { status: 'error', message: AUTH_ERROR_MESSAGES.network };
+
+    expect(
+      profileScreenView(input({ profile: { ...idle, error: networkError } })),
+    ).toEqual(expected);
+    expect(
+      profileScreenView(
+        input({ history: history({ data: undefined, error: networkError }) }),
+      ),
+    ).toEqual(expected);
+    expect(
+      profileScreenView(input({ session: { ...idle, error: networkError } })),
+    ).toEqual(expected);
+  });
+
+  it('keeps the page when a background refetch fails', () => {
+    const view = profileScreenView(
+      input({ profile: { ...idle, data: profile, error: networkError } }),
+    );
+    expect(view.status).toBe('ready');
+  });
+
+  it('takes the user from the session, not a stale cached profile', () => {
+    const upgraded = { ...user, handle: 'keeper', isGuest: false };
+    const view = profileScreenView(
+      input({ session: { ...idle, data: { user: upgraded } } }),
+    );
+    if (view.status !== 'ready') throw new Error('Expected ready');
+    expect(view.profile.user).toEqual(upgraded);
+    expect(view.profile.stats).toBe(STATS);
+  });
+
+  it('flattens the pages, newest first', () => {
+    const view = profileScreenView(input());
+    if (view.status !== 'ready') throw new Error('Expected ready');
+    expect(view.history.map((entry) => entry.mode)).toEqual(['solo', 'duel']);
+    expect(view.more).toBe('end');
+  });
+
+  it.each<[Partial<ProfileScreenInput['history']>, string]>([
+    [{ hasNextPage: true }, 'idle'],
+    [{ hasNextPage: true, isFetchingNextPage: true }, 'loading'],
+    [
+      { hasNextPage: true, isFetchNextPageError: true, error: networkError },
+      'failed',
+    ],
+    [{ hasNextPage: false }, 'end'],
+  ])('maps %o to more: %s', (overrides, more) => {
+    const view = profileScreenView(input({ history: history(overrides) }));
+    if (view.status !== 'ready') throw new Error('Expected ready');
+    expect(view.more).toBe(more);
   });
 });

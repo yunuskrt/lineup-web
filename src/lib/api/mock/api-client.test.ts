@@ -14,6 +14,7 @@ import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
 import type { ApiResult } from '@/types/api';
 import type { Filters } from '@/types/filters';
 import type { Side } from '@/types/match';
+import type { HistoryPage } from '@/types/profile';
 
 const T0 = 1_700_000_000_000;
 
@@ -413,6 +414,45 @@ describe('mock api client', () => {
     );
     expect(second.entries).toHaveLength(1);
     expect(second.nextCursor).toBeNull();
+  });
+
+  it('walks every history entry exactly once, page by page', async () => {
+    await api.auth.continueAsGuest();
+
+    for (let i = 0; i < 5; i += 1) {
+      const { sessionId } = await startRun();
+      await api.solo.quit(sessionId);
+    }
+
+    const ids: string[] = [];
+    let cursor: string | null = null;
+    do {
+      const page: HistoryPage = unwrap(
+        await api.profile.getHistory({ cursor, limit: 2 }),
+      );
+      ids.push(...page.entries.map((entry) => entry.id));
+      cursor = page.nextCursor;
+    } while (cursor !== null);
+
+    const all = unwrap(
+      await api.profile.getHistory({ cursor: null, limit: 20 }),
+    );
+    expect(ids).toEqual(all.entries.map((entry) => entry.id));
+    expect(new Set(ids).size).toBe(5);
+  });
+
+  it('keeps accuracy over every run, not just the last', async () => {
+    await api.auth.continueAsGuest();
+
+    const first = await startRun();
+    await api.solo.guess({ sessionId: first.sessionId, guess: 'Moss' });
+    await api.solo.quit(first.sessionId);
+    expect(unwrap(await api.profile.getProfile()).stats.accuracy).toBe(1);
+
+    const second = await startRun();
+    await api.solo.guess({ sessionId: second.sessionId, guess: 'Nobody' });
+    await api.solo.quit(second.sessionId);
+    expect(unwrap(await api.profile.getProfile()).stats.accuracy).toBe(0.5);
   });
 
   it('offers filter options drawn from the fixtures', async () => {
