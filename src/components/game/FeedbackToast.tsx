@@ -1,7 +1,8 @@
 'use client';
 
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import { useState } from 'react';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MOTION_SECONDS } from '@/styles/motion';
 import type { ToastMessage } from '@/types/feedback';
 
@@ -13,7 +14,8 @@ type FeedbackToastProps = {
 };
 
 export function FeedbackToast({ toast }: FeedbackToastProps) {
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
+  const riseFrom = runs('toastRise') ? RISE_PX : 0;
   // Faded text must not linger for screen readers
   const [endedId, setEndedId] = useState<number | null>(null);
 
@@ -23,7 +25,7 @@ export function FeedbackToast({ toast }: FeedbackToastProps) {
         <motion.p
           key={toast.id}
           className="rounded-sm border border-line bg-surface-raised px-3 py-1 text-14 leading-5 text-fg"
-          initial={{ opacity: 0, y: RISE_PX }}
+          initial={{ opacity: 0, y: riseFrom }}
           animate={{ opacity: [0, 1, 1, 0], y: 0 }}
           transition={{
             opacity: {
@@ -31,7 +33,7 @@ export function FeedbackToast({ toast }: FeedbackToastProps) {
               times: [0, 0.1, 0.8, 1],
               ease: 'easeOut',
             },
-            y: { duration: isReducedMotion ? 0 : RISE_SECONDS },
+            y: { duration: RISE_SECONDS },
           }}
           onAnimationComplete={() => setEndedId(toast.id)}
         >

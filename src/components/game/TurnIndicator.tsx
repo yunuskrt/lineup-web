@@ -1,8 +1,9 @@
 'use client';
 
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { Lives } from '@/components/game/Lives';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import {
   reconnectSecondsLeft,
   TURN_LABELS,
@@ -69,7 +70,7 @@ function PlayerPanel({
   isActive,
   reconnectDeadline = null,
 }: PlayerPanelProps) {
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
   const side = SIDES[actor];
   const isOpponent = actor === 'opponent';
   const isReconnecting = reconnectDeadline !== null;
@@ -81,7 +82,7 @@ function PlayerPanel({
 
   return (
     <div
-      className={`@container flex min-w-0 flex-col gap-2 rounded-md border-2 bg-surface-raised p-3 ${TURN_BORDER_SHIFT} ${border} ${
+      className={`@container flex min-w-0 flex-col gap-2 rounded-md border-2 bg-surface-raised p-3 ${runs('turnBorderShift') ? TURN_BORDER_SHIFT : ''} ${border} ${
         isOpponent ? 'items-end text-right' : 'items-start'
       }`}
     >
@@ -106,13 +107,16 @@ function PlayerPanel({
               <motion.span
                 aria-hidden="true"
                 className={`rounded-sm px-2 py-0.5 text-12 font-semibold whitespace-nowrap uppercase text-on-accent ${DUEL_ACTOR_BG[actor]}`}
-                initial={{ opacity: 0, x: side.chipFromX }}
+                initial={{
+                  opacity: 0,
+                  x: runs('turnChipSlide') ? side.chipFromX : 0,
+                }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{
                   duration: MOTION_SECONDS.turnHandover,
                   ease: MOTION_EASING.turnHandover,
-                  // Branching `initial` instead would break hydration
-                  x: isReducedMotion ? { duration: 0 } : undefined,
+                  // Snaps a chip that hydrated at its offset
+                  x: runs('turnChipSlide') ? undefined : { duration: 0 },
                 }}
               >
                 {TURN_LABELS[actor]}

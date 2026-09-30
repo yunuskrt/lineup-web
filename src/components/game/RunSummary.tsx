@@ -1,12 +1,13 @@
 'use client';
 
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import { type RefObject, useEffect, useId, useRef } from 'react';
 import { Lives } from '@/components/game/Lives';
 import {
   ResultActions,
   type ResultActionsProps,
 } from '@/components/game/ResultActions';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import {
   accuracyLabel,
@@ -142,7 +143,8 @@ function RoundStrip({ roundTimesMs }: { roundTimesMs: number[] }) {
 }
 
 function SummarySkeleton() {
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
+  const isPulsing = runs('skeletonPulse');
 
   return (
     <div className="flex flex-1 flex-col">
@@ -154,9 +156,9 @@ function SummarySkeleton() {
         className="flex flex-1 flex-col gap-6"
         initial={false}
         animate={{
-          opacity: isReducedMotion ? 1 : [...SKELETON_PULSE_OPACITY],
+          opacity: isPulsing ? [...SKELETON_PULSE_OPACITY] : 1,
         }}
-        transition={isReducedMotion ? undefined : SKELETON_PULSE}
+        transition={isPulsing ? SKELETON_PULSE : undefined}
       >
         <div
           className={`${OUTCOME_BOX} border-skeleton-fill bg-skeleton-fill`}

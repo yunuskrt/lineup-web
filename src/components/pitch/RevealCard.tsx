@@ -1,9 +1,10 @@
 'use client';
 
-import { motion, type Transition, useReducedMotion } from 'motion/react';
+import { motion, type Transition } from 'motion/react';
 import { useState } from 'react';
 import { SquadSlot } from '@/components/pitch/SquadSlot';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MOTION_SECONDS, REVEAL_SPRING } from '@/styles/motion';
 import type { DuelActor } from '@/types/duel';
 import type { FoundPlayer, PositionGroup } from '@/types/player';
@@ -42,14 +43,14 @@ export function RevealCard({
   isNew,
   pulseKey,
 }: RevealCardProps) {
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
   // Only the mounting render decides if it animates
   const [isRevealing] = useState(isNew);
   const hasPulsed = useChangedSinceMount(pulseKey);
   const foundBy = player.foundBy ?? 'you';
 
   const pulse =
-    pulseKey !== undefined && hasPulsed ? (
+    pulseKey !== undefined && hasPulsed && runs('alreadyFoundPulse') ? (
       <motion.span
         key={pulseKey}
         aria-hidden="true"
@@ -60,22 +61,27 @@ export function RevealCard({
       />
     ) : null;
 
-  const flash = isRevealing ? (
-    <motion.span
-      aria-hidden="true"
-      className={`absolute inset-0 ${FLASH_TONES[foundBy]}`}
-      initial={{ opacity: FLASH_PEAK_OPACITY }}
-      animate={{ opacity: 0 }}
-      transition={FLASH_FADE}
-    />
-  ) : null;
+  const flash =
+    isRevealing && runs('revealFlash') ? (
+      <motion.span
+        aria-hidden="true"
+        className={`absolute inset-0 ${FLASH_TONES[foundBy]}`}
+        initial={{ opacity: FLASH_PEAK_OPACITY }}
+        animate={{ opacity: 0 }}
+        transition={FLASH_FADE}
+      />
+    ) : null;
 
   return (
     <motion.div
-      initial={isRevealing ? { opacity: 0, scale: START_SCALE } : false}
+      initial={
+        isRevealing
+          ? { opacity: 0, scale: runs('revealSpring') ? START_SCALE : 1 }
+          : false
+      }
       animate={{ opacity: 1, scale: 1 }}
       transition={{
-        scale: isReducedMotion ? { duration: 0 } : REVEAL_SPRING,
+        scale: runs('revealSpring') ? REVEAL_SPRING : { duration: 0 },
         opacity: { duration: MOTION_SECONDS.reveal, ease: 'easeOut' },
       }}
     >

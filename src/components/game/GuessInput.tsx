@@ -1,8 +1,9 @@
 'use client';
 
-import { motion, useAnimate, useReducedMotion } from 'motion/react';
+import { motion, useAnimate } from 'motion/react';
 import { type SubmitEvent, useEffect, useId, useRef, useState } from 'react';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MAX_GUESS_LENGTH } from '@/lib/api/schemas/common';
 import { prepareGuess } from '@/lib/guess';
 import { cooldownAnnouncement, cooldownLabel } from '@/lib/system-states';
@@ -28,7 +29,8 @@ const STATUS_CLASSES: Record<GuessInputStatus, string> = {
 
 const REJECT_TINT_OPACITY = [1, 1, 0];
 
-function Spinner() {
+// Static when spinning is off, so the busy cue stays
+function Spinner({ isSpinning }: { isSpinning: boolean }) {
   return (
     <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
       <motion.svg
@@ -36,7 +38,7 @@ function Spinner() {
         aria-hidden="true"
         focusable="false"
         className="size-4"
-        animate={{ rotate: 360 }}
+        animate={isSpinning ? { rotate: 360 } : undefined}
         transition={{
           duration: SPIN_SECONDS,
           ease: 'linear',
@@ -106,7 +108,8 @@ export function GuessInput({
 }: GuessInputProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
+  const canShake = runs('inputShake');
   const [scope, animate] = useAnimate<HTMLDivElement>();
   const hasShaken = useChangedSinceMount(shakeKey);
   const shakenKey = useRef(shakeKey);
@@ -119,13 +122,13 @@ export function GuessInput({
   useEffect(() => {
     if (shakeKey === shakenKey.current) return;
     shakenKey.current = shakeKey;
-    if (isReducedMotion) return;
+    if (!canShake) return;
     animate(
       scope.current,
       { x: SHAKE_X },
       { duration: MOTION_SECONDS.inputShake },
     );
-  }, [animate, isReducedMotion, scope, shakeKey]);
+  }, [animate, canShake, scope, shakeKey]);
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -166,7 +169,7 @@ export function GuessInput({
           spellCheck={false}
           className={`w-full rounded-sm border bg-surface-card py-2.5 pr-10 pl-3 text-16 font-medium placeholder:text-fg-dim ${STATUS_CLASSES[status]}`}
         />
-        {hasShaken ? (
+        {hasShaken && runs('inputRejectTint') ? (
           <motion.span
             key={shakeKey}
             aria-hidden="true"
@@ -180,7 +183,9 @@ export function GuessInput({
             }}
           />
         ) : null}
-        {status === 'pending' ? <Spinner /> : null}
+        {status === 'pending' ? (
+          <Spinner isSpinning={runs('inputSpinner')} />
+        ) : null}
       </div>
       {isCoolingDown ? <CooldownLine until={cooldownUntil} /> : null}
       <p role="status" className="sr-only">

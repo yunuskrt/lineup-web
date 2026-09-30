@@ -2,12 +2,15 @@
 
 import { AnimatePresence, motion, useIsPresent } from 'motion/react';
 import { type ReactNode, type RefObject, useLayoutEffect, useRef } from 'react';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MOTION_SECONDS } from '@/styles/motion';
 
 const GATE_FADE = {
   duration: MOTION_SECONDS.gateFade,
   ease: 'easeOut',
 } as const;
+
+const INSTANT = { duration: 0 } as const;
 
 const FOCUSABLE =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -38,6 +41,7 @@ function GatePanel({
 }: GatePanelProps) {
   // A fading-out panel must not take clicks or focus
   const isPresent = useIsPresent();
+  const runs = useMotionPolicy();
 
   return (
     <motion.div
@@ -46,7 +50,7 @@ function GatePanel({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={GATE_FADE}
+      transition={runs('gateFade') ? GATE_FADE : INSTANT}
     >
       <div
         ref={panelRef}

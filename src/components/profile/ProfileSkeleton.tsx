@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   HISTORY_ROW,
   PANEL_HEADER,
@@ -8,6 +8,7 @@ import {
   RECORD_BAR,
   STAT_ROW,
 } from '@/components/profile/styles';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 
 const BLOCK = 'rounded-sm bg-skeleton-fill';
@@ -16,7 +17,8 @@ const HISTORY_ROWS = 3;
 
 // Same classes as the loaded panels, so nothing shifts
 export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
-  const isReducedMotion = useReducedMotion();
+  const runs = useMotionPolicy();
+  const isPulsing = runs('skeletonPulse');
 
   return (
     <>
@@ -28,9 +30,9 @@ export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
         className="flex flex-col gap-6"
         initial={false}
         animate={{
-          opacity: isReducedMotion ? 1 : [...SKELETON_PULSE_OPACITY],
+          opacity: isPulsing ? [...SKELETON_PULSE_OPACITY] : 1,
         }}
-        transition={isReducedMotion ? undefined : SKELETON_PULSE}
+        transition={isPulsing ? SKELETON_PULSE : undefined}
       >
         <div className="flex h-10 items-center">
           <span className={`h-8 w-48 ${BLOCK}`} />
