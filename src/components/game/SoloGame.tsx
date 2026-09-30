@@ -12,8 +12,8 @@ import { soloCanvasView, soloGateAction } from '@/lib/solo-run';
 export function SoloGame() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [params] = useState(() => new URLSearchParams(searchParams));
-  const { state, chooseSide, submitGuess, quit, playAgain, retry } =
+  const [params, setParams] = useState(() => new URLSearchParams(searchParams));
+  const { state, chooseSide, submitGuess, quit, playAgain, retry, widen } =
     useSoloRun(params);
   const [guess, setGuess] = useState('');
   const [isQuitOpen, setIsQuitOpen] = useState(false);
@@ -32,6 +32,14 @@ export function SoloGame() {
     if (feedback?.clearInput) setGuess('');
   }
 
+  // The run restarts on the widened filters
+  async function widenAndRestart() {
+    const next = await widen();
+    if (!next) return;
+    setParams(next);
+    router.replace(withQuery('/play/solo', next));
+  }
+
   function handleGateAction(choiceId?: string) {
     switch (soloGateAction(state)) {
       case 'choose': {
@@ -39,6 +47,9 @@ export function SoloGame() {
         if (side.success) void chooseSide(side.data);
         return;
       }
+      case 'widen':
+        void widenAndRestart();
+        return;
       case 'leave':
         leave();
         return;
@@ -72,6 +83,7 @@ export function SoloGame() {
         onGuessChange={setGuess}
         onGuessSubmit={handleGuess}
         onGateAction={handleGateAction}
+        onGateSecondaryAction={leave}
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
         onChangeFilters={leave}

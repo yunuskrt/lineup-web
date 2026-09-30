@@ -35,6 +35,7 @@ import {
   youFrom,
 } from '@/lib/duel-session';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
+import { widenFilters } from '@/lib/filters';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
 import type { ApiError } from '@/types/api';
 import type { DuelResult, DuelSession, FilterSubmission } from '@/types/duel';
@@ -42,6 +43,8 @@ import type { DuelSessionEvent, DuelSessionState } from '@/types/duel-session';
 
 const OPPONENT = { ...SAMPLE_OPPONENT, lives: MAX_LIVES };
 const YOU = { ...SAMPLE_YOU, lives: MAX_LIVES };
+
+const AT = 1_700_000_000_000;
 
 const NETWORK: ApiError = {
   code: 'network',
@@ -390,24 +393,74 @@ describe('the match', () => {
     const state = play(
       ...TO_PLAYING,
       { type: 'guessSubmitted' },
-      { type: 'guessFailed', error: RATE_LIMITED },
+      { type: 'guessFailed', error: NETWORK, at: AT },
     );
     expect(state.isGuessing).toBe(false);
-    expect(state.toast?.message).toMatch(/Try again in 2 seconds/);
+    expect(state.toast).not.toBeNull();
     expect(state.phase).toBe('playing');
+    expect(viewOf(state).input).toBe('live');
   });
 
   it('toasts a server error mid-match instead of gating', () => {
     const state = play(
       ...TO_PLAYING,
       { type: 'guessSubmitted' },
-      { type: 'error', error: RATE_LIMITED },
+      { type: 'error', error: NETWORK, at: AT },
     );
     expect(state.phase).toBe('playing');
     expect(state.failure).toBeNull();
     expect(state.isGuessing).toBe(false);
     expect(viewOf(state).gate).toBeNull();
     expect(state.toast).not.toBeNull();
+  });
+
+  it('locks the input on a rate limit, with no toast', () => {
+    const state = play(
+      ...TO_PLAYING,
+      { type: 'guessSubmitted' },
+      { type: 'guessFailed', error: RATE_LIMITED, at: AT },
+    );
+    const view = viewOf(state);
+    expect(state.toast).toBeNull();
+    expect(view.input).toBe('cooldown');
+    expect(view.cooldownUntil).toBe(AT + 2_000);
+    expect(view.clock.round).toEqual(YOUR_TURN.round);
+    expect(canGuess(state)).toBe(false);
+  });
+
+  it('counts one lockout reported by event and ack', () => {
+    const state = play(
+      ...TO_PLAYING,
+      { type: 'guessSubmitted' },
+      { type: 'error', error: RATE_LIMITED, at: AT },
+      { type: 'guessFailed', error: RATE_LIMITED, at: AT + 5 },
+    );
+    expect(state.cooldownUntil).toBe(AT + 2_000);
+    expect(state.toast).toBeNull();
+  });
+
+  it('drops the lockout when the result arrives', () => {
+    const limited = play(...TO_PLAYING, {
+      type: 'guessFailed',
+      error: RATE_LIMITED,
+      at: AT,
+    });
+    const state = duelSessionReducer(limited, {
+      type: 'finished',
+      result: RESULT,
+    });
+    expect(state.cooldownUntil).toBeNull();
+    expect(viewOf(state).input).toBe('locked');
+  });
+
+  it('goes live again once the lockout ends', () => {
+    const state = play(
+      ...TO_PLAYING,
+      { type: 'guessFailed', error: RATE_LIMITED, at: AT },
+      { type: 'cooldownEnded' },
+    );
+    expect(viewOf(state).input).toBe('live');
+    expect(canGuess(state)).toBe(true);
   });
 
   it('shows the reconnect until the server clears it', () => {
@@ -475,7 +528,7 @@ describe('the result', () => {
       { type: 'roundStarted', session: THEIR_TURN },
       { type: 'guessResolved', result: { outcome: 'not_in_xi' } },
       { type: 'lifeLost', cue: { who: 'you', lives: 1 } },
-      { type: 'error', error: NETWORK },
+      { type: 'error', error: NETWORK, at: AT },
       { type: 'finished', result: { ...RESULT, outcome: 'loss' } },
     ] as const satisfies DuelSessionEvent[];
     const state = late.reduce(duelSessionReducer, finished);
@@ -603,21 +656,65 @@ describe('failures', () => {
     const state = play(...TO_FILTERS, YOU_WIN, {
       type: 'error',
       error: EMPTY_POOL,
+      at: AT,
     });
     const gate = viewOf(state).gate;
-    expect(gate?.title).toBe(DUEL_GATE_COPY.noMatch);
+    expect(gate?.title).toBe('No match for these filters together');
     expect(gate?.detail).toBe(EMPTY_POOL.message);
-    expect(gate?.actionLabel).toBe(DUEL_GATE_COPY.changeFilters);
+    expect(gate?.actionLabel).toBe('Change filters');
+    expect(gate?.secondaryActionLabel).toBeUndefined();
     expect(duelGateAction(state)).toBe('leave');
   });
 
+  it('never offers a widen for a pool emptied after the flip', () => {
+    const state = play(...TO_FILTERS, YOU_WIN, {
+      type: 'error',
+      error: { ...EMPTY_POOL, emptyBecause: 'club' },
+      at: AT,
+    });
+    const gate = viewOf(state).gate;
+    expect(state.failure?.step).toBe('match');
+    expect(gate?.actionLabel).toBe('Change filters');
+    expect(gate?.secondaryActionLabel).toBeUndefined();
+    expect(duelGateAction(state)).toBe('leave');
+  });
+
+  it('offers to widen a refused lock, then holds the wider set', () => {
+    const refused = play(
+      ...TO_FILTERS,
+      { type: 'locking' },
+      {
+        type: 'failed',
+        step: 'lock',
+        error: { ...EMPTY_POOL, emptyBecause: 'competition' },
+      },
+    );
+    const gate = viewOf(refused).gate;
+    expect(gate?.title).toBe('No match in those competitions');
+    expect(gate?.actionLabel).toBe('Include every competition');
+    expect(gate?.secondaryActionLabel).toBe('Change filters');
+    expect(duelGateAction(refused)).toBe('widen');
+
+    const widened = { ...SAMPLE_FILTERS, competitionIds: [] };
+    const state = duelSessionReducer(refused, {
+      type: 'filtersWidened',
+      filters: widened,
+    });
+    expect(state.filters).toEqual(widened);
+    expect(canLockFilters(state)).toBe(true);
+  });
+
   it('names the step a server error interrupted', () => {
-    const queued = play({ type: 'queued' }, { type: 'error', error: NETWORK });
+    const queued = play(
+      { type: 'queued' },
+      { type: 'error', error: NETWORK, at: AT },
+    );
     expect(queued.failure?.step).toBe('queue');
 
     const flipped = play(...TO_FILTERS, YOU_WIN, {
       type: 'error',
       error: NETWORK,
+      at: AT,
     });
     expect(flipped.failure?.step).toBe('match');
   });
@@ -738,7 +835,9 @@ describe('against the mock adapter', () => {
       apply({ type: 'opponentConnection', connection }),
     );
     client.on('finished', (result) => apply({ type: 'finished', result }));
-    client.on('error', (error) => apply({ type: 'error', error }));
+    client.on('error', (error) =>
+      apply({ type: 'error', error, at: Date.now() }),
+    );
     return { apply, phases, current: () => state };
   }
 
@@ -759,7 +858,9 @@ describe('against the mock adapter', () => {
   ) {
     duel.apply({ type: 'guessSubmitted' });
     const ack = await client.guess({ sessionId: 'duel-1', guess: name });
-    if (!ack.success) duel.apply({ type: 'guessFailed', error: ack.error });
+    if (!ack.success) {
+      duel.apply({ type: 'guessFailed', error: ack.error, at: Date.now() });
+    }
   }
 
   it('walks the lobby phases into the match', async () => {
@@ -845,7 +946,7 @@ describe('against the mock adapter', () => {
     client.disconnect();
   });
 
-  it('toasts the rate limiter and keeps the match going', async () => {
+  it('locks once on the rate limiter and keeps the match going', async () => {
     const client = createMockDuelClient(scripted({ scenario: 'rateLimited' }));
     const duel = await reachMatch(client);
 
@@ -854,8 +955,9 @@ describe('against the mock adapter', () => {
     expect(state.phase).toBe('playing');
     expect(state.failure).toBeNull();
     expect(state.isGuessing).toBe(false);
-    expect(state.toast?.message).toMatch(/Try again in 2 seconds/);
-    expect(viewOf(state).input).toBe('live');
+    expect(state.toast).toBeNull();
+    expect(state.cooldownUntil).toBe(Date.now() + 2_000);
+    expect(viewOf(state).input).toBe('cooldown');
     client.disconnect();
   });
 
@@ -918,7 +1020,7 @@ describe('against the mock adapter', () => {
     expect(duel.current().phase).toBe('noOpponent');
   });
 
-  it('sends filters that match nothing back to /play', async () => {
+  it('widens filters that match nothing, then plays', async () => {
     const client = createMockDuelClient({ hitRate: 0 });
     const duel = drive(client);
 
@@ -930,10 +1032,19 @@ describe('against the mock adapter', () => {
     if (result.success) throw new Error('Expected a refusal');
     duel.apply({ type: 'failed', step: 'lock', error: result.error });
 
+    expect(result.error.emptyBecause).toBe('era');
     expect(viewOf(duel.current()).gate?.actionLabel).toBe(
-      DUEL_GATE_COPY.changeFilters,
+      'Include every season',
     );
-    expect(duelGateAction(duel.current())).toBe('leave');
+    expect(duelGateAction(duel.current())).toBe('widen');
+
+    const widened = widenFilters(NOTHING_FITS, 'era', SAMPLE_FILTER_OPTIONS);
+    if (!widened) throw new Error('Expected a wider set');
+    duel.apply({ type: 'filtersWidened', filters: widened });
+    duel.apply({ type: 'locking' });
+    expect((await client.submitFilters(widened)).success).toBe(true);
+    await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS);
+    expect(duel.current().phase).toBe('coinFlip');
     client.disconnect();
   });
 });

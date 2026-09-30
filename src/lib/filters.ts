@@ -1,3 +1,4 @@
+import type { EmptyPoolReason } from '@/types/api';
 import type { FilterOptions } from '@/types/catalog';
 import type { EraRange, Filters } from '@/types/filters';
 import type { PlayMode } from '@/types/play';
@@ -71,6 +72,45 @@ export function filtersToParams(
     params.set(FILTER_PARAMS.to, String(filters.era.to));
   }
   return params;
+}
+
+// Keeps other params, like the mode, as they were
+export function withFilters(
+  params: URLSearchParams,
+  filters: Filters,
+  options: FilterOptions,
+): URLSearchParams {
+  const next = new URLSearchParams(params);
+  for (const key of [
+    FILTER_PARAMS.competition,
+    FILTER_PARAMS.club,
+    FILTER_PARAMS.from,
+    FILTER_PARAMS.to,
+  ]) {
+    next.delete(key);
+  }
+  for (const [key, value] of filtersToParams(filters, options)) {
+    next.append(key, value);
+  }
+  return next;
+}
+
+// Null when no single group is to blame
+export function widenFilters(
+  filters: Filters,
+  reason: EmptyPoolReason,
+  options: FilterOptions,
+): Filters | null {
+  switch (reason) {
+    case 'competition':
+      return { ...filters, competitionIds: [] };
+    case 'club':
+      return { ...filters, clubIds: [] };
+    case 'era':
+      return { ...filters, era: { ...options.era } };
+    case 'combination':
+      return null;
+  }
 }
 
 export function toggleId(

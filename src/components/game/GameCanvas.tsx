@@ -16,7 +16,7 @@ import { QuitChip } from '@/components/shell/QuitChip';
 import { ringSetups } from '@/lib/canvas';
 import { waitingLine } from '@/lib/duel-status';
 import { LOADING_FORMATION } from '@/lib/formation';
-import { CHOICE_BUTTON, PRIMARY_BUTTON } from '@/styles/classes';
+import { CHOICE_BUTTON, PRIMARY_BUTTON, TEXT_LINK } from '@/styles/classes';
 import type { CanvasGateView, CanvasView } from '@/types/canvas';
 import type { LobbyAction } from '@/types/duel-lobby';
 
@@ -55,9 +55,14 @@ function ClockRow({ view }: { view: CanvasView }) {
 type GateActionProps = {
   gate: CanvasGateView;
   onGateAction: (choiceId?: string) => void;
+  onGateSecondaryAction: () => void;
 };
 
-function GateAction({ gate, onGateAction }: GateActionProps) {
+function GateAction({
+  gate,
+  onGateAction,
+  onGateSecondaryAction,
+}: GateActionProps) {
   if (gate.choices) {
     return (
       <div className="flex flex-col gap-2">
@@ -71,6 +76,27 @@ function GateAction({ gate, onGateAction }: GateActionProps) {
             {choice.label}
           </button>
         ))}
+      </div>
+    );
+  }
+
+  if (gate.secondaryActionLabel) {
+    return (
+      <div className="flex flex-col items-center gap-3">
+        <button
+          type="button"
+          className={`w-full ${PRIMARY_BUTTON}`}
+          onClick={() => onGateAction()}
+        >
+          {gate.actionLabel}
+        </button>
+        <button
+          type="button"
+          className={`text-14 ${TEXT_LINK}`}
+          onClick={onGateSecondaryAction}
+        >
+          {gate.secondaryActionLabel}
+        </button>
       </div>
     );
   }
@@ -117,6 +143,7 @@ function ActiveRail({
           >
             <GuessInput
               status={view.input}
+              cooldownUntil={view.cooldownUntil}
               value={guess}
               onValueChange={onGuessChange}
               onSubmit={onGuessSubmit}
@@ -143,6 +170,7 @@ type GameCanvasProps = {
   onGuessChange: (value: string) => void;
   onGuessSubmit: (guess: string) => void;
   onGateAction: (choiceId?: string) => void;
+  onGateSecondaryAction?: () => void;
   // Without it, quitting is a plain link to /play
   onQuit?: () => void;
   onPlayAgain?: () => void;
@@ -156,6 +184,7 @@ export function GameCanvas({
   onGuessChange,
   onGuessSubmit,
   onGateAction,
+  onGateSecondaryAction = () => {},
   onQuit,
   onPlayAgain = () => {},
   onChangeFilters = () => {},
@@ -202,7 +231,11 @@ export function GameCanvas({
           }
           action={
             view.gate?.actionLabel || view.gate?.choices ? (
-              <GateAction gate={view.gate} onGateAction={onGateAction} />
+              <GateAction
+                gate={view.gate}
+                onGateAction={onGateAction}
+                onGateSecondaryAction={onGateSecondaryAction}
+              />
             ) : undefined
           }
         >

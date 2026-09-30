@@ -21,6 +21,8 @@ export type SoloRunState = {
   summary: SoloSummary | null;
   isGuessing: boolean;
   isQuitting: boolean;
+  // Server retry time after a rate-limited guess
+  cooldownUntil: number | null;
   failure: SoloRunFailure | null;
   toast: ToastMessage | null;
   pulse?: GridPulse;
@@ -34,7 +36,8 @@ export type SoloRunEvent =
   | { type: 'sessionReceived'; session: SoloSession }
   | { type: 'guessSubmitted' }
   | { type: 'guessResolved'; response: SoloGuessResponse }
-  | { type: 'guessFailed'; error: ApiError }
+  | { type: 'guessFailed'; error: ApiError; at: number }
+  | { type: 'cooldownEnded' }
   | { type: 'synced'; session: SoloSession }
   | { type: 'quitting' }
   // Tagged, so a late reply can't land on a new run
@@ -43,4 +46,4 @@ export type SoloRunEvent =
   | { type: 'failed'; step: SoloRunStep; error: ApiError }
   | { type: 'retried' };
 
-export type SoloGateAction = 'choose' | 'leave' | 'retry';
+export type SoloGateAction = 'choose' | 'widen' | 'leave' | 'retry';

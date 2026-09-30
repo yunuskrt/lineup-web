@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 import type { EngineOutcome } from '@/lib/api/mock/engine';
 import {
   EMPTY_POOL_MESSAGES,
+  emptyPool,
   isGuessable,
   maskedMatchFor,
   toGuessResult,
 } from '@/lib/api/mock/shared';
 import { FIXTURES, requireFixture } from '@/lib/api/mock/data/fixtures';
+import { apiErrorSchema } from '@/lib/api/schemas/result';
 
 const PLAYER = {
   id: 'pl-01',
@@ -102,5 +104,33 @@ describe('EMPTY_POOL_MESSAGES', () => {
     expect(EMPTY_POOL_MESSAGES.competition).toMatch(/competition/);
     expect(EMPTY_POOL_MESSAGES.club).toMatch(/club/);
     expect(EMPTY_POOL_MESSAGES.era).toMatch(/era/);
+  });
+});
+
+describe('emptyPool', () => {
+  it('names the reason beside its message, in the contract shape', () => {
+    for (const reason of [
+      'competition',
+      'club',
+      'era',
+      'combination',
+    ] as const) {
+      const result = emptyPool(reason);
+      if (result.success) throw new Error('Expected a refusal');
+      expect(apiErrorSchema.parse(result.error)).toEqual({
+        code: 'empty_pool',
+        message: EMPTY_POOL_MESSAGES[reason],
+        retryAfterMs: null,
+        emptyBecause: reason,
+      });
+    }
+  });
+
+  it('keeps the reason optional and closed in the contract', () => {
+    const base = { code: 'empty_pool', message: 'None.', retryAfterMs: null };
+    expect(apiErrorSchema.safeParse(base).success).toBe(true);
+    expect(
+      apiErrorSchema.safeParse({ ...base, emptyBecause: 'weather' }).success,
+    ).toBe(false);
   });
 });

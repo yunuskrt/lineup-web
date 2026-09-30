@@ -1,17 +1,19 @@
 'use client';
 
 import { motion, useAnimate, useReducedMotion } from 'motion/react';
-import { type SubmitEvent, useEffect, useId, useRef } from 'react';
+import { type SubmitEvent, useEffect, useId, useRef, useState } from 'react';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
 import { MAX_GUESS_LENGTH } from '@/lib/api/schemas/common';
 import { prepareGuess } from '@/lib/guess';
+import { cooldownAnnouncement, cooldownLabel } from '@/lib/system-states';
 import { FOCUS_RING } from '@/styles/classes';
 import { MOTION_SECONDS } from '@/styles/motion';
 
-export type GuessInputStatus = 'live' | 'pending' | 'locked';
+export type GuessInputStatus = 'live' | 'pending' | 'locked' | 'cooldown';
 
 const SHAKE_X = [0, -6, 6, -4, 4, 0];
 const SPIN_SECONDS = 0.8;
+const COOLDOWN_TICK_MS = 250;
 
 // Read-only keeps focus, so show a quieter ring
 const INERT_FOCUS_RING =
@@ -21,6 +23,7 @@ const STATUS_CLASSES: Record<GuessInputStatus, string> = {
   live: `border-you text-fg ${FOCUS_RING}`,
   pending: `cursor-progress border-line text-fg-muted ${INERT_FOCUS_RING}`,
   locked: `cursor-not-allowed border-line text-fg-dim ${INERT_FOCUS_RING}`,
+  cooldown: `cursor-not-allowed border-warning text-fg-muted ${INERT_FOCUS_RING}`,
 };
 
 const REJECT_TINT_OPACITY = [1, 1, 0];
@@ -61,8 +64,32 @@ function Spinner() {
   );
 }
 
+// Ticks to the server's retry time; decides nothing
+function CooldownLine({ until }: { until: number }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), COOLDOWN_TICK_MS);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <p aria-hidden="true" className="text-12 font-medium text-warning">
+      {cooldownLabel(until - now)}
+    </p>
+  );
+}
+
+// Keyed per lockout, so it is read once
+function CooldownAnnouncement({ until }: { until: number }) {
+  const [message] = useState(() => cooldownAnnouncement(until - Date.now()));
+  return message;
+}
+
 type GuessInputProps = {
   status: GuessInputStatus;
+  // Required for `cooldown`; the line counts to it
+  cooldownUntil?: number;
   value: string;
   onValueChange: (value: string) => void;
   onSubmit: (guess: string) => void;
@@ -71,6 +98,7 @@ type GuessInputProps = {
 
 export function GuessInput({
   status,
+  cooldownUntil,
   value,
   onValueChange,
   onSubmit,
@@ -82,6 +110,7 @@ export function GuessInput({
   const [scope, animate] = useAnimate<HTMLDivElement>();
   const hasShaken = useChangedSinceMount(shakeKey);
   const shakenKey = useRef(shakeKey);
+  const isCoolingDown = status === 'cooldown' && cooldownUntil !== undefined;
 
   useEffect(() => {
     if (status === 'live') inputRef.current?.focus();
@@ -128,7 +157,7 @@ export function GuessInput({
           onChange={(event) => onValueChange(event.target.value)}
           readOnly={status !== 'live'}
           aria-busy={status === 'pending'}
-          aria-disabled={status === 'locked'}
+          aria-disabled={status === 'locked' || status === 'cooldown'}
           placeholder="Name a player…"
           maxLength={MAX_GUESS_LENGTH}
           enterKeyHint="send"
@@ -153,6 +182,12 @@ export function GuessInput({
         ) : null}
         {status === 'pending' ? <Spinner /> : null}
       </div>
+      {isCoolingDown ? <CooldownLine until={cooldownUntil} /> : null}
+      <p role="status" className="sr-only">
+        {isCoolingDown ? (
+          <CooldownAnnouncement key={cooldownUntil} until={cooldownUntil} />
+        ) : null}
+      </p>
     </form>
   );
 }

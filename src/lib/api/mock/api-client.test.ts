@@ -254,6 +254,10 @@ describe('mock api client', () => {
       const error = errorOf(await api.solo.findMatch(filters));
       expect(error.code).toBe('empty_pool');
       expect(error.message).toBe(message);
+      // The reason travels with the message it names
+      expect(
+        error.emptyBecause && EMPTY_POOL_MESSAGES[error.emptyBecause],
+      ).toBe(message);
     }
   });
 
@@ -328,6 +332,29 @@ describe('mock api client', () => {
       expect(limited.error.code).toBe('rate_limited');
       expect(limited.error.retryAfterMs).toBeGreaterThan(0);
     }
+  });
+
+  it('takes a lower rate limit from its options', async () => {
+    const strict = createMockApiClient({
+      now: () => clock,
+      random: () => draw,
+      rateLimit: { max: 2, windowMs: 3_000 },
+    });
+    await strict.auth.continueAsGuest();
+    const offer = unwrap(await strict.solo.findMatch(ALL_FILTERS));
+    unwrap(await strict.solo.chooseSide(offer.sessionId, 'home'));
+    const guess = (text: string) =>
+      strict.solo.guess({ sessionId: offer.sessionId, guess: text });
+
+    expect((await guess('nobody 1')).success).toBe(true);
+    clock += 1_000;
+    expect((await guess('nobody 2')).success).toBe(true);
+    const limited = errorOf(await guess('nobody 3'));
+    expect(limited.code).toBe('rate_limited');
+    expect(limited.retryAfterMs).toBe(2_000);
+
+    clock += 2_000;
+    expect((await guess('nobody 4')).success).toBe(true);
   });
 
   it('keeps history and stats when a guest upgrades', async () => {

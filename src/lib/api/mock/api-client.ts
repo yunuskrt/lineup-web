@@ -46,8 +46,9 @@ import type { HistoryEntry, HistoryPage } from '@/types/profile';
 import type { RevealedPlayer } from '@/types/player';
 import type { SoloSession, SoloSummary } from '@/types/solo';
 
-const RATE_LIMIT_WINDOW_MS = 3_000;
-const RATE_LIMIT_MAX_GUESSES = 12;
+export type MockRateLimit = { max: number; windowMs: number };
+
+const DEFAULT_RATE_LIMIT: MockRateLimit = { max: 12, windowMs: 3_000 };
 
 // Deterministic rejections so auth errors show
 export const MOCK_REJECTED_PASSWORD = 'wrong-password';
@@ -62,12 +63,15 @@ export type MockApiOptions = {
   random?: () => number;
   // Shared with the duel mock, so duels reach the profile
   store?: MockStore;
+  // Guesses allowed per window, per session
+  rateLimit?: MockRateLimit;
 };
 
 export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
   const now = options.now ?? (() => Date.now());
   const random = options.random ?? Math.random;
   const store: MockStore = options.store ?? createStore();
+  const rateLimit = options.rateLimit ?? DEFAULT_RATE_LIMIT;
 
   function requireIdentity() {
     return store.identity;
@@ -179,16 +183,16 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
 
   function isRateLimited(session: StoredSession, at: number): number | null {
     session.recentGuessTimes = session.recentGuessTimes.filter(
-      (time) => at - time < RATE_LIMIT_WINDOW_MS,
+      (time) => at - time < rateLimit.windowMs,
     );
 
-    if (session.recentGuessTimes.length < RATE_LIMIT_MAX_GUESSES) {
+    if (session.recentGuessTimes.length < rateLimit.max) {
       session.recentGuessTimes.push(at);
       return null;
     }
 
     const oldest = session.recentGuessTimes[0];
-    return RATE_LIMIT_WINDOW_MS - (at - oldest);
+    return rateLimit.windowMs - (at - oldest);
   }
 
   function summaryOf(session: StoredSession): SoloSummary {

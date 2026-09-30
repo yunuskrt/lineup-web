@@ -7,6 +7,8 @@ import {
   seasonLabel,
   seasonsIn,
   toggleId,
+  widenFilters,
+  withFilters,
   withMode,
   withQuery,
 } from '@/lib/filters';
@@ -170,5 +172,59 @@ describe('withQuery', () => {
     expect(withQuery('/play/solo', new URLSearchParams('club=club-a'))).toBe(
       '/play/solo?club=club-a',
     );
+  });
+});
+
+describe('widenFilters', () => {
+  const narrow: Filters = {
+    competitionIds: ['comp-a'],
+    clubIds: ['club-b'],
+    era: { from: 2010, to: 2012 },
+  };
+
+  it('clears only the group the server blamed', () => {
+    expect(widenFilters(narrow, 'competition', OPTIONS)).toEqual({
+      ...narrow,
+      competitionIds: [],
+    });
+    expect(widenFilters(narrow, 'club', OPTIONS)).toEqual({
+      ...narrow,
+      clubIds: [],
+    });
+    expect(widenFilters(narrow, 'era', OPTIONS)).toEqual({
+      ...narrow,
+      era: OPTIONS.era,
+    });
+  });
+
+  it('has nothing to widen when no single group is to blame', () => {
+    expect(widenFilters(narrow, 'combination', OPTIONS)).toBeNull();
+  });
+
+  it('keeps the result a valid filter set', () => {
+    for (const reason of ['competition', 'club', 'era'] as const) {
+      const widened = widenFilters(narrow, reason, OPTIONS);
+      expect(filtersSchema.safeParse(widened).success, reason).toBe(true);
+    }
+  });
+});
+
+describe('withFilters', () => {
+  it('swaps the filter params and keeps the rest', () => {
+    const params = new URLSearchParams(
+      'mode=duel&competition=comp-a&club=club-b&from=2010',
+    );
+    const next = withFilters(
+      params,
+      { ...DEFAULTS, clubIds: ['club-b'] },
+      OPTIONS,
+    );
+    expect(next.toString()).toBe('mode=duel&club=club-b');
+  });
+
+  it('leaves the source params untouched', () => {
+    const params = new URLSearchParams('competition=comp-a');
+    withFilters(params, DEFAULTS, OPTIONS);
+    expect(params.toString()).toBe('competition=comp-a');
   });
 });

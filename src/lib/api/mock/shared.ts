@@ -1,7 +1,6 @@
 import type { EngineOutcome } from '@/lib/api/mock/engine';
-import type { EmptyPoolReason } from '@/lib/api/mock/pool';
 import type { MockFixture } from '@/lib/api/mock/types';
-import type { ApiError, ApiResult } from '@/types/api';
+import type { ApiError, ApiResult, EmptyPoolReason } from '@/types/api';
 import type { GuessResult } from '@/types/game';
 import type { MaskedMatch, Side } from '@/types/match';
 
@@ -38,7 +37,15 @@ export const EMPTY_POOL_MESSAGES: Record<EmptyPoolReason, string> = {
 };
 
 export function emptyPool<T>(reason: EmptyPoolReason): ApiResult<T> {
-  return fail('empty_pool', EMPTY_POOL_MESSAGES[reason]);
+  return {
+    success: false,
+    error: {
+      code: 'empty_pool',
+      message: EMPTY_POOL_MESSAGES[reason],
+      retryAfterMs: null,
+      emptyBecause: reason,
+    },
+  };
 }
 
 // `expired` and `ignored` have no GuessResult

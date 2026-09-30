@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
 import {
+  canGuessSolo,
   INITIAL_SOLO_RUN,
   needsResync,
   SOLO_GATE_COPY,
@@ -8,7 +9,7 @@ import {
   soloGateAction,
   soloRunReducer,
 } from '@/lib/solo-run';
-import type { ApiError } from '@/types/api';
+import type { ApiError, EmptyPoolReason } from '@/types/api';
 import type { Lives } from '@/types/game';
 import type { RevealedPlayer } from '@/types/player';
 import type { SoloMatchOffer, SoloSession, SoloSummary } from '@/types/solo';
@@ -105,6 +106,8 @@ const NETWORK: ApiError = {
   message: 'offline',
   retryAfterMs: null,
 };
+
+const AT = 1_700_000_000_000;
 
 const RATE_LIMITED: ApiError = {
   code: 'rate_limited',
@@ -252,18 +255,13 @@ describe('soloRunReducer guess feedback', () => {
   });
 
   it('toasts a rejected guess but not one the server says is over', () => {
-    const limited = run(
+    const offline = run(
       ...PLAYING,
       { type: 'guessSubmitted' },
-      {
-        type: 'guessFailed',
-        error: RATE_LIMITED,
-      },
+      { type: 'guessFailed', error: NETWORK, at: AT },
     );
-    expect(limited.isGuessing).toBe(false);
-    expect(limited.toast?.message).toBe(
-      'Too many attempts. Try again in 2 seconds.',
-    );
+    expect(offline.isGuessing).toBe(false);
+    expect(offline.toast).not.toBeNull();
 
     const over = run(
       ...PLAYING,
@@ -271,9 +269,63 @@ describe('soloRunReducer guess feedback', () => {
       {
         type: 'guessFailed',
         error: { ...RATE_LIMITED, code: 'session_over', retryAfterMs: null },
+        at: AT,
       },
     );
     expect(over.toast).toBeNull();
+  });
+});
+
+describe('soloRunReducer rate limit', () => {
+  const limited = () =>
+    run(
+      ...PLAYING,
+      { type: 'guessSubmitted' },
+      { type: 'guessFailed', error: RATE_LIMITED, at: AT },
+    );
+
+  it('locks the input until the server retry time, with no toast', () => {
+    const state = limited();
+    expect(state.cooldownUntil).toBe(AT + 2_000);
+    expect(state.toast).toBeNull();
+
+    const view = soloCanvasView(state);
+    expect(view.input).toBe('cooldown');
+    expect(view.cooldownUntil).toBe(AT + 2_000);
+    expect(canGuessSolo(state)).toBe(false);
+  });
+
+  it('keeps the clock running through the lockout', () => {
+    expect(soloCanvasView(limited()).clock).toEqual(
+      soloCanvasView(run(...PLAYING)).clock,
+    );
+  });
+
+  it('goes live again once the lockout ends', () => {
+    const state = soloRunReducer(limited(), { type: 'cooldownEnded' });
+    expect(state.cooldownUntil).toBeNull();
+    expect(soloCanvasView(state).input).toBe('live');
+    expect(canGuessSolo(state)).toBe(true);
+  });
+
+  it('starts a new run without the old lockout', () => {
+    const state = soloRunReducer(limited(), { type: 'finding' });
+    expect(state.cooldownUntil).toBeNull();
+  });
+
+  it('refuses a guess while one is still pending', () => {
+    expect(canGuessSolo(run(...PLAYING, { type: 'guessSubmitted' }))).toBe(
+      false,
+    );
+  });
+
+  it('locks for a second when the server gives no time', () => {
+    const state = run(...PLAYING, {
+      type: 'guessFailed',
+      error: { ...RATE_LIMITED, retryAfterMs: null },
+      at: AT,
+    });
+    expect(state.cooldownUntil).toBe(AT + 1_000);
   });
 });
 
@@ -376,23 +428,42 @@ describe('soloCanvasView', () => {
     expect(soloGateAction(run(...PLAYING))).toBeNull();
   });
 
-  it('sends an empty pool back to the filters', () => {
-    const state = run({
+  function emptyPool(emptyBecause?: EmptyPoolReason) {
+    return run({
       type: 'failed',
       step: 'find',
       error: {
         code: 'empty_pool',
         message: 'No club matches.',
         retryAfterMs: null,
+        emptyBecause,
       },
     });
+  }
+
+  it('offers to widen the filter the server blamed', () => {
+    const state = emptyPool('club');
     expect(soloCanvasView(state).gate).toEqual({
-      title: SOLO_GATE_COPY.noMatch,
+      title: 'No match for those clubs',
       detail: 'No club matches.',
-      actionLabel: SOLO_GATE_COPY.changeFilters,
+      actionLabel: 'Include every club',
+      secondaryActionLabel: 'Change filters',
     });
-    expect(soloGateAction(state)).toBe('leave');
+    expect(soloGateAction(state)).toBe('widen');
   });
+
+  it.each([undefined, 'combination'] as const)(
+    'sends an empty pool back to the filters when blamed on %s',
+    (reason) => {
+      const state = emptyPool(reason);
+      expect(soloCanvasView(state).gate).toEqual({
+        title: 'No match for these filters together',
+        detail: 'No club matches.',
+        actionLabel: 'Change filters',
+      });
+      expect(soloGateAction(state)).toBe('leave');
+    },
+  );
 
   it('offers a retry for failures a retry can fix', () => {
     const state = run(...PLAYING, {

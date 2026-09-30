@@ -43,6 +43,8 @@ export type DuelSessionState = {
   isLocking: boolean;
   isGuessing: boolean;
   isForfeiting: boolean;
+  // Server retry time after a rate-limited guess
+  cooldownUntil: number | null;
   failure: DuelFailure | null;
   toast: ToastMessage | null;
   pulse?: GridPulse;
@@ -68,12 +70,15 @@ export type DuelSessionEvent =
   | { type: 'turnChanged'; session: DuelSession }
   | { type: 'guessSubmitted' }
   | { type: 'guessResolved'; result: GuessResult }
-  | { type: 'guessFailed'; error: ApiError }
+  | { type: 'guessFailed'; error: ApiError; at: number }
+  | { type: 'cooldownEnded' }
   | { type: 'lifeLost'; cue: DuelLifeLost }
   | { type: 'opponentConnection'; connection: ConnectionState }
   | { type: 'forfeiting' }
   | { type: 'finished'; result: DuelResult }
-  | { type: 'error'; error: ApiError }
+  | { type: 'error'; error: ApiError; at: number }
+  // Your own set, widened after an empty pool
+  | { type: 'filtersWidened'; filters: Filters }
   | { type: 'failed'; step: DuelFailureStep; error: ApiError };
 
-export type DuelGateAction = 'leave' | 'retry';
+export type DuelGateAction = 'widen' | 'leave' | 'retry';

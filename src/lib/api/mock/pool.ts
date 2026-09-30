@@ -4,13 +4,12 @@ import {
   FIRST_SEASON_START,
   LAST_SEASON_START,
 } from '@/lib/api/schemas/common';
+import type { EmptyPoolReason } from '@/types/api';
 import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
 import type { ClubRef, CompetitionRef } from '@/types/match';
 
-type FilterKey = 'competition' | 'club' | 'era';
-
-export type EmptyPoolReason = FilterKey | 'combination';
+type FilterKey = Exclude<EmptyPoolReason, 'combination'>;
 
 export type FixtureSelection =
   { fixture: MockFixture } | { emptyBecause: EmptyPoolReason };

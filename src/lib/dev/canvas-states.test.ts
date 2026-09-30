@@ -18,6 +18,7 @@ import {
   AFTER_GATE_STATE,
   CANVAS_STATES,
   DEFAULT_CANVAS_STATE,
+  EMPTY_POOL_REASONS,
   LOBBY_STATES,
   RESULT_STATES,
   resolveCanvasState,
@@ -472,5 +473,69 @@ describe('duel result snapshots', () => {
     expect(view.opponentConnection?.reconnectDeadline).toBeGreaterThan(NOW);
     expect(view.turn).toBe('opponent');
     expect(view.clock.round).not.toBeNull();
+  });
+});
+
+describe('system state snapshots', () => {
+  const EMPTY_POOL_TITLES = {
+    competition: /competitions/,
+    club: /clubs/,
+    era: /seasons/,
+    combination: /together/,
+  } as const;
+
+  function soloView(name: string) {
+    return CANVAS_STATES.solo[name].build(NOW).frame.view;
+  }
+
+  it.each(EMPTY_POOL_REASONS)(
+    'names the %s filter over the loading canvas',
+    (reason) => {
+      const view = soloView(`empty-pool-${reason}`);
+      expect(view.gate?.title).toMatch(EMPTY_POOL_TITLES[reason]);
+      expect(view.match).toBeNull();
+      expect(view.input).toBe('locked');
+    },
+  );
+
+  it('offers a widen everywhere but on a combination', () => {
+    for (const reason of EMPTY_POOL_REASONS) {
+      const { gate } = soloView(`empty-pool-${reason}`);
+      const canWiden = reason !== 'combination';
+      expect(gate?.actionLabel?.startsWith('Include'), reason).toBe(canWiden);
+      expect(gate?.secondaryActionLabel === 'Change filters', reason).toBe(
+        canWiden,
+      );
+    }
+  });
+
+  it('gates the duel lock with a widen', () => {
+    const { gate, lobby } = CANVAS_STATES.duel['duel-empty-pool'].build(NOW)
+      .frame.view as Extract<CanvasView, { mode: 'duel' }>;
+    expect(gate?.actionLabel).toBe('Include every club');
+    expect(lobby).toBeNull();
+  });
+
+  it.each([
+    ['solo', 'rate-limited'],
+    ['duel', 'duel-rate-limited'],
+  ] as const)('locks %s input with the clock still running', (mode, name) => {
+    const { frame } = CANVAS_STATES[mode][name].build(NOW);
+    expect(frame.view.input).toBe('cooldown');
+    expect(frame.view.cooldownUntil).toBeGreaterThan(NOW);
+    expect(frame.view.clock.isFrozen).toBe(false);
+    expect(frame.view.clock.round?.endsAt).toBeGreaterThan(NOW);
+    expect(frame.view.toast).toBeNull();
+    expect(frame.guess).not.toBe('');
+  });
+
+  it('only sets a cooldown time on cooldown input', () => {
+    for (const mode of MODES) {
+      for (const [name, view] of viewsOf(mode)) {
+        expect(view.cooldownUntil !== undefined, name).toBe(
+          view.input === 'cooldown',
+        );
+      }
+    }
   });
 });

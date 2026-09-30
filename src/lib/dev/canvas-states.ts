@@ -12,7 +12,9 @@ import {
 } from '@/lib/dev/samples';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
+import { emptyPoolGate } from '@/lib/system-states';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
+import type { ApiError, EmptyPoolReason } from '@/types/api';
 import type {
   CanvasGateView,
   CanvasMode,
@@ -311,6 +313,43 @@ const SHARED = {
   },
 } satisfies Record<string, SharedState>;
 
+// Server-style messages, one per filter to blame
+const EMPTY_POOL_DETAILS: Record<EmptyPoolReason, string> = {
+  competition: 'No match fits that competition. Try adding another one.',
+  club: 'No match fits the clubs you picked. Try adding another.',
+  era: 'No match fits those years. Try widening the era.',
+  combination:
+    'No match fits these filters together. Try widening any one of them.',
+};
+
+export const EMPTY_POOL_REASONS = Object.keys(
+  EMPTY_POOL_DETAILS,
+) as EmptyPoolReason[];
+
+function emptyPoolError(reason: EmptyPoolReason): ApiError {
+  return {
+    code: 'empty_pool',
+    message: EMPTY_POOL_DETAILS[reason],
+    retryAfterMs: null,
+    emptyBecause: reason,
+  };
+}
+
+const COOLDOWN_MS = 3_000;
+
+const RATE_LIMITED: SharedState = {
+  description: 'Guessing too fast: input locked, a countdown, clock on.',
+  build: (now, found) => ({
+    frame: frame(
+      fields(roundLeaving(10_000, now), found, {
+        input: 'cooldown',
+        cooldownUntil: now + COOLDOWN_MS,
+      }),
+      MISS_GUESS,
+    ),
+  }),
+};
+
 function solo(state: SharedState): CanvasState<SoloCanvasView> {
   return {
     description: state.description,
@@ -328,6 +367,22 @@ function duel(state: SharedState): CanvasState<DuelCanvasView> {
 
 function loadingFields(): CanvasViewBase {
   return { ...fields(null, [], { input: 'locked' }), match: null };
+}
+
+function emptyPoolFields(reason: EmptyPoolReason): CanvasViewBase {
+  return { ...loadingFields(), gate: emptyPoolGate(emptyPoolError(reason)) };
+}
+
+function soloEmptyPool(
+  reason: EmptyPoolReason,
+  description: string,
+): CanvasState<SoloCanvasView> {
+  return {
+    description,
+    build: () => ({
+      frame: { view: toSolo(emptyPoolFields(reason), MAX_LIVES), guess: '' },
+    }),
+  };
 }
 
 export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
@@ -417,6 +472,23 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
     PERFECT_CLEAR_SUMMARY,
   ),
   quit: summaryState('Quit with 6 named: "Run ended", 5 missed.', QUIT_SUMMARY),
+  'empty-pool-competition': soloEmptyPool(
+    'competition',
+    'No match in those competitions: include every one.',
+  ),
+  'empty-pool-club': soloEmptyPool(
+    'club',
+    'No match for those clubs: include every club.',
+  ),
+  'empty-pool-era': soloEmptyPool(
+    'era',
+    'No match in those seasons: include every season.',
+  ),
+  'empty-pool-combination': soloEmptyPool(
+    'combination',
+    'No single filter to blame: change filters only.',
+  ),
+  'rate-limited': solo(RATE_LIMITED),
 };
 
 const FRESH_OPPONENT = { ...SAMPLE_OPPONENT, lives: MAX_LIVES };
@@ -718,6 +790,20 @@ export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
     }),
   },
   ...RESULT_STATES,
+  'duel-empty-pool': {
+    description: 'Your filters found nothing: widen them or change them.',
+    build: () => ({
+      frame: {
+        view: toDuel(emptyPoolFields('club'), {
+          you: { ...SAMPLE_YOU, lives: MAX_LIVES },
+          opponent: FRESH_OPPONENT,
+          turn: null,
+        }),
+        guess: '',
+      },
+    }),
+  },
+  'duel-rate-limited': duel(RATE_LIMITED),
   'their-life-lost': {
     description: 'Their clock runs out: their pip empties, no flash.',
     build: (now) => ({

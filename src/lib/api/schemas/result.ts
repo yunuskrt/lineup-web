@@ -12,10 +12,20 @@ export const apiErrorCodeSchema = z.enum([
   'server_error',
 ]);
 
+// Which filter emptied the pool, to offer a widen
+export const emptyPoolReasonSchema = z.enum([
+  'competition',
+  'club',
+  'era',
+  'combination',
+]);
+
 export const apiErrorSchema = z.object({
   code: apiErrorCodeSchema,
   message: z.string().min(1),
   retryAfterMs: z.number().int().nonnegative().nullable(),
+  // Set only with `empty_pool`
+  emptyBecause: emptyPoolReasonSchema.optional(),
 });
 
 export function apiResultSchema<T extends z.ZodType>(dataSchema: T) {
