@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react';
 import { seasonLabel, seasonsIn, toggleId } from '@/lib/filters';
-import { FOCUS_RING } from '@/styles/classes';
+import { FILTER_CHIP, FILTER_SELECT } from '@/styles/classes';
 import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
 
@@ -22,10 +22,6 @@ export const FILTER_ROW =
   'grid gap-3 border-t border-line py-5 md:grid-cols-[8rem_1fr] md:gap-6';
 
 export const FILTER_LABEL = 'text-14 font-medium md:py-1.5';
-
-const CHIP = `rounded-sm border border-line px-3 py-1.5 text-14 font-medium text-fg-muted hover:text-fg aria-pressed:border-fg aria-pressed:bg-surface-card aria-pressed:text-fg ${FOCUS_RING}`;
-
-const SELECT = `rounded-sm border border-line bg-surface-card px-3 py-2 text-14 text-fg ${FOCUS_RING}`;
 
 function FilterRow({
   label,
@@ -60,7 +56,7 @@ function ChipGroup({
           type="button"
           aria-pressed={selected.length === 0}
           onClick={() => onChange([])}
-          className={CHIP}
+          className={FILTER_CHIP}
         >
           {anyLabel}
         </button>
@@ -70,7 +66,7 @@ function ChipGroup({
             type="button"
             aria-pressed={selected.includes(item.id)}
             onClick={() => onChange(toggleId(selected, item.id, items))}
-            className={CHIP}
+            className={FILTER_CHIP}
           >
             {item.name}
           </button>
@@ -112,7 +108,7 @@ export function FilterPanel({ options, filters, onChange }: FilterPanelProps) {
                   era: { from, to: Math.max(from, era.to) },
                 });
               }}
-              className={SELECT}
+              className={FILTER_SELECT}
             >
               {seasonsIn(options.era).map((season) => (
                 <option key={season} value={season}>
@@ -131,7 +127,7 @@ export function FilterPanel({ options, filters, onChange }: FilterPanelProps) {
                   era: { ...era, to: Number(event.target.value) },
                 })
               }
-              className={SELECT}
+              className={FILTER_SELECT}
             >
               {seasonsIn({ from: era.from, to: options.era.to }).map(
                 (season) => (

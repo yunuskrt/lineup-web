@@ -57,3 +57,4 @@ Not Started
 - W25a Empty Pool & Rate Limit: widen gate, cooldown input, ?scenario=.
 - W25b Connection States: reconnect gate, disconnected result, update page.
 - W26a Reduced Motion: motion policy, useMotionPolicy, kill-switch guard.
+- W26b Focus & Contrast: contrast suite, focus-ring guard, one tab order.

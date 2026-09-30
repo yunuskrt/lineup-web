@@ -1,9 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CHOICE_BUTTON,
   DUEL_ACTOR_BG,
   DUEL_ACTOR_BORDER,
   DUEL_ACTOR_TEXT,
+  FILTER_CHIP,
+  FILTER_SELECT,
+  FOCUS_RING,
   LIFE_LOST_FILL_SHIFT,
+  PRIMARY_BUTTON,
+  PRIMARY_BUTTON_LARGE,
+  QUIT_CHIP,
+  SECONDARY_BUTTON,
+  TEXT_INPUT,
+  TEXT_LINK,
   TIMER_COLOR_SHIFT,
   TURN_BORDER_SHIFT,
 } from '@/styles/classes';
@@ -42,5 +52,28 @@ describe('duel actor classes', () => {
       you: `${prefix}-you`,
       opponent: `${prefix}-opponent`,
     });
+  });
+});
+
+describe('focus rings', () => {
+  it('draws a visible outline in the brand colour', () => {
+    const classes = FOCUS_RING.split(' ');
+    expect(classes).toContain('focus-visible:outline-2');
+    expect(classes).toContain('focus-visible:outline-brand');
+  });
+
+  // A control without it is invisible to the keyboard
+  it.each([
+    ['PRIMARY_BUTTON', PRIMARY_BUTTON],
+    ['PRIMARY_BUTTON_LARGE', PRIMARY_BUTTON_LARGE],
+    ['SECONDARY_BUTTON', SECONDARY_BUTTON],
+    ['CHOICE_BUTTON', CHOICE_BUTTON],
+    ['TEXT_LINK', TEXT_LINK],
+    ['TEXT_INPUT', TEXT_INPUT],
+    ['QUIT_CHIP', QUIT_CHIP],
+    ['FILTER_CHIP', FILTER_CHIP],
+    ['FILTER_SELECT', FILTER_SELECT],
+  ])('gives %s the shared focus ring', (_, classes) => {
+    expect(classes).toContain(FOCUS_RING);
   });
 });

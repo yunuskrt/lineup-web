@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -75,5 +75,18 @@ Defaults stand unless changed at load:
   - `npm test`: the contrast suite and the focus-ring guard.
   - The keyboard walk in the browser at 1440 and 390, with each finding and fix recorded under Notes.
   - `npm run build`.
+- **Deviations recorded during implementation**
+  - The two open questions' defaults are encoded as `CONTRAST_EXCEPTIONS` in `contrast.ts`: `fg-dim` on `surface-card` (disabled input text, placeholders) and on `surface` (unrevealed slot labels). A test fails if an exception ever passes, and if one clashes with a required pair.
+  - `fg-dim` on `surface-card` is 2.93:1, so the dim pair is required only on `surface` and `surface-raised` (3.55 and 3.26), where the large numerals and pips sit. On cards it appears only as exempt disabled or placeholder text.
+  - `theme.md` § Contrast figures have drifted from the shipped hex: `muted` is 7.74 (doc 8.6), `away` 6.79 (7.2), `red-card` 5.83 (6.1), `bone` 16.81 (16.5). Every verdict (AAA, AA, large-only) still holds, so the test asserts the verdicts, not the figures. `theme.md` was left as is; updating its numbers is its owner's call.
+  - `QUIT_CHIP`, `FILTER_CHIP` and `FILTER_SELECT` moved into `src/styles/classes.ts` so the focus-ring guard can import them. They were local constants in `QuitChip.tsx` and `FilterPanel.tsx`.
+  - The phone quit chip is now first inside the canvas wrapper, with `z-10` to paint above the canvas and gate. It's visually unchanged.
+  - Keyboard walk findings, all already passing and left unchanged:
+    - `/sign-in` sends focus to the first invalid field, with errors linked by `aria-describedby`; a server error is a `role="alert"`.
+    - `QuitDialog` opens on "Keep playing"; Escape closes it and returns focus to Quit.
+    - Gates never strand focus through the side pick, lobby steps, empty-pool widen and reconnect.
+    - The result card focuses its title, then Play again. Protocol refused goes heading, Reload, Back to Play.
+    - `/play` radios move with the arrow keys, with the ring on the label. `/` and `/profile` show a brand ring on every stop.
+  - "Show more" keeping focus was verified in W24b and is unchanged; the walk's guest had no history to page.
 
 ## History

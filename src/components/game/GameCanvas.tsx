@@ -238,6 +238,10 @@ export function GameCanvas({
       ) : null}
       {/* Grid, so the gate's full-size box resolves */}
       <div className="relative grid flex-1 grid-cols-1">
+        {/* Phones: header row, but first in tab order */}
+        <div className="pointer-events-none absolute inset-x-2 top-2 z-10 flex h-14 items-center justify-end px-2 sm:hidden">
+          <div className="pointer-events-auto">{quitChip}</div>
+        </div>
         <CanvasGate
           isOpen={view.gate !== null}
           title={view.gate?.title ?? ''}
@@ -320,10 +324,6 @@ export function GameCanvas({
             </div>
           </div>
         </CanvasGate>
-        {/* Phones: in the header row, outside the gate */}
-        <div className="pointer-events-none absolute inset-x-2 top-2 flex h-14 items-center justify-end px-2 sm:hidden">
-          <div className="pointer-events-auto">{quitChip}</div>
-        </div>
       </div>
       <LifeLostFlash flashKey={view.lifeLostKey} />
     </div>
