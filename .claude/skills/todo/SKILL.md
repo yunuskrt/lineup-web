@@ -1,6 +1,6 @@
 ---
 name: todo
-description: Manage the LegacyRun build-phase todo list in context/todo.md - current, done, remaining, list or spec
+description: Manage the Lineup build-phase todo list in context/todo.md - current, done, remaining, list or spec
 argument-hint: current|done|remaining|list <phase-number>|spec [phase-number]
 ---
 
