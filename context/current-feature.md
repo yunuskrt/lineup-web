@@ -58,3 +58,4 @@ Not Started
 - W25b Connection States: reconnect gate, disconnected result, update page.
 - W26a Reduced Motion: motion policy, useMotionPolicy, kill-switch guard.
 - W26b Focus & Contrast: contrast suite, focus-ring guard, one tab order.
+- Fix Control Rail Layout: one ring, Lives card, dot toggle, compact band.

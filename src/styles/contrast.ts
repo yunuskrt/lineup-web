@@ -81,6 +81,13 @@ export const CONTRAST_EXCEPTIONS: ContrastException[] = [
     use: 'Unrevealed slot position labels',
     why: 'Incidental and aria-hidden; the grid is labelled',
   },
+  {
+    fg: 'fg-dim',
+    bg: 'surface-card',
+    min: LARGE_TEXT_MIN,
+    use: 'Empty life pips on the Lives card',
+    why: 'An absence; filled pips and the label give the count',
+  },
 ];
 
 const HEX = /^#([0-9a-f]{6})$/i;

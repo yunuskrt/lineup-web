@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   CHOICE_BUTTON,
+  DOT_BUTTON,
   DUEL_ACTOR_BG,
   DUEL_ACTOR_BORDER,
   DUEL_ACTOR_TEXT,
   FILTER_CHIP,
   FILTER_SELECT,
   FOCUS_RING,
+  LIFE_LOST_BORDER_SHIFT,
   LIFE_LOST_FILL_SHIFT,
   PRIMARY_BUTTON,
   PRIMARY_BUTTON_LARGE,
@@ -15,22 +17,16 @@ import {
   TEXT_INPUT,
   TEXT_LINK,
   TIMER_COLOR_SHIFT,
-  TURN_BORDER_SHIFT,
 } from '@/styles/classes';
 import { MOTION_DURATION_MS, MOTION_EASING } from '@/styles/motion';
 
 describe('transition classes', () => {
   it.each([
     ['life lost', LIFE_LOST_FILL_SHIFT, MOTION_DURATION_MS.lifeLost],
-    ['turn handover', TURN_BORDER_SHIFT, MOTION_DURATION_MS.turnHandover],
+    ['tile border', LIFE_LOST_BORDER_SHIFT, MOTION_DURATION_MS.lifeLost],
     ['timer colour', TIMER_COLOR_SHIFT, MOTION_DURATION_MS.timerColorShift],
   ])('keeps the %s duration in step with motion.ts', (_, classes, ms) => {
     expect(classes.split(' ')).toContain(`duration-${ms}`);
-  });
-
-  it('eases the turn handover out, as motion.ts does', () => {
-    expect(MOTION_EASING.turnHandover).toBe('easeOut');
-    expect(TURN_BORDER_SHIFT.split(' ')).toContain('ease-[ease-out]');
   });
 
   it('uses the timer colour curve from motion.ts', () => {
@@ -73,6 +69,7 @@ describe('focus rings', () => {
     ['QUIT_CHIP', QUIT_CHIP],
     ['FILTER_CHIP', FILTER_CHIP],
     ['FILTER_SELECT', FILTER_SELECT],
+    ['DOT_BUTTON', DOT_BUTTON],
   ])('gives %s the shared focus ring', (_, classes) => {
     expect(classes).toContain(FOCUS_RING);
   });

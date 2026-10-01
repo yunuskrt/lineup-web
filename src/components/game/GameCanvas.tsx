@@ -8,16 +8,24 @@ import { DuelResultPanel } from '@/components/game/DuelResultPanel';
 import { FeedbackToast } from '@/components/game/FeedbackToast';
 import { GuessInput } from '@/components/game/GuessInput';
 import { LifeLostFlash } from '@/components/game/LifeLostFlash';
-import { Lives } from '@/components/game/Lives';
+import { DuelLivesCard, LivesCard } from '@/components/game/LivesCard';
 import { MatchHeader } from '@/components/game/MatchHeader';
 import { RunSummary } from '@/components/game/RunSummary';
-import { TurnIndicator } from '@/components/game/TurnIndicator';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { QuitChip } from '@/components/shell/QuitChip';
-import { ringSetups } from '@/lib/canvas';
-import { reconnectSecondsLeft, waitingLine } from '@/lib/duel-status';
+import { activeRing, clockLabel } from '@/lib/canvas';
+import {
+  reconnectSecondsLeft,
+  turnAnnouncement,
+  waitingLine,
+} from '@/lib/duel-status';
 import { LOADING_FORMATION } from '@/lib/formation';
-import { CHOICE_BUTTON, PRIMARY_BUTTON, TEXT_LINK } from '@/styles/classes';
+import {
+  CHOICE_BUTTON,
+  DUEL_ACTOR_TEXT,
+  PRIMARY_BUTTON,
+  TEXT_LINK,
+} from '@/styles/classes';
 import type {
   CanvasGateCountdown,
   CanvasGateView,
@@ -32,28 +40,38 @@ const HEADINGS: Record<CanvasView['mode'], string> = {
   duel: 'Duel',
 };
 
-function ClockRow({ view }: { view: CanvasView }) {
-  const turn = view.mode === 'duel' ? view.turn : 'you';
-  const rings = ringSetups(view.clock, turn);
-
-  if (view.mode === 'solo') {
-    return (
-      <div className="flex items-center justify-between gap-4">
-        <CountdownRing round={rings.you.round} mode={rings.you.mode} />
-        <Lives lives={view.lives} />
-      </div>
-    );
-  }
+function ClockBlock({ view }: { view: CanvasView }) {
+  const turn = view.mode === 'duel' ? view.turn : null;
+  const ring = activeRing(view.clock, view.mode === 'duel' ? turn : 'you');
+  const label = clockLabel(view.mode, turn);
 
   return (
-    <div className="flex items-center justify-between gap-2">
-      <CountdownRing round={rings.you.round} mode={rings.you.mode} />
-      <CountdownRing
-        round={rings.opponent.round}
-        mode={rings.opponent.mode}
-        owner="opponent"
-      />
+    <div className="flex shrink-0 flex-col items-center gap-2">
+      {/* The duel label is the turn cue; keep it */}
+      <span
+        className={`text-12 leading-6 uppercase ${
+          label.actor
+            ? `font-semibold ${DUEL_ACTOR_TEXT[label.actor]}`
+            : 'font-medium text-fg-muted'
+        } ${view.mode === 'solo' ? 'max-lg:hidden' : ''}`}
+      >
+        {label.text}
+      </span>
+      <CountdownRing round={ring.round} mode={ring.mode} owner={ring.owner} />
     </div>
+  );
+}
+
+function RailLives({ view }: { view: CanvasView }) {
+  if (view.mode === 'solo') return <LivesCard lives={view.lives} />;
+
+  return (
+    <DuelLivesCard
+      you={view.you}
+      opponent={view.opponent}
+      turn={view.turn}
+      opponentConnection={view.opponentConnection}
+    />
   );
 }
 
@@ -153,9 +171,22 @@ function ActiveRail({
 
   return (
     <>
-      <ClockRow view={view} />
+      <div className="flex items-center gap-4 lg:flex-col lg:items-stretch lg:gap-8">
+        <ClockBlock view={view} />
+        <div className="min-w-0 flex-1 lg:flex-none">
+          <RailLives view={view} />
+        </div>
+      </div>
+      {view.mode === 'duel' ? (
+        <p className="sr-only" aria-live="polite">
+          {turnAnnouncement(
+            view.turn,
+            view.opponentConnection?.status === 'reconnecting',
+          )}
+        </p>
+      ) : null}
       <div className="relative flex flex-col gap-2 lg:mt-auto">
-        {/* Phones: floats over the clock row's bottom */}
+        {/* Phones: floats over the band's bottom */}
         <div className="pointer-events-none max-sm:absolute max-sm:inset-x-0 max-sm:bottom-full max-sm:mb-2">
           <FeedbackToast toast={view.toast} />
         </div>
@@ -228,14 +259,6 @@ export function GameCanvas({
       <h1 className="sr-only">{HEADINGS[view.mode]}</h1>
       {/* Phones get the chip in the canvas header row */}
       <div className="hidden h-7 justify-end sm:flex">{quitChip}</div>
-      {view.mode === 'duel' ? (
-        <TurnIndicator
-          you={view.you}
-          opponent={view.opponent}
-          turn={view.turn}
-          opponentConnection={view.opponentConnection}
-        />
-      ) : null}
       {/* Grid, so the gate's full-size box resolves */}
       <div className="relative grid flex-1 grid-cols-1">
         {/* Phones: header row, but first in tab order */}

@@ -10,7 +10,7 @@ export default function LivesPreviewPage() {
   return (
     <DevPreviewShell
       title="Lives"
-      description="Dev-only preview of the lives display, the life-lost flash and the turn indicator."
+      description="Dev-only preview of the lives display, the life-lost flash and the rail's Lives card."
     >
       <LivesPreview />
     </DevPreviewShell>

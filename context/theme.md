@@ -183,10 +183,10 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 
 | State                 | Trigger                     | Treatment                                                                                                               |
 | --------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Waiting               | Handover                    | Your ring dims to `dim` and stops. Their ring is the live one, in `away`. Grid read-only, input hidden                  |
+| Waiting               | Handover                    | The rail's single ring switches to their clock, in `away`, and the Lives card switches to them. Grid read-only, input hidden |
 | Their reveal          | Opponent names a new player | Slot fills in `away`-tinted `turf`, same 320ms spring. You watch the pool shrink — this is the tension                  |
 | Their life lost       | Their timer expires         | Their pip empties. No screen flash; it isn't your loss                                                                  |
-| Opponent disconnected | Socket drops                | `away` badge → `ember`, "Reconnecting, 18s". **Their clock keeps running** — say so explicitly, or it reads as a freeze |
+| Opponent disconnected | Socket drops                | `ember` "Reconnecting, 18s" chip in the rail's Lives card header; their toggle dot turns `ember`. **Their clock keeps running** — say so explicitly, or it reads as a freeze |
 | Opponent forfeited    | Reconnect window closes     | Straight to result, "Opponent left"                                                                                     |
 
 ### Duel — terminal
@@ -253,11 +253,11 @@ Skeletons are flat `pitch-800` blocks. **No shimmer sweep** — a moving highlig
 
 These are bespoke — no library ships them, and they carry the whole feel.
 
-- **Countdown ring** — 64px numeral inside a stroked circle. Three-stage color escalation. Linear sweep.
+- **Countdown ring** — 64px numeral inside a stroked circle, with a muted "seconds" caption under it. Three-stage color escalation. Linear sweep.
 - **Lives** — three shapes, filled in player color, emptied to `dim`. Not hearts; a football-native mark (shirt, ball, or a simple pip) reads better here.
 - **Found-player card** — the reveal moment. `turf` flash on entry, then settles to `pitch-800` with `bone` name. This is the component to prototype first.
 - **Squad grid** — 11 slots. Unrevealed slots are `pitch-600` outlines on `pitch-950`, not empty space, so the player always sees how much is left.
-- **Turn indicator** — the amber/blue pair, always visible, never subtle.
+- **Turn indicator** — the amber/blue pair, always visible, never subtle: the rail's clock label and ring colour name whose turn it is, and the Lives card shows the active player, with a dot toggle for the other.
 
 ---
 

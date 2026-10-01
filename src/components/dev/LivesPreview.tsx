@@ -3,14 +3,16 @@
 import { type ReactNode, useState } from 'react';
 import { LifeLostFlash } from '@/components/game/LifeLostFlash';
 import { Lives } from '@/components/game/Lives';
-import { TurnIndicator } from '@/components/game/TurnIndicator';
+import { DuelLivesCard, LivesCard } from '@/components/game/LivesCard';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
-import type { DuelActor, DuelPlayer } from '@/types/duel';
+import type { ConnectionState, DuelActor, DuelPlayer } from '@/types/duel';
 import type { Lives as LivesCount } from '@/types/game';
 
 const OWNERS: DuelActor[] = ['you', 'opponent'];
 const COUNTS: LivesCount[] = [3, 2, 1, 0];
+
+const RECONNECT_WINDOW_MS = 20_000;
 
 const PLAYERS: Record<DuelActor, DuelPlayer> = {
   you: { id: 'preview-you', handle: 'northgate_no9', lives: MAX_LIVES },
@@ -43,7 +45,9 @@ export function LivesPreview() {
   const [flashKey, setFlashKey] = useState(0);
   const [soloLives, setSoloLives] = useState<LivesCount>(MAX_LIVES);
   const [duel, setDuel] = useState(PLAYERS);
-  const [turn, setTurn] = useState<DuelActor>('you');
+  const [turn, setTurn] = useState<DuelActor | null>('you');
+  const [isPaired, setIsPaired] = useState(true);
+  const [connection, setConnection] = useState<ConnectionState | null>(null);
 
   function flash() {
     setFlashKey((key) => key + 1);
@@ -66,9 +70,34 @@ export function LivesPreview() {
     setTurn((current) => (current === 'you' ? 'opponent' : 'you'));
   }
 
+  // A timeout costs a life and hands over at once
+  function timeOut() {
+    if (turn === null) return;
+    loseDuelLife(turn);
+    handOver();
+  }
+
+  function toggleReconnect() {
+    setConnection((current) =>
+      current
+        ? null
+        : {
+            status: 'reconnecting',
+            reconnectDeadline: Date.now() + RECONNECT_WINDOW_MS,
+          },
+    );
+  }
+
+  function togglePairing() {
+    setIsPaired((current) => !current);
+    setTurn((current) => (current === null ? 'you' : null));
+  }
+
   function resetDuel() {
     setDuel(PLAYERS);
     setTurn('you');
+    setIsPaired(true);
+    setConnection(null);
   }
 
   return (
@@ -93,9 +122,9 @@ export function LivesPreview() {
             Reset
           </button>
         </div>
-        <Specimen label={`You, ${soloLives} left`}>
-          <Lives lives={soloLives} />
-        </Specimen>
+        <div className="w-full max-w-88">
+          <LivesCard lives={soloLives} />
+        </div>
       </section>
       <section className="flex flex-col gap-4">
         <h2 className="font-display text-20 font-semibold">Duel</h2>
@@ -103,16 +132,25 @@ export function LivesPreview() {
           <button
             type="button"
             className={DEV_PREVIEW_BUTTON}
+            disabled={!isPaired}
             onClick={handOver}
           >
             Hand over
+          </button>
+          <button
+            type="button"
+            className={DEV_PREVIEW_BUTTON}
+            disabled={turn === null || duel[turn].lives === 0}
+            onClick={timeOut}
+          >
+            Clock runs out
           </button>
           {OWNERS.map((actor) => (
             <button
               key={actor}
               type="button"
               className={DEV_PREVIEW_BUTTON}
-              disabled={duel[actor].lives === 0}
+              disabled={duel[actor].lives === 0 || !isPaired}
               onClick={() => loseDuelLife(actor)}
             >
               {actor === 'you' ? 'You lose a life' : 'They lose a life'}
@@ -121,13 +159,35 @@ export function LivesPreview() {
           <button
             type="button"
             className={DEV_PREVIEW_BUTTON}
+            aria-pressed={connection !== null}
+            disabled={!isPaired}
+            onClick={toggleReconnect}
+          >
+            Opponent reconnecting
+          </button>
+          <button
+            type="button"
+            className={DEV_PREVIEW_BUTTON}
+            aria-pressed={!isPaired}
+            onClick={togglePairing}
+          >
+            Before pairing
+          </button>
+          <button
+            type="button"
+            className={DEV_PREVIEW_BUTTON}
             onClick={resetDuel}
           >
             Reset
           </button>
         </div>
-        <div className="max-w-xl">
-          <TurnIndicator you={duel.you} opponent={duel.opponent} turn={turn} />
+        <div className="w-full max-w-88">
+          <DuelLivesCard
+            you={duel.you}
+            opponent={isPaired ? duel.opponent : null}
+            turn={turn}
+            opponentConnection={connection}
+          />
         </div>
       </section>
       <section className="flex flex-col gap-4">

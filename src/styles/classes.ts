@@ -38,14 +38,17 @@ export const FILTER_CHIP = `rounded-sm border border-line px-3 py-1.5 text-14 fo
 
 export const FILTER_SELECT = `rounded-sm border border-line bg-surface-card px-3 py-2 text-14 text-fg ${FOCUS_RING}`;
 
+// 24px hit area around a small dot (WCAG 2.5.8)
+export const DOT_BUTTON = `flex size-6 items-center justify-center rounded-sm disabled:cursor-not-allowed ${FOCUS_RING}`;
+
 export const DEV_PREVIEW_BUTTON = `rounded-sm border border-line px-3 py-1.5 text-14 text-fg hover:bg-surface-raised disabled:text-fg-dim disabled:hover:bg-transparent aria-pressed:bg-surface-card ${FOCUS_RING}`;
 
 // Literal for Tailwind; checked against motion.ts
 export const LIFE_LOST_FILL_SHIFT =
   'transition-[fill] duration-480 ease-[ease]';
 
-export const TURN_BORDER_SHIFT =
-  'transition-[border-color] duration-240 ease-[ease-out]';
+export const LIFE_LOST_BORDER_SHIFT =
+  'transition-[border-color] duration-480 ease-[ease]';
 
 export const TIMER_COLOR_SHIFT =
   'transition-[stroke,color] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)]';

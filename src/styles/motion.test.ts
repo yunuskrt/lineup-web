@@ -47,7 +47,6 @@ const MOVING = [
   'lifeShake',
   'inputShake',
   'toastRise',
-  'turnChipSlide',
   'lobbyPulse',
   'coinFlipScale',
 ] as const;
@@ -60,7 +59,7 @@ const CUES = [
   'lifeLostFlash',
   'inputRejectTint',
   'toastFade',
-  'turnBorderShift',
+  'livesSwitch',
   'gateFade',
 ] as const;
 
