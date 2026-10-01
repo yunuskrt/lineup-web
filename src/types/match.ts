@@ -6,13 +6,13 @@ import type {
 import type {
   clubRefSchema,
   competitionRefSchema,
-  maskedMatchSchema,
   matchIdentitySchema,
+  matchInPlaySchema,
 } from '@/lib/api/schemas/match';
 
 export type Side = z.infer<typeof sideSchema>;
 export type CompetitionKind = z.infer<typeof competitionKindSchema>;
 export type ClubRef = z.infer<typeof clubRefSchema>;
 export type CompetitionRef = z.infer<typeof competitionRefSchema>;
-export type MaskedMatch = z.infer<typeof maskedMatchSchema>;
 export type MatchIdentity = z.infer<typeof matchIdentitySchema>;
+export type MatchInPlay = z.infer<typeof matchInPlaySchema>;

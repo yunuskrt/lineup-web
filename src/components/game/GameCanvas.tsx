@@ -303,11 +303,7 @@ export function GameCanvas({
                 isPerfectClear ? 'border-found' : 'border-line'
               }`}
             >
-              <MatchHeader
-                match={view.match}
-                found={found}
-                identity={summary?.match ?? result?.match}
-              />
+              <MatchHeader match={view.match} found={found} />
               <div className="min-h-72 flex-1 sm:min-h-80">
                 <SquadGrid
                   formation={view.match?.formation ?? LOADING_FORMATION}

@@ -51,7 +51,12 @@ function GridSlot({
   if (isLoading) return <SquadSlot state="loading" position={position} />;
   if (!player && missedPlayer) {
     return (
-      <SquadSlot state="missed" position={position} name={missedPlayer.name} />
+      <SquadSlot
+        state="missed"
+        position={position}
+        name={missedPlayer.name}
+        imageUrl={missedPlayer.imageUrl}
+      />
     );
   }
   if (!player) return <SquadSlot state="empty" position={position} />;

@@ -50,7 +50,7 @@ This also protects the architecture: `/play/duel` is one route for the entire re
 
 ### The canvas is the fold
 
-On game routes the squad grid starts at the top of the viewport. No page heading above it, no breadcrumb, no section label. The match header (partially masked per `theme.md` § Lobby) sits _inside_ the canvas card, not above it as page furniture.
+On game routes the squad grid starts at the top of the viewport. No page heading above it, no breadcrumb, no section label. The match header (shown in full per `theme.md` § Lobby) sits _inside_ the canvas card, not above it as page furniture.
 
 ### Control rail, not a toolbar
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -166,5 +166,19 @@ Defaults stand unless changed at load:
   - **Broken image:** block one headshot URL in dev tools. The slot falls back to initials with no layout shift.
   - **Loading:** the skeleton header and slots match the loaded sizes exactly (`?state=loading`).
   - **Full live solo run off the mock:** the header is complete from the first round, and headshots appear on reveal.
+
+**Deviations recorded during implementation**
+
+- Slot sizes gained a middle tier: from a 480px pitch, 80px slots with a 32px disc. A tablet pitch (536px at 834) was getting phone slots. All tiers measured: no overlaps in any formation, tightest gap 6px at 390.
+- On phones the found count moves to line 2, beside the competition and date. On line 1, beside the quit chip, it squeezed the short codes to one letter.
+- The scoreline is centred in the space left of the found count, not across the whole card.
+- Initials in the 20px phone disc use 12px text, the smallest step on the type scale, rather than shrinking off-scale.
+- The null-image players are the slot-7 player of every fixture side (20 players, Gökhan Erçetin among them), so every XI shows the fallback.
+- Headshots are assigned by player order in `players.ts` (`headshot-1` to `-6` in turn), set as literal paths in the data.
+- The dev sample clubs' short names became `NGU` and `RSO` (were `Northgate` and `Solvara`), so the phone header reads like the real data.
+- `webUrlSchema` is no longer exported: `imageUrlSchema` is its only user.
+- The empty disc's person glyph is a new `person.ts` path, mirroring `shirt.ts`.
+- No new `CONTRAST_PAIRS`: the ring (`fg` on `surface-raised`), the initials and crest fallback (`fg-muted` on `surface-raised` and `surface-card`) and the glyph (`fg-dim` on `surface`) are already covered.
+- The old "masks the match" test became a guard that the in-play match never carries a squad player's id or name.
 
 ## History

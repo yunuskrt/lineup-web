@@ -11,7 +11,7 @@ import {
   MAX_LIVES,
   roundTimingSchema,
 } from '@/lib/api/schemas/game';
-import { maskedMatchSchema } from '@/lib/api/schemas/match';
+import { matchInPlaySchema } from '@/lib/api/schemas/match';
 import { revealedPlayerSchema } from '@/lib/api/schemas/player';
 import { soloSummarySchema } from '@/lib/api/schemas/solo';
 import {
@@ -167,7 +167,7 @@ describe.each(MODES)('%s snapshots against the contract', (mode) => {
   it('only carry shapes the backend could send', () => {
     for (const [name, view] of viewsOf(mode)) {
       if (view.match) {
-        expect(maskedMatchSchema.safeParse(view.match).success, name).toBe(
+        expect(matchInPlaySchema.safeParse(view.match).success, name).toBe(
           true,
         );
       }

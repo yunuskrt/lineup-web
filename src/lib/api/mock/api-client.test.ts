@@ -11,6 +11,8 @@ import {
   squadFor,
 } from '@/lib/api/mock/data/fixtures';
 import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
+import { createStore } from '@/lib/api/mock/store';
+import { soloSessionSchema } from '@/lib/api/schemas/solo';
 import type { ApiResult } from '@/types/api';
 import type { Filters } from '@/types/filters';
 import type { Side } from '@/types/match';
@@ -76,6 +78,7 @@ describe('mock api client', () => {
     expect(started.found).toHaveLength(0);
     expect(started.round).not.toBeNull();
     expect(started.match.id).toBe(CROWN_2003);
+    expect(soloSessionSchema.safeParse(started).success).toBe(true);
 
     const correct = unwrap(
       await api.solo.guess({ sessionId: offer.sessionId, guess: 'Moss' }),
@@ -155,6 +158,37 @@ describe('mock api client', () => {
     expect(summary.match).toEqual(requireFixture(CROWN_2003).identity);
   });
 
+  it('carries headshots to reveals and the Pro summary', async () => {
+    const store = createStore();
+    api = createMockApiClient({ now: () => clock, random: () => draw, store });
+    await api.auth.continueAsGuest();
+    if (!store.identity) throw new Error('No identity');
+    store.identity.user = { ...store.identity.user, tier: 'pro' };
+
+    const squad = squadFor(requireFixture(CROWN_2003), 'home');
+    const withImage = squad.find((entry) => entry.imageUrl !== null);
+    const withoutImage = squad.find((entry) => entry.imageUrl === null);
+    if (!withImage || !withoutImage) throw new Error('XI lacks a mix');
+
+    const { sessionId } = await startRun();
+    for (const entry of [withImage, withoutImage]) {
+      clock += 10;
+      await api.solo.guess({ sessionId, guess: entry.name });
+    }
+    for (let i = 0; i < 3; i += 1) {
+      clock += ROUND_DURATION_MS + GRACE_WINDOW_MS + 1;
+      await api.solo.syncSession(sessionId);
+    }
+
+    const summary = unwrap(await api.solo.getSummary(sessionId));
+    const imageOf = new Map(squad.map((e) => [e.playerId, e.imageUrl]));
+    expect(summary.found).toHaveLength(2);
+    expect(summary.missed).toHaveLength(9);
+    for (const player of [...summary.found, ...(summary.missed ?? [])]) {
+      expect(player.imageUrl, player.name).toBe(imageOf.get(player.id));
+    }
+  });
+
   it('records a perfect clear when all eleven are named', async () => {
     await api.auth.continueAsGuest();
     const { sessionId } = await startRun();
@@ -181,7 +215,7 @@ describe('mock api client', () => {
     const { sessionId, session } = await startRun('away');
 
     expect(session.match.side).toBe('away');
-    expect(session.match.team.id).toBe('club-riverton');
+    expect(session.match.away.id).toBe('club-riverton');
 
     const homeName = unwrap(
       await api.solo.guess({ sessionId, guess: 'Kieran Moss' }),

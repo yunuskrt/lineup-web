@@ -10,41 +10,40 @@ import type { DuelOutcome, GuessOutcome, SoloEndReason } from '@/types/game';
 import type {
   ClubRef,
   CompetitionRef,
-  MaskedMatch,
   MatchIdentity,
+  MatchInPlay,
 } from '@/types/match';
 import type { RevealedPlayer } from '@/types/player';
 import type { HistoryEntry, UserStats } from '@/types/profile';
 import type { User } from '@/types/user';
 
-export const SAMPLE_MATCH: MaskedMatch = {
-  id: 'sample-match',
-  side: 'home',
-  team: {
-    id: 'sample-club',
-    name: 'Northgate United',
-    shortName: 'Northgate',
-    crestUrl: null,
-  },
-  formation: '4-4-2',
-};
-
-// The match SAMPLE_MATCH masks, revealed at the end
 export const SAMPLE_IDENTITY: MatchIdentity = {
-  id: SAMPLE_MATCH.id,
+  id: 'sample-match',
   competition: { id: 'sample-cup', kind: 'ucl', name: 'Continental Cup' },
   season: '2004-05',
   date: '2005-05-25',
   stage: 'Final',
-  home: SAMPLE_MATCH.team,
+  home: {
+    id: 'sample-club',
+    name: 'Northgate United',
+    shortName: 'NGU',
+    crestUrl: '/mock/crests/club-northgate.svg',
+  },
   away: {
     id: 'sample-away',
     name: 'Real Solvara',
-    shortName: 'Solvara',
-    crestUrl: null,
+    shortName: 'RSO',
+    crestUrl: '/mock/crests/club-real-solvara.svg',
   },
   score: { home: 3, away: 3 },
   nickname: null,
+};
+
+// Northgate's XI is the one being named
+export const SAMPLE_MATCH: MatchInPlay = {
+  ...SAMPLE_IDENTITY,
+  side: 'home',
+  formation: '4-4-2',
 };
 
 export const SAMPLE_YOU: DuelPlayer = {
@@ -65,7 +64,7 @@ export const SAMPLE_FILTER_OPTIONS: FilterOptions = {
     { id: 'sample-league', kind: 'league', name: 'Premier Division' },
   ],
   clubs: [
-    SAMPLE_MATCH.team,
+    SAMPLE_IDENTITY.home,
     SAMPLE_IDENTITY.away,
     {
       id: 'sample-third',
@@ -79,7 +78,7 @@ export const SAMPLE_FILTER_OPTIONS: FilterOptions = {
 
 export const SAMPLE_FILTERS: Filters = {
   competitionIds: [SAMPLE_IDENTITY.competition.id],
-  clubIds: [SAMPLE_MATCH.team.id],
+  clubIds: [SAMPLE_IDENTITY.home.id],
   era: { from: 2003, to: 2008 },
 };
 
@@ -111,13 +110,20 @@ export const GUESS_OUTCOME_OPTIONS: { value: GuessOutcome; label: string }[] = [
   { value: 'not_in_xi', label: 'Not in XI' },
 ];
 
+// One XI member without a photo shows the fallback
+const NO_IMAGE_SLOT = 7;
+
+function sampleHeadshot(slot: number): string {
+  return `/mock/players/headshot-${(slot % 6) + 1}.svg`;
+}
+
 export function samplePlayer(formation: string, slot: number): RevealedPlayer {
   return {
     id: `sample-${slot}`,
     name: SAMPLE_NAMES[slot],
     slot,
     position: slotLayout(formation)?.[slot]?.position ?? 'GK',
-    imageUrl: null,
+    imageUrl: slot === NO_IMAGE_SLOT ? null : sampleHeadshot(slot),
   };
 }
 

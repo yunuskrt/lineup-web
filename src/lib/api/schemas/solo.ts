@@ -14,7 +14,7 @@ import {
 } from '@/lib/api/schemas/game';
 import {
   clubRefSchema,
-  maskedMatchSchema,
+  matchInPlaySchema,
   matchIdentitySchema,
 } from '@/lib/api/schemas/match';
 import { revealedPlayerSchema } from '@/lib/api/schemas/player';
@@ -30,7 +30,7 @@ export const soloMatchOfferSchema = z.object({
 export const soloSessionSchema = z.object({
   sessionId: idSchema,
   status: soloSessionStatusSchema,
-  match: maskedMatchSchema,
+  match: matchInPlaySchema,
   lives: livesSchema,
   found: z.array(revealedPlayerSchema).max(SQUAD_SIZE),
   round: roundTimingSchema.nullable(),

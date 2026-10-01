@@ -23,7 +23,7 @@ import {
   emptyPool,
   fail,
   isGuessable,
-  maskedMatchFor,
+  matchInPlayFor,
   toGuessResult,
 } from '@/lib/api/mock/shared';
 import type { MockFixture } from '@/lib/api/mock/types';
@@ -148,7 +148,7 @@ export function createMockDuelClient(
 
     return {
       sessionId: 'duel-1',
-      match: maskedMatchFor(currentFixture(), side),
+      match: matchInPlayFor(currentFixture(), side),
       you: { ...you, lives: state.lives.you },
       opponent: { ...opponent, lives: state.lives.opponent },
       turn: state.turn,

@@ -2,7 +2,7 @@ import type { EngineOutcome } from '@/lib/api/mock/engine';
 import type { MockFixture } from '@/lib/api/mock/types';
 import type { ApiError, ApiResult, EmptyPoolReason } from '@/types/api';
 import type { GuessResult } from '@/types/game';
-import type { MaskedMatch, Side } from '@/types/match';
+import type { MatchInPlay, Side } from '@/types/match';
 
 export const ACK: ApiResult<void> = { success: true, data: undefined };
 
@@ -18,13 +18,8 @@ export function fail<T>(
   return { success: false, error: { code, message, retryAfterMs } };
 }
 
-export function maskedMatchFor(fixture: MockFixture, side: Side): MaskedMatch {
-  return {
-    id: fixture.identity.id,
-    side,
-    team: fixture.identity[side],
-    formation: fixture[side].formation,
-  };
+export function matchInPlayFor(fixture: MockFixture, side: Side): MatchInPlay {
+  return { ...fixture.identity, side, formation: fixture[side].formation };
 }
 
 // Names the filter to widen, never a bare no-result

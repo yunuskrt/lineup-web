@@ -12,7 +12,7 @@ import {
   roundTimingSchema,
 } from '@/lib/api/schemas/game';
 import {
-  maskedMatchSchema,
+  matchInPlaySchema,
   matchIdentitySchema,
 } from '@/lib/api/schemas/match';
 import { revealedPlayerSchema } from '@/lib/api/schemas/player';
@@ -67,7 +67,7 @@ export const duelFoundPlayerSchema = revealedPlayerSchema.extend({
 
 export const duelSessionSchema = z.object({
   sessionId: idSchema,
-  match: maskedMatchSchema,
+  match: matchInPlaySchema,
   you: duelPlayerSchema,
   opponent: duelPlayerSchema,
   turn: duelActorSchema,

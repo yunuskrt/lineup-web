@@ -31,7 +31,12 @@ function withIdentity(changes: Partial<MockFixture['identity']>): MockFixture {
 }
 
 describe('mockPlayerSchema', () => {
-  const player = { id: 'pl-x', name: 'Kerem Şahin', aliases: ['kerem sahin'] };
+  const player = {
+    id: 'pl-x',
+    name: 'Kerem Şahin',
+    imageUrl: null,
+    aliases: ['kerem sahin'],
+  };
 
   it('accepts normalized aliases including the full name', () => {
     expect(issuesOf(mockPlayerSchema, player)).toEqual([]);
