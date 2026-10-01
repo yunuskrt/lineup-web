@@ -5,7 +5,11 @@ import { useState } from 'react';
 import { SHIRT_PATH } from '@/components/game/shirt';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
-import { LIFE_LOST_FILL_SHIFT } from '@/styles/classes';
+import {
+  DUEL_ACTOR_BORDER,
+  LIFE_LOST_BORDER_SHIFT,
+  LIFE_LOST_FILL_SHIFT,
+} from '@/styles/classes';
 import { MOTION_SECONDS } from '@/styles/motion';
 import type { DuelActor } from '@/types/duel';
 import type { Lives as LivesCount } from '@/types/game';
@@ -27,12 +31,17 @@ const SHAKE: Variants = {
 
 type Drop = { from: number; to: number };
 
+const TILE =
+  'flex size-9 items-center justify-center rounded-sm border lg:size-11';
+
 type LivesProps = {
   lives: LivesCount;
   owner?: DuelActor;
+  // Each pip in its own bordered tile
+  isTiled?: boolean;
 };
 
-export function Lives({ lives, owner = 'you' }: LivesProps) {
+export function Lives({ lives, owner = 'you', isTiled = false }: LivesProps) {
   const runs = useMotionPolicy();
   const [previousLives, setPreviousLives] = useState(lives);
   const [drop, setDrop] = useState<Drop | null>(null);
@@ -46,12 +55,27 @@ export function Lives({ lives, owner = 'you' }: LivesProps) {
     <div
       role="img"
       aria-label={`${lives} of ${MAX_LIVES} lives left`}
-      className="flex items-center gap-1"
+      className={`flex items-center ${isTiled ? 'gap-2' : 'gap-1'}`}
     >
       {PIPS.map((index) => {
         const isFilled = index < lives;
         const isEmptying =
           drop !== null && index >= drop.to && index < drop.from;
+        const fades = isEmptying && runs('lifeFill');
+        const shirt = (
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+            className={isTiled ? 'size-5 lg:size-6' : 'size-5'}
+          >
+            <path
+              d={SHIRT_PATH}
+              className={`${isFilled ? OWNER_FILL[owner] : 'fill-fg-dim'} ${
+                fades ? LIFE_LOST_FILL_SHIFT : ''
+              }`}
+            />
+          </svg>
+        );
 
         return (
           <motion.span
@@ -62,14 +86,17 @@ export function Lives({ lives, owner = 'you' }: LivesProps) {
             initial={false}
             animate={isEmptying && runs('lifeShake') ? 'shake' : 'still'}
           >
-            <svg viewBox="0 0 24 24" focusable="false" className="size-5">
-              <path
-                d={SHIRT_PATH}
-                className={`${isFilled ? OWNER_FILL[owner] : 'fill-fg-dim'} ${
-                  isEmptying && runs('lifeFill') ? LIFE_LOST_FILL_SHIFT : ''
-                }`}
-              />
-            </svg>
+            {isTiled ? (
+              <span
+                className={`${TILE} ${
+                  isFilled ? DUEL_ACTOR_BORDER[owner] : 'border-line'
+                } ${fades ? LIFE_LOST_BORDER_SHIFT : ''}`}
+              >
+                {shirt}
+              </span>
+            ) : (
+              shirt
+            )}
           </motion.span>
         );
       })}

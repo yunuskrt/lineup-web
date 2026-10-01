@@ -91,6 +91,14 @@ export type RingSetup = {
   mode: RingMode;
 };
 
+export type ActiveRing = RingSetup & { owner: DuelActor };
+
+export type ClockLabel = {
+  text: string;
+  // Null when the label names no one
+  actor: DuelActor | null;
+};
+
 export type FoundCount = {
   label: string;
   spoken: string;

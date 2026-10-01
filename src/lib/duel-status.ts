@@ -1,9 +1,35 @@
 import type { DuelActor } from '@/types/duel';
+import type { Lives } from '@/types/game';
 
 export const TURN_LABELS: Record<DuelActor, string> = {
   you: 'Your turn',
   opponent: 'Their turn',
 };
+
+export type LivesByActor = Record<DuelActor, Lives | null>;
+
+const ACTORS: DuelActor[] = ['you', 'opponent'];
+
+// Display only: whose pip just emptied, if anyone's
+export function droppedLifeActor(
+  before: LivesByActor,
+  after: LivesByActor,
+): DuelActor | null {
+  const dropped = ACTORS.find((actor) => {
+    const [was, now] = [before[actor], after[actor]];
+    return was !== null && now !== null && now < was;
+  });
+  return dropped ?? null;
+}
+
+// A peek beats a hold, which beats the turn
+export function shownLivesActor(
+  peek: DuelActor | null,
+  hold: DuelActor | null,
+  turn: DuelActor | null,
+): DuelActor {
+  return peek ?? hold ?? turn ?? 'you';
+}
 
 // Display only; the server decides the forfeit
 export function reconnectSecondsLeft(deadline: number, now: number): number {

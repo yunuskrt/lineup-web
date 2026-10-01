@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  activeRing,
+  clockLabel,
   foundCountLabel,
-  ringSetups,
+  ROUND_CLOCK_LABEL,
   ROUND_MS,
   UNSTARTED_ROUND,
 } from '@/lib/canvas';
@@ -31,40 +33,65 @@ describe('UNSTARTED_ROUND', () => {
   });
 });
 
-describe('ringSetups', () => {
-  it('stops both rings before the first round', () => {
-    const setups = ringSetups({ round: null, isFrozen: false }, 'you');
-    expect(setups.you).toEqual({ round: UNSTARTED_ROUND, mode: 'waiting' });
-    expect(setups.opponent).toEqual({
+describe('activeRing', () => {
+  const live = { round: ROUND, isFrozen: false };
+
+  it('waits, unowned, before the first round', () => {
+    expect(activeRing({ round: null, isFrozen: false }, 'you')).toEqual({
       round: UNSTARTED_ROUND,
       mode: 'waiting',
+      owner: 'you',
     });
   });
 
-  it('stops both rings while no one has a turn', () => {
-    const setups = ringSetups({ round: ROUND, isFrozen: false }, null);
-    expect(setups.you.mode).toBe('waiting');
-    expect(setups.opponent.mode).toBe('waiting');
+  it('waits while no one has a turn', () => {
+    expect(activeRing(live, null).mode).toBe('waiting');
   });
 
-  it('runs the ring of the side whose turn it is', () => {
-    const clock = { round: ROUND, isFrozen: false };
-    expect(ringSetups(clock, 'you').you).toEqual({
+  it.each(['you', 'opponent'] as const)(
+    'runs as the clock of %s on their turn',
+    (turn) => {
+      expect(activeRing(live, turn)).toEqual({
+        round: ROUND,
+        mode: 'running',
+        owner: turn,
+      });
+    },
+  );
+
+  it('freezes when the server froze the round', () => {
+    expect(activeRing({ round: ROUND, isFrozen: true }, 'opponent')).toEqual({
       round: ROUND,
-      mode: 'running',
+      mode: 'frozen',
+      owner: 'opponent',
     });
-    expect(ringSetups(clock, 'you').opponent.mode).toBe('waiting');
-    expect(ringSetups(clock, 'opponent').opponent).toEqual({
-      round: ROUND,
-      mode: 'running',
+  });
+});
+
+describe('clockLabel', () => {
+  it('reads as the round clock in solo', () => {
+    expect(clockLabel('solo', 'you')).toEqual({
+      text: ROUND_CLOCK_LABEL,
+      actor: null,
     });
-    expect(ringSetups(clock, 'opponent').you.mode).toBe('waiting');
   });
 
-  it('freezes the live ring when the server froze the round', () => {
-    const setups = ringSetups({ round: ROUND, isFrozen: true }, 'you');
-    expect(setups.you.mode).toBe('frozen');
-    expect(setups.opponent.mode).toBe('waiting');
+  it('reads as the round clock before the first duel round', () => {
+    expect(clockLabel('duel', null)).toEqual({
+      text: ROUND_CLOCK_LABEL,
+      actor: null,
+    });
+  });
+
+  it('names whose turn it is during a duel round', () => {
+    expect(clockLabel('duel', 'you')).toEqual({
+      text: 'Your turn',
+      actor: 'you',
+    });
+    expect(clockLabel('duel', 'opponent')).toEqual({
+      text: 'Their turn',
+      actor: 'opponent',
+    });
   });
 });
 

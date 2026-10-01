@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -134,5 +134,19 @@ Defaults stand unless changed at load:
   - Reduced motion emulated: the ring still sweeps, and the card switch still fades.
   - A keyboard walk: quit, the dots, then the input, with a visible ring on each.
   - `npm run build`.
+
+**Deviations recorded during implementation**
+
+- Solo "Round clock" label hidden below `lg`; the duel turn label stays, since it's the turn cue.
+- Empty toggle dots outlined in `fg-muted`, not `fg-dim`: `fg-dim` on `surface-card` is 2.93:1, under 3:1 for a control.
+- Empty pips stay `fg-dim` on the card, with a new `CONTRAST_EXCEPTIONS` entry; the count is in the filled pips and the label.
+- The card holds on any player whose lives drop, not only at handover: the session sends lives and turn together.
+- The card's shown-player rule moved to pure helpers in `duel-status.ts` (`droppedLifeActor`, `shownLivesActor`) so it's unit tested.
+- New `LIFE_LOST_BORDER_SHIFT` so a tile's border fades with its pip, not snapping.
+- Stage chip dropped on review (user request): the ring's colour escalation already names the stage. `STAGE_LABELS` and its tests went with it.
+- `TurnIndicator.tsx` deleted at start (asked, as the spec said), with the code only it used: `TURN_BORDER_SHIFT`, and the `turnChipSlide` and `turnBorderShift` effects. `ReconnectChip` moved to its own file first.
+- Duel player row is the label and handle side by side, with no middle dot (frontend-design's templated-tells check).
+- Rail labels use the existing 12px uppercase style of the guess label, so the rail reads as one set.
+- `/dev/lives` gained "Clock runs out", "Opponent reconnecting" and "Before pairing" controls to reach the card's states.
 
 ## History

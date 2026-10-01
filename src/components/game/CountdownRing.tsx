@@ -86,7 +86,7 @@ export function CountdownRing({
     <div
       role="timer"
       aria-label="Time left"
-      className="relative flex size-36 shrink-0 items-center justify-center"
+      className="relative flex size-36 shrink-0 flex-col items-center justify-center lg:size-48"
     >
       <svg
         viewBox="0 0 100 100"
@@ -119,6 +119,7 @@ export function CountdownRing({
       >
         {seconds}
       </span>
+      <span className="relative text-12 text-fg-muted">seconds</span>
     </div>
   );
 }
