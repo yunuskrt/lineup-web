@@ -9,7 +9,7 @@ import type {
 import type { DuelLobbyView } from '@/types/duel-lobby';
 import type { GridPulse, ToastMessage } from '@/types/feedback';
 import type { Lives, RoundTiming } from '@/types/game';
-import type { MaskedMatch } from '@/types/match';
+import type { MatchInPlay } from '@/types/match';
 import type { FoundPlayer } from '@/types/player';
 import type { SoloSummary } from '@/types/solo';
 
@@ -41,7 +41,7 @@ export type CanvasGateView = {
 
 export type CanvasViewBase = {
   // Null while the match is still loading
-  match: MaskedMatch | null;
+  match: MatchInPlay | null;
   found: FoundPlayer[];
   clock: CanvasClock;
   input: GuessInputStatus;

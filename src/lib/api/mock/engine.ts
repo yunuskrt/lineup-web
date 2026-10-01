@@ -85,7 +85,7 @@ function toRevealed(entry: MockSquadEntry): RevealedPlayer {
     name: entry.name,
     slot: entry.slot,
     position: entry.position,
-    imageUrl: null,
+    imageUrl: entry.imageUrl,
   };
 }
 

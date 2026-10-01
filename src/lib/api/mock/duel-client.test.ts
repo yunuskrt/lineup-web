@@ -22,6 +22,7 @@ import {
 } from '@/lib/api/mock/store';
 import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
 import type { MockFixture, MockSquad } from '@/lib/api/mock/types';
+import { duelSessionSchema } from '@/lib/api/schemas/duel';
 import type { DuelResult, DuelSession } from '@/types/duel';
 import type { Filters } from '@/types/filters';
 
@@ -142,6 +143,7 @@ describe('mock duel client', () => {
     expect(session.opponent.lives).toBe(3);
     expect(session.turn).toBe('you');
     expect(session.found).toHaveLength(0);
+    expect(duelSessionSchema.safeParse(session).success).toBe(true);
   });
 
   it('names the coin-flip winner and applies one filter set whole', async () => {

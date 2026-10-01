@@ -92,6 +92,7 @@ describe('resolveGuess', () => {
         slot: 0,
         position: 'FW',
         aliases: ['ronaldinho'],
+        imageUrl: null,
       },
     ];
 

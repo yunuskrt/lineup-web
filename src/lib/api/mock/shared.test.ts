@@ -4,10 +4,11 @@ import {
   EMPTY_POOL_MESSAGES,
   emptyPool,
   isGuessable,
-  maskedMatchFor,
+  matchInPlayFor,
   toGuessResult,
 } from '@/lib/api/mock/shared';
 import { FIXTURES, requireFixture } from '@/lib/api/mock/data/fixtures';
+import { matchInPlaySchema } from '@/lib/api/schemas/match';
 import { apiErrorSchema } from '@/lib/api/schemas/result';
 
 const PLAYER = {
@@ -63,34 +64,31 @@ describe('toGuessResult', () => {
   });
 });
 
-describe('maskedMatchFor', () => {
+describe('matchInPlayFor', () => {
   // Formations differ by side, so a swap would show
   const fixture = requireFixture('match-crown-2015');
 
-  it('returns the chosen side and never the other club', () => {
-    const home = maskedMatchFor(fixture, 'home');
-    expect(home.id).toBe(fixture.identity.id);
-    expect(home.side).toBe('home');
-    expect(home.team).toEqual(fixture.identity.home);
-    expect(home.formation).toBe('4-2-3-1');
+  it('carries the whole match with the chosen side', () => {
+    const home = matchInPlayFor(fixture, 'home');
+    expect(matchInPlaySchema.parse(home)).toEqual({
+      ...fixture.identity,
+      side: 'home',
+      formation: '4-2-3-1',
+    });
 
-    const away = maskedMatchFor(fixture, 'away');
+    const away = matchInPlayFor(fixture, 'away');
     expect(away.side).toBe('away');
-    expect(away.team).toEqual(fixture.identity.away);
     expect(away.formation).toBe('3-4-3');
   });
 
-  it('carries no competition, date, score or nickname', () => {
+  // The squad is never sent ahead of play
+  it('carries no player from either XI', () => {
     for (const each of FIXTURES) {
       for (const side of ['home', 'away'] as const) {
-        const body = JSON.stringify(maskedMatchFor(each, side));
-        const other = each.identity[side === 'home' ? 'away' : 'home'];
-
-        expect(body).not.toContain(each.identity.competition.name);
-        expect(body).not.toContain(each.identity.date);
-        expect(body).not.toContain(other.id);
-        if (each.identity.nickname) {
-          expect(body).not.toContain(each.identity.nickname);
+        const body = JSON.stringify(matchInPlayFor(each, side));
+        for (const entry of [...each.home.squad, ...each.away.squad]) {
+          expect(body).not.toContain(entry.playerId);
+          expect(body).not.toContain(entry.name);
         }
       }
     }

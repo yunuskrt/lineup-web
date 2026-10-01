@@ -14,7 +14,13 @@ export const MAX_GUESS_LENGTH = 64;
 
 export const guessTextSchema = z.string().trim().min(1).max(MAX_GUESS_LENGTH);
 
-export const webUrlSchema = z.url({ protocol: /^https?$/ });
+const webUrlSchema = z.url({ protocol: /^https?$/ });
+
+// One leading slash only: `//host` is off-site
+const rootPathSchema = z.string().regex(/^\/(?!\/)[^\s?#]+$/);
+
+// Root-relative paths serve the mock's own assets
+export const imageUrlSchema = z.union([webUrlSchema, rootPathSchema]);
 
 export const sideSchema = z.enum(['home', 'away']);
 

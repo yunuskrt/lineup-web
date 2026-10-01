@@ -89,6 +89,7 @@ export function RevealCard({
         state="filled"
         position={position}
         name={player.name}
+        imageUrl={player.imageUrl}
         foundBy={player.foundBy}
         backdrop={
           <>

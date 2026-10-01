@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CLUBS, COMPETITIONS } from '@/lib/api/mock/data/competitions';
 import {
@@ -202,11 +204,41 @@ describe('coverage matrix', () => {
     expect(nicknames.some((nickname) => nickname === null)).toBe(true);
     expect(nicknames.some((nickname) => nickname !== null)).toBe(true);
   });
+});
 
-  it('carries no crest image anywhere', () => {
+describe('placeholder images', () => {
+  it('gives every club a crest', () => {
+    for (const club of CLUBS) expect(club.crestUrl, club.id).not.toBeNull();
+  });
+
+  // Image and fallback both show in every match
+  it('mixes players with and without a headshot in every XI', () => {
     for (const f of FIXTURES) {
-      expect(f.identity.home.crestUrl).toBeNull();
-      expect(f.identity.away.crestUrl).toBeNull();
+      for (const side of SIDES) {
+        const urls = squadFor(f, side).map((entry) => entry.imageUrl);
+        const label = `${f.identity.id} ${side}`;
+        expect(
+          urls.some((url) => url !== null),
+          label,
+        ).toBe(true);
+        expect(
+          urls.some((url) => url === null),
+          label,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('points only at files that ship in public/', () => {
+    const urls = [
+      ...CLUBS.map((club) => club.crestUrl),
+      ...PLAYERS.map((player) => player.imageUrl),
+    ].filter((url): url is string => url !== null);
+
+    expect(urls.length).toBeGreaterThan(0);
+    for (const url of new Set(urls)) {
+      expect(url, url).toMatch(/^\/mock\//);
+      expect(existsSync(join(process.cwd(), 'public', url)), url).toBe(true);
     }
   });
 });

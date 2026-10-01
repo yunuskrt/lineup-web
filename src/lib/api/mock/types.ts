@@ -3,6 +3,7 @@ import { normalizeName } from '@/lib/api/mock/normalize';
 import {
   FIRST_SEASON_START,
   idSchema,
+  imageUrlSchema,
   LAST_SEASON_START,
   SQUAD_SIZE,
 } from '@/lib/api/schemas/common';
@@ -23,6 +24,7 @@ export const mockSquadEntrySchema = z.object({
   slot: slotSchema,
   position: positionGroupSchema,
   aliases: z.array(z.string().min(1)).min(1),
+  imageUrl: imageUrlSchema.nullable(),
 });
 
 export const mockSquadSchema = z
@@ -37,6 +39,7 @@ export const mockPlayerSchema = z
   .object({
     id: idSchema,
     name: z.string().min(1),
+    imageUrl: imageUrlSchema.nullable(),
     aliases: z.array(z.string().min(1)).min(1),
   })
   .superRefine((player, ctx) => {

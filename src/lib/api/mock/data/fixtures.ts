@@ -81,7 +81,12 @@ export function buildFixtures(source: FixtureSource): MockFixture[] {
       formation: side.formation,
       squad: side.lineup.map((entry) => {
         const player = lookup(players, entry.playerId, label);
-        return { ...entry, name: player.name, aliases: player.aliases };
+        return {
+          ...entry,
+          name: player.name,
+          aliases: player.aliases,
+          imageUrl: player.imageUrl,
+        };
       }),
     });
 

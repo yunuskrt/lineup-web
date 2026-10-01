@@ -2,15 +2,15 @@ import { z } from 'zod';
 import {
   competitionKindSchema,
   idSchema,
+  imageUrlSchema,
   sideSchema,
-  webUrlSchema,
 } from '@/lib/api/schemas/common';
 
 export const clubRefSchema = z.object({
   id: idSchema,
   name: z.string().min(1),
   shortName: z.string().min(1),
-  crestUrl: webUrlSchema.nullable(),
+  crestUrl: imageUrlSchema.nullable(),
 });
 
 export const competitionRefSchema = z.object({
@@ -20,13 +20,6 @@ export const competitionRefSchema = z.object({
 });
 
 export const formationSchema = z.string().regex(/^\d(-\d){2,4}$/);
-
-export const maskedMatchSchema = z.object({
-  id: idSchema,
-  side: sideSchema,
-  team: clubRefSchema,
-  formation: formationSchema,
-});
 
 export const matchIdentitySchema = z.object({
   id: idSchema,
@@ -42,4 +35,10 @@ export const matchIdentitySchema = z.object({
     away: z.number().int().nonnegative(),
   }),
   nickname: z.string().min(1).nullable(),
+});
+
+// The whole match, plus the side being named
+export const matchInPlaySchema = matchIdentitySchema.extend({
+  side: sideSchema,
+  formation: formationSchema,
 });

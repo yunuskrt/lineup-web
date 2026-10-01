@@ -27,7 +27,7 @@ import {
   emptyPool,
   fail,
   isGuessable,
-  maskedMatchFor,
+  matchInPlayFor,
   ok,
   toGuessResult,
 } from '@/lib/api/mock/shared';
@@ -93,7 +93,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
     return {
       sessionId: session.id,
       status: engine.status,
-      match: maskedMatchFor(fixtureOf(session), session.side ?? 'home'),
+      match: matchInPlayFor(fixtureOf(session), session.side ?? 'home'),
       lives: engine.lives.you,
       found: revealedPlayers(engine),
       round: engine.round,
@@ -109,7 +109,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
         name: entry.name,
         slot: entry.slot,
         position: entry.position,
-        imageUrl: null,
+        imageUrl: entry.imageUrl,
       }));
   }
 

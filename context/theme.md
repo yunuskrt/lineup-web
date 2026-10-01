@@ -218,7 +218,7 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Opponent found          | Pair made           | Brief beat, both handles shown, then straight to filters                                                         |
 | Filters — you submitted | You confirm         | Your panel locks, `floodlight` check. Opponent's panel shows waiting                                             |
 | Filters — coin flip     | Both submitted      | **Name whose filters won, explicitly.** Without this, the player whose filters lost assumes the app ignored them |
-| Match retrieved         | Squad resolved      | Match header, partially masked. Team side shown; competition and date hidden until the end                       |
+| Match retrieved         | Squad resolved      | Match header in full: both crests and names, the score, the competition and the date. The named side is emphasised: its crest is ringed in `bone`, and the other side's name is `muted` |
 | No opponent             | Queue timeout       | Offer solo with the same filters. Never a dead end                                                               |
 | Cancelled               | You leave the queue | Back to `/play`, filters preserved                                                                               |
 
@@ -240,7 +240,7 @@ Every wait in this app has a **known shape** — a squad is always 11 slots, a l
 | ------------------------ | ------------------------------------------------------------------------------------------- |
 | Squad grid loading       | 11 `pitch-800` slot shapes on `pitch-950`, in formation. The layout never shifts on arrival |
 | Lobby / list rows        | `pitch-800` circle + bar pairs at real row height                                           |
-| Match header             | Two `pitch-800` bars at title and subtitle heights                                          |
+| Match header             | Two crest blocks and two bars, at the scoreline and context line heights                    |
 | Inline (guess submitted) | 16px spinner **inside** the locked input — the only place a spinner is correct              |
 
 Skeletons are flat `pitch-800` blocks. **No shimmer sweep** — a moving highlight on a near-black surface reads as a rendering artifact, and it competes with the ring for attention. If a wait needs to feel alive, pulse opacity `1 → 0.6 → 1` over 1.6s, `ease-in-out`.
@@ -255,8 +255,8 @@ These are bespoke — no library ships them, and they carry the whole feel.
 
 - **Countdown ring** — 64px numeral inside a stroked circle, with a muted "seconds" caption under it. Three-stage color escalation. Linear sweep.
 - **Lives** — three shapes, filled in player color, emptied to `dim`. Not hearts; a football-native mark (shirt, ball, or a simple pip) reads better here.
-- **Found-player card** — the reveal moment. `turf` flash on entry, then settles to `pitch-800` with `bone` name. This is the component to prototype first.
-- **Squad grid** — 11 slots. Unrevealed slots are `pitch-600` outlines on `pitch-950`, not empty space, so the player always sees how much is left.
+- **Found-player card** — the reveal moment. Headshot (initials when there is none) and the name. `turf` flash on entry, then settles to `pitch-800` with `bone` name. In a duel, the headshot is ringed in the finder's colour. This is the component to prototype first.
+- **Squad grid** — 11 slots. Unrevealed slots are `pitch-600` outlines on `pitch-950`, not empty space, so the player always sees how much is left. They show an empty headshot disc and the position.
 - **Turn indicator** — the amber/blue pair, always visible, never subtle: the rail's clock label and ring colour name whose turn it is, and the Lives card shows the active player, with a dot toggle for the other.
 
 ---

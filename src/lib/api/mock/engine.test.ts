@@ -185,7 +185,7 @@ describe('engine — terminal on eleven', () => {
         name: 'Brandon Keele',
         slot: 10,
         position: 'FW',
-        imageUrl: null,
+        imageUrl: '/mock/players/headshot-5.svg',
       },
     ]);
   });
