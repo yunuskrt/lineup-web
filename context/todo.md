@@ -40,7 +40,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 - [x] **Phase W24 — Profile Screen (Mock)**: History, win/loss/draw, accuracy and favourite-club stats.
 - [x] **Phase W25 — System States**: Protocol refused, empty filter pool, rate limited and connection lost.
 - [x] **Phase W26 — Motion & A11y Pass**: Per-component reduced motion, focus order and contrast checks.
-- [ ] **Phase W27 — Real API Client**: Point the client at NestJS; env config and credentialed requests. → needs B14
+- [x] **Phase W27 — Real API Client**: Point the client at NestJS; env config and credentialed requests. → needs B14
 - [ ] **Phase W28 — Auth Wiring**: Real Better Auth session, guest identity and the upgrade flow. → needs B13
 - [ ] **Phase W29 — Solo Wiring**: Solo loop on real endpoints; the squad never reaches the browser. → needs B33
 - [ ] **Phase W30 — Socket Client**: Real Socket.IO connection, protocol version and reconnect handling. → needs B36
