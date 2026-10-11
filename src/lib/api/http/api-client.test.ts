@@ -189,7 +189,13 @@ describe('createHttpApiClient', () => {
   });
 
   it('parses a session', async () => {
-    const user = { id: 'u-1', handle: 'yunus', isGuest: true, tier: 'free' };
+    const user = {
+      id: 'u-1',
+      handle: 'guest-1abc2def',
+      isGuest: true,
+      emailVerified: false,
+      tier: 'free',
+    };
     respondWith({ success: true, data: { user } });
     expect(await client.auth.getSession()).toEqual({
       success: true,

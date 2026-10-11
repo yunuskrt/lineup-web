@@ -12,6 +12,7 @@ import {
 } from '@/lib/api/mock/data/fixtures';
 import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
 import { createStore } from '@/lib/api/mock/store';
+import { HANDLE_PATTERN } from '@/lib/api/schemas/auth';
 import { soloSessionSchema } from '@/lib/api/schemas/solo';
 import type { ApiResult } from '@/types/api';
 import type { Filters } from '@/types/filters';
@@ -454,6 +455,46 @@ describe('mock api client', () => {
 
     const session = unwrap(await api.auth.getSession());
     expect(session?.user).toEqual(guest.user);
+  });
+
+  it('gives a guest a handle in the backend shape', async () => {
+    draw = 0.99;
+    const { user } = unwrap(await api.auth.continueAsGuest());
+    expect(user.handle).toMatch(/^guest-[a-z0-9]{8}$/);
+    expect(user.handle).toMatch(HANDLE_PATTERN);
+    expect(user.handle).toBe('guest-zzzzzzzz');
+  });
+
+  it('sets emailVerified as the backend does', async () => {
+    const request = {
+      email: 'player@example.com',
+      password: 'a-good-password',
+      handle: 'keeper',
+    };
+
+    const guest = unwrap(await api.auth.continueAsGuest());
+    expect(guest.user.emailVerified).toBe(false);
+
+    const upgraded = unwrap(await api.auth.upgradeGuest(request));
+    expect(upgraded.user.emailVerified).toBe(false);
+
+    const signedUp = unwrap(await api.auth.signUp(request));
+    expect(signedUp.user.emailVerified).toBe(false);
+
+    const signedIn = unwrap(await api.auth.signIn(request));
+    expect(signedIn.user.emailVerified).toBe(true);
+  });
+
+  it('refuses a handle the backend would refuse', async () => {
+    const error = errorOf(
+      await api.auth.signUp({
+        email: 'player@example.com',
+        password: 'a-good-password',
+        handle: 'two words',
+      }),
+    );
+    expect(error.code).toBe('invalid_input');
+    expect(unwrap(await api.auth.getSession())).toBeNull();
   });
 
   it('pages history with a cursor', async () => {

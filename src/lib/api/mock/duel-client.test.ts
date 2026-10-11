@@ -566,8 +566,9 @@ describe('mock duel client recording', () => {
     store = createStore();
     store.identity = createIdentity({
       id: 'guest-1',
-      handle: 'Guest 1',
+      handle: 'guest-1abc2def',
       isGuest: true,
+      emailVerified: false,
       tier: 'free',
     });
   });

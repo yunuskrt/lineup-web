@@ -290,6 +290,7 @@ export const SAMPLE_USER: User = {
   id: SAMPLE_YOU.id,
   handle: SAMPLE_YOU.handle,
   isGuest: false,
+  emailVerified: true,
   tier: 'free',
 };
 

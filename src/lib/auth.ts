@@ -21,6 +21,7 @@ export const AUTH_FIELD_MESSAGES = {
   passwordShort: `Use at least ${MIN_PASSWORD_LENGTH} characters.`,
   passwordLong: `Use at most ${MAX_PASSWORD_LENGTH} characters.`,
   handle: `Use ${MIN_HANDLE_LENGTH} to ${MAX_HANDLE_LENGTH} characters.`,
+  handleCharacters: 'Use letters, digits, _ . or - only.',
 } as const;
 
 export const AUTH_ERROR_MESSAGES = {
@@ -79,7 +80,11 @@ function isAuthField(key: unknown): key is AuthField {
 
 function fieldMessage(field: AuthField, issue: z.core.$ZodIssue): string {
   if (field === 'email') return AUTH_FIELD_MESSAGES.email;
-  if (field === 'handle') return AUTH_FIELD_MESSAGES.handle;
+  if (field === 'handle') {
+    return issue.code === 'invalid_format'
+      ? AUTH_FIELD_MESSAGES.handleCharacters
+      : AUTH_FIELD_MESSAGES.handle;
+  }
   return issue.code === 'too_big'
     ? AUTH_FIELD_MESSAGES.passwordLong
     : AUTH_FIELD_MESSAGES.passwordShort;
