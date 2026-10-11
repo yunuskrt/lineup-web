@@ -26,7 +26,13 @@ function apiError(
 
 function sessionFor(isGuest: boolean): Session {
   return {
-    user: { id: 'user-1', handle: 'keeper', isGuest, tier: 'free' },
+    user: {
+      id: 'user-1',
+      handle: 'keeper',
+      isGuest,
+      emailVerified: false,
+      tier: 'free',
+    },
   };
 }
 
@@ -124,6 +130,28 @@ describe('authFieldErrors', () => {
         }),
       ).toEqual({ handle: AUTH_FIELD_MESSAGES.handle });
     }
+  });
+
+  it('flags a handle with characters the backend refuses', () => {
+    for (const handle of ['two words', 'gol!', 'çağ', 'a/b']) {
+      expect(
+        authFieldErrors(signUpRequestSchema, { ...VALID_SIGN_UP, handle }),
+      ).toEqual({ handle: AUTH_FIELD_MESSAGES.handleCharacters });
+    }
+  });
+
+  it('accepts letters, digits, _ . and -, around trimmed space', () => {
+    for (const handle of ['Keeper_1', 'no.9', 'x-y', '  keeper  ']) {
+      expect(
+        authFieldErrors(signUpRequestSchema, { ...VALID_SIGN_UP, handle }),
+      ).toEqual({});
+    }
+  });
+
+  it('names the length before the characters', () => {
+    expect(
+      authFieldErrors(signUpRequestSchema, { ...VALID_SIGN_UP, handle: '!!' }),
+    ).toEqual({ handle: AUTH_FIELD_MESSAGES.handle });
   });
 
   it('flags a field that is missing entirely', () => {

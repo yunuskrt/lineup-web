@@ -761,6 +761,7 @@ describe('youFrom', () => {
       id: 'u-1',
       handle: 'floodlit_fan',
       isGuest: true,
+      emailVerified: false,
       tier: 'free',
     });
     expect(you).toEqual({

@@ -14,11 +14,15 @@ const passwordSchema = z
   .min(MIN_PASSWORD_LENGTH)
   .max(MAX_PASSWORD_LENGTH);
 
+// The backend's rule, also its users_handle_check
+export const HANDLE_PATTERN = /^[A-Za-z0-9_.-]+$/;
+
 const handleSchema = z
   .string()
   .trim()
   .min(MIN_HANDLE_LENGTH)
-  .max(MAX_HANDLE_LENGTH);
+  .max(MAX_HANDLE_LENGTH)
+  .regex(HANDLE_PATTERN);
 
 export const signInRequestSchema = z.object({
   email: emailSchema,

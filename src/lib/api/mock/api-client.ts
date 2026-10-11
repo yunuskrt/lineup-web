@@ -54,6 +54,19 @@ const DEFAULT_RATE_LIMIT: MockRateLimit = { max: 12, windowMs: 3_000 };
 export const MOCK_REJECTED_PASSWORD = 'wrong-password';
 export const MOCK_TAKEN_HANDLE = 'taken';
 
+const GUEST_HANDLE_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
+const GUEST_HANDLE_LENGTH = 8;
+
+// The backend's shape: `guest-` + 8 base-36 chars
+function guestHandle(random: () => number): string {
+  let suffix = '';
+  for (let i = 0; i < GUEST_HANDLE_LENGTH; i++) {
+    const index = Math.floor(random() * GUEST_HANDLE_ALPHABET.length);
+    suffix += GUEST_HANDLE_ALPHABET[index];
+  }
+  return `guest-${suffix}`;
+}
+
 function isTakenHandle(handle: string): boolean {
   return handle.toLowerCase() === MOCK_TAKEN_HANDLE;
 }
@@ -225,8 +238,9 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
         const id = nextId(store, 'guest');
         store.identity = createIdentity({
           id,
-          handle: `Guest ${id.split('-')[1]}`,
+          handle: guestHandle(random),
           isGuest: true,
+          emailVerified: false,
           tier: 'free',
         });
         return ok(signedInSession());
@@ -247,6 +261,8 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           id,
           handle: parsed.data.email.split('@')[0],
           isGuest: false,
+          // An existing account, confirmed earlier
+          emailVerified: true,
           tier: 'free',
         });
         return ok(signedInSession());
@@ -267,6 +283,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           id,
           handle: parsed.data.handle,
           isGuest: false,
+          emailVerified: false,
           tier: 'free',
         });
         return ok(signedInSession());
@@ -296,6 +313,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           ...identity.user,
           handle: parsed.data.handle,
           isGuest: false,
+          emailVerified: false,
         };
         return ok(signedInSession());
       },

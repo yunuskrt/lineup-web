@@ -42,6 +42,7 @@ export function useSignIn() {
     mutationFn: async (request: SignInRequest) =>
       unwrap(await getApiClient().auth.signIn(request)),
     onSuccess: writeSession,
+    meta: { isCredentialCheck: true },
   });
 }
 
@@ -71,28 +72,35 @@ export function useContinueAsGuest() {
 }
 
 // A signed-out player starts as a guest, no wall
+export async function ensureSession(
+  queryClient: QueryClient,
+): Promise<Session> {
+  // Never the cache: another tab may have changed it
+  const session = await queryClient.query({ ...sessionQuery, staleTime: 0 });
+  if (session) return session;
+  return unwrap(await getApiClient().auth.continueAsGuest());
+}
+
 export function useEnsureSession() {
   const queryClient = useQueryClient();
   const writeSession = useSessionWriter();
   return useMutation({
-    mutationFn: async () => {
-      const session = await queryClient.query(sessionQuery);
-      if (session) return session;
-      return unwrap(await getApiClient().auth.continueAsGuest());
-    },
+    mutationFn: () => ensureSession(queryClient),
     onSuccess: writeSession,
   });
 }
 
+// Forgets the user: their session and their numbers
+export function clearSession(queryClient: QueryClient): void {
+  queryClient.setQueryData(SESSION_QUERY_KEY, null);
+  queryClient.removeQueries({ queryKey: PROFILE_QUERY_KEY });
+  queryClient.removeQueries({ queryKey: HISTORY_QUERY_KEY });
+}
+
 export function useSignOut() {
   const queryClient = useQueryClient();
-  const writeSession = useSessionWriter();
   return useMutation({
     mutationFn: async () => unwrap(await getApiClient().auth.signOut()),
-    onSuccess: () => {
-      writeSession(null);
-      queryClient.removeQueries({ queryKey: PROFILE_QUERY_KEY });
-      queryClient.removeQueries({ queryKey: HISTORY_QUERY_KEY });
-    },
+    onSuccess: () => clearSession(queryClient),
   });
 }
