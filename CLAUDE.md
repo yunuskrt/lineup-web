@@ -41,7 +41,7 @@ Each repo carries its own `current-feature.md` and the section of `todo.md` that
 
 Ports are fixed so the web app and backend can run side by side.
 
-**`lineup-backend`** — http://localhost:3001
+**`lineup-backend`** — http://localhost:8080
 
 - **Dev server**: `npm run start:dev`
 - **Build**: `npm run build`

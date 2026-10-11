@@ -5,7 +5,7 @@ Every behaviour the web app's mock fakes today, and the backend phase that makes
 ## How the mock is wired
 
 - The screens call two interfaces: `ApiClient` (REST: auth, catalog, solo, profile) in `src/lib/api/client.ts`, and `DuelClient` (Socket.IO events) in `src/lib/api/duel-client.ts`.
-- `src/lib/api/register.ts` plugs in the mock implementations from `src/lib/api/mock/`. `NEXT_PUBLIC_API_MODE=real` throws until W27.
+- `src/lib/api/register.ts` plugs in the mock implementations from `src/lib/api/mock/`. `NEXT_PUBLIC_API_MODE=real` plugs in the HTTP client from `src/lib/api/http/` instead (W27), with duels refused until W30.
 - One in-memory store backs both mocks, so a reload resets everything.
 - **The contract the backend must match** is the web's Zod schemas in `src/lib/api/schemas/` plus `DuelEventMap`. Transcribe them by hand; never import them.
 
@@ -17,7 +17,7 @@ Every behaviour the web app's mock fakes today, and the backend phase that makes
 | --- | --- | --- |
 | 10 fictional fixtures, 167 players with aliases (`mock/data/*.ts`) | B05–B08 schema; **B09 seeds these same fixtures** into a Neon dev branch | W27 |
 | Fixtures validated by Zod at load (`mock/types.ts`) | Prisma schema and constraints (B04–B08) | — |
-| Placeholder SVG crests and headshots in `public/mock/`, root-relative URLs | B23 bucket, B24 image ingest: absolute CDN URLs | W27: tighten `imageUrlSchema` |
+| Placeholder SVG crests and headshots in `public/mock/`, root-relative URLs | B23 bucket, B24 image ingest: absolute CDN URLs | Tighten `imageUrlSchema` once the mock stops serving images (deferred at W27) |
 | No real data at all | B15–B22 ingestion, memorability, guessability gate, pool QA | — |
 
 ### Auth and session
@@ -98,7 +98,7 @@ Web phases W33 (observability) and W34–W35 (E2E, deployment) follow once B45 i
 ## What stays in the web app
 
 - **Dev-only tooling:** `?state=`, `?scenario=`, `/dev/*` and `src/lib/dev/samples.ts`. None of it calls the backend.
-- **The mock adapter itself:** decide at W27 whether to keep it for tests and offline dev behind `NEXT_PUBLIC_API_MODE=mock`.
+- **The mock adapter itself:** kept at W27 as the default mode, for tests and offline dev. Retiring it is W35's decision.
 
 ## Watch-outs
 

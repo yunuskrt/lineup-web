@@ -60,3 +60,4 @@ Not Started
 - W26b Focus & Contrast: contrast suite, focus-ring guard, one tab order.
 - Fix Control Rail Layout: one ring, Lives card, dot toggle, compact band.
 - Fix Pitch Match Header: full scoreline, crests, headshots, mock SVGs.
+- W27 Real API Client: HTTP transport, env URL, cookies, retry policy.
