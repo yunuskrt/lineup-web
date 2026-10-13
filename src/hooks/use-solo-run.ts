@@ -1,22 +1,38 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useReducer, useRef } from 'react';
-import { useEnsureSession } from '@/hooks/use-auth';
+import { clearSession, useEnsureSession } from '@/hooks/use-auth';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
 import { getApiClient } from '@/lib/api';
+import { isSessionLost } from '@/lib/api/session-loss';
 import { apiErrorOf, unwrap } from '@/lib/api/unwrap';
 import { guessFeedback } from '@/lib/feedback';
 import { filtersFromParams, widenFilters, withFilters } from '@/lib/filters';
 import { prepareGuess } from '@/lib/guess';
+import { serverClock } from '@/lib/server-clock';
 import {
   canGuessSolo,
   INITIAL_SOLO_RUN,
   needsResync,
+  receiptRoundOf,
   soloRunReducer,
   SYNC_RETRY_MS,
 } from '@/lib/solo-run';
 import { widenReasonOf } from '@/lib/system-states';
+import type { ApiError } from '@/types/api';
 import type { GuessFeedback } from '@/types/feedback';
+import type { RoundTiming } from '@/types/game';
 import type { Side } from '@/types/match';
+
+// Solo calls skip TanStack, so apply its 401 rule
+function failureOf(queryClient: QueryClient, error: unknown): ApiError {
+  if (isSessionLost(error)) clearSession(queryClient);
+  return apiErrorOf(error);
+}
+
+// Only a round started on receipt dates the server
+function sampleRoundStart(round: RoundTiming | null, sentAt: number) {
+  if (round) serverClock.sample(round.startedAt, sentAt, Date.now());
+}
 
 export function useSoloRun(params: URLSearchParams) {
   const queryClient = useQueryClient();
@@ -44,7 +60,11 @@ export function useSoloRun(params: URLSearchParams) {
       const offer = unwrap(await getApiClient().solo.findMatch(filters));
       dispatch({ type: 'offerReceived', offer });
     } catch (error) {
-      dispatch({ type: 'failed', step: 'find', error: apiErrorOf(error) });
+      dispatch({
+        type: 'failed',
+        step: 'find',
+        error: failureOf(queryClient, error),
+      });
     } finally {
       isFinding.current = false;
     }
@@ -55,7 +75,11 @@ export function useSoloRun(params: URLSearchParams) {
       const session = unwrap(await getApiClient().solo.syncSession(id));
       dispatch({ type: 'synced', session });
     } catch (error) {
-      dispatch({ type: 'failed', step: 'sync', error: apiErrorOf(error) });
+      dispatch({
+        type: 'failed',
+        step: 'sync',
+        error: failureOf(queryClient, error),
+      });
     }
   }
 
@@ -87,19 +111,23 @@ export function useSoloRun(params: URLSearchParams) {
         }
       } catch (error) {
         if (isCancelled) return;
-        dispatch({ type: 'failed', step: 'sync', error: apiErrorOf(error) });
+        dispatch({
+          type: 'failed',
+          step: 'sync',
+          error: failureOf(queryClient, error),
+        });
       }
     }
 
     timer = setTimeout(
       () => attempt(sessionId),
-      Math.max(0, endsAt - Date.now()),
+      Math.max(0, endsAt - serverClock.now()),
     );
     return () => {
       isCancelled = true;
       clearTimeout(timer);
     };
-  }, [isPlaying, state.isGuessing, sessionId, startedAt, endsAt]);
+  }, [isPlaying, state.isGuessing, sessionId, startedAt, endsAt, queryClient]);
 
   // The server set the time; this only unlocks
   useEffect(() => {
@@ -125,11 +153,11 @@ export function useSoloRun(params: URLSearchParams) {
         dispatch({
           type: 'summaryFailed',
           sessionId,
-          error: apiErrorOf(error),
+          error: failureOf(queryClient, error),
         });
       }
     })();
-  }, [isAwaitingSummary, sessionId]);
+  }, [isAwaitingSummary, sessionId, queryClient]);
 
   async function chooseSide(side: Side) {
     const { offer } = state;
@@ -137,12 +165,18 @@ export function useSoloRun(params: URLSearchParams) {
 
     isChoosing.current = true;
     try {
+      const sentAt = Date.now();
       const session = unwrap(
         await getApiClient().solo.chooseSide(offer.sessionId, side),
       );
+      sampleRoundStart(session.round, sentAt);
       dispatch({ type: 'sessionReceived', session });
     } catch (error) {
-      dispatch({ type: 'failed', step: 'choose', error: apiErrorOf(error) });
+      dispatch({
+        type: 'failed',
+        step: 'choose',
+        error: failureOf(queryClient, error),
+      });
     } finally {
       isChoosing.current = false;
     }
@@ -155,13 +189,15 @@ export function useSoloRun(params: URLSearchParams) {
 
     dispatch({ type: 'guessSubmitted' });
     try {
+      const sentAt = Date.now();
       const response = unwrap(
         await getApiClient().solo.guess({ sessionId, guess }),
       );
+      sampleRoundStart(receiptRoundOf(response), sentAt);
       dispatch({ type: 'guessResolved', response });
       return guessFeedback(response.result);
     } catch (error) {
-      const apiError = apiErrorOf(error);
+      const apiError = failureOf(queryClient, error);
       dispatch({ type: 'guessFailed', error: apiError, at: Date.now() });
       if (apiError.code === 'session_over') await syncNow(sessionId);
       return null;
@@ -178,7 +214,11 @@ export function useSoloRun(params: URLSearchParams) {
       const summary = unwrap(await getApiClient().solo.quit(sessionId));
       dispatch({ type: 'summaryReceived', sessionId, summary });
     } catch (error) {
-      dispatch({ type: 'failed', step: 'quit', error: apiErrorOf(error) });
+      dispatch({
+        type: 'failed',
+        step: 'quit',
+        error: failureOf(queryClient, error),
+      });
     }
   }
 
@@ -202,7 +242,11 @@ export function useSoloRun(params: URLSearchParams) {
       void find(next);
       return next;
     } catch (error) {
-      dispatch({ type: 'failed', step: 'find', error: apiErrorOf(error) });
+      dispatch({
+        type: 'failed',
+        step: 'find',
+        error: failureOf(queryClient, error),
+      });
       return null;
     }
   }

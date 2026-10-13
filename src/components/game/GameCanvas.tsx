@@ -20,6 +20,7 @@ import {
   waitingLine,
 } from '@/lib/duel-status';
 import { LOADING_FORMATION } from '@/lib/formation';
+import { serverClock } from '@/lib/server-clock';
 import {
   CHOICE_BUTTON,
   DUEL_ACTOR_TEXT,
@@ -79,10 +80,13 @@ const COUNTDOWN_TICK_MS = 250;
 
 // Ticks to the server deadline; decides nothing
 function GateCountdown({ countdown }: { countdown: CanvasGateCountdown }) {
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() => serverClock.now());
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), COUNTDOWN_TICK_MS);
+    const timer = setInterval(
+      () => setNow(serverClock.now()),
+      COUNTDOWN_TICK_MS,
+    );
     return () => clearInterval(timer);
   }, []);
 

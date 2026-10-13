@@ -14,7 +14,7 @@ import type {
   SoloEndView,
 } from '@/types/canvas';
 import type { RoundTiming } from '@/types/game';
-import type { SoloSession } from '@/types/solo';
+import type { SoloGuessResponse, SoloSession } from '@/types/solo';
 import type {
   SoloGateAction,
   SoloRunEvent,
@@ -37,6 +37,7 @@ export const SOLO_GATE_COPY = {
 const FAILED_TITLES: Record<SoloRunStep, string> = {
   find: "Couldn't find a match",
   choose: "Couldn't start the run",
+  guess: "Couldn't send your guess",
   sync: "Couldn't update the run",
   quit: "Couldn't end the run",
   summary: "Couldn't load the summary",
@@ -46,6 +47,13 @@ const FAILED_TITLES: Record<SoloRunStep, string> = {
 const LEAVING_ERRORS: ReadonlySet<ApiError['code']> = new Set([
   'empty_pool',
   'not_found',
+  'unauthorized',
+]);
+
+// The run is gone; another guess can't land
+const RUN_GONE_ERRORS: ReadonlySet<ApiError['code']> = new Set([
+  'not_found',
+  'unauthorized',
 ]);
 
 export const INITIAL_SOLO_RUN: SoloRunState = {
@@ -151,6 +159,13 @@ export function soloRunReducer(
     case 'guessResolved':
       return resolveGuess(state, event);
     case 'guessFailed': {
+      if (RUN_GONE_ERRORS.has(event.error.code)) {
+        return soloRunReducer(state, {
+          type: 'failed',
+          step: 'guess',
+          error: event.error,
+        });
+      }
       const next = { ...state, isGuessing: false };
       // The hook syncs instead of toasting this one
       if (event.error.code === 'session_over') return next;
@@ -177,6 +192,15 @@ export function soloRunReducer(
       return unhandled;
     }
   }
+}
+
+// Only a correct new name starts a round on receipt
+export function receiptRoundOf(
+  response: SoloGuessResponse,
+): RoundTiming | null {
+  return response.result.outcome === 'correct_new'
+    ? response.session.round
+    : null;
 }
 
 // A sync at 0 can land inside the grace window

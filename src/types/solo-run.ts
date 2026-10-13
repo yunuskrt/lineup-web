@@ -10,7 +10,8 @@ import type {
 export type SoloRunPhase =
   'finding' | 'choosing' | 'playing' | 'over' | 'failed';
 
-export type SoloRunStep = 'find' | 'choose' | 'sync' | 'quit' | 'summary';
+export type SoloRunStep =
+  'find' | 'choose' | 'guess' | 'sync' | 'quit' | 'summary';
 
 export type SoloRunFailure = { step: SoloRunStep; error: ApiError };
 

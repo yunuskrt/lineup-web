@@ -16,6 +16,7 @@ import {
   roundDurationMs,
   sweepFraction,
 } from '@/lib/countdown';
+import { serverClock } from '@/lib/server-clock';
 import { TIMER_COLOR_SHIFT } from '@/styles/classes';
 import type { CountdownStage, RingMode } from '@/types/countdown';
 import type { DuelActor } from '@/types/duel';
@@ -64,7 +65,7 @@ export function CountdownRing({
     if (mode !== 'running' && syncedRound.current === round) return;
     syncedRound.current = round;
 
-    const remaining = remainingMs(round, Date.now());
+    const remaining = remainingMs(round, serverClock.now());
     fraction.set(sweepFraction(remaining, round));
     setSeconds(displaySeconds(remaining));
   });

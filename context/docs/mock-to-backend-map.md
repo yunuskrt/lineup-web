@@ -34,15 +34,15 @@ Every behaviour the web app's mock fakes today, and the backend phase that makes
 
 | Mock today | Real backend | Web wiring |
 | --- | --- | --- |
-| `getFilterOptions`, derived from the fixtures (`pool.filterOptionsFrom`) | **No phase names this endpoint.** Fold it into B25 | W27 |
+| `getFilterOptions`, derived from the fixtures (`pool.filterOptionsFrom`) | B25b, public, from the playable pool. **Live from W29** | W27, W29 |
 
 ### Solo
 
 | Mock today | Real backend | Web wiring |
 | --- | --- | --- |
-| `findMatch`: filter, random pick, empty-pool reason (`pool.ts`) | B25 stratified selector on the scored, gated pool (B19, B21) | W29 |
+| `findMatch`: filter, random pick, empty-pool reason (`pool.ts`) | B25 stratified selector on the scored, gated pool (B19, B21). **Live from W29** on the seed, with `MATCH_POOL_INCLUDE_UNSCORED` | W29 |
 | `chooseSide`, then a `MatchInPlay` with the full match | B33 (sends `matchInPlaySchema`) | W29 |
-| `guess`, `syncSession`, `quit`, `getSummary` | B33 endpoints | W29 |
+| `guess`, `syncSession`, `quit`, `getSummary` | B33 endpoints. **Live from W29**; runs live in memory until B34 | W29 |
 | Summary `missed` list only for Pro | B33, with tier from entitlements | W29 |
 
 ### Rules engine (`mock/engine.ts`, `clock.ts`, `matcher.ts`, `normalize.ts`)
@@ -102,7 +102,7 @@ Web phases W33 (observability) and W34–W35 (E2E, deployment) follow once B45 i
 
 ## Watch-outs
 
-1. **Catalog endpoint.** No phase owns `getFilterOptions`. Add it to B25, or as its own phase.
+1. **Catalog endpoint.** Resolved: B25b serves `getFilterOptions`.
 2. **Matcher.** Copy the mock's matcher test cases into B28, since `pg_trgm` scores differently. One example: "Ronaldo" must never resolve to "Ronaldinho".
 3. **In-play match.** B33 and B38 must send the full match, crests and scores included, during play. That's a recent web change.
 4. **Image URLs.** Real image URLs are absolute. The root-relative branch of `imageUrlSchema` exists only for the mock.
