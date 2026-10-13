@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { reconnectSecondsLeft } from '@/lib/duel-status';
+import { serverClock } from '@/lib/server-clock';
 
 const RECONNECT_TICK_MS = 250;
 
 // Ticks from the server deadline; decides nothing
 export function ReconnectChip({ deadline }: { deadline: number }) {
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() => serverClock.now());
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), RECONNECT_TICK_MS);
+    const timer = setInterval(
+      () => setNow(serverClock.now()),
+      RECONNECT_TICK_MS,
+    );
     return () => clearInterval(timer);
   }, []);
 

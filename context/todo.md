@@ -10,6 +10,8 @@ This todo file is for developer-side use. It is also only generated for the web 
 
 **Cross-repo dependencies** are marked `→ needs <ID>`. Phases W01–W26 have none: the entire web app is built against a mock API adapter before the backend exists. W27 onward is the wiring, and cannot start until the named backend phases are done.
 
+**Backend order changed:** gameplay first on the seeded mock data (B25–B43), real data later via a separate scraper repo. W29–W32 wire up against the mock fixtures in the database, and real matches arrive later with no web change. The live backend order is in `lineup-backend/context/todo.md`; Part 2 below is the original copy.
+
 ---
 
 ## Part 1 — Web (Next.js)
@@ -42,7 +44,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 - [x] **Phase W26 — Motion & A11y Pass**: Per-component reduced motion, focus order and contrast checks.
 - [x] **Phase W27 — Real API Client**: Point the client at NestJS; env config and credentialed requests. → needs B14
 - [x] **Phase W28 — Auth Wiring**: Real Better Auth session, guest identity and the upgrade flow. → needs B13
-- [ ] **Phase W29 — Solo Wiring**: Solo loop on real endpoints; the squad never reaches the browser. → needs B33
+- [x] **Phase W29 — Solo Wiring**: Solo loop on real endpoints; the squad never reaches the browser. → needs B33
 - [ ] **Phase W30 — Socket Client**: Real Socket.IO connection, protocol version and reconnect handling. → needs B36
 - [ ] **Phase W31 — Duel Wiring**: Browser vs browser duel, end to end on real server events. → needs B41
 - [ ] **Phase W32 — Profile Wiring**: Real history and stats with guest-to-account upgrade preserved. → needs B34

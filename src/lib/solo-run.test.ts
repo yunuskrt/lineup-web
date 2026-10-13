@@ -4,6 +4,7 @@ import {
   canGuessSolo,
   INITIAL_SOLO_RUN,
   needsResync,
+  receiptRoundOf,
   SOLO_GATE_COPY,
   soloCanvasView,
   soloGateAction,
@@ -281,6 +282,52 @@ describe('soloRunReducer guess feedback', () => {
     );
     expect(over.toast).toBeNull();
   });
+
+  it.each([
+    ['not_found', 'That run no longer exists.'],
+    ['unauthorized', 'Sign in or continue as a guest first.'],
+  ] as const)('ends the run screen when a guess finds %s', (code, message) => {
+    const gone = run(
+      ...PLAYING,
+      { type: 'guessSubmitted' },
+      {
+        type: 'guessFailed',
+        error: { code, message, retryAfterMs: null },
+        at: AT,
+      },
+    );
+
+    expect(gone.phase).toBe('failed');
+    expect(gone.failure?.step).toBe('guess');
+    expect(gone.isGuessing).toBe(false);
+    expect(gone.toast).toBeNull();
+    expect(canGuessSolo(gone)).toBe(false);
+    expect(soloGateAction(gone)).toBe('leave');
+    expect(soloCanvasView(gone).gate).toEqual({
+      title: "Couldn't send your guess",
+      detail: message,
+      actionLabel: SOLO_GATE_COPY.backToFilters,
+    });
+  });
+
+  it('keeps the run live after a guess the server refused as input', () => {
+    const refused = run(
+      ...PLAYING,
+      { type: 'guessSubmitted' },
+      {
+        type: 'guessFailed',
+        error: {
+          code: 'invalid_input',
+          message: 'Too long.',
+          retryAfterMs: null,
+        },
+        at: AT,
+      },
+    );
+    expect(refused.phase).toBe('playing');
+    expect(refused.toast?.message).toBe('Too long.');
+    expect(canGuessSolo(refused)).toBe(true);
+  });
 });
 
 describe('soloRunReducer rate limit', () => {
@@ -369,6 +416,38 @@ describe('soloRunReducer lives', () => {
       session: session({ lives: 1 }),
     });
     expect(state.lifeLostKey).toBe(0);
+  });
+});
+
+describe('receiptRoundOf', () => {
+  it('takes the next round from a correct new name', () => {
+    const response = {
+      result: { outcome: 'correct_new' as const, player: player(3) },
+      session: session({ round: NEXT_ROUND }),
+    };
+    expect(receiptRoundOf(response)).toEqual(NEXT_ROUND);
+  });
+
+  it('has no round once the XI is complete', () => {
+    const response = {
+      result: { outcome: 'correct_new' as const, player: player(10) },
+      session: session({ status: 'over', round: null }),
+    };
+    expect(receiptRoundOf(response)).toBeNull();
+  });
+
+  // Their round started earlier: a sample would skew
+  it('ignores the running round on any other outcome', () => {
+    const repeat = {
+      result: { outcome: 'already_found' as const, playerId: 'player-3' },
+      session: session(),
+    };
+    const miss = {
+      result: { outcome: 'not_in_xi' as const },
+      session: session(),
+    };
+    expect(receiptRoundOf(repeat)).toBeNull();
+    expect(receiptRoundOf(miss)).toBeNull();
   });
 });
 
