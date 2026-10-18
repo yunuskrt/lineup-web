@@ -3,7 +3,7 @@
 import { ProfileView } from '@/components/profile/ProfileView';
 import { useSession } from '@/hooks/use-auth';
 import { useHistory, useProfile } from '@/hooks/use-profile';
-import { profileScreenView } from '@/lib/profile';
+import { isStaleCursor, profileScreenView } from '@/lib/profile';
 
 export function ProfileScreen() {
   const session = useSession();
@@ -23,7 +23,13 @@ export function ProfileScreen() {
   }
 
   function showMore() {
-    if (!history.isFetchingNextPage) void history.fetchNextPage();
+    if (history.isFetchingNextPage) return;
+    // Refetch recomputes each cursor from page one
+    if (history.isFetchNextPageError && isStaleCursor(history.error)) {
+      void history.refetch();
+      return;
+    }
+    void history.fetchNextPage();
   }
 
   return <ProfileView view={view} onRetry={retry} onShowMore={showMore} />;

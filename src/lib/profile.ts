@@ -1,3 +1,4 @@
+import { ApiRequestError } from '@/lib/api/unwrap';
 import { authErrorMessageOf } from '@/lib/auth';
 import { accuracyLabel, summaryTitle } from '@/lib/summary';
 import type { DuelOutcome } from '@/types/game';
@@ -105,8 +106,17 @@ export function favouriteClubStat(stats: UserStats): string {
   return stats.favouriteClub?.name ?? 'None yet';
 }
 
+// The backend refused the cursor; restart paging
+export function isStaleCursor(error: unknown): boolean {
+  return (
+    error instanceof ApiRequestError && error.error.code === 'invalid_input'
+  );
+}
+
 function moreState(history: ProfileScreenInput['history']): HistoryMoreState {
   if (history.isFetchingNextPage) return 'loading';
+  // A refetch walks the pages; don't flash the end
+  if (history.isRefetching && history.hasNextPage) return 'loading';
   if (history.isFetchNextPageError) return 'failed';
   return history.hasNextPage ? 'idle' : 'end';
 }

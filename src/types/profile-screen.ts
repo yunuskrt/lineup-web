@@ -44,5 +44,6 @@ export type ProfileScreenInput = {
     hasNextPage: boolean;
     isFetchingNextPage: boolean;
     isFetchNextPageError: boolean;
+    isRefetching: boolean;
   };
 };

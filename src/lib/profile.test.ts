@@ -6,6 +6,7 @@ import {
   favouriteClubStat,
   historyOutcomeLabel,
   historyTone,
+  isStaleCursor,
   playedAtLabel,
   profileScreenView,
   recordShares,
@@ -14,6 +15,7 @@ import {
 import { ApiRequestError } from '@/lib/api/unwrap';
 import { AUTH_ERROR_MESSAGES } from '@/lib/auth';
 import { SAMPLE_IDENTITY } from '@/lib/dev/samples';
+import type { ApiErrorCode } from '@/types/api';
 import type { DuelOutcome, SoloEndReason } from '@/types/game';
 import type { HistoryEntry, Profile, UserStats } from '@/types/profile';
 import type { ProfileScreenInput } from '@/types/profile-screen';
@@ -250,6 +252,7 @@ describe('profileScreenView', () => {
         hasNextPage: false,
         isFetchingNextPage: false,
         isFetchNextPageError: false,
+        isRefetching: false,
       },
       ...overrides,
     };
@@ -331,6 +334,8 @@ describe('profileScreenView', () => {
   it.each<[Partial<ProfileScreenInput['history']>, string]>([
     [{ hasNextPage: true }, 'idle'],
     [{ hasNextPage: true, isFetchingNextPage: true }, 'loading'],
+    [{ hasNextPage: true, isRefetching: true }, 'loading'],
+    [{ hasNextPage: false, isRefetching: true }, 'end'],
     [
       { hasNextPage: true, isFetchNextPageError: true, error: networkError },
       'failed',
@@ -340,5 +345,28 @@ describe('profileScreenView', () => {
     const view = profileScreenView(input({ history: history(overrides) }));
     if (view.status !== 'ready') throw new Error('Expected ready');
     expect(view.more).toBe(more);
+  });
+});
+
+describe('isStaleCursor', () => {
+  function apiError(code: ApiErrorCode) {
+    return new ApiRequestError({ code, message: 'x', retryAfterMs: null });
+  }
+
+  it('is true for a refused cursor', () => {
+    expect(isStaleCursor(apiError('invalid_input'))).toBe(true);
+  });
+
+  it.each<ApiErrorCode>([
+    'network',
+    'server_error',
+    'rate_limited',
+    'unauthorized',
+  ])('is false for %s', (code) => {
+    expect(isStaleCursor(apiError(code))).toBe(false);
+  });
+
+  it('is false for an error from outside the API', () => {
+    expect(isStaleCursor(new Error('invalid_input'))).toBe(false);
   });
 });

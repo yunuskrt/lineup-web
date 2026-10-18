@@ -1,7 +1,7 @@
 ---
 name: feature
-description: Manage current feature workflow - start, review, explain or complete
-argument-hint: load|start|review|test|explain|complete
+description: Manage current feature workflow - start, review, test, manual-test guide, explain or complete
+argument-hint: load|start|review|test|manual [run]|explain|complete
 ---
 
 # Feature Workflow
@@ -32,6 +32,7 @@ Execute the requested action: $ARGUMENTS
 | `start`    | Begin implementation, create branch                       |
 | `review`   | Check goals met, code quality                             |
 | `test`     | Check for testable logic for server actions and utilities |
+| `manual`   | Write a manual-testing guide; `manual run` follows it     |
 | `explain`  | Document what changed and why                             |
 | `complete` | Commit, push, merge, reset                                |
 

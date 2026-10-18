@@ -211,6 +211,63 @@ describe('mock api client', () => {
     expect(profile.stats.bestStreak).toBe(11);
   });
 
+  it('breaks the streak on a life lost to the clock', async () => {
+    await api.auth.continueAsGuest();
+    const { sessionId } = await startRun();
+    const [first, second, third, fourth] = squadFor(
+      requireFixture(CROWN_2003),
+      'home',
+    );
+
+    for (const entry of [first, second, third]) {
+      clock += 10;
+      await api.solo.guess({ sessionId, guess: entry.name });
+    }
+    clock += ROUND_DURATION_MS + GRACE_WINDOW_MS + 1;
+    await api.solo.syncSession(sessionId);
+    clock += 10;
+    await api.solo.guess({ sessionId, guess: fourth.name });
+
+    const summary = unwrap(await api.solo.quit(sessionId));
+    expect(summary.found).toHaveLength(4);
+    expect(summary.livesRemaining).toBe(2);
+    expect(summary.bestStreak).toBe(3);
+
+    const { sessionId: next } = await startRun();
+    clock += 10;
+    await api.solo.guess({ sessionId: next, guess: first.name });
+    clock += ROUND_DURATION_MS + GRACE_WINDOW_MS + 1;
+    await api.solo.syncSession(next);
+    clock += 10;
+    await api.solo.guess({ sessionId: next, guess: second.name });
+
+    expect(unwrap(await api.solo.quit(next)).bestStreak).toBe(1);
+  });
+
+  it('breaks the streak when a guess catches up an expiry', async () => {
+    await api.auth.continueAsGuest();
+    const { sessionId } = await startRun();
+    const names = squadFor(requireFixture(CROWN_2003), 'home').map(
+      (entry) => entry.name,
+    );
+
+    for (const name of names.slice(0, 2)) {
+      clock += 10;
+      await api.solo.guess({ sessionId, guess: name });
+    }
+    // No sync: the guess applies the expiry first
+    clock += ROUND_DURATION_MS + GRACE_WINDOW_MS + 1;
+    for (const name of names.slice(2, 4)) {
+      const step = unwrap(await api.solo.guess({ sessionId, guess: name }));
+      expect(step.result.outcome).toBe('correct_new');
+      clock += 10;
+    }
+
+    const summary = unwrap(await api.solo.quit(sessionId));
+    expect(summary.livesRemaining).toBe(2);
+    expect(summary.bestStreak).toBe(2);
+  });
+
   it('plays the away XI when away is chosen', async () => {
     await api.auth.continueAsGuest();
     const { sessionId, session } = await startRun('away');
