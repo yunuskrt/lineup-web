@@ -191,6 +191,8 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
     const step = resolveRound(previous, { kind: 'tick' }, at);
     session.engine = step.state;
     recordRoundTime(session, previous, step.state, at);
+    // A life lost to the clock breaks the streak
+    if (step.state.lives.you < previous.lives.you) session.currentStreak = 0;
     settleIfOver(session);
   }
 

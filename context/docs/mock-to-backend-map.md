@@ -73,8 +73,9 @@ Every behaviour the web app's mock fakes today, and the backend phase that makes
 
 | Mock today | Real backend | Web wiring |
 | --- | --- | --- |
-| `getProfile`: record, accuracy, streaks, favourite club, computed in memory (`store.ts`) | B14 users module, B34 solo stats | W32 |
-| `getHistory`: cursor paging over an in-memory list | B14, B34, B41 | W32 |
+| `getProfile`: record, accuracy, streaks, favourite club, computed in memory (`store.ts`) | B14 users module, B34 solo stats. **Live from W32**; duel counts stay 0 until B41 | W32 |
+| `getHistory`: cursor paging over an in-memory list | B14, B34. **Live from W32** for solo runs; duel rows arrive with B41 | W32, W31 |
+| A streak breaks on a wrong or repeated name, or a life lost to the clock | B33 summary, B34 `bestStreak`. The mock follows the same rule from W32 | W32 |
 | A reload wipes everything | Postgres (B04, B08); live state in memory, then Redis (B46) | — |
 
 ### Limits

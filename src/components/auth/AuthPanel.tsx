@@ -78,7 +78,7 @@ export function AuthPanel({ mode }: AuthPanelProps) {
             <span className="font-medium text-fg">{user.handle}</span>.
             {mode === 'sign-up'
               ? ' Create an account to keep your history.'
-              : null}
+              : " Signing in to another account leaves this guest's games behind."}
           </p>
         ) : null}
         <ModeSwitch mode={mode} />
