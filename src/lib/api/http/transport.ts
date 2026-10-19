@@ -56,9 +56,9 @@ function initOf(method: HttpMethod, body: unknown): RequestInit {
 }
 
 // Paths only: a body could hold player data
-function reportDrift(method: HttpMethod, path: string, detail: string[]) {
+export function reportDrift(label: string, detail: string[]) {
   if (process.env.NODE_ENV === 'production') return;
-  console.error(`[api] ${method} ${path}: bad response`, detail);
+  console.error(`[api] ${label}: bad response`, detail);
 }
 
 function parseJson(text: string): { value: unknown } | null {
@@ -89,14 +89,14 @@ export function createTransport(baseUrl: string): Transport {
 
     const json = parseJson(text);
     if (!json) {
-      reportDrift(method, path, ['not JSON']);
+      reportDrift(`${method} ${path}`, ['not JSON']);
       return { success: false, error: BAD_RESPONSE_ERROR };
     }
 
     const parsed = apiResultSchema(dataSchema).safeParse(json.value);
     if (!parsed.success) {
       const paths = parsed.error.issues.map((issue) => issue.path.join('.'));
-      reportDrift(method, path, paths);
+      reportDrift(`${method} ${path}`, paths);
       return { success: false, error: BAD_RESPONSE_ERROR };
     }
 

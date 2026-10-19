@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useReducer, useRef } from 'react';
-import { useEnsureSession, useSession } from '@/hooks/use-auth';
+import { failureOf, useEnsureSession, useSession } from '@/hooks/use-auth';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
 import { getDuelClient, type Unsubscribe } from '@/lib/api/duel-client';
-import { apiErrorOf, unwrap } from '@/lib/api/unwrap';
+import { ApiRequestError, unwrap } from '@/lib/api/unwrap';
 import {
   canForfeit,
   canGuess,
@@ -70,6 +70,13 @@ export function useDuel(params: URLSearchParams) {
       client.on('error', (error) =>
         dispatch({ type: 'error', error, at: Date.now() }),
       ),
+      // Only Try again reconnects after a close
+      client.onClose((error) =>
+        dispatch({
+          type: 'closed',
+          error: failureOf(queryClient, new ApiRequestError(error)),
+        }),
+      ),
     ];
   }
 
@@ -85,7 +92,11 @@ export function useDuel(params: URLSearchParams) {
       unwrap(await getDuelClient().enterQueue());
     } catch (error) {
       if (current.isCancelled) return;
-      dispatch({ type: 'failed', step: 'queue', error: apiErrorOf(error) });
+      dispatch({
+        type: 'failed',
+        step: 'queue',
+        error: failureOf(queryClient, error),
+      });
     }
   }
 
@@ -103,7 +114,11 @@ export function useDuel(params: URLSearchParams) {
       unwrap(await getDuelClient().connect());
     } catch (error) {
       if (current.isCancelled) return;
-      dispatch({ type: 'failed', step: 'connect', error: apiErrorOf(error) });
+      dispatch({
+        type: 'failed',
+        step: 'connect',
+        error: failureOf(queryClient, error),
+      });
       return;
     }
     if (current.isCancelled) return;
@@ -169,7 +184,11 @@ export function useDuel(params: URLSearchParams) {
       unwrap(await getDuelClient().submitFilters(filters));
     } catch (error) {
       if (!run.current.isCancelled) {
-        dispatch({ type: 'failed', step: 'lock', error: apiErrorOf(error) });
+        dispatch({
+          type: 'failed',
+          step: 'lock',
+          error: failureOf(queryClient, error),
+        });
       }
     } finally {
       isLocking.current = false;
@@ -191,7 +210,7 @@ export function useDuel(params: URLSearchParams) {
       if (!run.current.isCancelled) {
         dispatch({
           type: 'guessFailed',
-          error: apiErrorOf(error),
+          error: failureOf(queryClient, error),
           at: Date.now(),
         });
       }
@@ -210,7 +229,11 @@ export function useDuel(params: URLSearchParams) {
       unwrap(await getDuelClient().forfeit());
     } catch (error) {
       if (!run.current.isCancelled) {
-        dispatch({ type: 'failed', step: 'forfeit', error: apiErrorOf(error) });
+        dispatch({
+          type: 'failed',
+          step: 'forfeit',
+          error: failureOf(queryClient, error),
+        });
       }
     } finally {
       isForfeiting.current = false;

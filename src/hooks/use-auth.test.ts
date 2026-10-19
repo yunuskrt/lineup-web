@@ -3,9 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearSession,
   ensureSession,
+  failureOf,
   SESSION_QUERY_KEY,
 } from '@/hooks/use-auth';
 import { getApiClient, setApiClient, type ApiClient } from '@/lib/api/client';
+import { ApiRequestError } from '@/lib/api/unwrap';
 import { HISTORY_QUERY_KEY, PROFILE_QUERY_KEY } from '@/lib/query-keys';
 import type { Session } from '@/types/auth';
 
@@ -87,5 +89,35 @@ describe('clearSession', () => {
     expect(
       queryClient.getQueryData([...HISTORY_QUERY_KEY, 'user-1']),
     ).toBeUndefined();
+  });
+});
+
+describe('failureOf', () => {
+  const unauthorized = new ApiRequestError({
+    code: 'unauthorized',
+    message: 'Sign in or continue as a guest first.',
+    retryAfterMs: null,
+  });
+
+  it('signs out on a 401 and returns its error', () => {
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(SESSION_QUERY_KEY, ACCOUNT);
+
+    expect(failureOf(queryClient, unauthorized)).toBe(unauthorized.error);
+    expect(queryClient.getQueryData(SESSION_QUERY_KEY)).toBeNull();
+  });
+
+  it('keeps the session for any other failure', () => {
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(SESSION_QUERY_KEY, ACCOUNT);
+    const network = new ApiRequestError({
+      code: 'network',
+      message: 'Offline.',
+      retryAfterMs: null,
+    });
+
+    expect(failureOf(queryClient, network).code).toBe('network');
+    expect(failureOf(queryClient, new Error('boom')).code).toBe('server_error');
+    expect(queryClient.getQueryData(SESSION_QUERY_KEY)).toBe(ACCOUNT);
   });
 });

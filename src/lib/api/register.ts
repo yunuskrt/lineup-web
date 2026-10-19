@@ -2,11 +2,11 @@ import { setApiClient } from '@/lib/api/client';
 import { API_MODE, apiUrl } from '@/lib/api/config';
 import { setDuelClient } from '@/lib/api/duel-client';
 import { createHttpApiClient } from '@/lib/api/http/api-client';
-import { createUnavailableDuelClient } from '@/lib/api/http/duel-client';
 import { createMockApiClient } from '@/lib/api/mock/api-client';
 import { createMockDuelClient } from '@/lib/api/mock/duel-client';
 import { type DuelScenario, isDuelScenario } from '@/lib/api/mock/scenarios';
 import { createStore } from '@/lib/api/mock/store';
+import { createSocketDuelClient } from '@/lib/api/socket/duel-client';
 
 export const SCENARIO_PARAM = 'scenario';
 
@@ -26,8 +26,12 @@ export function registerApiClient(): void {
   if (isRegistered) return;
 
   if (API_MODE === 'real') {
-    setApiClient(createHttpApiClient(apiUrl()));
-    setDuelClient(createUnavailableDuelClient());
+    const baseUrl = apiUrl();
+    const api = createHttpApiClient(baseUrl);
+    setApiClient(api);
+    setDuelClient(
+      createSocketDuelClient(baseUrl, () => api.auth.getGatewayToken()),
+    );
     isRegistered = true;
     return;
   }

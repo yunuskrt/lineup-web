@@ -5,7 +5,7 @@ Every behaviour the web app's mock fakes today, and the backend phase that makes
 ## How the mock is wired
 
 - The screens call two interfaces: `ApiClient` (REST: auth, catalog, solo, profile) in `src/lib/api/client.ts`, and `DuelClient` (Socket.IO events) in `src/lib/api/duel-client.ts`.
-- `src/lib/api/register.ts` plugs in the mock implementations from `src/lib/api/mock/`. `NEXT_PUBLIC_API_MODE=real` plugs in the HTTP client from `src/lib/api/http/` instead (W27), with duels refused until W30.
+- `src/lib/api/register.ts` plugs in the mock implementations from `src/lib/api/mock/`. `NEXT_PUBLIC_API_MODE=real` plugs in the HTTP client from `src/lib/api/http/` instead (W27), and the Socket.IO duel client from `src/lib/api/socket/` (W30).
 - One in-memory store backs both mocks, so a reload resets everything.
 - **The contract the backend must match** is the web's Zod schemas in `src/lib/api/schemas/` plus `DuelEventMap`. Transcribe them by hand; never import them.
 
@@ -60,8 +60,9 @@ Every behaviour the web app's mock fakes today, and the backend phase that makes
 
 | Mock today | Real backend | Web wiring |
 | --- | --- | --- |
-| `connect`/`disconnect`, all on a local emitter | B36 Socket.IO gateway, JWT handshake | W30 |
-| `protocolRefused` scenario | B36 version gate (N and N-1). **`PROTOCOL_VERSION` doesn't exist in web yet** | W30 |
+| `connect`/`disconnect`, all on a local emitter | B36 Socket.IO gateway, JWT handshake (a fresh `GET /auth/token` per attempt). **Live from W30**; every duel command is refused until B37–B41 | W30 |
+| `protocolRefused` scenario | B36 version gate (N and N-1). **Live from W30**: the web sends `PROTOCOL_VERSION` 1 | W30 |
+| `connectedElsewhere` scenario | B36 one connection per user: the newest wins, the old one is closed. **Live from W30** | W30 |
 | Queue pairs after 2s; `queueTimeout` scenario | B37 FIFO matchmaking, including a queue timeout | W31 |
 | Scripted opponent filters, coin flip, 2s flip reveal | B38 | W31 |
 | **Scripted opponent: 6s think time, 65% hit rate** | A real second player | W31 |

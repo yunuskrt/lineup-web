@@ -1,10 +1,9 @@
-import { useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useReducer, useRef } from 'react';
-import { clearSession, useEnsureSession } from '@/hooks/use-auth';
+import { failureOf, useEnsureSession } from '@/hooks/use-auth';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
 import { getApiClient } from '@/lib/api';
-import { isSessionLost } from '@/lib/api/session-loss';
-import { apiErrorOf, unwrap } from '@/lib/api/unwrap';
+import { unwrap } from '@/lib/api/unwrap';
 import { guessFeedback } from '@/lib/feedback';
 import { filtersFromParams, widenFilters, withFilters } from '@/lib/filters';
 import { prepareGuess } from '@/lib/guess';
@@ -18,16 +17,9 @@ import {
   SYNC_RETRY_MS,
 } from '@/lib/solo-run';
 import { widenReasonOf } from '@/lib/system-states';
-import type { ApiError } from '@/types/api';
 import type { GuessFeedback } from '@/types/feedback';
 import type { RoundTiming } from '@/types/game';
 import type { Side } from '@/types/match';
-
-// Solo calls skip TanStack, so apply its 401 rule
-function failureOf(queryClient: QueryClient, error: unknown): ApiError {
-  if (isSessionLost(error)) clearSession(queryClient);
-  return apiErrorOf(error);
-}
 
 // Only a round started on receipt dates the server
 function sampleRoundStart(round: RoundTiming | null, sentAt: number) {

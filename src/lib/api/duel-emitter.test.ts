@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createEmitter } from '@/lib/api/mock/emitter';
+import { createEmitter } from '@/lib/api/duel-emitter';
 
 const QUEUED = { phase: 'queued', since: 1 } as const;
 

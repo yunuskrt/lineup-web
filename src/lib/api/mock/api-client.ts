@@ -54,6 +54,9 @@ const DEFAULT_RATE_LIMIT: MockRateLimit = { max: 12, windowMs: 3_000 };
 export const MOCK_REJECTED_PASSWORD = 'wrong-password';
 export const MOCK_TAKEN_HANDLE = 'taken';
 
+// The backend's token lifetime
+const GATEWAY_TOKEN_TTL_MS = 5 * 60_000;
+
 const GUEST_HANDLE_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
 const GUEST_HANDLE_LENGTH = 8;
 
@@ -323,6 +326,16 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
       async signOut() {
         store.identity = null;
         return ACK;
+      },
+
+      async getGatewayToken() {
+        if (!store.identity) {
+          return fail('unauthorized', 'Sign in or continue as a guest first.');
+        }
+        return ok({
+          token: `mock-token-${nextId(store, 'token')}`,
+          expiresAt: now() + GATEWAY_TOKEN_TTL_MS,
+        });
       },
     },
 

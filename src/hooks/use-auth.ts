@@ -6,9 +6,11 @@ import {
   type QueryClient,
 } from '@tanstack/react-query';
 import { getApiClient } from '@/lib/api';
-import { unwrap } from '@/lib/api/unwrap';
+import { isSessionLost } from '@/lib/api/session-loss';
+import { apiErrorOf, unwrap } from '@/lib/api/unwrap';
 import { signUpTarget } from '@/lib/auth';
 import { HISTORY_QUERY_KEY, PROFILE_QUERY_KEY } from '@/lib/query-keys';
+import type { ApiError } from '@/types/api';
 import type { Session, SignInRequest, SignUpRequest } from '@/types/auth';
 
 export const SESSION_QUERY_KEY = ['session'] as const;
@@ -95,6 +97,12 @@ export function clearSession(queryClient: QueryClient): void {
   queryClient.setQueryData(SESSION_QUERY_KEY, null);
   queryClient.removeQueries({ queryKey: PROFILE_QUERY_KEY });
   queryClient.removeQueries({ queryKey: HISTORY_QUERY_KEY });
+}
+
+// Calls outside TanStack still apply its 401 rule
+export function failureOf(queryClient: QueryClient, error: unknown): ApiError {
+  if (isSessionLost(error)) clearSession(queryClient);
+  return apiErrorOf(error);
 }
 
 export function useSignOut() {

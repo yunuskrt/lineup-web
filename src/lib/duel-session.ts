@@ -43,6 +43,7 @@ const FAILED_TITLES: Record<DuelFailureStep, string> = {
   lock: "Couldn't lock in your filters",
   match: "Couldn't set up the match",
   forfeit: "Couldn't forfeit the duel",
+  connection: 'Duel connection closed',
 };
 
 const NO_SUBMISSIONS = { yours: 'pending', theirs: 'pending' } as const;
@@ -80,6 +81,12 @@ function stepOf(phase: DuelSessionPhase): DuelFailureStep {
     default:
       return 'match';
   }
+}
+
+// An old build is refused on any connect
+function isRefusal(step: DuelFailureStep, error: ApiError): boolean {
+  if (error.code !== 'protocol_refused') return false;
+  return step === 'connect' || step === 'connection';
 }
 
 // A match is on until the server sends the result
@@ -305,13 +312,18 @@ export function duelSessionReducer(
         step: stepOf(state.phase),
         error: event.error,
       });
+    case 'closed':
+      // A finished duel keeps its result card
+      if (state.result) return state;
+      return duelSessionReducer(state, {
+        type: 'failed',
+        step: 'connection',
+        error: event.error,
+      });
     case 'failed':
       return {
         ...state,
-        phase:
-          event.error.code === 'protocol_refused' && event.step === 'connect'
-            ? 'refused'
-            : 'failed',
+        phase: isRefusal(event.step, event.error) ? 'refused' : 'failed',
         isLocking: false,
         isGuessing: false,
         isForfeiting: false,

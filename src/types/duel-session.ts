@@ -27,7 +27,13 @@ export type DuelSessionPhase =
   | 'refused';
 
 export type DuelFailureStep =
-  'connect' | 'queue' | 'lock' | 'match' | 'forfeit';
+  | 'connect'
+  | 'queue'
+  | 'lock'
+  | 'match'
+  | 'forfeit'
+  // The socket closed and won't reopen by itself
+  | 'connection';
 
 export type DuelFailure = { step: DuelFailureStep; error: ApiError };
 
@@ -86,6 +92,7 @@ export type DuelSessionEvent =
   | { type: 'error'; error: ApiError; at: number }
   // Your own set, widened after an empty pool
   | { type: 'filtersWidened'; filters: Filters }
-  | { type: 'failed'; step: DuelFailureStep; error: ApiError };
+  | { type: 'failed'; step: DuelFailureStep; error: ApiError }
+  | { type: 'closed'; error: ApiError };
 
 export type DuelGateAction = 'widen' | 'leave' | 'retry';

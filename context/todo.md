@@ -46,7 +46,7 @@ This todo file is for developer-side use. It is also only generated for the web 
 - [x] **Phase W28 — Auth Wiring**: Real Better Auth session, guest identity and the upgrade flow. → needs B13
 - [x] **Phase W29 — Solo Wiring**: Solo loop on real endpoints; the squad never reaches the browser. → needs B33
 - [x] **Phase W32 — Profile Wiring**: Real history and stats with guest-to-account upgrade preserved. → needs B34
-- [ ] **Phase W30 — Socket Client**: Real Socket.IO connection, protocol version and reconnect handling. → needs B36
+- [x] **Phase W30 — Socket Client**: Real Socket.IO connection, protocol version and reconnect handling. → needs B36
 - [ ] **Phase W31 — Duel Wiring**: Browser vs browser duel, end to end on real server events. → needs B41
 - [ ] **Phase W33 — Observability**: Sentry, error boundaries and gameplay analytics events.
 - [ ] **Phase W34 — E2E Suite**: Playwright flows including a two-browser-context duel. → needs B45

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { epochMsSchema } from '@/lib/api/schemas/game';
 import { userSchema } from '@/lib/api/schemas/user';
 
 export const MIN_PASSWORD_LENGTH = 8;
@@ -43,4 +44,10 @@ export const upgradeGuestRequestSchema = z.object({
 
 export const sessionSchema = z.object({
   user: userSchema,
+});
+
+// Short-lived; fresh for every handshake
+export const gatewayTokenSchema = z.object({
+  token: z.string().min(1),
+  expiresAt: epochMsSchema,
 });

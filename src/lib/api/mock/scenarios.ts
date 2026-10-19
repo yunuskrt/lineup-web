@@ -8,6 +8,7 @@ export const DUEL_SCENARIOS = [
   'drawOnEleven',
   'rateLimited',
   'protocolRefused',
+  'connectedElsewhere',
 ] as const;
 
 export type DuelScenario = (typeof DUEL_SCENARIOS)[number];
