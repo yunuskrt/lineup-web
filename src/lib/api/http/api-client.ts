@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { ApiClient } from '@/lib/api/client';
 import { createTransport } from '@/lib/api/http/transport';
-import { sessionSchema } from '@/lib/api/schemas/auth';
+import { gatewayTokenSchema, sessionSchema } from '@/lib/api/schemas/auth';
 import { filterOptionsSchema } from '@/lib/api/schemas/catalog';
 import { historyPageSchema, profileSchema } from '@/lib/api/schemas/profile';
 import {
@@ -37,6 +37,7 @@ export function createHttpApiClient(baseUrl: string): ApiClient {
         request('POST', '/auth/upgrade', sessionSchema, { body }),
       signOut: async () =>
         toVoid(await request('POST', '/auth/sign-out', z.null())),
+      getGatewayToken: () => request('GET', '/auth/token', gatewayTokenSchema),
     },
     catalog: {
       getFilterOptions: () =>

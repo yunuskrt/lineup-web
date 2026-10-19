@@ -898,6 +898,45 @@ describe('your connection', () => {
     expect(duelGateAction(state)).toBeNull();
   });
 
+  it('turns away an old build that reconnects', () => {
+    const state = play(...TO_SEARCHING, {
+      type: 'closed',
+      error: { code: 'protocol_refused', message: 'Old.', retryAfterMs: null },
+    });
+    expect(state.phase).toBe('refused');
+  });
+
+  it('closes on a takeover, over any gate already up', () => {
+    const elsewhere: ApiError = {
+      code: 'forbidden',
+      message: "You're connected somewhere else.",
+      retryAfterMs: null,
+    };
+    const state = play(
+      ...TO_SEARCHING,
+      { type: 'failed', step: 'queue', error: NETWORK },
+      { type: 'error', error: elsewhere, at: AT },
+      { type: 'closed', error: elsewhere },
+    );
+
+    expect(state.phase).toBe('failed');
+    expect(viewOf(state).gate).toEqual({
+      title: 'Duel connection closed',
+      detail: "You're connected somewhere else.",
+      actionLabel: 'Try again',
+    });
+    expect(duelGateAction(state)).toBe('retry');
+  });
+
+  it('keeps the result card when the socket closes after it', () => {
+    const finished = play(...TO_FINISHED);
+    const closed = duelSessionReducer(finished, {
+      type: 'closed',
+      error: NETWORK,
+    });
+    expect(closed).toBe(finished);
+  });
+
   it('keeps other connect failures on the retry gate', () => {
     const state = play(
       { type: 'started' },
@@ -979,6 +1018,7 @@ describe('against the mock adapter', () => {
     client.on('error', (error) =>
       apply({ type: 'error', error, at: Date.now() }),
     );
+    client.onClose((error) => apply({ type: 'closed', error }));
     return { apply, phases, current: () => state };
   }
 
@@ -1212,6 +1252,26 @@ describe('against the mock adapter', () => {
     if (result.success) throw new Error('Expected a refusal');
     duel.apply({ type: 'failed', step: 'connect', error: result.error });
     expect(duel.current().phase).toBe('refused');
+  });
+
+  it('closes the lobby when another tab takes over', async () => {
+    const client = createMockDuelClient(
+      scripted({ scenario: 'connectedElsewhere' }),
+    );
+    const duel = drive(client);
+
+    await client.enterQueue();
+    expect(duel.current().phase).toBe('searching');
+    await vi.advanceTimersByTimeAsync(QUEUE_WAIT_MS);
+
+    expect(viewOf(duel.current()).gate?.title).toBe('Duel connection closed');
+    expect(viewOf(duel.current()).gate?.detail).toBe(
+      "You're connected somewhere else.",
+    );
+    // Nothing reconnects or pairs afterwards
+    await vi.advanceTimersByTimeAsync(QUEUE_WAIT_MS * 3);
+    expect(duel.current().phase).toBe('failed');
+    client.disconnect();
   });
 
   it('widens filters that match nothing, then plays', async () => {

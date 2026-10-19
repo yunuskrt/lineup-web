@@ -52,6 +52,8 @@ export interface DuelClient {
   guess(request: DuelGuessRequest): Promise<ApiResult<void>>;
   forfeit(): Promise<ApiResult<void>>;
   on<E extends DuelEvent>(event: E, handler: DuelEventHandler<E>): Unsubscribe;
+  // Ended for good; never reopens by itself
+  onClose(handler: (error: ApiError) => void): Unsubscribe;
 }
 
 let registeredClient: DuelClient | null = null;

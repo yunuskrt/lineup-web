@@ -1,7 +1,7 @@
 import type { DuelClient } from '@/lib/api/duel-client';
 import { GRACE_WINDOW_MS } from '@/lib/api/mock/clock';
 import { squadFor } from '@/lib/api/mock/data/fixtures';
-import { createEmitter } from '@/lib/api/mock/emitter';
+import { createEmitter } from '@/lib/api/duel-emitter';
 import {
   createEngineState,
   foundWithActor,
@@ -61,6 +61,13 @@ export const OPPONENT_FILTERS: Filters = {
   era: { from: FIRST_SEASON_START, to: LAST_SEASON_START },
 };
 
+// The server's copy when another tab takes over
+const CONNECTED_ELSEWHERE_ERROR: ApiError = {
+  code: 'forbidden',
+  message: "You're connected somewhere else.",
+  retryAfterMs: null,
+};
+
 const DEFAULT_THINK_TIME_MS = 6_000;
 const DEFAULT_HIT_RATE = 0.65;
 
@@ -89,6 +96,7 @@ export function createMockDuelClient(
   const store = options.store ?? createStore();
 
   const emitter = createEmitter();
+  const closeHandlers = new Set<(error: ApiError) => void>();
   const timers = new Set<ReturnType<typeof setTimeout>>();
 
   let phase: Phase = 'idle';
@@ -398,6 +406,7 @@ export function createMockDuelClient(
     disconnect() {
       clearTimers();
       emitter.clear();
+      closeHandlers.clear();
       phase = 'idle';
       engine = null;
       fixture = null;
@@ -414,6 +423,15 @@ export function createMockDuelClient(
       const enteredAt = now();
       schedule(QUEUE_WAIT_MS, () => {
         if (phase !== 'queued') return;
+
+        if (scenario === 'connectedElsewhere') {
+          emitter.emit('error', CONNECTED_ELSEWHERE_ERROR);
+          phase = 'idle';
+          for (const handler of [...closeHandlers]) {
+            handler(CONNECTED_ELSEWHERE_ERROR);
+          }
+          return;
+        }
 
         if (scenario === 'queueTimeout') {
           emitter.emit('queueTimedOut', {
@@ -533,6 +551,13 @@ export function createMockDuelClient(
 
     on(event, handler) {
       return emitter.on(event, handler);
+    },
+
+    onClose(handler) {
+      closeHandlers.add(handler);
+      return () => {
+        closeHandlers.delete(handler);
+      };
     },
   };
 }

@@ -1,5 +1,6 @@
 import type { ApiResult } from '@/types/api';
 import type {
+  GatewayToken,
   Session,
   SignInRequest,
   SignUpRequest,
@@ -24,6 +25,8 @@ export interface AuthApi {
   continueAsGuest(): Promise<ApiResult<Session>>;
   upgradeGuest(request: UpgradeGuestRequest): Promise<ApiResult<Session>>;
   signOut(): Promise<ApiResult<void>>;
+  // For the socket handshake only
+  getGatewayToken(): Promise<ApiResult<GatewayToken>>;
 }
 
 export interface CatalogApi {

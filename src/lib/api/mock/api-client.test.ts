@@ -449,6 +449,19 @@ describe('mock api client', () => {
     expect((await guess('nobody 4')).success).toBe(true);
   });
 
+  it('issues a fresh gateway token only while signed in', async () => {
+    expect(errorOf(await api.auth.getGatewayToken()).code).toBe('unauthorized');
+
+    await api.auth.continueAsGuest();
+    const first = unwrap(await api.auth.getGatewayToken());
+    const second = unwrap(await api.auth.getGatewayToken());
+    expect(first.token).not.toBe(second.token);
+    expect(first.expiresAt).toBe(T0 + 5 * 60_000);
+
+    await api.auth.signOut();
+    expect(errorOf(await api.auth.getGatewayToken()).code).toBe('unauthorized');
+  });
+
   it('keeps history and stats when a guest upgrades', async () => {
     await api.auth.continueAsGuest();
     const { sessionId } = await startRun();

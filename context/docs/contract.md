@@ -316,11 +316,10 @@ The web only checks password **length**. The backend owns the password policy.
 
 ### Handshake (`connect`)
 
-- The connection carries the user's auth (JWT from B12) and the client's `protocolVersion`.
-- **Refused:** a build older than N-1 gets an ack with error `protocol_refused`, and the web shows its update screen.
-- **Accepted:** an ack with `success: true`.
-
-`PROTOCOL_VERSION` doesn't exist in the web yet (W30). Agree the starting number in B03.
+- The handshake `auth` is `{ token, protocolVersion }`. `token` comes from `GET /auth/token`, fetched fresh for every attempt; `PROTOCOL_VERSION` is 1 (W30, B36).
+- **Accepted:** the normal `connect` event. There is no ack.
+- **Refused:** a `connect_error` whose `data` is the §2 failure envelope: `protocol_refused` (the web shows its update screen), `unauthorized` or `server_error`. A `connect_error` with no `data` is a transport failure (`network`). *Changed at B36: this file first said an ack.*
+- **One connection per user:** a newer connection takes over. The old one gets an `error` event (`forbidden`, "You're connected somewhere else.") and is disconnected, and the web doesn't reconnect it by itself.
 
 ### Client → server commands
 
@@ -328,7 +327,7 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 
 | Web method | Suggested event | Payload | Errors in the ack |
 | --- | --- | --- | --- |
-| `connect()` | handshake | auth + `protocolVersion` | `protocol_refused`, `unauthorized` |
+| `connect()` | handshake | `{ token, protocolVersion }` | `protocol_refused`, `unauthorized`, `server_error` (in `connect_error` `data`, not an ack) |
 | `enterQueue()` | `queue:enter` | — | `forbidden` (already in a duel) |
 | `leaveQueue()` | `queue:leave` | — | `forbidden` (not queued) |
 | `submitFilters(filters)` | `filters:submit` | `Filters` | `forbidden` (filters not open), `invalid_input`, `empty_pool` + `emptyBecause` (refused before the coin flip) |

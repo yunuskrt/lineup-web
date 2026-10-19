@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DUEL_UNAVAILABLE_ERROR } from '@/lib/api/http/duel-client';
 import { scenarioFrom } from '@/lib/api/register';
 
 describe('scenarioFrom', () => {
@@ -58,18 +57,21 @@ describe('registerApiClient', () => {
     );
   });
 
-  it('refuses duels in real mode until the socket arrives', async () => {
+  it('registers the socket duel client without connecting', async () => {
     vi.stubEnv('NEXT_PUBLIC_API_MODE', 'real');
     vi.stubEnv('NEXT_PUBLIC_API_URL', 'http://localhost:8080');
+    const fetchMock = vi.fn<typeof fetch>();
+    vi.stubGlobal('fetch', fetchMock);
 
     const registry = await freshRegistry();
     registry.registerApiClient();
-    const result = await registry.getDuelClient().connect();
+    const duel = registry.getDuelClient();
+    const unsubscribe = duel.onClose(() => {});
 
-    expect(result).toEqual({
-      success: false,
-      error: DUEL_UNAVAILABLE_ERROR,
-    });
+    expect(typeof unsubscribe).toBe('function');
+    expect(() => duel.disconnect()).not.toThrow();
+    // No token is fetched until a duel connects
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('registers once, however often it is called', async () => {
