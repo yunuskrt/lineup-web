@@ -5,6 +5,8 @@ import { isYourForfeit } from '@/lib/duel-result';
 import { guessFeedback } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
 import {
+  COOLDOWN_OVER_DETAIL,
+  cooldownGateDetail,
   emptyPoolGate,
   heldCooldown,
   reconnectingGate,
@@ -35,6 +37,8 @@ export const PAIRED_BEAT_MS = 1_200;
 
 export const DUEL_GATE_COPY = {
   tryAgain: 'Try again',
+  searchAgain: 'Search again',
+  calledOff: 'The match was called off',
 } as const;
 
 const FAILED_TITLES: Record<DuelFailureStep, string> = {
@@ -152,6 +156,27 @@ function applySession(
   };
 }
 
+// Authoritative from any phase, a resume included
+function applyMatchReady(
+  state: DuelSessionState,
+  session: DuelSession,
+): DuelSessionState {
+  if (state.result) return state;
+  return {
+    ...state,
+    phase: 'playing',
+    session,
+    // A reloaded page never saw `paired`
+    opponent: session.opponent,
+    yourConnection: null,
+    isLocking: false,
+    isGuessing: false,
+    // A gate's wait never locks the input
+    cooldownUntil: state.failure ? null : state.cooldownUntil,
+    failure: null,
+  };
+}
+
 function resolveGuess(
   state: DuelSessionState,
   result: GuessResult,
@@ -190,8 +215,7 @@ type LobbyEvent = Extract<
       | 'filtersOpened'
       | 'filtersUpdated'
       | 'locking'
-      | 'coinFlip'
-      | 'matchReady';
+      | 'coinFlip';
   }
 >;
 
@@ -241,8 +265,6 @@ function lobbyReducer(
         coinFlip: event.result,
         isLocking: false,
       };
-    case 'matchReady':
-      return { ...state, phase: 'playing', session: event.session };
     default: {
       const unhandled: never = event;
       return unhandled;
@@ -255,6 +277,8 @@ export function duelSessionReducer(
   event: DuelSessionEvent,
 ): DuelSessionState {
   switch (event.type) {
+    case 'matchReady':
+      return applyMatchReady(state, event.session);
     case 'roundStarted':
     case 'turnChanged':
       return applySession(state, event.session);
@@ -311,6 +335,7 @@ export function duelSessionReducer(
         type: 'failed',
         step: stepOf(state.phase),
         error: event.error,
+        at: event.at,
       });
     case 'closed':
       // A finished duel keeps its result card
@@ -319,10 +344,17 @@ export function duelSessionReducer(
         type: 'failed',
         step: 'connection',
         error: event.error,
+        at: event.at,
       });
     case 'failed':
+      // A resumed duel answers before the queue does
+      if (event.step === 'queue' && isLive(state)) return state;
       return {
         ...state,
+        cooldownUntil:
+          event.error.code === 'rate_limited'
+            ? heldCooldown(state.cooldownUntil, event.error, event.at)
+            : state.cooldownUntil,
         phase: isRefusal(event.step, event.error) ? 'refused' : 'failed',
         isLocking: false,
         isGuessing: false,
@@ -338,7 +370,6 @@ export function duelSessionReducer(
     case 'filtersUpdated':
     case 'locking':
     case 'coinFlip':
-    case 'matchReady':
       return lobbyReducer(state, event);
     default: {
       const unhandled: never = event;
@@ -418,8 +449,27 @@ function lobbyOf(state: DuelSessionState): DuelLobbyView | null {
   }
 }
 
+// Held until a rate limit's wait is over
+function isWaiting(state: DuelSessionState): boolean {
+  return (
+    state.failure?.error.code === 'rate_limited' && state.cooldownUntil !== null
+  );
+}
+
+// The room ended before the match; search again
+function isCalledOff(state: DuelSessionState): boolean {
+  const { failure } = state;
+  return (
+    failure?.step === 'match' &&
+    failure.error.code === 'session_over' &&
+    state.session === null
+  );
+}
+
 export function duelGateAction(state: DuelSessionState): DuelGateAction | null {
-  if (state.phase !== 'failed' || !state.failure) return null;
+  if (state.phase !== 'failed' || !state.failure || isWaiting(state)) {
+    return null;
+  }
   const { error } = state.failure;
   if (canWidenLock(state) && widenReasonOf(error)) return 'widen';
   return error.code === 'empty_pool' ? 'leave' : 'retry';
@@ -430,12 +480,37 @@ function canWidenLock(state: DuelSessionState): boolean {
   return state.failure?.step === 'lock';
 }
 
+// Try again only once the server's wait is over
+function rateLimitedGate(title: string, until: number | null): CanvasGateView {
+  if (until === null) {
+    return {
+      title,
+      detail: COOLDOWN_OVER_DETAIL,
+      actionLabel: DUEL_GATE_COPY.tryAgain,
+    };
+  }
+  return {
+    title,
+    countdown: { deadline: until, label: cooldownGateDetail, clock: 'local' },
+  };
+}
+
 function failedGate(state: DuelSessionState): CanvasGateView | null {
   const { failure } = state;
   if (!failure) return null;
 
   if (failure.error.code === 'empty_pool') {
     return emptyPoolGate(failure.error, canWidenLock(state));
+  }
+  if (isCalledOff(state)) {
+    return {
+      title: DUEL_GATE_COPY.calledOff,
+      detail: failure.error.message,
+      actionLabel: DUEL_GATE_COPY.searchAgain,
+    };
+  }
+  if (failure.error.code === 'rate_limited') {
+    return rateLimitedGate(FAILED_TITLES[failure.step], state.cooldownUntil);
   }
 
   return {

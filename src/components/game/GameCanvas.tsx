@@ -78,17 +78,22 @@ function RailLives({ view }: { view: CanvasView }) {
 
 const COUNTDOWN_TICK_MS = 250;
 
-// Ticks to the server deadline; decides nothing
+function readClock(clock: CanvasGateCountdown['clock']): number {
+  return clock === 'local' ? Date.now() : serverClock.now();
+}
+
+// Ticks to the deadline; decides nothing
 function GateCountdown({ countdown }: { countdown: CanvasGateCountdown }) {
-  const [now, setNow] = useState(() => serverClock.now());
+  const { clock } = countdown;
+  const [now, setNow] = useState(() => readClock(clock));
 
   useEffect(() => {
     const timer = setInterval(
-      () => setNow(serverClock.now()),
+      () => setNow(readClock(clock)),
       COUNTDOWN_TICK_MS,
     );
     return () => clearInterval(timer);
-  }, []);
+  }, [clock]);
 
   return (
     // Server and client clocks may differ by a tick

@@ -124,7 +124,7 @@ Every `MatchIdentity` field, **plus**:
 | Field | Type | Rule |
 | --- | --- | --- |
 | `side` | `Side` | The XI being named. The named club is `match[side]`. |
-| `formation` | string | Digits joined by `-`, 3–5 lines, outfield total 10 (e.g. `4-4-2`, `4-1-2-1-2`) |
+| `formation` | string | Digits 1–9 joined by `-`, 3–5 lines, outfield total 10 (e.g. `4-4-2`, `4-1-2-1-2`) |
 
 **The full match is shown during play**: both clubs, the score, the competition and the date. It **never** includes a player of either XI.
 
@@ -323,16 +323,16 @@ The web only checks password **length**. The backend owns the password policy.
 
 ### Client → server commands
 
-Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as events, not in the ack.**
+Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as events, not in the ack.** Every command can also be refused with `rate_limited` + `retryAfterMs` (B42, per user and per command) and `server_error`. A payload that fails validation gets `invalid_input`.
 
 | Web method | Suggested event | Payload | Errors in the ack |
 | --- | --- | --- | --- |
 | `connect()` | handshake | `{ token, protocolVersion }` | `protocol_refused`, `unauthorized`, `server_error` (in `connect_error` `data`, not an ack) |
-| `enterQueue()` | `queue:enter` | — | `forbidden` (already in a duel) |
+| `enterQueue()` | `queue:enter` | — | `forbidden` (already queued, or already in a duel) |
 | `leaveQueue()` | `queue:leave` | — | `forbidden` (not queued) |
-| `submitFilters(filters)` | `filters:submit` | `Filters` | `forbidden` (filters not open), `invalid_input`, `empty_pool` + `emptyBecause` (refused before the coin flip) |
-| `guess(request)` | `duel:guess` | `{ sessionId, guess }` (guess trimmed, 1–64) | `invalid_input`, `session_over`, `forbidden` (not your turn), `rate_limited` + `retryAfterMs` |
-| `forfeit()` | `duel:forfeit` | — | `forbidden` (no duel running) |
+| `submitFilters(filters)` | `filters:submit` | `Filters` | `forbidden` (filters not open, or already submitted), `invalid_input`, `empty_pool` + `emptyBecause` (not stored, so a wider set may be sent) |
+| `guess(request)` | `duel:guess` | `{ sessionId, guess }` (guess trimmed, 1–64) | `invalid_input` (another duel's id), `session_over` (round already ended, or duel not running), `forbidden` (not your turn) |
+| `forfeit()` | `duel:forfeit` | — | `forbidden` (no duel running). Works on either player's turn |
 | `disconnect()` | socket close | — | — |
 
 ### Server → client events (`DuelEventMap`)
@@ -341,12 +341,12 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 
 | Event | Payload | When |
 | --- | --- | --- |
-| `queued` | `QueueState` | After `queue:enter` |
-| `queueTimedOut` | `QueueTimeout` | No opponent in time. The web offers solo with the same filters. |
-| `paired` | `PairedState` | Opponent found; filters open |
-| `filtersUpdated` | `FilterSubmission` | Each time either player submits |
-| `coinFlip` | `CoinFlipResult` | Both submitted. One set wins and is applied **whole**. |
-| `matchReady` | `DuelSession` | Match resolved; the first round has started. **Authoritative.** |
+| `queued` | `QueueState` | After every accepted `queue:enter`, before `paired` even when it pairs at once. `since` is the server's time; the web samples its clock from it (W31a) |
+| `queueTimedOut` | `QueueTimeout` | 60 s alone; the player is no longer queued. The web offers solo with the same filters. |
+| `paired` | `PairedState` | Opponent found; the 30 s filter window opens |
+| `filtersUpdated` | `FilterSubmission` | Each time either player submits, and once when the window closes |
+| `coinFlip` | `CoinFlipResult` | Both submitted, or the window closed (a missing set is no preference). One set wins and is applied **whole**. |
+| `matchReady` | `DuelSession` | 2 s after `coinFlip`; the first round has started. Also the resume snapshot on a reconnect. **Authoritative**, from any phase |
 | `roundStarted` | `DuelSession` | A new round starts; follows every `turnChanged` that doesn't end the duel. **Authoritative.** |
 | `guessResolved` | `GuessResult` | Your own guess resolved (sent to the guesser only) |
 | `playerRevealed` | `DuelFoundPlayer` | Either player names a new starter (sent to both) |
@@ -354,8 +354,8 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 | `turnChanged` | `DuelSession` | Handover, after a correct guess or an expiry |
 | `opponentConnection` | `ConnectionState` | The opponent drops, comes back, or the window closes |
 | `finished` | `DuelResult` | Win, loss, draw (all 11 named) or forfeit |
-| `disconnected` | `ConnectionState` | **Your own** connection state (reconnecting, then back, or forfeited) |
-| `error` | `ApiError` | Errors outside a command ack, e.g. `empty_pool` after the flip, or `rate_limited` |
+| `disconnected` | `ConnectionState` | **Your own** return inside the window: `connected`, then `matchReady`. The server never sends your own `reconnecting`; your socket is down then |
+| `error` | `ApiError` | Errors outside a command ack: see *Errors outside an ack* below |
 
 ### Duel payload types
 
@@ -397,11 +397,33 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 
 ### Duel behaviour the web relies on
 
-- **Correct, new name:** `guessResolved` to the guesser, `playerRevealed` to both, `turnChanged`, then `roundStarted`. If that name was the 11th, `finished` replaces the last two.
-- **Already found, or not in the XI:** `guessResolved` only. The turn and the clock carry on.
-- **Expiry:** `lifeLost`, `turnChanged`, then `roundStarted`. If the player who lost the life is at 0, `finished` replaces the last two.
-- **Draw:** all 11 named ends in an instant `finished` with `outcome: draw`.
-- **Reconnect window:** 20 s. The dropped player's clock **keeps running**. `opponentConnection` and `disconnected` carry `reconnectDeadline` while it's open.
+**Event order** (B43's two-client harness pins it; if the web disagrees, the harness is right):
+
+| What happened | The player who acted | The other player |
+| --- | --- | --- |
+| A correct, new name | `guessResolved`, `playerRevealed`, `turnChanged`, `roundStarted` | `playerRevealed`, `turnChanged`, `roundStarted` |
+| An already-found name, or a name not in the XI | `guessResolved` | nothing |
+| A round runs out | `lifeLost`, `turnChanged`, `roundStarted` | the same |
+| The 11th name | `guessResolved`, `playerRevealed`, `finished` (draw) | `playerRevealed`, `finished` |
+| The last life lost | `lifeLost`, `finished` | the same |
+| `duel:forfeit` | `finished` | `finished` |
+
+- **Nothing follows `finished`.** Outcomes pair up: `win` with `loss`, `draw` with `draw`, `forfeit_win` with `loss`. The player who forfeits gets a plain `loss`, with `isForfeit: true` on both sides.
+- **The player who loses the coin flip names first.**
+- **Expiry is the server's.** Its timer fires at `endsAt` + 400 ms, so `lifeLost` arrives about 0.4 s after the countdown hits 0. There is no sync call in a duel.
+- **Reconnect window:** 20 s. The dropped player's clock **keeps running**. `opponentConnection` carries `reconnectDeadline` while it's open, then `connected`, or `forfeited` followed by `finished`.
+- **Resume:** a reload mid-duel gets `disconnected` `connected`, then `matchReady`, before any command's ack. A `queue:enter` sent anyway is refused with `forbidden` (already in a duel), and the web ignores it.
+- **After the window,** or after the duel ended while away, there is no `matchReady` and no replay. The result is in `GET /profile/history`, saved about 100 ms after `finished`.
+
+**Errors outside an ack** (the `error` event):
+
+| When | Code: message |
+| --- | --- |
+| The opponent leaves before `matchReady` | `session_over`: "Your opponent left." The pre-match room is gone |
+| The winning filters' pool emptied between the flip and the load | `empty_pool`: "No match fits the winning filters." + `emptyBecause`. The room is gone |
+| Another tab took the seat | `forbidden`: "You're connected somewhere else." (old socket only) |
+| A server fault | `server_error` |
+| A command sent without an ack, then refused | that command's refusal. The web always asks for an ack |
 
 ---
 
@@ -419,3 +441,8 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 | History page | default 20, maximum 50 |
 | Season range | 2000–2025 (season-start years) |
 | Reconnect window | 20 s |
+| Queue timeout | 60 s |
+| Duel filter window | 30 s from `paired` |
+| Coin-flip reveal | 2 s from `coinFlip` to `matchReady` |
+| Socket heartbeat | ping every 10 s, 5 s timeout |
+| Gateway token | 5 minutes |

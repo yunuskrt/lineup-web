@@ -19,7 +19,7 @@ export const competitionRefSchema = z.object({
   name: z.string().min(1),
 });
 
-export const formationSchema = z.string().regex(/^\d(-\d){2,4}$/);
+export const formationSchema = z.string().regex(/^[1-9](-[1-9]){2,4}$/);
 
 export const matchIdentitySchema = z.object({
   id: idSchema,

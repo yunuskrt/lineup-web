@@ -24,6 +24,8 @@ export type CanvasGateChoice = { id: string; label: string };
 
 export type CanvasGateCountdown = {
   deadline: number;
+  // A rate limit's wait is on this device's clock
+  clock?: 'server' | 'local';
   label: (secondsLeft: number) => string;
 };
 

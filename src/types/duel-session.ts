@@ -55,7 +55,7 @@ export type DuelSessionState = {
   isLocking: boolean;
   isGuessing: boolean;
   isForfeiting: boolean;
-  // Server retry time after a rate-limited guess
+  // Server retry time after a rate-limited command
   cooldownUntil: number | null;
   failure: DuelFailure | null;
   toast: ToastMessage | null;
@@ -92,7 +92,8 @@ export type DuelSessionEvent =
   | { type: 'error'; error: ApiError; at: number }
   // Your own set, widened after an empty pool
   | { type: 'filtersWidened'; filters: Filters }
-  | { type: 'failed'; step: DuelFailureStep; error: ApiError }
-  | { type: 'closed'; error: ApiError };
+  // `at` starts a rate limit's wait
+  | { type: 'failed'; step: DuelFailureStep; error: ApiError; at: number }
+  | { type: 'closed'; error: ApiError; at: number };
 
 export type DuelGateAction = 'widen' | 'leave' | 'retry';
