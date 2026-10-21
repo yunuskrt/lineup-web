@@ -22,3 +22,28 @@ export function createServerClock(localNow = () => Date.now()): ServerClock {
 }
 
 export const serverClock = createServerClock();
+
+export type RoundTrip = {
+  start(): void;
+  // One sample per start; a stray reply is dropped
+  finish(serverInstant: number): void;
+};
+
+// Times a request until its reply lands
+export function createRoundTrip(
+  clock: ServerClock,
+  localNow = () => Date.now(),
+): RoundTrip {
+  let sentAt: number | null = null;
+
+  return {
+    start() {
+      sentAt = localNow();
+    },
+    finish(serverInstant) {
+      if (sentAt === null) return;
+      clock.sample(serverInstant, sentAt, localNow());
+      sentAt = null;
+    },
+  };
+}

@@ -485,7 +485,7 @@ describe('mock duel client', () => {
     if (!result.success) expect(result.error.code).toBe('protocol_refused');
   });
 
-  it('surfaces a rate limit as an event and a failed ack', async () => {
+  it('refuses a rate-limited guess in the ack only', async () => {
     const client = createMockDuelClient(scripted({ scenario: 'rateLimited' }));
     const log = record(client);
     await reachMatch(client);
@@ -501,8 +501,8 @@ describe('mock duel client', () => {
       expect(result.error.retryAfterMs).toBeGreaterThan(0);
     }
 
-    const emitted = lastOf<{ code: string }>(log, 'error');
-    expect(emitted.code).toBe('rate_limited');
+    // The server sends no `error` when there's an ack
+    expect(names(log)).not.toContain('error');
   });
 
   it('never emits a player who has not been revealed', async () => {

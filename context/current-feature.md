@@ -65,3 +65,4 @@ Not Started
 - W29 Solo Wiring: server clock, lost-run gate, solo 401 sign-out.
 - W32 Profile Wiring: stale-cursor restart, mock streak rule, guest note.
 - W30 Socket Client: token handshake, version gate, takeover, reconnects.
+- W31a Duel Play Live: resume on reload, rate-limit countdown, called off.

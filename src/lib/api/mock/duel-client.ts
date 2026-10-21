@@ -532,7 +532,7 @@ export function createMockDuelClient(
           message: 'Too many guesses at once. Wait a moment.',
           retryAfterMs: 2_000,
         };
-        emitter.emit('error', error);
+        // Ack only, as the server does with an ack
         return { success: false, error };
       }
 

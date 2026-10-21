@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useEffectEvent, useReducer, useRef } from 'react';
+import { useEffect, useEffectEvent, useReducer, useRef, useState } from 'react';
 import { failureOf, useEnsureSession, useSession } from '@/hooks/use-auth';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
 import { getDuelClient, type Unsubscribe } from '@/lib/api/duel-client';
@@ -16,6 +16,7 @@ import {
 } from '@/lib/duel-session';
 import { filtersFromParams, widenFilters, withFilters } from '@/lib/filters';
 import { prepareGuess } from '@/lib/guess';
+import { createRoundTrip, serverClock } from '@/lib/server-clock';
 import { widenReasonOf } from '@/lib/system-states';
 import type { Filters } from '@/types/filters';
 
@@ -34,11 +35,16 @@ export function useDuel(params: URLSearchParams) {
   const isLocking = useRef(false);
   const isGuessing = useRef(false);
   const isForfeiting = useRef(false);
+  // `queued.since` is the server's time on arrival
+  const [queueTrip] = useState(() => createRoundTrip(serverClock));
 
   function subscribe() {
     const client = getDuelClient();
     subscriptions.current = [
-      client.on('queued', () => dispatch({ type: 'queued' })),
+      client.on('queued', ({ since }) => {
+        queueTrip.finish(since);
+        dispatch({ type: 'queued' });
+      }),
       client.on('queueTimedOut', () => dispatch({ type: 'queueTimedOut' })),
       client.on('paired', ({ opponent }) =>
         dispatch({ type: 'paired', opponent }),
@@ -75,6 +81,7 @@ export function useDuel(params: URLSearchParams) {
         dispatch({
           type: 'closed',
           error: failureOf(queryClient, new ApiRequestError(error)),
+          at: Date.now(),
         }),
       ),
     ];
@@ -89,6 +96,7 @@ export function useDuel(params: URLSearchParams) {
 
   async function enterQueue(current: Run) {
     try {
+      queueTrip.start();
       unwrap(await getDuelClient().enterQueue());
     } catch (error) {
       if (current.isCancelled) return;
@@ -96,6 +104,7 @@ export function useDuel(params: URLSearchParams) {
         type: 'failed',
         step: 'queue',
         error: failureOf(queryClient, error),
+        at: Date.now(),
       });
     }
   }
@@ -118,6 +127,7 @@ export function useDuel(params: URLSearchParams) {
         type: 'failed',
         step: 'connect',
         error: failureOf(queryClient, error),
+        at: Date.now(),
       });
       return;
     }
@@ -188,6 +198,7 @@ export function useDuel(params: URLSearchParams) {
           type: 'failed',
           step: 'lock',
           error: failureOf(queryClient, error),
+          at: Date.now(),
         });
       }
     } finally {
@@ -233,6 +244,7 @@ export function useDuel(params: URLSearchParams) {
           type: 'failed',
           step: 'forfeit',
           error: failureOf(queryClient, error),
+          at: Date.now(),
         });
       }
     } finally {

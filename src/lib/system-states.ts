@@ -78,6 +78,14 @@ export function cooldownAnnouncement(msLeft: number): string {
   return `Too many guesses. Try again in ${seconds} ${unit}.`;
 }
 
+export const COOLDOWN_OVER_DETAIL = 'Too many attempts. You can try again now.';
+
+export function cooldownGateDetail(secondsLeft: number): string {
+  const seconds = Math.max(1, secondsLeft);
+  const unit = seconds === 1 ? 'second' : 'seconds';
+  return `Too many attempts. Try again in ${seconds} ${unit}.`;
+}
+
 export const RECONNECTING_TITLE = 'Reconnecting';
 
 // Said outright, or the dim reads as a freeze

@@ -575,6 +575,7 @@ describe('forfeit', () => {
     expect(canConfirmForfeit(play(...TO_FINISHED))).toBe(false);
     const failed = duelSessionReducer(pending, {
       type: 'failed',
+      at: AT,
       step: 'forfeit',
       error: NETWORK,
     });
@@ -585,7 +586,7 @@ describe('forfeit', () => {
     const state = play(
       ...TO_PLAYING,
       { type: 'forfeiting' },
-      { type: 'failed', step: 'forfeit', error: NETWORK },
+      { type: 'failed', at: AT, step: 'forfeit', error: NETWORK },
       { type: 'forfeiting' },
     );
     expect(state.phase).toBe('playing');
@@ -601,6 +602,7 @@ describe('forfeit', () => {
       { type: 'forfeiting' },
       {
         type: 'failed',
+        at: AT,
         step: 'forfeit',
         error: NETWORK,
       },
@@ -619,6 +621,7 @@ describe('failures', () => {
       { type: 'locking' },
       {
         type: 'failed',
+        at: AT,
         step: 'lock',
         error: NETWORK,
       },
@@ -632,7 +635,7 @@ describe('failures', () => {
   it('returns to the filter step on a lock retry', () => {
     const state = play(
       ...TO_FILTERS,
-      { type: 'failed', step: 'lock', error: NETWORK },
+      { type: 'failed', at: AT, step: 'lock', error: NETWORK },
       { type: 'locking' },
     );
     expect(state.phase).toBe('filters');
@@ -647,7 +650,7 @@ describe('failures', () => {
     ['match', "Couldn't set up the match"],
     ['forfeit', "Couldn't forfeit the duel"],
   ] as const)('titles a failed %s step and offers a retry', (step, title) => {
-    const state = play({ type: 'failed', step, error: NETWORK });
+    const state = play({ type: 'failed', at: AT, step, error: NETWORK });
     const gate = viewOf(state).gate;
     expect(gate?.title).toBe(title);
     expect(gate?.actionLabel).toBe(DUEL_GATE_COPY.tryAgain);
@@ -687,6 +690,7 @@ describe('failures', () => {
       { type: 'locking' },
       {
         type: 'failed',
+        at: AT,
         step: 'lock',
         error: { ...EMPTY_POOL, emptyBecause: 'competition' },
       },
@@ -886,6 +890,7 @@ describe('your connection', () => {
       { type: 'started' },
       {
         type: 'failed',
+        at: AT,
         step: 'connect',
         error: {
           code: 'protocol_refused',
@@ -901,6 +906,7 @@ describe('your connection', () => {
   it('turns away an old build that reconnects', () => {
     const state = play(...TO_SEARCHING, {
       type: 'closed',
+      at: AT,
       error: { code: 'protocol_refused', message: 'Old.', retryAfterMs: null },
     });
     expect(state.phase).toBe('refused');
@@ -914,9 +920,9 @@ describe('your connection', () => {
     };
     const state = play(
       ...TO_SEARCHING,
-      { type: 'failed', step: 'queue', error: NETWORK },
+      { type: 'failed', at: AT, step: 'queue', error: NETWORK },
       { type: 'error', error: elsewhere, at: AT },
-      { type: 'closed', error: elsewhere },
+      { type: 'closed', at: AT, error: elsewhere },
     );
 
     expect(state.phase).toBe('failed');
@@ -932,6 +938,7 @@ describe('your connection', () => {
     const finished = play(...TO_FINISHED);
     const closed = duelSessionReducer(finished, {
       type: 'closed',
+      at: AT,
       error: NETWORK,
     });
     expect(closed).toBe(finished);
@@ -942,12 +949,217 @@ describe('your connection', () => {
       { type: 'started' },
       {
         type: 'failed',
+        at: AT,
         step: 'connect',
         error: NETWORK,
       },
     );
     expect(state.phase).toBe('failed');
     expect(duelGateAction(state)).toBe('retry');
+  });
+});
+
+describe('a duel the server resumes', () => {
+  const READY: DuelSessionEvent = { type: 'matchReady', session: THEIR_TURN };
+  const ALREADY_IN_DUEL: ApiError = {
+    code: 'forbidden',
+    message: "You're already in a duel.",
+    retryAfterMs: null,
+  };
+
+  it('takes over from connecting, as after a reload', () => {
+    const state = play({ type: 'started' }, PREPARED, READY);
+    expect(state.phase).toBe('playing');
+    expect(state.session).toEqual(THEIR_TURN);
+    expect(state.opponent).toEqual(THEIR_TURN.opponent);
+    expect(viewOf(state).gate).toBeNull();
+  });
+
+  it('takes over from searching', () => {
+    const state = play(...TO_SEARCHING, READY);
+    expect(state.phase).toBe('playing');
+    expect(viewOf(state).lobby).toBeNull();
+  });
+
+  it('takes over from a failure gate and clears it', () => {
+    const state = play(
+      { type: 'started' },
+      PREPARED,
+      { type: 'failed', at: AT, step: 'connect', error: NETWORK },
+      READY,
+    );
+    expect(state.phase).toBe('playing');
+    expect(state.failure).toBeNull();
+    expect(viewOf(state).gate).toBeNull();
+  });
+
+  it('clears a lock in flight', () => {
+    const state = play(...TO_FILTERS, { type: 'locking' }, READY);
+    expect(state.isLocking).toBe(false);
+  });
+
+  it('clears your reconnecting state on a return', () => {
+    const state = play(
+      ...TO_PLAYING,
+      {
+        type: 'disconnected',
+        connection: { status: 'reconnecting', reconnectDeadline: AT },
+      },
+      READY,
+    );
+    expect(state.yourConnection).toBeNull();
+    expect(viewOf(state).gate).toBeNull();
+  });
+
+  it("drops a gate's wait but keeps a guess cooldown", () => {
+    const gated = play(
+      ...TO_SEARCHING,
+      { type: 'failed', at: AT, step: 'queue', error: RATE_LIMITED },
+      READY,
+    );
+    expect(gated.cooldownUntil).toBeNull();
+
+    const guessing = play(
+      ...TO_PLAYING,
+      { type: 'guessFailed', error: RATE_LIMITED, at: AT },
+      READY,
+    );
+    expect(guessing.cooldownUntil).toBe(AT + 2_000);
+  });
+
+  it('never replaces a result', () => {
+    const finished = play(...TO_FINISHED);
+    expect(duelSessionReducer(finished, READY)).toBe(finished);
+  });
+
+  it('ignores the queue refusal that follows it', () => {
+    const resumed = play({ type: 'started' }, PREPARED, READY);
+    const state = duelSessionReducer(resumed, {
+      type: 'failed',
+      at: AT,
+      step: 'queue',
+      error: ALREADY_IN_DUEL,
+    });
+    expect(state).toBe(resumed);
+  });
+
+  it('still shows a queue refusal with no duel to resume', () => {
+    const state = play(...TO_SEARCHING, {
+      type: 'failed',
+      at: AT,
+      step: 'queue',
+      error: ALREADY_IN_DUEL,
+    });
+    expect(state.phase).toBe('failed');
+    expect(viewOf(state).gate?.detail).toBe("You're already in a duel.");
+  });
+});
+
+describe('a rate-limited command', () => {
+  const STEPS = [
+    { step: 'queue', title: "Couldn't join the queue", from: TO_SEARCHING },
+    { step: 'lock', title: "Couldn't lock in your filters", from: TO_FILTERS },
+    { step: 'forfeit', title: "Couldn't forfeit the duel", from: TO_PLAYING },
+  ] as const;
+
+  it.each(STEPS)('counts down before $step offers Try again', (row) => {
+    const limited = play(...row.from, {
+      type: 'failed',
+      at: AT,
+      step: row.step,
+      error: RATE_LIMITED,
+    });
+    expect(limited.cooldownUntil).toBe(AT + 2_000);
+
+    const waiting = viewOf(limited).gate;
+    expect(waiting?.title).toBe(row.title);
+    expect(waiting?.actionLabel).toBeUndefined();
+    expect(waiting?.countdown?.deadline).toBe(AT + 2_000);
+    expect(waiting?.countdown?.clock).toBe('local');
+    expect(waiting?.countdown?.label(2)).toBe(
+      'Too many attempts. Try again in 2 seconds.',
+    );
+    expect(duelGateAction(limited)).toBeNull();
+
+    const ready = duelSessionReducer(limited, { type: 'cooldownEnded' });
+    const gate = viewOf(ready).gate;
+    expect(gate?.countdown).toBeUndefined();
+    expect(gate?.detail).toBe('Too many attempts. You can try again now.');
+    expect(gate?.actionLabel).toBe(DUEL_GATE_COPY.tryAgain);
+    expect(duelGateAction(ready)).toBe('retry');
+  });
+
+  it('never counts a whole second as none', () => {
+    const limited = play(...TO_SEARCHING, {
+      type: 'failed',
+      at: AT,
+      step: 'queue',
+      error: RATE_LIMITED,
+    });
+    expect(viewOf(limited).gate?.countdown?.label(0)).toBe(
+      'Too many attempts. Try again in 1 second.',
+    );
+  });
+
+  it('keeps the first wait on a second report', () => {
+    const state = play(
+      ...TO_SEARCHING,
+      { type: 'failed', at: AT, step: 'queue', error: RATE_LIMITED },
+      { type: 'failed', at: AT + 500, step: 'queue', error: RATE_LIMITED },
+    );
+    expect(state.cooldownUntil).toBe(AT + 2_000);
+  });
+
+  it('counts down a rate-limited reconnect too', () => {
+    const state = play(...TO_SEARCHING, {
+      type: 'closed',
+      at: AT,
+      error: RATE_LIMITED,
+    });
+    expect(viewOf(state).gate?.title).toBe('Duel connection closed');
+    expect(duelGateAction(state)).toBeNull();
+  });
+});
+
+describe('the match called off', () => {
+  const OPPONENT_LEFT: ApiError = {
+    code: 'session_over',
+    message: 'Your opponent left.',
+    retryAfterMs: null,
+  };
+
+  it.each([
+    ['filters', TO_FILTERS],
+    ['the flip', [...TO_FILTERS, YOU_WIN]],
+  ] as const)('names it when the opponent leaves during %s', (_, from) => {
+    const state = play(...from, {
+      type: 'error',
+      error: OPPONENT_LEFT,
+      at: AT,
+    });
+    const gate = viewOf(state).gate;
+    expect(gate?.title).toBe('The match was called off');
+    expect(gate?.detail).toBe('Your opponent left.');
+    expect(gate?.actionLabel).toBe('Search again');
+    expect(duelGateAction(state)).toBe('retry');
+  });
+
+  it('keeps the plain gate for other match failures', () => {
+    const state = play(...TO_FILTERS, {
+      type: 'error',
+      error: NETWORK,
+      at: AT,
+    });
+    expect(viewOf(state).gate?.title).toBe("Couldn't set up the match");
+  });
+
+  it('keeps the empty-pool gate for the winning set, with Leave', () => {
+    const state = play(...TO_FILTERS, YOU_WIN, {
+      type: 'error',
+      error: { ...EMPTY_POOL, emptyBecause: 'club' },
+      at: AT,
+    });
+    expect(duelGateAction(state)).toBe('leave');
   });
 });
 
@@ -1018,7 +1230,7 @@ describe('against the mock adapter', () => {
     client.on('error', (error) =>
       apply({ type: 'error', error, at: Date.now() }),
     );
-    client.onClose((error) => apply({ type: 'closed', error }));
+    client.onClose((error) => apply({ type: 'closed', at: AT, error }));
     return { apply, phases, current: () => state };
   }
 
@@ -1250,7 +1462,12 @@ describe('against the mock adapter', () => {
     const duel = drive(client);
     const result = await client.connect();
     if (result.success) throw new Error('Expected a refusal');
-    duel.apply({ type: 'failed', step: 'connect', error: result.error });
+    duel.apply({
+      type: 'failed',
+      at: AT,
+      step: 'connect',
+      error: result.error,
+    });
     expect(duel.current().phase).toBe('refused');
   });
 
@@ -1284,7 +1501,7 @@ describe('against the mock adapter', () => {
     duel.apply({ type: 'locking' });
     const result = await client.submitFilters(NOTHING_FITS);
     if (result.success) throw new Error('Expected a refusal');
-    duel.apply({ type: 'failed', step: 'lock', error: result.error });
+    duel.apply({ type: 'failed', at: AT, step: 'lock', error: result.error });
 
     expect(result.error.emptyBecause).toBe('era');
     expect(viewOf(duel.current()).gate?.actionLabel).toBe(

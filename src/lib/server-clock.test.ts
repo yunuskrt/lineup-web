@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createServerClock } from '@/lib/server-clock';
+import {
+  createRoundTrip,
+  createServerClock,
+  type ServerClock,
+} from '@/lib/server-clock';
 
 function clockAt(local: number) {
   let now = local;
@@ -56,5 +60,45 @@ describe('createServerClock', () => {
     const { clock } = clockAt(10_000);
     clock.sample(14_000, 10_100, 10_000);
     expect(clock.now()).toBe(10_000);
+  });
+});
+
+describe('createRoundTrip', () => {
+  it('samples a reply against its send time', () => {
+    const { clock } = clockAt(10_000);
+    let local = 9_900;
+    const trip = createRoundTrip(clock, () => local);
+
+    trip.start();
+    local = 10_000;
+    // The server read 14_000 between the two
+    trip.finish(14_000);
+    expect(clock.now()).toBe(10_000 + (14_000 - 9_950));
+  });
+
+  it('ignores a reply with no request out', () => {
+    const { clock } = clockAt(10_000);
+    const trip = createRoundTrip(clock, () => 10_000);
+
+    trip.finish(14_000);
+    expect(clock.now()).toBe(10_000);
+  });
+
+  it('samples each request once', () => {
+    const samples: number[][] = [];
+    const clock: ServerClock = {
+      now: () => 0,
+      sample: (...args) => {
+        samples.push(args);
+      },
+    };
+    let local = 9_900;
+    const trip = createRoundTrip(clock, () => local);
+
+    trip.start();
+    local = 10_000;
+    trip.finish(14_000);
+    trip.finish(99_000);
+    expect(samples).toEqual([[14_000, 9_900, 10_000]]);
   });
 });
