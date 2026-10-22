@@ -85,7 +85,20 @@ export function DuelGame() {
       case 'retry':
         retry();
         return;
+      case 'playAgain':
+        handlePlayAgain();
+        return;
     }
+  }
+
+  // Ended away, the result lives on the profile
+  async function handleGateSecondaryAction() {
+    if (state.phase !== 'endedAway') {
+      backToFilters();
+      return;
+    }
+    await leave();
+    router.push('/profile');
   }
 
   function handleQuit() {
@@ -119,7 +132,7 @@ export function DuelGame() {
         onGuessChange={setGuess}
         onGuessSubmit={(text) => void submitGuess(text)}
         onGateAction={handleGateAction}
-        onGateSecondaryAction={backToFilters}
+        onGateSecondaryAction={() => void handleGateSecondaryAction()}
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
         onChangeFilters={backToFilters}

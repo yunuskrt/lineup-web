@@ -2,16 +2,23 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useReducer, useRef, useState } from 'react';
 import { failureOf, useEnsureSession, useSession } from '@/hooks/use-auth';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
+import { getApiClient } from '@/lib/api';
 import { getDuelClient, type Unsubscribe } from '@/lib/api/duel-client';
 import { ApiRequestError, unwrap } from '@/lib/api/unwrap';
 import {
+  AWAY_HISTORY_LIMIT,
+  AWAY_HISTORY_RETRY_MS,
+  awayResultOf,
   canForfeit,
   canGuess,
+  canResume,
   duelGateAction,
   canLockFilters,
   duelSessionReducer,
   INITIAL_DUEL_SESSION,
   PAIRED_BEAT_MS,
+  RECONNECT_WINDOW_MS,
+  RESUME_WAIT_MS,
   youFrom,
 } from '@/lib/duel-session';
 import { filtersFromParams, widenFilters, withFilters } from '@/lib/filters';
@@ -21,6 +28,10 @@ import { widenReasonOf } from '@/lib/system-states';
 import type { Filters } from '@/types/filters';
 
 type Run = { isCancelled: boolean };
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export function useDuel(params: URLSearchParams) {
   const queryClient = useQueryClient();
@@ -75,6 +86,16 @@ export function useDuel(params: URLSearchParams) {
       client.on('finished', (result) => dispatch({ type: 'finished', result })),
       client.on('error', (error) =>
         dispatch({ type: 'error', error, at: Date.now() }),
+      ),
+      client.onConnection((change) =>
+        dispatch(
+          change === 'dropped'
+            ? {
+                type: 'connectionDropped',
+                deadline: serverClock.now() + RECONNECT_WINDOW_MS,
+              }
+            : { type: 'connectionRestored' },
+        ),
       ),
       // Only Try again reconnects after a close
       client.onClose((error) =>
@@ -144,6 +165,54 @@ export function useDuel(params: URLSearchParams) {
     void start(current);
   }
 
+  // Back into a duel in play: no queue, wait for it
+  async function resume() {
+    release();
+    const current: Run = { isCancelled: false };
+    run.current = current;
+    subscribe();
+    dispatch({ type: 'resuming' });
+    try {
+      unwrap(await getDuelClient().connect());
+    } catch (error) {
+      if (current.isCancelled) return;
+      dispatch({
+        type: 'failed',
+        step: 'connect',
+        error: failureOf(queryClient, error),
+        at: Date.now(),
+      });
+      return;
+    }
+    if (!current.isCancelled) dispatch({ type: 'connectionRestored' });
+  }
+
+  // Twice: the save can trail `finished` a little
+  async function readAwayResult(current: Run, sessionId: string) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      if (attempt > 0) await wait(AWAY_HISTORY_RETRY_MS);
+      if (current.isCancelled) return;
+      try {
+        const page = unwrap(
+          await getApiClient().profile.getHistory({
+            cursor: null,
+            limit: AWAY_HISTORY_LIMIT,
+          }),
+        );
+        const result = awayResultOf(page.entries, sessionId);
+        if (result && !current.isCancelled) {
+          dispatch({ type: 'awayResultRead', result });
+          return;
+        }
+      } catch (error) {
+        failureOf(queryClient, error);
+        break;
+      }
+    }
+    if (current.isCancelled) return;
+    dispatch({ type: 'awayResultRead', result: { status: 'unknown' } });
+  }
+
   const startLobby = useEffectEvent((current: Run) => {
     subscribe();
     void start(current);
@@ -165,6 +234,30 @@ export function useDuel(params: URLSearchParams) {
       stopLobby();
     };
   }, []);
+
+  // The server dropped you from the queue
+  const requeue = useEffectEvent(() => void enterQueue(run.current));
+  useEffect(() => {
+    if (state.isRequeueing) requeue();
+  }, [state.isRequeueing]);
+
+  useEffect(() => {
+    if (state.resume !== 'waiting') return;
+    const timer = setTimeout(
+      () => dispatch({ type: 'resumeMissed' }),
+      RESUME_WAIT_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [state.resume]);
+
+  const readAway = useEffectEvent(() => {
+    const sessionId = state.session?.sessionId;
+    if (sessionId) void readAwayResult(run.current, sessionId);
+  });
+  const isCheckingAway = state.away?.status === 'checking';
+  useEffect(() => {
+    if (isCheckingAway) readAway();
+  }, [isCheckingAway]);
 
   useEffect(() => {
     if (state.phase !== 'paired') return;
@@ -273,7 +366,7 @@ export function useDuel(params: URLSearchParams) {
   }
 
   function playAgain() {
-    if (state.phase !== 'finished') return;
+    if (state.phase !== 'finished' && state.phase !== 'endedAway') return;
     restart();
   }
 
@@ -294,7 +387,8 @@ export function useDuel(params: URLSearchParams) {
         void forfeit();
         return;
       default:
-        restart();
+        if (canResume(state)) void resume();
+        else restart();
     }
   }
 

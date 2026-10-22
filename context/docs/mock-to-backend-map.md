@@ -67,7 +67,7 @@ Every behaviour the web app's mock fakes today, and the backend phase that makes
 | Scripted opponent filters, coin flip, 2s flip reveal | B38: a 30s filter window, then the flip. **Live from W31a** | W31a |
 | **Scripted opponent: 6s think time, 65% hit rate** | A real second player. **Live from W31a** | W31a |
 | Round, turn, reveal, life-lost and finish events | B38 orchestration, B39 typed events. **Live from W31a**; a reload mid-duel resumes from `matchReady` | W31a |
-| Disconnect and reconnect scenarios, 20s window, forfeit | B40. The opponent's side (`opponentConnection`) is **live from W31a**; your own drop is W31b | W31a, W31b |
+| Disconnect and reconnect scenarios, 20s window, forfeit | B40. The opponent's side (`opponentConnection`) is **live from W31a**. Your own drop is **live from W31b**: the overlay comes from Socket.IO's own events (`onConnection`), a return waits for `matchReady`, and a duel that ended away is read from `GET /profile/history`. The `youDisconnect` and `youReconnect` scenarios play it the same way | W31a, W31b |
 | Finished duel written to the shared store | B41 duel persistence, about 100ms after `finished`. **Live from W31a** | W31a, W32 |
 
 ### Profile and persistence

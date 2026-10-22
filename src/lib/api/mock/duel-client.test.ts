@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DuelClient, DuelEvent } from '@/lib/api/duel-client';
+import type {
+  ConnectionChange,
+  DuelClient,
+  DuelEvent,
+} from '@/lib/api/duel-client';
 import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
 import { squadFor } from '@/lib/api/mock/data/fixtures';
 import {
@@ -11,6 +15,7 @@ import {
   QUEUE_WAIT_MS,
   RECONNECT_AFTER_MS,
   RECONNECT_WINDOW_MS,
+  RETURN_AFTER_WINDOW_MS,
   type MockDuelOptions,
 } from '@/lib/api/mock/duel-client';
 import { createMockApiClient } from '@/lib/api/mock/api-client';
@@ -421,58 +426,84 @@ describe('mock duel client', () => {
     expect(result.isForfeit).toBe(true);
   });
 
-  it('tells you your own socket dropped, with a deadline', async () => {
+  function changes(client: DuelClient): ConnectionChange[] {
+    const seen: ConnectionChange[] = [];
+    client.onConnection((change) => seen.push(change));
+    return seen;
+  }
+
+  it('drops your socket with no server event, as the server does', async () => {
     const client = createMockDuelClient(
       scripted({ scenario: 'youDisconnect' }),
     );
     const log = record(client);
+    const seen = changes(client);
     await reachMatch(client);
+    const heard = log.length;
 
-    await vi.advanceTimersByTimeAsync(1_000);
-    const dropped = lastOf<{
-      status: string;
-      reconnectDeadline: number | null;
-    }>(log, 'disconnected');
+    await vi.advanceTimersByTimeAsync(DISCONNECT_AFTER_MS);
+    expect(seen).toEqual(['dropped']);
+    expect(names(log)).not.toContain('disconnected');
 
-    expect(dropped.status).toBe('reconnecting');
-    expect(dropped.reconnectDeadline).toBeGreaterThan(Date.now());
+    // A dropped socket hears nothing, rounds included
+    await vi.advanceTimersByTimeAsync(ROUND_DURATION_MS + GRACE_WINDOW_MS);
+    expect(log).toHaveLength(heard);
+    client.disconnect();
   });
 
-  it('forfeits you as a loss once the window closes', async () => {
+  it('forfeits you unheard, then returns with no snapshot', async () => {
     const client = createMockDuelClient(
       scripted({ scenario: 'youDisconnect' }),
     );
     const log = record(client);
+    const seen = changes(client);
     await reachMatch(client);
+    const heard = log.length;
 
     await vi.advanceTimersByTimeAsync(
-      DISCONNECT_AFTER_MS + RECONNECT_WINDOW_MS - 1,
+      DISCONNECT_AFTER_MS + RECONNECT_WINDOW_MS + RETURN_AFTER_WINDOW_MS,
     );
-    expect(log.some((entry) => entry.event === 'finished')).toBe(false);
-
-    await vi.advanceTimersByTimeAsync(1);
-    const closed = lastOf<{ status: string }>(log, 'disconnected');
-    expect(closed.status).toBe('forfeited');
-    const result = lastOf<DuelResult>(log, 'finished');
-    expect(result.outcome).toBe('loss');
-    expect(result.isForfeit).toBe(true);
+    expect(seen).toEqual(['dropped', 'restored']);
+    // No `finished` and no snapshot: ended away
+    expect(log).toHaveLength(heard);
   });
 
   it('brings you back inside the window under youReconnect', async () => {
     const client = createMockDuelClient(scripted({ scenario: 'youReconnect' }));
     const log = record(client);
+    const seen = changes(client);
     await reachMatch(client);
+    const heard = log.length;
 
     await vi.advanceTimersByTimeAsync(DISCONNECT_AFTER_MS + RECONNECT_AFTER_MS);
+    expect(seen).toEqual(['dropped', 'restored']);
+    expect(names(log.slice(heard)).slice(-2)).toEqual([
+      'disconnected',
+      'matchReady',
+    ]);
     const back = lastOf<{
       status: string;
       reconnectDeadline: number | null;
     }>(log, 'disconnected');
     expect(back).toEqual({ status: 'connected', reconnectDeadline: null });
+    const snapshot = lastOf<DuelSession>(log, 'matchReady');
+    expect(duelSessionSchema.safeParse(snapshot).success).toBe(true);
 
     await vi.advanceTimersByTimeAsync(RECONNECT_WINDOW_MS);
     expect(log.some((entry) => entry.event === 'finished')).toBe(false);
     client.disconnect();
+  });
+
+  it('stops reporting changes after disconnect', async () => {
+    const client = createMockDuelClient(
+      scripted({ scenario: 'youDisconnect' }),
+    );
+    const seen = changes(client);
+    await reachMatch(client);
+    client.disconnect();
+
+    await vi.advanceTimersByTimeAsync(DISCONNECT_AFTER_MS);
+    expect(seen).toEqual([]);
   });
 
   it('refuses an out-of-date protocol on connect', async () => {
@@ -679,6 +710,31 @@ describe('mock duel client recording', () => {
     expect(profile.data.user.isGuest).toBe(false);
     expect(profile.data.stats.wins).toBe(1);
     expect(identity().history.map((entry) => entry.outcome)).toEqual(['win']);
+  });
+
+  it('keys the history entry by the duel session id', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    const log = record(client);
+    await reachMatch(client);
+    const { sessionId } = lastOf<DuelSession>(log, 'matchReady');
+    await client.forfeit();
+
+    expect(identity().history[0].id).toBe(sessionId);
+  });
+
+  it('records the loss of a duel you never came back to', async () => {
+    const client = createMockDuelClient(
+      scripted({ store, scenario: 'youDisconnect' }),
+    );
+    await reachMatch(client);
+    await vi.advanceTimersByTimeAsync(
+      DISCONNECT_AFTER_MS + RECONNECT_WINDOW_MS,
+    );
+
+    expect(identity().history[0]).toMatchObject({
+      mode: 'duel',
+      outcome: 'loss',
+    });
   });
 
   it('records each duel once, even if finished twice', async () => {
