@@ -1,4 +1,4 @@
-import type { DuelClient } from '@/lib/api/duel-client';
+import type { ConnectionChange, DuelClient } from '@/lib/api/duel-client';
 import { GRACE_WINDOW_MS } from '@/lib/api/mock/clock';
 import { squadFor } from '@/lib/api/mock/data/fixtures';
 import { createEmitter } from '@/lib/api/duel-emitter';
@@ -53,6 +53,8 @@ export const RECONNECT_WINDOW_MS = 20_000;
 export const DISCONNECT_AFTER_MS = 1_000;
 // `youReconnect` comes back well inside the window
 export const RECONNECT_AFTER_MS = 5_000;
+// `youDisconnect` comes back after the window
+export const RETURN_AFTER_WINDOW_MS = 2_000;
 
 // Scripted filters never narrow, so always match
 export const OPPONENT_FILTERS: Filters = {
@@ -97,9 +99,13 @@ export function createMockDuelClient(
 
   const emitter = createEmitter();
   const closeHandlers = new Set<(error: ApiError) => void>();
+  const connectionHandlers = new Set<(change: ConnectionChange) => void>();
   const timers = new Set<ReturnType<typeof setTimeout>>();
 
   let phase: Phase = 'idle';
+  // A dropped socket hears nothing
+  let isAway = false;
+  let duelId = 'duel-1';
   let engine: EngineState | null = null;
   let fixture: MockFixture | null = null;
   let side: Side = 'home';
@@ -123,6 +129,14 @@ export function createMockDuelClient(
   let tally = { guesses: 0, hits: 0 };
   let expiryTimer: ReturnType<typeof setTimeout> | null = null;
   let opponentTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const emit: typeof emitter.emit = (event, payload) => {
+    if (!isAway) emitter.emit(event, payload);
+  };
+
+  function report(change: ConnectionChange): void {
+    for (const handler of [...connectionHandlers]) handler(change);
+  }
 
   function schedule(delayMs: number, run: () => void): void {
     const handle = setTimeout(() => {
@@ -155,7 +169,7 @@ export function createMockDuelClient(
     if (!state.round) throw new Error('Session has no live round');
 
     return {
-      sessionId: 'duel-1',
+      sessionId: duelId,
       match: matchInPlayFor(currentFixture(), side),
       you: { ...you, lives: state.lives.you },
       opponent: { ...opponent, lives: state.lives.opponent },
@@ -186,7 +200,7 @@ export function createMockDuelClient(
     };
 
     record(result);
-    emitter.emit('finished', result);
+    emit('finished', result);
   }
 
   function record(result: DuelResult): void {
@@ -195,7 +209,8 @@ export function createMockDuelClient(
 
     recordGame(identity, {
       entry: {
-        id: nextId(store, 'history'),
+        // History ids are duel ids, as on the server
+        id: duelId,
         playedAt: new Date(now()).toISOString(),
         mode: 'duel',
         match: result.match,
@@ -244,7 +259,7 @@ export function createMockDuelClient(
   function startRound(state: EngineState): void {
     engine = state;
     syncPlayers(state);
-    emitter.emit('roundStarted', sessionOf(state));
+    emit('roundStarted', sessionOf(state));
     armRound(state);
   }
 
@@ -257,14 +272,14 @@ export function createMockDuelClient(
 
     engine = step.state;
     syncPlayers(step.state);
-    emitter.emit('lifeLost', {
+    emit('lifeLost', {
       who: step.outcome.actor,
       lives: step.outcome.livesRemaining,
     });
 
     if (settle(step.state)) return true;
 
-    emitter.emit('turnChanged', sessionOf(step.state));
+    emit('turnChanged', sessionOf(step.state));
     startRound(step.state);
     return true;
   }
@@ -299,7 +314,7 @@ export function createMockDuelClient(
         guesses: tally.guesses + 1,
         hits: tally.hits + (step.outcome.kind === 'correct_new' ? 1 : 0),
       };
-      emitter.emit('guessResolved', toGuessResult(step.outcome));
+      emit('guessResolved', toGuessResult(step.outcome));
     }
 
     if (step.outcome.kind !== 'correct_new') {
@@ -307,20 +322,21 @@ export function createMockDuelClient(
       return;
     }
 
-    emitter.emit('playerRevealed', {
+    emit('playerRevealed', {
       ...step.outcome.player,
       foundBy: step.outcome.foundBy,
     });
 
     if (settle(step.state)) return;
 
-    emitter.emit('turnChanged', sessionOf(step.state));
+    emit('turnChanged', sessionOf(step.state));
     startRound(step.state);
   }
 
   // A coin here; the server weights side (B32)
   function beginMatch(selected: MockFixture): void {
     phase = 'playing';
+    duelId = nextId(store, 'duel');
     fixture = selected;
     side = random() < 0.5 ? 'home' : 'away';
     tally = { guesses: 0, hits: 0 };
@@ -328,7 +344,7 @@ export function createMockDuelClient(
     const state = createEngineState('duel', squadFor(selected, side), now());
     engine = state;
     syncPlayers(state);
-    emitter.emit('matchReady', sessionOf(state));
+    emit('matchReady', sessionOf(state));
     armRound(state);
 
     if (scenario === 'drawOnEleven') schedule(0, () => runDrawScenario());
@@ -344,28 +360,29 @@ export function createMockDuelClient(
 
   // The round clock keeps running throughout
   function runYourDisconnect(): void {
-    emitter.emit('disconnected', {
-      status: 'reconnecting',
-      reconnectDeadline: now() + RECONNECT_WINDOW_MS,
-    });
+    isAway = true;
+    report('dropped');
 
     if (scenario === 'youReconnect') {
-      schedule(RECONNECT_AFTER_MS, () => {
-        emitter.emit('disconnected', {
-          status: 'connected',
-          reconnectDeadline: null,
-        });
-      });
+      schedule(RECONNECT_AFTER_MS, () => comeBack());
       return;
     }
 
+    // Unheard: the server forfeits a closed socket
     schedule(RECONNECT_WINDOW_MS, () => {
-      emitter.emit('disconnected', {
-        status: 'forfeited',
-        reconnectDeadline: null,
-      });
       finish('loss', true);
+      // After `finish`, which clears every timer
+      schedule(RETURN_AFTER_WINDOW_MS, () => comeBack());
     });
+  }
+
+  // As the server does: no snapshot once it's over
+  function comeBack(): void {
+    isAway = false;
+    report('restored');
+    if (phase !== 'playing' || !engine) return;
+    emit('disconnected', { status: 'connected', reconnectDeadline: null });
+    emit('matchReady', sessionOf(engine));
   }
 
   function runDrawScenario(): void {
@@ -378,13 +395,13 @@ export function createMockDuelClient(
   }
 
   function runDisconnect(): void {
-    emitter.emit('opponentConnection', {
+    emit('opponentConnection', {
       status: 'reconnecting',
       reconnectDeadline: now() + RECONNECT_WINDOW_MS,
     });
 
     schedule(RECONNECT_WINDOW_MS, () => {
-      emitter.emit('opponentConnection', {
+      emit('opponentConnection', {
         status: 'forfeited',
         reconnectDeadline: null,
       });
@@ -407,6 +424,8 @@ export function createMockDuelClient(
       clearTimers();
       emitter.clear();
       closeHandlers.clear();
+      connectionHandlers.clear();
+      isAway = false;
       phase = 'idle';
       engine = null;
       fixture = null;
@@ -418,14 +437,14 @@ export function createMockDuelClient(
       }
 
       phase = 'queued';
-      emitter.emit('queued', { phase: 'queued', since: now() });
+      emit('queued', { phase: 'queued', since: now() });
 
       const enteredAt = now();
       schedule(QUEUE_WAIT_MS, () => {
         if (phase !== 'queued') return;
 
         if (scenario === 'connectedElsewhere') {
-          emitter.emit('error', CONNECTED_ELSEWHERE_ERROR);
+          emit('error', CONNECTED_ELSEWHERE_ERROR);
           phase = 'idle';
           for (const handler of [...closeHandlers]) {
             handler(CONNECTED_ELSEWHERE_ERROR);
@@ -434,7 +453,7 @@ export function createMockDuelClient(
         }
 
         if (scenario === 'queueTimeout') {
-          emitter.emit('queueTimedOut', {
+          emit('queueTimedOut', {
             phase: 'queued',
             waitedMs: now() - enteredAt,
           });
@@ -443,7 +462,7 @@ export function createMockDuelClient(
         }
 
         phase = 'filters';
-        emitter.emit('paired', { phase: 'paired', opponent });
+        emit('paired', { phase: 'paired', opponent });
       });
 
       return ACK;
@@ -475,22 +494,22 @@ export function createMockDuelClient(
 
       const yours = parsed.data;
       submissions = { ...submissions, yours: 'submitted' };
-      emitter.emit('filtersUpdated', submissions);
+      emit('filtersUpdated', submissions);
 
       schedule(OPPONENT_FILTER_MS, () => {
         if (phase !== 'filters') return;
 
         submissions = { ...submissions, theirs: 'submitted' };
-        emitter.emit('filtersUpdated', submissions);
+        emit('filtersUpdated', submissions);
 
         // One set applied whole, never merged (HC 19)
         const winner = random() < 0.5 ? 'you' : 'opponent';
         const applied = winner === 'you' ? yours : OPPONENT_FILTERS;
-        emitter.emit('coinFlip', { winner, filters: applied });
+        emit('coinFlip', { winner, filters: applied });
 
         const selection = selectFixture(applied, random);
         if ('emptyBecause' in selection) {
-          emitter.emit('error', {
+          emit('error', {
             code: 'empty_pool',
             message: 'No match fits the winning filters.',
             retryAfterMs: null,
@@ -557,6 +576,13 @@ export function createMockDuelClient(
       closeHandlers.add(handler);
       return () => {
         closeHandlers.delete(handler);
+      };
+    },
+
+    onConnection(handler) {
+      connectionHandlers.add(handler);
+      return () => {
+        connectionHandlers.delete(handler);
       };
     },
   };

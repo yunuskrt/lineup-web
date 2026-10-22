@@ -1,4 +1,5 @@
 import type { GuessInputStatus } from '@/components/game/GuessInput';
+import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { authErrorMessage } from '@/lib/auth';
 import { isYourForfeit } from '@/lib/duel-result';
@@ -9,6 +10,7 @@ import {
   cooldownGateDetail,
   emptyPoolGate,
   heldCooldown,
+  RECONNECTING_TITLE,
   reconnectingGate,
   widenReasonOf,
 } from '@/lib/system-states';
@@ -22,6 +24,7 @@ import type {
 } from '@/types/duel';
 import type { DuelLobbyView, FilterSummary } from '@/types/duel-lobby';
 import type {
+  AwayResult,
   DuelFailureStep,
   DuelGateAction,
   DuelSessionEvent,
@@ -29,17 +32,45 @@ import type {
   DuelSessionState,
 } from '@/types/duel-session';
 import type { Filters } from '@/types/filters';
-import type { GuessResult } from '@/types/game';
+import type { DuelOutcome, GuessResult } from '@/types/game';
+import type { HistoryEntry } from '@/types/profile';
 import type { User } from '@/types/user';
 
 // Both handles hold before the filter step
 export const PAIRED_BEAT_MS = 1_200;
+// The server's window; display only
+export const RECONNECT_WINDOW_MS = 20_000;
+// `matchReady` follows the handshake at once
+export const RESUME_WAIT_MS = 2_000;
+// A duel is saved just after `finished`
+export const AWAY_HISTORY_RETRY_MS = 1_000;
+export const AWAY_HISTORY_LIMIT = 10;
 
 export const DUEL_GATE_COPY = {
   tryAgain: 'Try again',
   searchAgain: 'Search again',
   calledOff: 'The match was called off',
+  away: 'The duel ended while you were away',
+  awayChecking: 'Checking the result…',
+  // True too for a duel the server never finished
+  awayUnknown: "We couldn't find its result in your history.",
+  playAgain: 'Play again',
+  viewProfile: 'View profile',
 } as const;
+
+const AWAY_OUTCOMES: Record<DuelOutcome, string> = {
+  win: 'You won.',
+  forfeit_win: 'You won: your opponent left.',
+  loss: 'You lost.',
+  draw: "It's a draw.",
+};
+
+// The room ends; only the opponent is told
+const DROPPED_ROOM_ERROR: ApiError = {
+  code: 'session_over',
+  message: 'Your connection dropped before the match started.',
+  retryAfterMs: null,
+};
 
 const FAILED_TITLES: Record<DuelFailureStep, string> = {
   connect: "Couldn't start the duel",
@@ -64,6 +95,9 @@ export const INITIAL_DUEL_SESSION: DuelSessionState = {
   opponentConnection: null,
   yourConnection: null,
   isConnectionLost: false,
+  resume: null,
+  isRequeueing: false,
+  away: null,
   isLocking: false,
   isGuessing: false,
   isForfeiting: false,
@@ -95,7 +129,18 @@ function isRefusal(step: DuelFailureStep, error: ApiError): boolean {
 
 // A match is on until the server sends the result
 function isLive(state: DuelSessionState): boolean {
-  return state.session !== null && state.result === null;
+  return (
+    state.session !== null &&
+    state.result === null &&
+    state.phase !== 'endedAway'
+  );
+}
+
+// Try again rejoins a duel, never the queue
+export function canResume(state: DuelSessionState): boolean {
+  // The seat was the lost session's; start fresh
+  if (state.failure?.error.code === 'unauthorized') return false;
+  return isLive(state);
 }
 
 function withToast(state: DuelSessionState, message: string): DuelSessionState {
@@ -169,11 +214,49 @@ function applyMatchReady(
     // A reloaded page never saw `paired`
     opponent: session.opponent,
     yourConnection: null,
+    resume: null,
     isLocking: false,
     isGuessing: false,
     // A gate's wait never locks the input
     cooldownUntil: state.failure ? null : state.cooldownUntil,
     failure: null,
+  };
+}
+
+// Only a return the page was waiting on
+function applyRestored(state: DuelSessionState): DuelSessionState {
+  if (isLive(state)) {
+    if (state.resume === null && state.yourConnection === null) return state;
+    return { ...state, resume: 'waiting' };
+  }
+  switch (state.phase) {
+    case 'searching':
+      return { ...state, isRequeueing: true };
+    case 'paired':
+    case 'filters':
+    case 'coinFlip':
+      return {
+        ...state,
+        phase: 'failed',
+        isLocking: false,
+        failure: { step: 'match', error: DROPPED_ROOM_ERROR },
+      };
+    default:
+      return state;
+  }
+}
+
+// No snapshot after the return: the duel is over
+function applyResumeMissed(state: DuelSessionState): DuelSessionState {
+  if (state.resume !== 'waiting' || !isLive(state)) return state;
+  return {
+    ...state,
+    phase: 'endedAway',
+    resume: null,
+    yourConnection: null,
+    opponentConnection: null,
+    isGuessing: false,
+    away: { status: 'checking' },
   };
 }
 
@@ -305,6 +388,26 @@ export function duelSessionReducer(
       };
     case 'disconnected':
       return applyYourConnection(state, event.connection);
+    case 'connectionDropped':
+      return applyYourConnection(state, {
+        status: 'reconnecting',
+        reconnectDeadline: event.deadline,
+      });
+    case 'connectionRestored':
+      return applyRestored(state);
+    case 'resuming':
+      if (!isLive(state)) return state;
+      return {
+        ...state,
+        phase: 'playing',
+        failure: null,
+        resume: 'connecting',
+      };
+    case 'resumeMissed':
+      return applyResumeMissed(state);
+    case 'awayResultRead':
+      if (state.phase !== 'endedAway') return state;
+      return { ...state, away: event.result };
     case 'forfeiting':
       // A retry after a failed forfeit resumes play
       return {
@@ -355,6 +458,10 @@ export function duelSessionReducer(
           event.error.code === 'rate_limited'
             ? heldCooldown(state.cooldownUntil, event.error, event.at)
             : state.cooldownUntil,
+        // The gate says why; nothing else waits
+        yourConnection: null,
+        resume: null,
+        isRequeueing: false,
         phase: isRefusal(event.step, event.error) ? 'refused' : 'failed',
         isLocking: false,
         isGuessing: false,
@@ -467,6 +574,9 @@ function isCalledOff(state: DuelSessionState): boolean {
 }
 
 export function duelGateAction(state: DuelSessionState): DuelGateAction | null {
+  if (state.phase === 'endedAway') {
+    return state.away?.status === 'checking' ? null : 'playAgain';
+  }
   if (state.phase !== 'failed' || !state.failure || isWaiting(state)) {
     return null;
   }
@@ -520,11 +630,46 @@ function failedGate(state: DuelSessionState): CanvasGateView | null {
   };
 }
 
+// Only what history says; never inferred
+function awayGate(away: AwayResult | null): CanvasGateView {
+  if (!away || away.status === 'checking') {
+    return { title: DUEL_GATE_COPY.away, detail: DUEL_GATE_COPY.awayChecking };
+  }
+  const detail =
+    away.status === 'found'
+      ? `${AWAY_OUTCOMES[away.outcome]} ${away.foundCount} of ${SQUAD_SIZE} named.`
+      : DUEL_GATE_COPY.awayUnknown;
+  return {
+    title: DUEL_GATE_COPY.away,
+    detail,
+    actionLabel: DUEL_GATE_COPY.playAgain,
+    secondaryActionLabel: DUEL_GATE_COPY.viewProfile,
+  };
+}
+
+// This duel's own entry: its id is the session's
+export function awayResultOf(
+  entries: HistoryEntry[],
+  sessionId: string,
+): AwayResult | null {
+  const entry = entries.find((item) => item.id === sessionId);
+  if (entry?.mode !== 'duel') return null;
+  return {
+    status: 'found',
+    outcome: entry.outcome,
+    foundCount: entry.foundCount,
+  };
+}
+
 function gateOf(
   state: DuelSessionState,
   lobby: DuelLobbyView | null,
 ): CanvasGateView | null {
   if (lobby) return lobbyGate(lobby);
+  if (state.phase === 'endedAway') return awayGate(state.away);
+  if (state.resume !== null && !state.yourConnection) {
+    return { title: RECONNECTING_TITLE };
+  }
   return reconnectingGate(state.yourConnection) ?? failedGate(state);
 }
 
@@ -543,7 +688,9 @@ export function duelCanvasView(
 ): DuelCanvasView {
   const { session, result } = state;
   const lobby = lobbyOf(state);
-  const round = result ? null : (session?.round ?? null);
+  // Ended away: no clock and no turn to show
+  const isOver = result !== null || state.phase === 'endedAway';
+  const round = isOver ? null : (session?.round ?? null);
 
   return {
     mode: 'duel',
@@ -559,9 +706,9 @@ export function duelCanvasView(
     gate: gateOf(state, lobby),
     you: result?.you ?? session?.you ?? you,
     opponent: result?.opponent ?? session?.opponent ?? state.opponent,
-    turn: result ? null : (session?.turn ?? null),
+    turn: isOver ? null : (session?.turn ?? null),
     lobby,
-    opponentConnection: result ? null : state.opponentConnection,
+    opponentConnection: isOver ? null : state.opponentConnection,
     yourConnection: result ? null : state.yourConnection,
     end: result,
     endReason: result && state.isConnectionLost ? 'connectionLost' : undefined,

@@ -10,9 +10,12 @@ import {
   OPPONENT_FILTERS,
   QUEUE_WAIT_MS,
   RECONNECT_AFTER_MS,
-  RECONNECT_WINDOW_MS,
+  RECONNECT_WINDOW_MS as MOCK_WINDOW_MS,
+  RETURN_AFTER_WINDOW_MS,
   type MockDuelOptions,
 } from '@/lib/api/mock/duel-client';
+import { createMockApiClient } from '@/lib/api/mock/api-client';
+import { createIdentity, createStore } from '@/lib/api/mock/store';
 import { selectFixture } from '@/lib/api/mock/pool';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import {
@@ -25,15 +28,18 @@ import {
   samplePlayer,
 } from '@/lib/dev/samples';
 import {
+  awayResultOf,
   canConfirmForfeit,
   canForfeit,
   canGuess,
   canLockFilters,
+  canResume,
   DUEL_GATE_COPY,
   duelCanvasView,
   duelGateAction,
   duelSessionReducer,
   INITIAL_DUEL_SESSION,
+  RECONNECT_WINDOW_MS,
   youFrom,
 } from '@/lib/duel-session';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
@@ -1163,6 +1169,253 @@ describe('the match called off', () => {
   });
 });
 
+describe('your own transport', () => {
+  const DROPPED: DuelSessionEvent = {
+    type: 'connectionDropped',
+    deadline: AT + 20_000,
+  };
+  const RESTORED: DuelSessionEvent = { type: 'connectionRestored' };
+  const OPPONENT_LEFT: ApiError = {
+    code: 'session_over',
+    message: 'Your opponent left.',
+    retryAfterMs: null,
+  };
+
+  it('shows your reconnecting state, with the deadline', () => {
+    const state = play(...TO_PLAYING, DROPPED);
+    expect(state.yourConnection).toEqual({
+      status: 'reconnecting',
+      reconnectDeadline: AT + 20_000,
+    });
+    expect(viewOf(state).gate?.title).toBe('Reconnecting');
+    expect(viewOf(state).gate?.countdown?.deadline).toBe(AT + 20_000);
+    expect(canGuess(state)).toBe(false);
+  });
+
+  it('changes nothing in the lobby until the return', () => {
+    for (const from of [TO_SEARCHING, TO_FILTERS]) {
+      const before = play(...from);
+      expect(duelSessionReducer(before, DROPPED)).toBe(before);
+    }
+  });
+
+  it('waits for the snapshot after a return mid-duel', () => {
+    const state = play(...TO_PLAYING, DROPPED, RESTORED);
+    expect(state.resume).toBe('waiting');
+    expect(viewOf(state).gate?.title).toBe('Reconnecting');
+  });
+
+  it('ignores a return it was not waiting on', () => {
+    const playing = play(...TO_PLAYING);
+    expect(duelSessionReducer(playing, RESTORED)).toBe(playing);
+  });
+
+  it('clears the overlay when the snapshot comes in time', () => {
+    const state = play(
+      ...TO_PLAYING,
+      DROPPED,
+      RESTORED,
+      {
+        type: 'disconnected',
+        connection: { status: 'connected', reconnectDeadline: null },
+      },
+      { type: 'matchReady', session: THEIR_TURN },
+    );
+    expect(state.resume).toBeNull();
+    expect(state.yourConnection).toBeNull();
+    expect(viewOf(state).gate).toBeNull();
+    // A late miss no longer ends anything
+    expect(duelSessionReducer(state, { type: 'resumeMissed' })).toBe(state);
+  });
+
+  it('joins the queue again after a drop while searching', () => {
+    const state = play(...TO_SEARCHING, RESTORED);
+    expect(state.isRequeueing).toBe(true);
+    expect(state.phase).toBe('searching');
+    // `queued` from the new entry resets it
+    expect(duelSessionReducer(state, { type: 'queued' }).isRequeueing).toBe(
+      false,
+    );
+  });
+
+  it.each([
+    ['paired', TO_PAIRED],
+    ['filters', TO_FILTERS],
+    ['the flip', [...TO_FILTERS, YOU_WIN]],
+  ] as const)('calls the match off after a drop during %s', (_, from) => {
+    const state = play(...from, DROPPED, RESTORED);
+    const gate = viewOf(state).gate;
+    expect(gate?.title).toBe('The match was called off');
+    expect(gate?.detail).toBe(
+      'Your connection dropped before the match started.',
+    );
+    expect(gate?.actionLabel).toBe('Search again');
+    expect(duelGateAction(state)).toBe('retry');
+    expect(canResume(state)).toBe(false);
+  });
+
+  it('leaves other phases alone on a return', () => {
+    const noOpponent = play(...TO_SEARCHING, { type: 'queueTimedOut' });
+    expect(duelSessionReducer(noOpponent, RESTORED)).toBe(noOpponent);
+    const finished = play(...TO_FINISHED);
+    expect(duelSessionReducer(finished, RESTORED)).toBe(finished);
+  });
+
+  it('shows the closed gate, not the overlay, when retries end', () => {
+    const state = play(...TO_PLAYING, DROPPED, {
+      type: 'closed',
+      at: AT,
+      error: NETWORK,
+    });
+    expect(state.yourConnection).toBeNull();
+    expect(viewOf(state).gate?.title).toBe('Duel connection closed');
+    expect(canResume(state)).toBe(true);
+  });
+
+  it('resumes from the closed gate without the queue', () => {
+    const closed = play(...TO_PLAYING, {
+      type: 'closed',
+      at: AT,
+      error: NETWORK,
+    });
+    const resuming = duelSessionReducer(closed, { type: 'resuming' });
+    expect(resuming.phase).toBe('playing');
+    expect(resuming.failure).toBeNull();
+    expect(resuming.resume).toBe('connecting');
+    expect(viewOf(resuming).gate).toEqual({ title: 'Reconnecting' });
+    // The wait starts only once connected
+    expect(duelSessionReducer(resuming, { type: 'resumeMissed' })).toBe(
+      resuming,
+    );
+    expect(duelSessionReducer(resuming, RESTORED).resume).toBe('waiting');
+  });
+
+  it('starts fresh, not resumes, once the session is lost', () => {
+    const state = play(...TO_PLAYING, {
+      type: 'closed',
+      at: AT,
+      error: {
+        code: 'unauthorized',
+        message: 'Sign in or continue as a guest first.',
+        retryAfterMs: null,
+      },
+    });
+    expect(viewOf(state).gate?.title).toBe('Duel connection closed');
+    expect(canResume(state)).toBe(false);
+  });
+
+  it('never resumes from the lobby', () => {
+    const state = duelSessionReducer(play(...TO_SEARCHING), {
+      type: 'resuming',
+    });
+    expect(state.resume).toBeNull();
+    expect(canResume(play(...TO_SEARCHING))).toBe(false);
+  });
+
+  it('keeps the called-off copy for an opponent who left', () => {
+    const state = play(...TO_FILTERS, {
+      type: 'error',
+      error: OPPONENT_LEFT,
+      at: AT,
+    });
+    expect(viewOf(state).gate?.detail).toBe('Your opponent left.');
+  });
+});
+
+describe('the duel ended away', () => {
+  const MISSED: DuelSessionEvent[] = [
+    ...TO_PLAYING,
+    { type: 'connectionDropped', deadline: AT },
+    { type: 'connectionRestored' },
+    { type: 'resumeMissed' },
+  ];
+
+  it('checks history first, with no action and no clock', () => {
+    const state = play(...MISSED);
+    const view = viewOf(state);
+    expect(state.phase).toBe('endedAway');
+    expect(view.gate).toEqual({
+      title: 'The duel ended while you were away',
+      detail: 'Checking the result…',
+    });
+    expect(view.clock.round).toBeNull();
+    expect(view.turn).toBeNull();
+    expect(view.input).toBe('locked');
+    expect(duelGateAction(state)).toBeNull();
+    expect(canResume(state)).toBe(false);
+    expect(canConfirmForfeit(state)).toBe(false);
+  });
+
+  it.each([
+    ['win', 'You won. 4 of 11 named.'],
+    ['forfeit_win', 'You won: your opponent left. 4 of 11 named.'],
+    ['loss', 'You lost. 4 of 11 named.'],
+    ['draw', "It's a draw. 4 of 11 named."],
+  ] as const)('names a %s from history', (outcome, detail) => {
+    const state = play(...MISSED, {
+      type: 'awayResultRead',
+      result: { status: 'found', outcome, foundCount: 4 },
+    });
+    const gate = viewOf(state).gate;
+    expect(gate?.detail).toBe(detail);
+    expect(gate?.actionLabel).toBe('Play again');
+    expect(gate?.secondaryActionLabel).toBe('View profile');
+    expect(duelGateAction(state)).toBe('playAgain');
+  });
+
+  it('says so when history has no entry yet', () => {
+    const state = play(...MISSED, {
+      type: 'awayResultRead',
+      result: { status: 'unknown' },
+    });
+    expect(viewOf(state).gate?.detail).toBe(
+      "We couldn't find its result in your history.",
+    );
+    expect(duelGateAction(state)).toBe('playAgain');
+  });
+
+  it('ignores a history read outside the ended state', () => {
+    const playing = play(...TO_PLAYING);
+    const read = duelSessionReducer(playing, {
+      type: 'awayResultRead',
+      result: { status: 'unknown' },
+    });
+    expect(read).toBe(playing);
+  });
+});
+
+describe('awayResultOf', () => {
+  const ENTRY = {
+    playedAt: '2026-01-01T00:00:00.000Z',
+    match: RESULT.match,
+    foundCount: 6,
+    livesRemaining: 0,
+  };
+
+  it("finds this duel's entry by its session id", () => {
+    const result = awayResultOf(
+      [
+        { ...ENTRY, id: 'duel-0', mode: 'duel', outcome: 'win' },
+        { ...ENTRY, id: 'duel-1', mode: 'duel', outcome: 'loss' },
+      ],
+      'duel-1',
+    );
+    expect(result).toEqual({ status: 'found', outcome: 'loss', foundCount: 6 });
+  });
+
+  it('ignores other duels and solo runs', () => {
+    expect(
+      awayResultOf(
+        [
+          { ...ENTRY, id: 'duel-0', mode: 'duel', outcome: 'win' },
+          { ...ENTRY, id: 'duel-1', mode: 'solo', outcome: 'lives_out' },
+        ],
+        'duel-1',
+      ),
+    ).toBeNull();
+  });
+});
+
 describe('against the mock adapter', () => {
   const OPEN = SAMPLE_OPEN_FILTERS;
   const NOTHING_FITS = { ...OPEN, era: { from: 2000, to: 2001 } };
@@ -1231,6 +1484,16 @@ describe('against the mock adapter', () => {
       apply({ type: 'error', error, at: Date.now() }),
     );
     client.onClose((error) => apply({ type: 'closed', at: AT, error }));
+    client.onConnection((change) =>
+      apply(
+        change === 'dropped'
+          ? {
+              type: 'connectionDropped',
+              deadline: Date.now() + RECONNECT_WINDOW_MS,
+            }
+          : { type: 'connectionRestored' },
+      ),
+    );
     return { apply, phases, current: () => state };
   }
 
@@ -1391,7 +1654,7 @@ describe('against the mock adapter', () => {
       'reconnecting',
     );
 
-    await vi.advanceTimersByTimeAsync(RECONNECT_WINDOW_MS);
+    await vi.advanceTimersByTimeAsync(MOCK_WINDOW_MS);
     const state = duel.current();
     expect(state.result?.outcome).toBe('forfeit_win');
     expect(state.result?.isForfeit).toBe(true);
@@ -1427,19 +1690,41 @@ describe('against the mock adapter', () => {
     client.disconnect();
   });
 
-  it('ends as disconnected when you never come back', async () => {
+  it('shows the result from history when you come back too late', async () => {
+    const store = createStore();
+    store.identity = createIdentity({
+      id: 'guest-1',
+      handle: 'guest-1abc2def',
+      isGuest: true,
+      emailVerified: false,
+      tier: 'free',
+    });
+    const api = createMockApiClient({ store });
     const client = createMockDuelClient(
-      scripted({ scenario: 'youDisconnect' }),
+      scripted({ store, scenario: 'youDisconnect' }),
     );
     const duel = await reachMatch(client);
 
     await vi.advanceTimersByTimeAsync(
-      DISCONNECT_AFTER_MS + RECONNECT_WINDOW_MS,
+      DISCONNECT_AFTER_MS + MOCK_WINDOW_MS + RETURN_AFTER_WINDOW_MS,
     );
-    const state = duel.current();
-    expect(state.result?.outcome).toBe('loss');
-    expect(state.result?.isForfeit).toBe(true);
-    expect(viewOf(state).endReason).toBe('connectionLost');
+    expect(duel.current().resume).toBe('waiting');
+
+    // What useDuel's wait does when no snapshot comes
+    duel.apply({ type: 'resumeMissed' });
+    expect(viewOf(duel.current()).gate?.detail).toBe('Checking the result…');
+
+    const page = await api.profile.getHistory({ cursor: null, limit: 10 });
+    if (!page.success) throw new Error('Expected history');
+    const sessionId = duel.current().session?.sessionId ?? '';
+    const result = awayResultOf(page.data.entries, sessionId);
+    if (!result) throw new Error('Expected this duel in history');
+    duel.apply({ type: 'awayResultRead', result });
+
+    const view = viewOf(duel.current());
+    expect(view.gate?.title).toBe('The duel ended while you were away');
+    expect(view.gate?.detail).toMatch(/^You lost\. \d+ of 11 named\.$/);
+    expect(duelGateAction(duel.current())).toBe('playAgain');
   });
 
   it('refuses a guess locally while you reconnect', async () => {

@@ -11,7 +11,7 @@ import type {
 } from '@/types/duel';
 import type { GridPulse, ToastMessage } from '@/types/feedback';
 import type { Filters } from '@/types/filters';
-import type { GuessResult } from '@/types/game';
+import type { DuelOutcome, GuessResult } from '@/types/game';
 
 export type DuelSessionPhase =
   | 'connecting'
@@ -21,6 +21,8 @@ export type DuelSessionPhase =
   | 'coinFlip'
   | 'playing'
   | 'finished'
+  // Back after the duel ended without you
+  | 'endedAway'
   | 'noOpponent'
   | 'failed'
   // The server turned this build away
@@ -37,6 +39,15 @@ export type DuelFailureStep =
 
 export type DuelFailure = { step: DuelFailureStep; error: ApiError };
 
+// Connecting again, then waiting for `matchReady`
+export type DuelResumeStep = 'connecting' | 'waiting';
+
+// Read from history: the server sent no result
+export type AwayResult =
+  | { status: 'checking' }
+  | { status: 'found'; outcome: DuelOutcome; foundCount: number }
+  | { status: 'unknown' };
+
 export type DuelSessionState = {
   phase: DuelSessionPhase;
   // Read from the URL once the catalog loads
@@ -52,6 +63,10 @@ export type DuelSessionState = {
   yourConnection: ConnectionState | null;
   // Your forfeit came from a dropped connection
   isConnectionLost: boolean;
+  resume: DuelResumeStep | null;
+  // The server dropped you from the queue
+  isRequeueing: boolean;
+  away: AwayResult | null;
   isLocking: boolean;
   isGuessing: boolean;
   isForfeiting: boolean;
@@ -87,6 +102,12 @@ export type DuelSessionEvent =
   | { type: 'lifeLost'; cue: DuelLifeLost }
   | { type: 'opponentConnection'; connection: ConnectionState }
   | { type: 'disconnected'; connection: ConnectionState }
+  // Socket.IO's own: the server never sends these
+  | { type: 'connectionDropped'; deadline: number }
+  | { type: 'connectionRestored' }
+  | { type: 'resuming' }
+  | { type: 'resumeMissed' }
+  | { type: 'awayResultRead'; result: AwayResult }
   | { type: 'forfeiting' }
   | { type: 'finished'; result: DuelResult }
   | { type: 'error'; error: ApiError; at: number }
@@ -96,4 +117,4 @@ export type DuelSessionEvent =
   | { type: 'failed'; step: DuelFailureStep; error: ApiError; at: number }
   | { type: 'closed'; error: ApiError; at: number };
 
-export type DuelGateAction = 'widen' | 'leave' | 'retry';
+export type DuelGateAction = 'widen' | 'leave' | 'retry' | 'playAgain';

@@ -1,5 +1,9 @@
 import { io, type Socket } from 'socket.io-client';
-import type { DuelClient, DuelEvent } from '@/lib/api/duel-client';
+import type {
+  ConnectionChange,
+  DuelClient,
+  DuelEvent,
+} from '@/lib/api/duel-client';
 import { createEmitter } from '@/lib/api/duel-emitter';
 import { NETWORK_ERROR, reportDrift } from '@/lib/api/http/transport';
 import { PROTOCOL_VERSION } from '@/lib/api/protocol';
@@ -25,6 +29,7 @@ const SERVER_CLOSED_ERROR: ApiError = {
 
 type GetToken = () => Promise<ApiResult<GatewayToken>>;
 type CloseHandler = (error: ApiError) => void;
+type ConnectionHandler = (change: ConnectionChange) => void;
 
 // Token errors return as is; refusals may retry
 type Attempt = { result: ApiResult<void>; isRefusal: boolean };
@@ -43,6 +48,7 @@ export function createSocketDuelClient(
 ): DuelClient {
   const emitter = createEmitter();
   const closeHandlers = new Set<CloseHandler>();
+  const connectionHandlers = new Set<ConnectionHandler>();
   let socket: Socket | null = null;
   let settlePending: ((attempt: Attempt) => void) | null = null;
   let lastServerError: ApiError | null = null;
@@ -51,6 +57,10 @@ export function createSocketDuelClient(
 
   function close(error: ApiError) {
     for (const handler of [...closeHandlers]) handler(error);
+  }
+
+  function report(change: ConnectionChange) {
+    for (const handler of [...connectionHandlers]) handler(change);
   }
 
   function drop() {
@@ -124,9 +134,11 @@ export function createSocketDuelClient(
         next.on(event, (payload: unknown) => forward(event, payload));
       }
       next.on('connect', () => {
+        const isReturn = isOpen;
         isOpen = true;
         lastServerError = null;
         settle({ result: { success: true, data: undefined }, isRefusal: true });
+        if (isReturn) report('restored');
       });
       next.on('connect_error', (err) => {
         if (!isOpen) {
@@ -140,6 +152,9 @@ export function createSocketDuelClient(
         // Another tab took over; never reconnect alone
         if (reason === 'io server disconnect') {
           end(lastServerError ?? SERVER_CLOSED_ERROR);
+        } else {
+          // Ours never lands: `drop` detaches first
+          report('dropped');
         }
       });
       next.io.on('reconnect_failed', () => end(NETWORK_ERROR));
@@ -199,6 +214,13 @@ export function createSocketDuelClient(
       closeHandlers.add(handler);
       return () => {
         closeHandlers.delete(handler);
+      };
+    },
+
+    onConnection(handler) {
+      connectionHandlers.add(handler);
+      return () => {
+        connectionHandlers.delete(handler);
       };
     },
   };

@@ -42,6 +42,9 @@ export type DuelEventHandler<E extends DuelEvent> = (
 
 export type Unsubscribe = () => void;
 
+// Transport only; the server sends your return
+export type ConnectionChange = 'dropped' | 'restored';
+
 export interface DuelClient {
   connect(): Promise<ApiResult<void>>;
   disconnect(): void;
@@ -54,6 +57,8 @@ export interface DuelClient {
   on<E extends DuelEvent>(event: E, handler: DuelEventHandler<E>): Unsubscribe;
   // Ended for good; never reopens by itself
   onClose(handler: (error: ApiError) => void): Unsubscribe;
+  // A drop being retried, then the reconnect
+  onConnection(handler: (change: ConnectionChange) => void): Unsubscribe;
 }
 
 let registeredClient: DuelClient | null = null;

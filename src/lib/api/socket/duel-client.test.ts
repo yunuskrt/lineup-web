@@ -361,6 +361,64 @@ describe('createSocketDuelClient', () => {
     });
   });
 
+  describe('transport changes', () => {
+    async function watched() {
+      const duel = await connected();
+      const changes: string[] = [];
+      duel.onConnection((change) => changes.push(change));
+      return { duel, changes };
+    }
+
+    it.each(['transport close', 'ping timeout', 'transport error'])(
+      'reports a %s as dropped, then the reconnect',
+      async (reason) => {
+        const { changes } = await watched();
+
+        latest().fire('disconnect', reason);
+        expect(changes).toEqual(['dropped']);
+
+        await accept(latest());
+        expect(changes).toEqual(['dropped', 'restored']);
+        // The same socket: Socket.IO reconnected it
+        expect(sockets).toHaveLength(1);
+      },
+    );
+
+    it('never reports the first connect', async () => {
+      const duel = client();
+      const changes: string[] = [];
+      duel.onConnection((change) => changes.push(change));
+      const result = duel.connect();
+      await accept(latest());
+      await result;
+      expect(changes).toEqual([]);
+    });
+
+    it('reports neither for a takeover', async () => {
+      const { duel, changes } = await watched();
+      duel.onClose(() => {});
+      latest().fire('disconnect', 'io server disconnect');
+      expect(changes).toEqual([]);
+    });
+
+    it('reports neither when the player disconnects', async () => {
+      const { duel, changes } = await watched();
+      const socket = latest();
+      duel.disconnect();
+      socket.fire('disconnect', 'io client disconnect');
+      expect(changes).toEqual([]);
+    });
+
+    it('stops reporting once unsubscribed', async () => {
+      const duel = await connected();
+      const changes: string[] = [];
+      const unsubscribe = duel.onConnection((change) => changes.push(change));
+      unsubscribe();
+      latest().fire('disconnect', 'transport close');
+      expect(changes).toEqual([]);
+    });
+  });
+
   describe('events', () => {
     it('passes a valid payload on and drops a bad one', async () => {
       const drift = vi.spyOn(console, 'error').mockImplementation(() => {});
