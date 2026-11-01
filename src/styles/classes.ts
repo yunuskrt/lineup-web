@@ -34,6 +34,9 @@ export const TEXT_LINK = `rounded-sm font-medium text-fg underline decoration-li
 
 export const QUIT_CHIP = `rounded-sm border border-line px-3 py-1 text-12 font-medium uppercase text-fg-muted hover:text-fg ${FOCUS_RING}`;
 
+// Quit's height from sm; 24px stacked on phones
+export const SOUND_TOGGLE = `flex size-6 items-center justify-center rounded-sm border border-line text-fg-muted hover:text-fg sm:size-7 ${FOCUS_RING}`;
+
 export const FILTER_CHIP = `rounded-sm border border-line px-3 py-1.5 text-14 font-medium text-fg-muted hover:text-fg aria-pressed:border-fg aria-pressed:bg-surface-card aria-pressed:text-fg ${FOCUS_RING}`;
 
 export const FILTER_SELECT = `rounded-sm border border-line bg-surface-card px-3 py-2 text-14 text-fg ${FOCUS_RING}`;

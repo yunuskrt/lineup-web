@@ -7,6 +7,7 @@ import { FilterSkeleton } from '@/components/play/FilterSkeleton';
 import { ModeChoice } from '@/components/play/ModeChoice';
 import { PlayStart } from '@/components/play/PlayStart';
 import { useFilterOptions } from '@/hooks/use-filter-options';
+import { useSoundUnlock } from '@/hooks/use-sound';
 import { authErrorMessageOf } from '@/lib/auth';
 import {
   FILTER_PARAMS,
@@ -38,6 +39,8 @@ export function PlayScreen() {
   );
   const [edited, setEdited] = useState<Filters | null>(null);
   const options = useFilterOptions();
+  // The Start click unlocks sound for the game
+  useSoundUnlock();
 
   const filters =
     edited ?? (options.data ? filtersFromParams(params, options.data) : null);
