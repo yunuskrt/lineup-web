@@ -55,3 +55,14 @@ export type PlayOptions = {
   // The opponent's quieter cues
   gainScale?: number;
 };
+
+export type ClockCue = { cue: CueSpec; gainScale?: number };
+
+export type ScheduledCue = { cue: SoundCue; delayMs: number };
+
+// The second a round's ring last showed
+export type HeardSecond = {
+  startedAt: number;
+  endsAt: number;
+  seconds: number;
+};

@@ -13,6 +13,7 @@ import { MatchHeader } from '@/components/game/MatchHeader';
 import { RunSummary } from '@/components/game/RunSummary';
 import { SoundToggle } from '@/components/game/SoundToggle';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
+import { useGameSounds } from '@/hooks/use-game-sounds';
 import { QuitChip } from '@/components/shell/QuitChip';
 import { activeRing, clockLabel } from '@/lib/canvas';
 import {
@@ -263,6 +264,7 @@ export function GameCanvas({
   // The result's own links take over from quit
   const quitChip = summary || result ? null : <QuitChip onQuit={onQuit} />;
   const found = result?.found ?? view.found;
+  useGameSounds(view);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4">
