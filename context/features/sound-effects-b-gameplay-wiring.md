@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -82,3 +82,27 @@ Defaults stand unless changed at load:
     - Mute mid-round: silence at once; unmute resumes on the next second.
   - Real mode, two browsers: a reload mid-duel resumes without a chime burst, and the result sting plays once on each side.
   - `npm run build`.
+- **Deviations recorded during implementation**
+  - **The 300ms wait counts from the last event cue, not only within one change.**
+    - Found in the browser: a perfect clear's summary arrives as its own view change about 6ms after the 11th reveal, so the sting landed on the chime.
+    - `scheduleCues(cues, msSinceEventCue)` now holds a late cue for whatever is left of the 300ms.
+    - Re-checked: chime to sting is 300ms in solo; 302ms for the duel draw and the run over; 301ms for the duel loss.
+  - Mounting mid-round only records the shown second; the clock plays from the next one. A resume never plays a stale tick.
+  - The clock runs on Motion's `useAnimationFrame`, the ring's own frame loop. A hidden tab pauses it, so the clock is silent in a background tab and plays only the current second on return. Event cues, including `opponentFound`, still play there.
+  - The round's opening second is silent whatever its length: anything at or above `ROUND_MS / 1000` returns no cue.
+  - `isLateCue` is exported for the hook, which tracks when the last event cue played.
+  - At `/feature test`, the clock's frame decision moved out of the hook into `heardClockCue(last, now, owner)` in `sound-cues.ts`. `HeardSecond` moved to `src/types/sound.ts`. The decision covers a new round or a mount (listen only), the same second (silent), and a skip (current second only). It's now unit tested and mutation-checked. The hook only reads the ring and plays.
+  - Review fix: **no reveal cue while the match is only arriving** (`prev.match === null`). A reloaded duel starts from `INITIAL_DUEL_SESSION`, and `matchReady` brings the match and the found pool in one change. With exactly one player named before the reload, that was a +1 and would have chimed. Tested, and mutation-checked.
+- **Verification results**
+  - Mock mode, on a production build served at port 3100 (dev server untouched):
+    - Solo: ticks 14 → 6; beeps A5 → E6, louder from 3; silence at 0, then the whistle about 0.5s later with the server event. Also the chime, the thunk, the blip and the run-over phrase.
+    - Mute mid-round silenced every cue; ticks resumed on the next second after unmute.
+    - Duel:
+      - pairing chime with no click in the lobby, and no handover sound on the first turn
+      - their ticks at half gain from 14 to 1 with no beeps
+      - their lower reveal, and their shorter, quieter whistle
+      - the whoosh 300ms after the cue before each handover
+      - loss and draw stings
+  - Not checked in the browser:
+    - `resultWin`: the `?scenario=` hooks are off in production builds. Unit tests cover it, through the same sting path as loss and draw.
+    - The real-mode two-browser reload check. Unit tests cover it (first view recorded, a jump of more than one is silent). Left for `/feature manual`.

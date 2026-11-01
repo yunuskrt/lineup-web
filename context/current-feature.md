@@ -68,3 +68,4 @@ Not Started
 - W31a Duel Play Live: resume on reload, rate-limit countdown, called off.
 - W31b Duel Reconnect: drop overlay, resume, ended-away gate, lobby drops.
 - Sound Effects A: Web Audio cue engine, mute toggle by quit, /dev/sound.
+- Sound Effects B: cue diff, clock ticks and beeps, 300ms late stings.
