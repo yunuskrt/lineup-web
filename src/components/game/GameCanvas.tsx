@@ -11,6 +11,7 @@ import { LifeLostFlash } from '@/components/game/LifeLostFlash';
 import { DuelLivesCard, LivesCard } from '@/components/game/LivesCard';
 import { MatchHeader } from '@/components/game/MatchHeader';
 import { RunSummary } from '@/components/game/RunSummary';
+import { SoundToggle } from '@/components/game/SoundToggle';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { QuitChip } from '@/components/shell/QuitChip';
 import { activeRing, clockLabel } from '@/lib/canvas';
@@ -266,13 +267,21 @@ export function GameCanvas({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4">
       <h1 className="sr-only">{HEADINGS[view.mode]}</h1>
-      {/* Phones get the chip in the canvas header row */}
-      <div className="hidden h-7 justify-end sm:flex">{quitChip}</div>
+      {/* Phones get the chips in the canvas header row */}
+      <div className="hidden h-7 items-center justify-end gap-2 sm:flex">
+        <SoundToggle />
+        {quitChip}
+      </div>
       {/* Grid, so the gate's full-size box resolves */}
       <div className="relative grid flex-1 grid-cols-1">
         {/* Phones: header row, but first in tab order */}
-        <div className="pointer-events-none absolute inset-x-2 top-2 z-10 flex h-14 items-center justify-end px-2 sm:hidden">
-          <div className="pointer-events-auto">{quitChip}</div>
+        <div className="pointer-events-none absolute inset-x-2 top-2 z-10 flex h-14 flex-col items-end justify-center gap-1 px-2 sm:hidden">
+          {quitChip ? (
+            <div className="pointer-events-auto">{quitChip}</div>
+          ) : null}
+          <div className="pointer-events-auto">
+            <SoundToggle />
+          </div>
         </div>
         <CanvasGate
           isOpen={view.gate !== null}

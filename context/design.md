@@ -22,19 +22,19 @@ The two references converged on the same skeleton: **one dominant spatial object
 
 The game routes want FotMob's posture with lichess's restraint.
 
-| Route                       | Shape                                                        | Nav                       | Footer             |
-| --------------------------- | ------------------------------------------------------------ | ------------------------- | ------------------ |
-| `/`                         | **Statement fold** — one line fills the viewport, Play below | Wordmark left, CTA right  | Closing statement  |
-| `/play`                     | **Diptych** — solo and duel side by side, filters beneath    | Wordmark left, CTA right  | Single inline line |
-| `/play/solo`, `/play/duel`  | **Canvas** — the squad grid is the composition               | **None** — quit chip only | **None**           |
-| `/profile`                  | **Stat-led** — the numbers are the narrative                 | Wordmark left, CTA right  | Single inline line |
-| `/leaderboard` _(post-MVP)_ | **Index** — the page is the list                             | Wordmark left, CTA right  | Single inline line |
+| Route                       | Shape                                                        | Nav                                  | Footer             |
+| --------------------------- | ------------------------------------------------------------ | ------------------------------------ | ------------------ |
+| `/`                         | **Statement fold** — one line fills the viewport, Play below | Wordmark left, CTA right             | Closing statement  |
+| `/play`                     | **Diptych** — solo and duel side by side, filters beneath    | Wordmark left, CTA right             | Single inline line |
+| `/play/solo`, `/play/duel`  | **Canvas** — the squad grid is the composition               | **None** — quit and sound chips only | **None**           |
+| `/profile`                  | **Stat-led** — the numbers are the narrative                 | Wordmark left, CTA right             | Single inline line |
+| `/leaderboard` _(post-MVP)_ | **Index** — the page is the list                             | Wordmark left, CTA right             | Single inline line |
 
 ### Game routes carry no chrome
 
 `/play/solo` and `/play/duel` ship **no nav and no footer**. Not a reduced nav — none.
 
-During a 15-second round every pixel that isn't the clock, the grid or the input is competing with the thing the player is trying to do. Lichess's spectator view has zero `<footer>` elements on the page and that is the correct instinct for an application view. The only persistent affordance is a single quit control, placed away from the input.
+During a 15-second round every pixel that isn't the clock, the grid or the input is competing with the thing the player is trying to do. Lichess's spectator view has zero `<footer>` elements on the page and that is the correct instinct for an application view. The only persistent affordances are a single quit control and, beside it, the sound toggle (`theme.md` § Sound), both placed away from the input.
 
 This also protects the architecture: `/play/duel` is one route for the entire realtime session, and site chrome is exactly the kind of thing that tempts a route transition mid-duel.
 

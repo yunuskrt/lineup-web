@@ -158,6 +158,42 @@ const reduced = useReducedMotion();
 
 ---
 
+## 🔊 Sound
+
+**Every sound doubles something the player can already see.** A sound is never the only channel: the reveal, the shake, the pulse, the pip and the ring all stand on their own, and the game is fully playable muted. Sound is presentation, like the ring. No cue decides anything, and none fires from a client-side guess at an outcome.
+
+**Synthesized, not recorded.** Like the pitch, the sounds are built in code (Web Audio on web): no files, no licence risk, nothing to load. The table below is the spec; each client renders it with its own runtime.
+
+| Cue             | Event                             | Sound                                                        | Length | Gain       |
+| --------------- | --------------------------------- | ------------------------------------------------------------ | ------ | ---------- |
+| `correctNew`    | You name a new player             | Bright two-note rising chime, E5 → B5                        | 250ms  | 0.5        |
+| `theirReveal`   | Opponent names a new player       | The same chime an octave lower, E4 → B4                      | 250ms  | 0.35       |
+| `notInXi`       | Name isn't in the XI              | Soft, low, falling "thunk", 220 → 140 Hz                     | 150ms  | 0.35       |
+| `alreadyNamed`  | Name is already in the found pool | Neutral soft blip, 520 Hz                                    | 90ms   | 0.25       |
+| `tick`          | Each second, 14 → 6               | Quiet woody tick                                             | 30ms   | 0.15       |
+| `finalBeep`     | Each second, 5 → 1                | Sharp beep, A5 B5 C6 D6 E6; louder from 3 s                  | 80ms   | 0.3 → 0.45 |
+| `lifeLost`      | You lose a life                   | Short referee whistle: high tone, fast vibrato, breath noise | 450ms  | 0.4        |
+| `theirLifeLost` | Opponent loses a life             | The same whistle, shorter and quieter                        | 300ms  | 0.25       |
+| `turnToYou`     | The turn passes to you            | Soft whoosh, band-passed noise sweeping up                   | 240ms  | 0.2        |
+| `opponentFound` | Matchmaking pairs you             | Two quick rising notes, G5 → D6                              | 300ms  | 0.4        |
+| `resultWin`     | Duel win or forfeit win           | Rising major arpeggio, C5 E5 G5 C6                           | 700ms  | 0.45       |
+| `resultDraw`    | Duel draw                         | Two notes together, G4 + D5, neither resolving               | 600ms  | 0.4        |
+| `resultLoss`    | Duel loss, connection lost        | Falling minor phrase, C5 A4 F4, softer                       | 700ms  | 0.35       |
+| `perfectClear`  | Solo: all 11 named                | The win arpeggio with a longer shimmering tail               | 900ms  | 0.45       |
+| `runOver`       | Solo: lives at 0                  | The loss phrase                                              | 700ms  | 0.35       |
+
+Gains are relative to a master gain of 1. Lengths follow § Motion where the two meet: `lifeLost` lands with the 480ms flash, `turnToYou` with the 240ms handover.
+
+**Three rules that make the sounds work**
+
+- **Urgency belongs to your own clock.** On the opponent's turn their clock ticks at half gain and never beeps. The final-five beeps are yours alone.
+- **The clock never whistles.** Nothing plays when the ring reaches 0. The whistle comes from the server's life-lost event, because a guess inside the grace window can still land.
+- **The two no-penalty verdicts sound different**, just as they look different: `alreadyNamed` is a level blip, while `notInXi` falls.
+
+**On by default, one mute toggle.** It sits beside quit and is remembered on the device. There is no volume slider; the OS sets the volume. Reduced motion does not affect sound.
+
+---
+
 ## 🔀 States
 
 The duel screen is almost never at rest. These are the conditions it can actually be in — each one gets a decided treatment before anything is built.

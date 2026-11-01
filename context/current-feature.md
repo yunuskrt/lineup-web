@@ -67,3 +67,4 @@ Not Started
 - W30 Socket Client: token handshake, version gate, takeover, reconnects.
 - W31a Duel Play Live: resume on reload, rate-limit countdown, called off.
 - W31b Duel Reconnect: drop overlay, resume, ended-away gate, lobby drops.
+- Sound Effects A: Web Audio cue engine, mute toggle by quit, /dev/sound.
