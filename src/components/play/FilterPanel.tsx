@@ -1,6 +1,14 @@
-import { useId, type ReactNode } from 'react';
-import { seasonLabel, seasonsIn, toggleId } from '@/lib/filters';
-import { FILTER_CHIP, FILTER_SELECT } from '@/styles/classes';
+import { useId, useState, type ReactNode } from 'react';
+import {
+  clubRowView,
+  competitionGroups,
+  effectiveSeasons,
+  pickedCompetition,
+  seasonLabel,
+  selectCompetition,
+  toggleId,
+} from '@/lib/filters';
+import { FILTER_CHIP, FILTER_SEARCH, FILTER_SELECT } from '@/styles/classes';
 import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
 
@@ -10,18 +18,17 @@ type FilterPanelProps = {
   onChange: (filters: Filters) => void;
 };
 
-type ChipGroupProps = {
-  label: string;
-  anyLabel: string;
-  items: readonly { id: string; name: string }[];
-  selected: readonly string[];
-  onChange: (ids: string[]) => void;
-};
-
 export const FILTER_ROW =
   'grid gap-3 border-t border-line py-5 md:grid-cols-[8rem_1fr] md:gap-6';
 
 export const FILTER_LABEL = 'text-14 font-medium md:py-1.5';
+
+const FILTER_GROUP_LABEL = 'text-12 font-medium text-fg-muted';
+
+export const FILTER_NOTE = 'text-14 text-fg-muted';
+
+export const CLUB_HINT =
+  'Pick a competition to see its clubs, or search for one.';
 
 function FilterRow({
   label,
@@ -42,104 +49,212 @@ function FilterRow({
   );
 }
 
-function ChipGroup({
-  label,
-  anyLabel,
-  items,
-  selected,
-  onChange,
-}: ChipGroupProps) {
+function Chip({
+  isPressed,
+  onClick,
+  children,
+}: {
+  isPressed: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
-    <FilterRow label={label}>
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          aria-pressed={selected.length === 0}
-          onClick={() => onChange([])}
-          className={FILTER_CHIP}
-        >
-          {anyLabel}
-        </button>
-        {items.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            aria-pressed={selected.includes(item.id)}
-            onClick={() => onChange(toggleId(selected, item.id, items))}
-            className={FILTER_CHIP}
-          >
-            {item.name}
-          </button>
+    <button
+      type="button"
+      aria-pressed={isPressed}
+      onClick={onClick}
+      className={FILTER_CHIP}
+    >
+      {children}
+    </button>
+  );
+}
+
+function CompetitionGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  const labelId = useId();
+
+  return (
+    <div role="group" aria-labelledby={labelId} className="flex flex-col gap-2">
+      <span id={labelId} className={FILTER_GROUP_LABEL}>
+        {label}
+      </span>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </div>
+  );
+}
+
+function CompetitionFilter({ options, filters, onChange }: FilterPanelProps) {
+  const picked = pickedCompetition(filters, options);
+
+  function choose(id: string | null) {
+    onChange(selectCompetition(filters, id, options));
+  }
+
+  return (
+    <FilterRow label="Competition">
+      <div className="flex flex-col items-start gap-4">
+        <Chip isPressed={picked === null} onClick={() => choose(null)}>
+          Any competition
+        </Chip>
+        {competitionGroups(options.competitions).map((group) => (
+          <CompetitionGroup key={group.label} label={group.label}>
+            {group.competitions.map((competition) => {
+              const isPicked = picked?.id === competition.id;
+              return (
+                <Chip
+                  key={competition.id}
+                  isPressed={isPicked}
+                  onClick={() => choose(isPicked ? null : competition.id)}
+                >
+                  {competition.name}
+                </Chip>
+              );
+            })}
+          </CompetitionGroup>
         ))}
       </div>
     </FilterRow>
   );
 }
 
-export function FilterPanel({ options, filters, onChange }: FilterPanelProps) {
-  const { era } = filters;
+function countLabel(count: number): string {
+  return count === 1 ? '1 club found' : `${count} clubs found`;
+}
+
+// Keyed by competition: a new pick clears it
+function ClubFilter({ options, filters, onChange }: FilterPanelProps) {
+  const [query, setQuery] = useState('');
+  const hintId = useId();
+  const view = clubRowView(filters, options, query);
 
   return (
-    <div className="border-b border-line">
-      <ChipGroup
-        label="Competition"
-        anyLabel="Any competition"
-        items={options.competitions}
-        selected={filters.competitionIds}
-        onChange={(competitionIds) => onChange({ ...filters, competitionIds })}
-      />
-      <ChipGroup
-        label="Club"
-        anyLabel="Any club"
-        items={options.clubs}
-        selected={filters.clubIds}
-        onChange={(clubIds) => onChange({ ...filters, clubIds })}
-      />
-      <FilterRow label="Era">
-        <div className="flex flex-wrap items-center gap-3 text-14 text-fg-muted">
-          <label className="flex items-center gap-3">
-            From
-            <select
-              value={era.from}
-              onChange={(event) => {
-                const from = Number(event.target.value);
-                onChange({
-                  ...filters,
-                  era: { from, to: Math.max(from, era.to) },
-                });
-              }}
-              className={FILTER_SELECT}
-            >
-              {seasonsIn(options.era).map((season) => (
+    <FilterRow label="Club">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Chip
+            isPressed={filters.clubIds.length === 0}
+            onClick={() => onChange({ ...filters, clubIds: [] })}
+          >
+            Any club
+          </Chip>
+          {view.hasSearch ? (
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              aria-label="Search clubs"
+              aria-describedby={view.isSearchingAll ? hintId : undefined}
+              placeholder="Search clubs"
+              className={`${FILTER_SEARCH} max-md:w-full md:w-64`}
+            />
+          ) : null}
+        </div>
+        {view.isSearchingAll ? (
+          <p id={hintId} className={FILTER_NOTE}>
+            {CLUB_HINT}
+          </p>
+        ) : null}
+        {view.clubs.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {view.clubs.map((club) => (
+              <Chip
+                key={club.id}
+                isPressed={filters.clubIds.includes(club.id)}
+                onClick={() =>
+                  onChange({
+                    ...filters,
+                    clubIds: toggleId(filters.clubIds, club.id, options.clubs),
+                  })
+                }
+              >
+                {club.name}
+              </Chip>
+            ))}
+          </div>
+        ) : null}
+        {view.matchCount === 0 ? (
+          <p className={FILTER_NOTE}>No club matches that name.</p>
+        ) : null}
+        {view.moreCount > 0 ? (
+          <p className={FILTER_NOTE}>
+            {view.moreCount} more. Keep typing to narrow it down.
+          </p>
+        ) : null}
+        <p className="sr-only" aria-live="polite">
+          {view.matchCount === null ? '' : countLabel(view.matchCount)}
+        </p>
+      </div>
+    </FilterRow>
+  );
+}
+
+function EraFilter({ options, filters, onChange }: FilterPanelProps) {
+  const { era } = filters;
+  const seasons = effectiveSeasons(filters, options);
+
+  return (
+    <FilterRow label="Era">
+      <div className="flex flex-wrap items-center gap-3 text-14 text-fg-muted">
+        <label className="flex items-center gap-3">
+          From
+          <select
+            value={era.from}
+            onChange={(event) => {
+              const from = Number(event.target.value);
+              onChange({
+                ...filters,
+                era: { from, to: Math.max(from, era.to) },
+              });
+            }}
+            className={FILTER_SELECT}
+          >
+            {seasons.map((season) => (
+              <option key={season} value={season}>
+                {seasonLabel(season)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-3">
+          to
+          <select
+            value={era.to}
+            onChange={(event) =>
+              onChange({
+                ...filters,
+                era: { ...era, to: Number(event.target.value) },
+              })
+            }
+            className={FILTER_SELECT}
+          >
+            {seasons
+              .filter((season) => season >= era.from)
+              .map((season) => (
                 <option key={season} value={season}>
                   {seasonLabel(season)}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-3">
-            to
-            <select
-              value={era.to}
-              onChange={(event) =>
-                onChange({
-                  ...filters,
-                  era: { ...era, to: Number(event.target.value) },
-                })
-              }
-              className={FILTER_SELECT}
-            >
-              {seasonsIn({ from: era.from, to: options.era.to }).map(
-                (season) => (
-                  <option key={season} value={season}>
-                    {seasonLabel(season)}
-                  </option>
-                ),
-              )}
-            </select>
-          </label>
-        </div>
-      </FilterRow>
+          </select>
+        </label>
+      </div>
+    </FilterRow>
+  );
+}
+
+export function FilterPanel(props: FilterPanelProps) {
+  const picked = pickedCompetition(props.filters, props.options);
+
+  return (
+    <div className="border-b border-line">
+      <CompetitionFilter {...props} />
+      <ClubFilter key={picked?.id ?? 'any'} {...props} />
+      <EraFilter {...props} />
     </div>
   );
 }

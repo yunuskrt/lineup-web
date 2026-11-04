@@ -17,6 +17,8 @@ export const competitionRefSchema = z.object({
   id: idSchema,
   kind: competitionKindSchema,
   name: z.string().min(1),
+  // Optional until backend R3b sends it
+  logoUrl: imageUrlSchema.nullable().optional(),
 });
 
 export const formationSchema = z.string().regex(/^[1-9](-[1-9]){2,4}$/);

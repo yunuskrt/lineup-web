@@ -69,3 +69,4 @@ Not Started
 - W31b Duel Reconnect: drop overlay, resume, ended-away gate, lobby drops.
 - Sound Effects A: Web Audio cue engine, mute toggle by quit, /dev/sound.
 - Sound Effects B: cue diff, clock ticks and beeps, 300ms late stings.
+- Fix Match Filters A: one competition, its clubs and seasons, club search.

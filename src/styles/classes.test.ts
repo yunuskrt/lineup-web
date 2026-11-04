@@ -6,6 +6,7 @@ import {
   DUEL_ACTOR_BORDER,
   DUEL_ACTOR_TEXT,
   FILTER_CHIP,
+  FILTER_SEARCH,
   FILTER_SELECT,
   FOCUS_RING,
   LIFE_LOST_BORDER_SHIFT,
@@ -71,6 +72,7 @@ describe('focus rings', () => {
     ['SOUND_TOGGLE', SOUND_TOGGLE],
     ['FILTER_CHIP', FILTER_CHIP],
     ['FILTER_SELECT', FILTER_SELECT],
+    ['FILTER_SEARCH', FILTER_SEARCH],
     ['DOT_BUTTON', DOT_BUTTON],
   ])('gives %s the shared focus ring', (_, classes) => {
     expect(classes).toContain(FOCUS_RING);

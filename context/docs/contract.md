@@ -102,6 +102,7 @@ A plain-text transcription of what `lineup-web` sends and expects today, taken f
 | `id` | id |
 | `kind` | `CompetitionKind` |
 | `name` | non-empty string |
+| `logoUrl` | imageUrl or `null` (backend R3b). Optional until R3b ships; the web tightens it to required in Match Filters B |
 
 ### `MatchIdentity`
 
@@ -220,9 +221,19 @@ The web only checks password **length**. The backend owns the password policy.
 
 | Field | Type |
 | --- | --- |
-| `competitions` | `CompetitionRef[]` |
-| `clubs` | `ClubRef[]` |
+| `competitions` | `CompetitionOption[]`, by name |
+| `clubs` | `ClubRef[]`, by name: every pool club |
 | `era` | `{ from, to }`, the covered season range |
+
+**`CompetitionOption`** (backend R3a). The pool's view of one competition, so the club and era pickers can narrow to it.
+
+| Field | Type | Rule |
+| --- | --- | --- |
+| …every `CompetitionRef` field | | |
+| `clubIds` | id[] | Pool clubs with at least one pool match in it. Each is in `clubs`, in the same order |
+| `seasonStarts` | integer[] | Season starts of its pool matches. Ascending, no repeats, never empty, each inside `era` |
+
+The `Filters` request is unchanged. The web sends at most one competition id; the backend accepts any number.
 
 **`SoloMatchOffer`.** The run is created and the player picks a side next.
 

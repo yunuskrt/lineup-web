@@ -1,11 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { filtersSchema } from '@/lib/api/schemas/common';
 import {
+  CLUB_RESULTS_MAX,
+  clubRowView,
+  clubsFor,
+  competitionGroups,
+  effectiveSeasons,
   filtersFromParams,
   filtersToParams,
+  fitEra,
+  pickedCompetition,
   playModeFrom,
+  searchClubs,
+  searchKey,
   seasonLabel,
   seasonsIn,
+  selectCompetition,
   toggleId,
   widenFilters,
   withFilters,
@@ -14,18 +24,46 @@ import {
 } from '@/lib/filters';
 import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
+import type { ClubRef } from '@/types/match';
+
+function club(id: string, name: string, shortName: string): ClubRef {
+  return { id, name, shortName, crestUrl: null };
+}
 
 const OPTIONS: FilterOptions = {
   competitions: [
-    { id: 'comp-a', kind: 'league', name: 'Alpha League' },
-    { id: 'comp-b', kind: 'ucl', name: 'Beta Cup' },
+    {
+      id: 'comp-a',
+      kind: 'league',
+      name: 'Alpha League',
+      clubIds: ['club-a', 'club-b'],
+      seasonStarts: [2004, 2005, 2006, 2010, 2012],
+    },
+    {
+      id: 'comp-b',
+      kind: 'ucl',
+      name: 'Beta Cup',
+      clubIds: ['club-b', 'club-c'],
+      seasonStarts: [2002, 2006, 2023],
+    },
+    {
+      id: 'comp-w',
+      kind: 'world_cup',
+      name: 'World Cup',
+      clubIds: ['nat-d'],
+      seasonStarts: [2006],
+    },
   ],
   clubs: [
-    { id: 'club-a', name: 'Aston', shortName: 'AST', crestUrl: null },
-    { id: 'club-b', name: 'Borough', shortName: 'BOR', crestUrl: null },
+    club('club-a', 'Aston', 'AST'),
+    club('club-c', 'Beşiktaş', 'BJK'),
+    club('club-b', 'Borough', 'BOR'),
+    club('nat-d', 'Denmark', 'DEN'),
   ],
   era: { from: 2002, to: 2023 },
 };
+
+const [ALPHA, BETA] = OPTIONS.competitions;
 
 const DEFAULTS: Filters = {
   competitionIds: [],
@@ -42,13 +80,38 @@ describe('filtersFromParams', () => {
     expect(parse('')).toEqual(DEFAULTS);
   });
 
-  it('reads repeated ids and a season range', () => {
+  it('reads a competition, repeated clubs and a season range', () => {
     expect(
-      parse('competition=comp-b&club=club-a&club=club-b&from=2004&to=2012'),
+      parse('competition=comp-a&club=club-a&club=club-b&from=2005&to=2010'),
     ).toEqual({
-      competitionIds: ['comp-b'],
+      competitionIds: ['comp-a'],
       clubIds: ['club-a', 'club-b'],
-      era: { from: 2004, to: 2012 },
+      era: { from: 2005, to: 2010 },
+    });
+  });
+
+  it('keeps the first known competition of an old link', () => {
+    expect(
+      parse('competition=nope&competition=comp-b&competition=comp-a')
+        .competitionIds,
+    ).toEqual(['comp-b']);
+  });
+
+  it("keeps only the competition's clubs", () => {
+    expect(parse('competition=comp-b&club=club-a&club=club-c').clubIds).toEqual(
+      ['club-c'],
+    );
+  });
+
+  it("snaps seasons onto the competition's own", () => {
+    expect(parse('competition=comp-b').era).toEqual({ from: 2002, to: 2023 });
+    expect(parse('competition=comp-b&from=2003&to=2022').era).toEqual({
+      from: 2006,
+      to: 2006,
+    });
+    expect(parse('competition=comp-w&from=2007').era).toEqual({
+      from: 2006,
+      to: 2006,
     });
   });
 
@@ -106,15 +169,283 @@ describe('filtersToParams', () => {
     expect(params.toString()).toBe('club=club-a&to=2010');
   });
 
+  it("leaves out a competition's full season range", () => {
+    const params = filtersToParams(
+      {
+        competitionIds: [ALPHA.id],
+        clubIds: [],
+        era: { from: 2004, to: 2010 },
+      },
+      OPTIONS,
+    );
+    expect(params.toString()).toBe('competition=comp-a&to=2010');
+  });
+
   it('round trips through filtersFromParams', () => {
     const filters: Filters = {
-      competitionIds: ['comp-a', 'comp-b'],
+      competitionIds: ['comp-a'],
       clubIds: ['club-b'],
-      era: { from: 2005, to: 2019 },
+      era: { from: 2005, to: 2010 },
     };
     expect(
       filtersFromParams(filtersToParams(filters, OPTIONS), OPTIONS),
     ).toEqual(filters);
+  });
+});
+
+describe('competitionGroups', () => {
+  it('groups by kind in a fixed order and skips empty groups', () => {
+    const groups = competitionGroups(OPTIONS.competitions);
+    expect(
+      groups.map((group) => [
+        group.label,
+        group.competitions.map((competition) => competition.id),
+      ]),
+    ).toEqual([
+      ['Leagues', ['comp-a']],
+      ['European cups', ['comp-b']],
+      ['International', ['comp-w']],
+    ]);
+    expect(competitionGroups([ALPHA]).map((group) => group.label)).toEqual([
+      'Leagues',
+    ]);
+  });
+
+  it('keeps catalog order inside a group', () => {
+    const uel = { ...BETA, id: 'comp-u', kind: 'uel' as const, name: 'Aaa' };
+    const [europe] = competitionGroups([BETA, uel]);
+    expect(europe.competitions.map((competition) => competition.id)).toEqual([
+      'comp-b',
+      'comp-u',
+    ]);
+  });
+});
+
+describe('pickedCompetition', () => {
+  it('finds exactly one known competition', () => {
+    expect(
+      pickedCompetition({ ...DEFAULTS, competitionIds: ['comp-b'] }, OPTIONS),
+    ).toBe(BETA);
+  });
+
+  it('is null for none, several or an unknown id', () => {
+    for (const competitionIds of [[], ['comp-a', 'comp-b'], ['gone']]) {
+      expect(
+        pickedCompetition({ ...DEFAULTS, competitionIds }, OPTIONS),
+      ).toBeNull();
+    }
+  });
+});
+
+describe('clubsFor', () => {
+  it("lists a competition's clubs in catalog order", () => {
+    expect(clubsFor(OPTIONS, BETA).map((item) => item.id)).toEqual([
+      'club-c',
+      'club-b',
+    ]);
+  });
+
+  it('lists every club with no competition', () => {
+    expect(clubsFor(OPTIONS, null)).toEqual(OPTIONS.clubs);
+  });
+});
+
+describe('effectiveSeasons', () => {
+  it("offers the competition's seasons, or the whole era", () => {
+    expect(
+      effectiveSeasons({ ...DEFAULTS, competitionIds: ['comp-b'] }, OPTIONS),
+    ).toEqual([2002, 2006, 2023]);
+    expect(effectiveSeasons(DEFAULTS, OPTIONS)).toEqual(seasonsIn(OPTIONS.era));
+  });
+});
+
+describe('fitEra', () => {
+  const seasons = [2004, 2006, 2010, 2012];
+
+  it('moves each bound inward to an offered season', () => {
+    expect(fitEra({ from: 2005, to: 2011 }, seasons)).toEqual({
+      from: 2006,
+      to: 2010,
+    });
+    expect(fitEra({ from: 2000, to: 2030 }, seasons)).toEqual({
+      from: 2004,
+      to: 2012,
+    });
+  });
+
+  it('resets to the full range when nothing fits', () => {
+    expect(fitEra({ from: 2007, to: 2009 }, seasons)).toEqual({
+      from: 2004,
+      to: 2012,
+    });
+    expect(fitEra({ from: 2013, to: 2020 }, seasons)).toEqual({
+      from: 2004,
+      to: 2012,
+    });
+  });
+});
+
+describe('selectCompetition', () => {
+  it("drops the clubs a competition doesn't have", () => {
+    const filters = { ...DEFAULTS, clubIds: ['club-a', 'club-b'] };
+    expect(selectCompetition(filters, 'comp-b', OPTIONS)).toEqual({
+      competitionIds: ['comp-b'],
+      clubIds: ['club-b'],
+      era: { from: 2002, to: 2023 },
+    });
+  });
+
+  it('keeps the clubs when going back to any', () => {
+    const filters = {
+      competitionIds: ['comp-b'],
+      clubIds: ['club-c'],
+      era: { from: 2002, to: 2023 },
+    };
+    expect(selectCompetition(filters, null, OPTIONS).clubIds).toEqual([
+      'club-c',
+    ]);
+  });
+
+  it('lets an untouched era follow the competition', () => {
+    const alpha = selectCompetition(DEFAULTS, 'comp-a', OPTIONS);
+    expect(alpha.era).toEqual({ from: 2004, to: 2012 });
+    expect(selectCompetition(alpha, 'comp-w', OPTIONS).era).toEqual({
+      from: 2006,
+      to: 2006,
+    });
+    expect(selectCompetition(alpha, null, OPTIONS).era).toEqual(OPTIONS.era);
+  });
+
+  it('keeps a narrowed era where it fits', () => {
+    const narrow = { ...DEFAULTS, era: { from: 2005, to: 2011 } };
+    expect(selectCompetition(narrow, 'comp-a', OPTIONS).era).toEqual({
+      from: 2005,
+      to: 2010,
+    });
+    expect(selectCompetition(narrow, 'comp-b', OPTIONS).era).toEqual({
+      from: 2006,
+      to: 2006,
+    });
+  });
+
+  it('resets a narrowed era that the competition misses', () => {
+    const narrow = { ...DEFAULTS, era: { from: 2013, to: 2020 } };
+    expect(selectCompetition(narrow, 'comp-a', OPTIONS).era).toEqual({
+      from: 2004,
+      to: 2012,
+    });
+  });
+
+  it('always produces filters the contract accepts', () => {
+    for (const id of [null, 'comp-a', 'comp-b', 'comp-w']) {
+      const next = selectCompetition(DEFAULTS, id, OPTIONS);
+      expect(filtersSchema.safeParse(next).success, String(id)).toBe(true);
+    }
+  });
+});
+
+describe('searchKey', () => {
+  it('folds case, accents and Turkish and Nordic letters', () => {
+    expect(searchKey('Beşiktaş')).toBe('besiktas');
+    expect(searchKey('Atlético')).toBe('atletico');
+    expect(searchKey('İstanbul')).toBe('istanbul');
+    expect(searchKey('Kasımpaşa')).toBe('kasimpasa');
+    expect(searchKey('Brøndby')).toBe('brondby');
+    expect(searchKey('Łódź')).toBe('lodz');
+    expect(searchKey('Đakovo')).toBe('dakovo');
+    expect(searchKey('  Inter ')).toBe('inter');
+  });
+});
+
+describe('searchClubs', () => {
+  it('matches inside the name or the short code', () => {
+    const ids = (query: string) =>
+      searchClubs(OPTIONS.clubs, query).map((item) => item.id);
+    expect(ids('besik')).toEqual(['club-c']);
+    expect(ids('ORO')).toEqual(['club-b']);
+    expect(ids('bjk')).toEqual(['club-c']);
+    expect(ids('zzz')).toEqual([]);
+  });
+});
+
+describe('clubRowView', () => {
+  const many: FilterOptions = {
+    ...OPTIONS,
+    competitions: [
+      { ...ALPHA, clubIds: Array.from({ length: 20 }, (_, i) => `c${i}`) },
+    ],
+    clubs: Array.from({ length: 20 }, (_, i) =>
+      club(`c${i}`, `Club ${String(i).padStart(2, '0')}`, `C${i}`),
+    ),
+  };
+  const ids = (view: { clubs: ClubRef[] }) => view.clubs.map((item) => item.id);
+
+  it('shows no clubs with no competition until a search', () => {
+    const view = clubRowView(DEFAULTS, OPTIONS, '');
+    expect(view).toMatchObject({
+      hasSearch: true,
+      isSearchingAll: true,
+      matchCount: null,
+      moreCount: 0,
+    });
+    expect(view.clubs).toEqual([]);
+    expect(clubRowView(DEFAULTS, OPTIONS, 'b').clubs).toEqual([]);
+  });
+
+  it('searches every club from two characters', () => {
+    const view = clubRowView(DEFAULTS, OPTIONS, 'bo');
+    expect(ids(view)).toEqual(['club-b']);
+    expect(view.matchCount).toBe(1);
+  });
+
+  it('always shows selected clubs, in catalog order', () => {
+    const filters = { ...DEFAULTS, clubIds: ['nat-d'] };
+    expect(ids(clubRowView(filters, OPTIONS, ''))).toEqual(['nat-d']);
+    expect(ids(clubRowView(filters, OPTIONS, 'as'))).toEqual([
+      'club-a',
+      'club-c',
+      'nat-d',
+    ]);
+  });
+
+  it(`caps an open search at ${CLUB_RESULTS_MAX} and counts the rest`, () => {
+    const open = { ...many, competitions: [] };
+    const view = clubRowView(DEFAULTS, open, 'club');
+    expect(view.clubs).toHaveLength(CLUB_RESULTS_MAX);
+    expect(view.moreCount).toBe(20 - CLUB_RESULTS_MAX);
+    expect(view.matchCount).toBe(20);
+
+    const picked = clubRowView({ ...DEFAULTS, clubIds: ['c19'] }, open, 'club');
+    expect(picked.clubs).toHaveLength(CLUB_RESULTS_MAX + 1);
+    expect(picked.moreCount).toBe(20 - CLUB_RESULTS_MAX - 1);
+  });
+
+  it("lists a small competition's clubs with no search box", () => {
+    const filters = { ...DEFAULTS, competitionIds: ['comp-b'] };
+    const view = clubRowView(filters, OPTIONS, 'ignored');
+    expect(ids(view)).toEqual(['club-c', 'club-b']);
+    expect(view).toMatchObject({ hasSearch: false, isSearchingAll: false });
+  });
+
+  it('narrows a large competition from one character, uncapped', () => {
+    const filters = { ...DEFAULTS, competitionIds: ['comp-a'] };
+    expect(clubRowView(filters, many, '').clubs).toHaveLength(20);
+    const view = clubRowView(filters, many, '1');
+    expect(view.hasSearch).toBe(true);
+    expect(ids(view)).toEqual([
+      'c1',
+      'c10',
+      'c11',
+      'c12',
+      'c13',
+      'c14',
+      'c15',
+      'c16',
+      'c17',
+      'c18',
+      'c19',
+    ]);
+    expect(view.moreCount).toBe(0);
   });
 });
 
@@ -193,8 +524,22 @@ describe('widenFilters', () => {
     });
     expect(widenFilters(narrow, 'era', OPTIONS)).toEqual({
       ...narrow,
+      era: { from: 2004, to: 2012 },
+    });
+  });
+
+  it('lets an untouched era follow when the competition goes', () => {
+    const untouched = { ...narrow, era: { from: 2004, to: 2012 } };
+    expect(widenFilters(untouched, 'competition', OPTIONS)).toEqual({
+      competitionIds: [],
+      clubIds: ['club-b'],
       era: OPTIONS.era,
     });
+  });
+
+  it('widens the era to the whole catalog with no competition', () => {
+    const open = { ...narrow, competitionIds: [] };
+    expect(widenFilters(open, 'era', OPTIONS)?.era).toEqual(OPTIONS.era);
   });
 
   it('has nothing to widen when no single group is to blame', () => {

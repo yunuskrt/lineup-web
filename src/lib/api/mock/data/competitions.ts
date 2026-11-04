@@ -2,19 +2,41 @@
 import type { ClubRef, CompetitionRef } from '@/types/match';
 
 export const COMPETITIONS = [
-  { id: 'comp-crown-league', kind: 'league', name: 'Crown League' },
-  { id: 'comp-liga-meridiana', kind: 'league', name: 'Liga Meridiana' },
+  {
+    id: 'comp-crown-league',
+    kind: 'league',
+    name: 'Crown League',
+    logoUrl: null,
+  },
+  {
+    id: 'comp-liga-meridiana',
+    kind: 'league',
+    name: 'Liga Meridiana',
+    logoUrl: null,
+  },
   {
     id: 'comp-continental-cup',
     kind: 'ucl',
     name: 'Continental Champions Cup',
+    logoUrl: null,
   },
-  { id: 'comp-federation-trophy', kind: 'uel', name: 'Federation Trophy' },
-  { id: 'comp-nations-cup', kind: 'world_cup', name: 'Global Nations Cup' },
+  {
+    id: 'comp-federation-trophy',
+    kind: 'uel',
+    name: 'Federation Trophy',
+    logoUrl: null,
+  },
+  {
+    id: 'comp-nations-cup',
+    kind: 'world_cup',
+    name: 'Global Nations Cup',
+    logoUrl: null,
+  },
   {
     id: 'comp-nations-championship',
     kind: 'euro',
     name: 'Continental Nations Championship',
+    logoUrl: null,
   },
 ] satisfies CompetitionRef[];
 

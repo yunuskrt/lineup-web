@@ -34,7 +34,7 @@ Every behaviour the web app's mock fakes today, and the backend phase that makes
 
 | Mock today | Real backend | Web wiring |
 | --- | --- | --- |
-| `getFilterOptions`, derived from the fixtures (`pool.filterOptionsFrom`) | B25b, public, from the playable pool. **Live from W29** | W27, W29 |
+| `getFilterOptions`, derived from the fixtures (`pool.filterOptionsFrom`), with each competition's `clubIds` and `seasonStarts` | B25b, public, from the playable pool. **Live from W29**. Per-competition clubs and seasons from R3a; `logoUrl` from R3b | W27, W29, Match Filters A |
 
 ### Solo
 

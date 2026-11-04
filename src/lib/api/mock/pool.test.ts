@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/mock/pool';
 import type { FixtureSelection } from '@/lib/api/mock/pool';
 import type { MockFixture } from '@/lib/api/mock/types';
+import { filterOptionsSchema } from '@/lib/api/schemas/catalog';
 import {
   FIRST_SEASON_START,
   LAST_SEASON_START,
@@ -180,8 +181,52 @@ describe('filterOptionsFrom', () => {
     const byName = (a: { name: string }, b: { name: string }) =>
       a.name.localeCompare(b.name);
 
-    expect(options.competitions).toEqual([...COMPETITIONS].sort(byName));
+    expect(options.competitions).toEqual(
+      [...COMPETITIONS].sort(byName).map((ref) => expect.objectContaining(ref)),
+    );
     expect(options.clubs).toEqual([...CLUBS].sort(byName));
+  });
+
+  it("links each competition to its fixtures' clubs and seasons", () => {
+    const options = filterOptionsFrom(FIXTURES);
+    const clubOrder = options.clubs.map((club) => club.id);
+
+    for (const competition of options.competitions) {
+      const own = FIXTURES.filter(
+        (fixture) => fixture.identity.competition.id === competition.id,
+      );
+      const clubIds = new Set(
+        own.flatMap(({ identity }) => [identity.home.id, identity.away.id]),
+      );
+      expect(new Set(competition.clubIds)).toEqual(clubIds);
+      expect(competition.clubIds).toEqual(
+        clubOrder.filter((id) => clubIds.has(id)),
+      );
+      expect(competition.seasonStarts).toEqual(
+        [...new Set(own.map(seasonStart))].sort((a, b) => a - b),
+      );
+      expect(competition.seasonStarts.length).toBeGreaterThan(0);
+      for (const season of competition.seasonStarts) {
+        expect(season).toBeGreaterThanOrEqual(options.era.from);
+        expect(season).toBeLessThanOrEqual(options.era.to);
+      }
+    }
+  });
+
+  it('sorts seasons whatever order the fixtures come in', () => {
+    const options = filterOptionsFrom([...FIXTURES].reverse());
+    for (const { seasonStarts } of options.competitions) {
+      expect(seasonStarts).toEqual([...seasonStarts].sort((a, b) => a - b));
+    }
+    expect(
+      options.competitions.some(({ seasonStarts }) => seasonStarts.length > 1),
+    ).toBe(true);
+  });
+
+  it('parses against the catalog contract', () => {
+    expect(
+      filterOptionsSchema.safeParse(filterOptionsFrom(FIXTURES)).success,
+    ).toBe(true);
   });
 
   it('spans the earliest to the latest season start', () => {

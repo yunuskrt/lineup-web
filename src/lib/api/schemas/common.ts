@@ -32,7 +32,7 @@ export const competitionKindSchema = z.enum([
   'euro',
 ]);
 
-const seasonStartSchema = z
+export const seasonStartSchema = z
   .number()
   .int()
   .min(FIRST_SEASON_START)

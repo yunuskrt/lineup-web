@@ -5,7 +5,7 @@ import {
   LAST_SEASON_START,
 } from '@/lib/api/schemas/common';
 import type { EmptyPoolReason } from '@/types/api';
-import type { FilterOptions } from '@/types/catalog';
+import type { CompetitionOption, FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
 import type { ClubRef, CompetitionRef } from '@/types/match';
 
@@ -87,6 +87,31 @@ function uniqueById<T extends { id: string; name: string }>(
   return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
+// Clubs keep the catalog's name order
+function competitionOptionFrom(
+  competition: CompetitionRef,
+  fixtures: readonly MockFixture[],
+  sortedClubs: readonly ClubRef[],
+): CompetitionOption {
+  const own = fixtures.filter(
+    (fixture) => fixture.identity.competition.id === competition.id,
+  );
+  const clubIds = new Set(
+    own.flatMap((fixture) => [
+      fixture.identity.home.id,
+      fixture.identity.away.id,
+    ]),
+  );
+
+  return {
+    ...competition,
+    clubIds: sortedClubs
+      .filter((club) => clubIds.has(club.id))
+      .map((club) => club.id),
+    seasonStarts: [...new Set(own.map(seasonStart))].sort((a, b) => a - b),
+  };
+}
+
 export function filterOptionsFrom(
   fixtures: readonly MockFixture[] = FIXTURES,
 ): FilterOptions {
@@ -98,10 +123,13 @@ export function filterOptionsFrom(
     fixture.identity.away,
   ]);
   const starts = fixtures.map(seasonStart);
+  const sortedClubs = uniqueById(clubs);
 
   return {
-    competitions: uniqueById(competitions),
-    clubs: uniqueById(clubs),
+    competitions: uniqueById(competitions).map((competition) =>
+      competitionOptionFrom(competition, fixtures, sortedClubs),
+    ),
+    clubs: sortedClubs,
     era:
       starts.length === 0
         ? { from: FIRST_SEASON_START, to: LAST_SEASON_START }

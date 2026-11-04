@@ -4,7 +4,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 
 | # | Request | Needed by | Asked | Status |
 | --- | --- | --- | --- | --- |
-| R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | Open |
+| R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | Part 1 **Done** (2026-11-04, backend R3a); Part 2 open (backend R3b) |
 
 If the backend has already used R3 for something else, take the next free number and rename it here.
 
@@ -33,6 +33,11 @@ The web can't work this out itself. `GET /catalog/filter-options` sends competit
   - order and no repeats
 - `FilterOptions.clubs` and `FilterOptions.era` stay as they are. The web still uses the full club list for a search when no competition is picked.
 - **Filters request: unchanged.** `competitionIds` stays an array. The web will send at most one id, but that's a UI choice, not a game rule, so the backend doesn't enforce it. The duel coin flip still applies one player's set whole.
+- **Built** (2026-11-04): backend `b9ef744` (R3a), on `main` and pushed.
+  - **Payload:** `GET /catalog/filter-options` sends `competitions` as `CompetitionOption[]`: every `CompetitionRef` field, plus `clubIds` and `seasonStarts`, as specified above.
+  - **Unchanged:** `clubs`, `era` and the `Filters` request. No `PROTOCOL_VERSION` change.
+  - **Docs:** `CompetitionOption` is in the OpenAPI document and in backend `context/api-contract.md` § FilterOptions.
+  - **Checked on `dev`:** 6 competitions, each with 2–3 clubs and 1–2 seasons.
 
 ### Part 2: competition logos (migration)
 
