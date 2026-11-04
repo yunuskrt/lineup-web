@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -122,6 +122,9 @@ Defaults stand unless changed at load:
   - **Before then:** develop and test against the mock (`NEXT_PUBLIC_API_MODE=mock`).
   - **Before `/feature complete`:** the real-mode check needs R3 Part 1 merged and running on the local backend (port 8080).
   - **Part 2 (`logoUrl`):** if it isn't merged yet, the real backend omits `logoUrl`, and the required-nullable field would fail to parse. In that case make it `.nullable().optional()` and record a deviation; tighten it once Part 2 lands.
+  - **At load (2026-11-04):**
+    - **Part 1 is done:** backend `b9ef744` (R3a), on `main`.
+    - **Part 2 isn't:** it's backend R3b. So `logoUrl` ships as `.nullable().optional()`, and Match Filters B tightens it.
 - **No game logic.** Which clubs and seasons exist is catalog data the server sends. The client filters a list it was given and decides nothing about a match. The backend still revalidates the filters, and its empty-pool reasons are unchanged.
 - **Constraints:** tokens only for colour, chips keep `FILTER_CHIP` and `FOCUS_RING`, `@/` imports, no `any`, single-line comments of at most 50 characters.
 - **Verification:**
@@ -136,3 +139,43 @@ Defaults stand unless changed at load:
     - **Lobby and empty pool:** the duel lobby summary still reads correctly, and the empty-pool widen still works.
     - **Skeleton:** no layout shift from skeleton to loaded.
   - **Real mode**, with backend R3 Part 1: the screenshot's catalog with Premier League picked lists no Real Madrid, and World Cup lists nations only.
+- **Deviations recorded during implementation**
+  - **Group captions are sentence case,** 12px medium `fg-muted`, not uppercase. The `frontend-design` pass flags all-caps labels as a templated tell, and the captions read fine without it.
+  - **Selected clubs show in catalog order among the results,** not before them. A chip that jumped to the front when pressed would move under the pointer.
+  - **An empty search says so:** "No club matches that name."
+  - **The live region counts results in both search states,** not only when searching all clubs.
+  - **Inside a competition, search narrows from 1 character, with no cap.** The 2-character minimum and the 12-result cap apply only to the all-clubs search.
+  - **The lobby summary keeps its existing wording, "Any season",** where the spec said "Any era". It now compares against the effective range.
+  - **"Nearest offered season inside the new range" moves each bound inward:** "from" to the first offered season at or after it, "to" to the last at or before it. If none fits, the era resets.
+  - **The search box is 16px on phones (`FILTER_SEARCH`),** so iOS doesn't zoom on focus. It's 14px from `sm` up, and it joins the focus-ring guard.
+  - **Helpers added beyond the list:** `clubRowView` (the whole club row as data, so the component holds no rules), `fitEra`, `rangeOf`, `searchKey` and `COMPETITION_GROUPS`. `seasonStartSchema` is now exported from `common.ts` for `seasonStarts`.
+  - **The skeleton's hint is the real copy,** in transparent text on the skeleton fill, so it wraps exactly as the loaded hint does (two lines at 360).
+  - **The search query resets on a new competition by keying the club row on the competition,** not by clearing state in an effect.
+  - **Review fix: widening away the competition now goes through `selectCompetition(filters, null)`.**
+    - **The bug:** before, `widenFilters('competition')` only cleared the id. An untouched era stayed on the old competition's range (World Cup's 2002–2022, say) and was written to the URL as a narrowed era.
+    - **Now:** the era follows to the full catalog, and the clubs are kept. Tested.
+- **Verification results**
+  - **Checks:**
+    - `npm test` passes: 1,174 tests after `/feature test`, including new suites for every helper and the mock derivation.
+    - **Added at `/feature test`:** a `competitionOptionSchema` suite (`catalog.test.ts`), `filterSummary` against a competition's range, and the mock sorting seasons from unordered fixtures.
+    - **Mutation check:** 13 hand-made mutations of the new rules were all caught by a failing test:
+      - in `filters.ts`: era fitting, the untouched-era follow, URL ranges and clubs, the widen, accent folding, empty groups, the search minimum and cap, selected clubs, and the one-competition pick
+      - the lobby era summary
+      - the mock season sort, which survived at first and got the reversed-fixtures test
+    - `npm run lint` is clean.
+    - `tsc --noEmit` is clean.
+  - **Mock, on a production build at port 3100** (your dev server untouched):
+    - **Defaults:** shows the hint and no club chips.
+    - **Search:** "y" alone shows nothing, and "yildirim" finds Yıldırımspor. A selected club stays shown when the query is cleared.
+    - **Picking Crown League:** drops Yıldırımspor and lists its three clubs. The era offers 2002 and 2014 only.
+    - **Pressing it again:** returns to Any and the full era.
+    - **Narrowed era:** 2010–2013 resets on Crown League, because no Crown League season falls inside it.
+    - **URL:** round-trips a reload. An old two-competition link keeps the first competition and its clubs.
+    - **Empty pool:** the gate's "Include every club" clears only the clubs. "Change filters" returns with everything kept.
+    - **Duel lobby:** reads "Crown League / Any / Any season".
+    - **Skeleton:** no shift. Row heights match the loaded page: 307/109/78 at 1440, 426/188/111 at 390, 426/209/111 at 360. No sideways scroll at 390.
+  - **Real mode** (dev server on 3000, backend `b9ef744` on 8080, `ingest` data):
+    - Premier League lists its 6 clubs, with no Real Madrid.
+    - World Cup lists 37 nations, and the era offers its 6 tournament years.
+    - Champions League's 45 clubs get the search box.
+    - "besiktas" finds Beşiktaş.

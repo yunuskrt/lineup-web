@@ -4,6 +4,7 @@ import {
   SAMPLE_OPEN_FILTERS,
   SAMPLE_OPPONENT,
 } from '@/lib/dev/samples';
+import { seasonLabel } from '@/lib/filters';
 import { coinFlipTitle, filterSummary, lobbyGate } from '@/lib/lobby';
 import type { DuelLobbyView } from '@/types/duel-lobby';
 import type { Filters } from '@/types/filters';
@@ -67,6 +68,30 @@ describe('filterSummary', () => {
   it('reads an era past the catalog as any season', () => {
     const era = { from: OPTIONS.era.from - 2, to: OPTIONS.era.to + 1 };
     expect(summaryOf({ era }).Era).toBe('Any season');
+  });
+
+  it("reads a competition's full seasons as any season", () => {
+    const [first] = CUP.seasonStarts;
+    const last = CUP.seasonStarts[CUP.seasonStarts.length - 1];
+    const era = { from: first, to: last };
+    expect(summaryOf({ competitionIds: [CUP.id], era }).Era).toBe('Any season');
+    expect(summaryOf({ era }).Era).toBe(
+      `${seasonLabel(first)} to ${seasonLabel(last)}`,
+    );
+  });
+
+  it("reads part of a competition's seasons as a range", () => {
+    const era = { from: CUP.seasonStarts[1], to: CUP.seasonStarts[2] };
+    expect(summaryOf({ competitionIds: [CUP.id], era }).Era).toBe(
+      `${seasonLabel(era.from)} to ${seasonLabel(era.to)}`,
+    );
+  });
+
+  it('measures two competitions against the whole catalog', () => {
+    const era = { from: CUP.seasonStarts[0], to: CUP.seasonStarts[7] };
+    expect(
+      summaryOf({ competitionIds: [LEAGUE.id, CUP.id], era }).Era,
+    ).not.toBe('Any season');
   });
 
   it('keeps an era that touches one end as a range', () => {

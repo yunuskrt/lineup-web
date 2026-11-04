@@ -41,6 +41,9 @@ export const FILTER_CHIP = `rounded-sm border border-line px-3 py-1.5 text-14 fo
 
 export const FILTER_SELECT = `rounded-sm border border-line bg-surface-card px-3 py-2 text-14 text-fg ${FOCUS_RING}`;
 
+// 16px on phones stops iOS zooming on focus
+export const FILTER_SEARCH = `rounded-sm border border-line bg-surface-card px-3 py-1.5 text-16 text-fg placeholder:text-fg-dim sm:text-14 ${FOCUS_RING}`;
+
 // 24px hit area around a small dot (WCAG 2.5.8)
 export const DOT_BUTTON = `flex size-6 items-center justify-center rounded-sm disabled:cursor-not-allowed ${FOCUS_RING}`;
 

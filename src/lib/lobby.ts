@@ -1,4 +1,4 @@
-import { seasonLabel } from '@/lib/filters';
+import { effectiveSeasons, rangeOf, seasonLabel } from '@/lib/filters';
 import type { CanvasGateView } from '@/types/canvas';
 import type { FilterOptions } from '@/types/catalog';
 import type { DuelActor, DuelPlayer } from '@/types/duel';
@@ -37,7 +37,10 @@ export function filterSummary(
       value: picked(filters.competitionIds, options.competitions),
     },
     { label: 'Club', value: picked(filters.clubIds, options.clubs) },
-    { label: 'Era', value: eraValue(filters.era, options.era) },
+    {
+      label: 'Era',
+      value: eraValue(filters.era, rangeOf(effectiveSeasons(filters, options))),
+    },
   ];
 }
 

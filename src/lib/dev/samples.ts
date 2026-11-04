@@ -60,8 +60,18 @@ export const SAMPLE_OPPONENT: DuelPlayer = {
 
 export const SAMPLE_FILTER_OPTIONS: FilterOptions = {
   competitions: [
-    SAMPLE_IDENTITY.competition,
-    { id: 'sample-league', kind: 'league', name: 'Premier Division' },
+    {
+      ...SAMPLE_IDENTITY.competition,
+      clubIds: [SAMPLE_IDENTITY.home.id, SAMPLE_IDENTITY.away.id],
+      seasonStarts: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010],
+    },
+    {
+      id: 'sample-league',
+      kind: 'league',
+      name: 'Premier Division',
+      clubIds: [SAMPLE_IDENTITY.home.id, 'sample-third'],
+      seasonStarts: [2008, 2012, 2016, 2020],
+    },
   ],
   clubs: [
     SAMPLE_IDENTITY.home,
