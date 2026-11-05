@@ -5,6 +5,7 @@ const OPTION = {
   id: 'comp-a',
   kind: 'league',
   name: 'Alpha League',
+  logoUrl: null,
   clubIds: ['club-a'],
   seasonStarts: [2004, 2010],
 };
@@ -14,8 +15,9 @@ function parses(patch: Record<string, unknown>): boolean {
 }
 
 describe('competitionOptionSchema', () => {
-  it('accepts an option with no logoUrl until R3b sends it', () => {
-    expect(parses({})).toBe(true);
+  // Backend R3b always sends it, null or a URL
+  it('rejects an option with no logoUrl', () => {
+    expect(parses({ logoUrl: undefined })).toBe(false);
   });
 
   it('accepts a null, absolute or root-relative logoUrl', () => {

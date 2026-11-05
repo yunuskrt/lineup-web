@@ -6,19 +6,19 @@ export const COMPETITIONS = [
     id: 'comp-crown-league',
     kind: 'league',
     name: 'Crown League',
-    logoUrl: null,
+    logoUrl: '/mock/competitions/comp-crown-league.svg',
   },
   {
     id: 'comp-liga-meridiana',
     kind: 'league',
     name: 'Liga Meridiana',
-    logoUrl: null,
+    logoUrl: '/mock/competitions/comp-liga-meridiana.svg',
   },
   {
     id: 'comp-continental-cup',
     kind: 'ucl',
     name: 'Continental Champions Cup',
-    logoUrl: null,
+    logoUrl: '/mock/competitions/comp-continental-cup.svg',
   },
   {
     id: 'comp-federation-trophy',
@@ -30,13 +30,13 @@ export const COMPETITIONS = [
     id: 'comp-nations-cup',
     kind: 'world_cup',
     name: 'Global Nations Cup',
-    logoUrl: null,
+    logoUrl: '/mock/competitions/comp-nations-cup.svg',
   },
   {
     id: 'comp-nations-championship',
     kind: 'euro',
     name: 'Continental Nations Championship',
-    logoUrl: null,
+    logoUrl: '/mock/competitions/comp-nations-championship.svg',
   },
 ] satisfies CompetitionRef[];
 

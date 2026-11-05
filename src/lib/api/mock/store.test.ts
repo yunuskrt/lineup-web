@@ -42,7 +42,12 @@ const USER: User = {
 
 const MATCH: MatchIdentity = {
   id: 'match-1',
-  competition: { id: 'comp-1', kind: 'league', name: 'Crown League' },
+  competition: {
+    id: 'comp-1',
+    kind: 'league',
+    name: 'Crown League',
+    logoUrl: null,
+  },
   season: '2003-04',
   date: '2003-10-04',
   stage: null,

@@ -211,6 +211,12 @@ describe('placeholder images', () => {
     for (const club of CLUBS) expect(club.crestUrl, club.id).not.toBeNull();
   });
 
+  // One null keeps the kind-icon fallback in view
+  it('gives every competition but one a logo', () => {
+    const missing = COMPETITIONS.filter((c) => c.logoUrl === null);
+    expect(missing.map((c) => c.id)).toEqual(['comp-federation-trophy']);
+  });
+
   // Image and fallback both show in every match
   it('mixes players with and without a headshot in every XI', () => {
     for (const f of FIXTURES) {
@@ -232,6 +238,7 @@ describe('placeholder images', () => {
   it('points only at files that ship in public/', () => {
     const urls = [
       ...CLUBS.map((club) => club.crestUrl),
+      ...COMPETITIONS.map((competition) => competition.logoUrl),
       ...PLAYERS.map((player) => player.imageUrl),
     ].filter((url): url is string => url !== null);
 

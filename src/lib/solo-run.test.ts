@@ -41,7 +41,12 @@ function session(overrides: Partial<SoloSession> = {}): SoloSession {
     status: 'active',
     match: {
       id: 'match-1',
-      competition: { id: 'comp-1', kind: 'league', name: 'Premier Division' },
+      competition: {
+        id: 'comp-1',
+        kind: 'league',
+        name: 'Premier Division',
+        logoUrl: null,
+      },
       season: '2004-05',
       date: '2005-05-01',
       stage: null,
@@ -84,7 +89,12 @@ function summary(overrides: Partial<SoloSummary> = {}): SoloSummary {
   return {
     match: {
       id: 'match-1',
-      competition: { id: 'cup', kind: 'ucl', name: 'Continental Cup' },
+      competition: {
+        id: 'cup',
+        kind: 'ucl',
+        name: 'Continental Cup',
+        logoUrl: null,
+      },
       season: '2004-05',
       date: '2005-05-25',
       stage: 'Final',

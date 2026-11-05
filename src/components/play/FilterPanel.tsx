@@ -1,5 +1,9 @@
 import { useId, useState, type ReactNode } from 'react';
 import {
+  ClubChipImage,
+  CompetitionChipImage,
+} from '@/components/play/FilterChipImage';
+import {
   clubRowView,
   competitionGroups,
   effectiveSeasons,
@@ -52,10 +56,12 @@ function FilterRow({
 function Chip({
   isPressed,
   onClick,
+  image,
   children,
 }: {
   isPressed: boolean;
   onClick: () => void;
+  image?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -63,8 +69,9 @@ function Chip({
       type="button"
       aria-pressed={isPressed}
       onClick={onClick}
-      className={FILTER_CHIP}
+      className={`${FILTER_CHIP} group inline-flex items-center gap-2`}
     >
+      {image}
       {children}
     </button>
   );
@@ -111,6 +118,7 @@ function CompetitionFilter({ options, filters, onChange }: FilterPanelProps) {
                   key={competition.id}
                   isPressed={isPicked}
                   onClick={() => choose(isPicked ? null : competition.id)}
+                  image={<CompetitionChipImage competition={competition} />}
                 >
                   {competition.name}
                 </Chip>
@@ -166,6 +174,7 @@ function ClubFilter({ options, filters, onChange }: FilterPanelProps) {
               <Chip
                 key={club.id}
                 isPressed={filters.clubIds.includes(club.id)}
+                image={<ClubChipImage club={club} />}
                 onClick={() =>
                   onChange({
                     ...filters,

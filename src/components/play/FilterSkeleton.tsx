@@ -12,9 +12,9 @@ const CHIP = `h-8.75 ${BAR}`;
 // Measured from the mock catalog so rows wrap alike
 const ANY_COMPETITION = 'w-[135.3px]';
 const COMPETITION_GROUPS = [
-  { caption: 'w-[48.9px]', chips: ['w-[123px]', 'w-[124.4px]'] },
-  { caption: 'w-[86px]', chips: ['w-[213.3px]', 'w-[148px]'] },
-  { caption: 'w-[71.7px]', chips: ['w-[257.8px]', 'w-[154.8px]'] },
+  { caption: 'w-[48.9px]', chips: ['w-[150.9px]', 'w-[152.4px]'] },
+  { caption: 'w-[86px]', chips: ['w-[241.3px]', 'w-[175.9px]'] },
+  { caption: 'w-[71.7px]', chips: ['w-[285.8px]', 'w-[182.8px]'] },
 ];
 const ANY_CLUB = 'w-[84.6px]';
 
