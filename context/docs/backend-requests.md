@@ -5,8 +5,9 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | # | Request | Needed by | Asked | Status |
 | --- | --- | --- | --- | --- |
 | R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | **Done**: Part 1 (2026-11-04, backend R3a), Part 2 (2026-11-05, backend R3b) |
+| R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | Open |
 
-If the backend has already used R3 for something else, take the next free number and rename it here.
+If the backend has already used a number for something else, take the next free one and rename it here.
 
 ---
 
@@ -73,3 +74,70 @@ The web can't work this out itself. `GET /catalog/filter-options` sends competit
 ### Prompt for the scraper session (after Part 2 is merged and migrated)
 
 > The backend added `competitions.logo_key` (R3 Part 2, see `../lineup-web/context/docs/backend-requests.md`). Copy `schema.prisma` and `data-contract.md`, then spec extending S18 so I can save, upload and load a logo for every pool competition. Use the key scheme `competitions/<competition-slug>/<sha256-12>.<ext>`. Follow the image guidance in `../lineup-web/context/docs/data-display-requirements.md` § 1.
+
+---
+
+## R4. The match on the solo offer, and the order and time of each named player
+
+**Why:** the user is reworking three gameplay surfaces (2026-11-06). Two of them need data the web doesn't get today. The third, the competition logo on the scoreboard, needs nothing: `MatchInPlay.competition.logoUrl` already flows (R3b).
+
+### Part 1: `SoloMatchOffer` carries the match (no migration)
+
+The "Pick your side" card before a solo run becomes a match card: both crests and names, the score, the competition's logo and name, and the date. Web spec: `context/fixes/gameplay-visuals-b-side-pick-card.md`.
+
+Today `POST /solo/sessions` answers with `SoloMatchOffer = { sessionId, home, away }`, so the web has the clubs but not the competition, the date or the score.
+
+| Field | Type | Rule |
+| --- | --- | --- |
+| `sessionId`, `home`, `away` | | Unchanged |
+| `match` | `MatchIdentity` | **New.** The offered match, exactly as `SoloSession.match` will carry it once a side is picked, without `side` and `formation`. `match.home` and `match.away` equal `home` and `away` |
+
+- The backend already holds it: `SoloService.start()` keeps an `OfferedRun` whose `offer.match` is that match. Map it through the same `toMatchIdentity` path the summary uses.
+- **Safe to send:** `MatchIdentity` holds no player of either XI (Hard Constraint 2). The duel lobby already shows the same identity before play.
+- `home` and `away` stay so a web build from before R4 keeps working. They can go in a later cleanup once every client reads `match`.
+
+### Part 2: each named player's order and time (no migration, no new writes)
+
+The middle of the solo summary and the duel result becomes a list of the players named, in the order they were named, with the seconds each took. In a duel, each row is in the finder's colour. Web spec: `context/fixes/gameplay-visuals-c-named-order.md`.
+
+Today `found` carries `RevealedPlayer` (plus `foundBy` in a duel) with no order and no time. `roundTimesMs` can't stand in for it: it has a row for every round, including the ones that ended in a lost life, so it doesn't line up with the names.
+
+`SoloSummary.found[]` and `DuelResult.found[]` each gain two fields:
+
+| Field | Type | Rule |
+| --- | --- | --- |
+| `order` | integer 1–11 | The position in which this player was named in the session. 1 is the first. Unique within `found`, no gaps |
+| `elapsedMs` | integer 0–15000 | The server's receipt of the correct guess minus the start of the round it landed in. Capped at `ROUND_MS`, as `roundTimesMs` is, so a guess inside the grace window reads 15000 |
+
+- **Sort `found` by `order`** in both payloads.
+- **Duel:** the round is the finder's own turn, so `elapsedMs` is how long the finder took on that turn.
+- **The data already exists.**
+  - The solo summary is built from the run's `TimedEffect` stream (`src/game/summary.ts`, `runFigures`). That stream has `round_started.startedAt` and each `guess_resolved` with a `correct_new` verdict. The order and elapsed time fall out of the same pass.
+  - The duel result has the same effects.
+  - On disk, `game_rounds.started_at` and `guesses.received_at` (with `player_id`) hold the same facts for a run read back later.
+  - **Nothing new is written to the database.**
+- **Not in live payloads.** `SoloSession.found`, `DuelSession.found` and `correct_new.player` stay as they are. The order and time are only needed once the session has ended.
+- Keep `accuracy`, `bestStreak` and `roundTimesMs` on `SoloSummary`. The web stops showing them, but they stay in the contract (the profile has its own stats).
+- **Tests** (in the `game` module, pure):
+  - a run with a lost life between two names
+  - a guess in the grace window (capped at 15000)
+  - a perfect clear (orders 1–11)
+  - a run quit before any name (`found` empty)
+  - a duel where the names alternate between the two players
+
+### Contract and versions
+
+- **Both parts are additive.** Nothing is removed or renamed.
+- **The current web keeps working:** its `z.object` schemas drop unknown keys.
+- **No `PROTOCOL_VERSION` bump.** `DuelResult` is a socket payload, but it only gains fields; a client on the old version ignores them.
+- Update `context/api-contract.md` and the OpenAPI document (`SoloMatchOffer`, `SoloSummary`).
+
+### Then
+
+1. **Web, Gameplay Visuals A** (scoreboard logo) needs nothing from here and can ship first.
+2. **Web, Gameplay Visuals B** (side-pick card) needs Part 1 on the backend's `main` for its real-mode check.
+3. **Web, Gameplay Visuals C** (named order) needs Part 2 on the backend's `main` for its real-mode check.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R4. Write it up as backend feature specs, R4a (offer carries the match) and R4b (named order and time on the summary and the duel result), the way R3 was done. Both are additive, with no migration. Ask me anything unclear before `/feature load`.
