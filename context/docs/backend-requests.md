@@ -5,7 +5,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | # | Request | Needed by | Asked | Status |
 | --- | --- | --- | --- | --- |
 | R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | **Done**: Part 1 (2026-11-04, backend R3a), Part 2 (2026-11-05, backend R3b) |
-| R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | Open |
+| R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | Part 1 **Done** (2026-11-06, backend R4a); Part 2 Open |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -95,6 +95,11 @@ Today `POST /solo/sessions` answers with `SoloMatchOffer = { sessionId, home, aw
 - The backend already holds it: `SoloService.start()` keeps an `OfferedRun` whose `offer.match` is that match. Map it through the same `toMatchIdentity` path the summary uses.
 - **Safe to send:** `MatchIdentity` holds no player of either XI (Hard Constraint 2). The duel lobby already shows the same identity before play.
 - `home` and `away` stay so a web build from before R4 keeps working. They can go in a later cleanup once every client reads `match`.
+- **Built** (2026-11-06): backend `0d85bd2` (R4a), on `main` and pushed.
+  - **Payload:** `POST /solo/sessions` answers with `SoloMatchOffer = { sessionId, match, home, away }`. `match` is the full `MatchIdentity`: the competition with `logoUrl`, the season, date and stage, both clubs with `crestUrl`, the score and the nickname. It never holds a player.
+  - **Deprecated:** `home` and `away` are marked deprecated in OpenAPI. They equal `match.home` and `match.away`; read `match` instead.
+  - **Unchanged:** REST only, so no `PROTOCOL_VERSION` change.
+  - **Docs:** backend `context/api-contract.md` § SoloMatchOffer.
 
 ### Part 2: each named player's order and time (no migration, no new writes)
 

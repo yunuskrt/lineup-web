@@ -89,6 +89,7 @@ Defaults stand unless changed at load:
 - **Depends on:**
   - **Gameplay Visuals A** for `CompetitionLogo`.
   - **Backend R4 Part 1** (`SoloMatchOffer.match`). Load this fix only once R4a is merged on the backend's `main`. The web parses `match` as required, so a web build ahead of the backend would refuse every solo offer in real mode.
+  - **R4a is merged** (2026-11-06, backend `0d85bd2`). `home` and `away` are now deprecated in OpenAPI, and they equal `match.home` and `match.away`.
 - **Hard Constraint 2:** `MatchIdentity` carries no player, so showing it before the pick reveals nothing of either XI. The duel lobby shows the same identity before play.
 - **Design (`frontend-design`, inside `theme.md` and `design.md`):**
   - The crests are the one bold thing: 80px is the largest image in the app.
