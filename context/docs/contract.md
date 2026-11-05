@@ -102,7 +102,7 @@ A plain-text transcription of what `lineup-web` sends and expects today, taken f
 | `id` | id |
 | `kind` | `CompetitionKind` |
 | `name` | non-empty string |
-| `logoUrl` | imageUrl or `null`, always sent (backend R3b). Renders on the competition filter chips; `null` shows the kind icon |
+| `logoUrl` | imageUrl or `null`, always sent (backend R3b). Renders on the competition filter chips and the game header's second line; `null` shows the kind icon |
 
 ### `MatchIdentity`
 

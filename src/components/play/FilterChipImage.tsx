@@ -2,10 +2,8 @@
 
 import Image from 'next/image';
 import type { ReactNode } from 'react';
-import {
-  COMPETITION_KIND_PATH,
-  SHIELD_PATH,
-} from '@/components/play/filter-icons';
+import { CompetitionLogo } from '@/components/game/CompetitionLogo';
+import { SHIELD_PATH } from '@/components/play/filter-icons';
 import { useImageFallback } from '@/hooks/use-image-fallback';
 import type { ClubRef, CompetitionRef } from '@/types/match';
 
@@ -61,22 +59,5 @@ export function CompetitionChipImage({
 }: {
   competition: CompetitionRef;
 }) {
-  return (
-    <FilterChipImage
-      src={competition.logoUrl}
-      fallback={
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.75}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="size-full"
-        >
-          <path d={COMPETITION_KIND_PATH[competition.kind]} />
-        </svg>
-      }
-    />
-  );
+  return <CompetitionLogo competition={competition} className="size-5" />;
 }

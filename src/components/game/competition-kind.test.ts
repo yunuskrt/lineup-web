@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COMPETITION_KIND_PATH } from '@/components/play/filter-icons';
+import { COMPETITION_KIND_PATH } from '@/components/game/competition-kind';
 import { competitionKindSchema } from '@/lib/api/schemas/common';
 import { competitionGroups } from '@/lib/filters';
 

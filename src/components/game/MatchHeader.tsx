@@ -1,4 +1,5 @@
 import { ClubCrest } from '@/components/game/ClubCrest';
+import { CompetitionLogo } from '@/components/game/CompetitionLogo';
 import { foundCountLabel } from '@/lib/canvas';
 import { type HeaderSide, matchHeaderView } from '@/lib/match-header';
 import type { MatchInPlay, Side } from '@/types/match';
@@ -62,7 +63,10 @@ export function MatchHeader({ match, found }: MatchHeaderProps) {
           <span className="size-8 rounded-sm bg-skeleton-fill sm:size-10" />
         </div>
         <div className={LINE_TWO}>
-          <span className="h-3.5 w-36 rounded-sm bg-skeleton-fill" />
+          <span className="flex items-center gap-1.5">
+            <span className="size-5 rounded-sm bg-skeleton-fill" />
+            <span className="h-3.5 w-36 rounded-sm bg-skeleton-fill" />
+          </span>
         </div>
       </div>
     );
@@ -86,7 +90,10 @@ export function MatchHeader({ match, found }: MatchHeaderProps) {
         <Team team={view.away} side="away" />
       </h2>
       <p className={`${LINE_TWO} text-14 leading-5 text-fg-muted`}>
-        <span className="min-w-0 truncate">{view.competition}</span>
+        <span className="flex min-w-0 items-center gap-1.5">
+          <CompetitionLogo competition={match.competition} className="size-5" />
+          <span className="min-w-0 truncate">{view.competition}</span>
+        </span>
         <span className="shrink-0">{view.date}</span>
       </p>
       <p className="sr-only">{view.namingLabel}</p>
