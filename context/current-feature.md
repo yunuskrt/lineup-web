@@ -70,3 +70,4 @@ Not Started
 - Sound Effects A: Web Audio cue engine, mute toggle by quit, /dev/sound.
 - Sound Effects B: cue diff, clock ticks and beeps, 300ms late stings.
 - Fix Match Filters A: one competition, its clubs and seasons, club search.
+- Fix Match Filters B: chip crests, logos, kind icons, required logoUrl.

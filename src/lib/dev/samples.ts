@@ -19,7 +19,12 @@ import type { User } from '@/types/user';
 
 export const SAMPLE_IDENTITY: MatchIdentity = {
   id: 'sample-match',
-  competition: { id: 'sample-cup', kind: 'ucl', name: 'Continental Cup' },
+  competition: {
+    id: 'sample-cup',
+    kind: 'ucl',
+    name: 'Continental Cup',
+    logoUrl: '/mock/competitions/comp-continental-cup.svg',
+  },
   season: '2004-05',
   date: '2005-05-25',
   stage: 'Final',
@@ -69,6 +74,7 @@ export const SAMPLE_FILTER_OPTIONS: FilterOptions = {
       id: 'sample-league',
       kind: 'league',
       name: 'Premier Division',
+      logoUrl: null,
       clubIds: [SAMPLE_IDENTITY.home.id, 'sample-third'],
       seasonStarts: [2008, 2012, 2016, 2020],
     },
@@ -160,22 +166,31 @@ const COMPETITIONS = {
     id: 'comp-continental-cup',
     kind: 'ucl',
     name: 'Continental Champions Cup',
+    logoUrl: null,
   },
-  crown: { id: 'comp-crown-league', kind: 'league', name: 'Crown League' },
+  crown: {
+    id: 'comp-crown-league',
+    kind: 'league',
+    name: 'Crown League',
+    logoUrl: null,
+  },
   meridiana: {
     id: 'comp-liga-meridiana',
     kind: 'league',
     name: 'Liga Meridiana',
+    logoUrl: null,
   },
   nations: {
     id: 'comp-nations-cup',
     kind: 'world_cup',
     name: 'Global Nations Cup',
+    logoUrl: null,
   },
   championship: {
     id: 'comp-nations-championship',
     kind: 'euro',
     name: 'Continental Nations Championship',
+    logoUrl: null,
   },
 } as const satisfies Record<string, CompetitionRef>;
 

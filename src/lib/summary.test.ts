@@ -14,7 +14,12 @@ import type { MatchIdentity } from '@/types/match';
 
 const IDENTITY: MatchIdentity = {
   id: 'm-1',
-  competition: { id: 'c-1', kind: 'ucl', name: 'Continental Cup' },
+  competition: {
+    id: 'c-1',
+    kind: 'ucl',
+    name: 'Continental Cup',
+    logoUrl: null,
+  },
   season: '2004-05',
   date: '2005-05-25',
   stage: 'Final',

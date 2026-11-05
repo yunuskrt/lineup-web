@@ -15,7 +15,7 @@ What the web client needs from the real match data and images: where each field 
 
 ## 1. Images
 
-Both image fields are `string | null`.
+All three image fields (`ClubRef.crestUrl`, `CompetitionRef.logoUrl`, `RevealedPlayer.imageUrl`) are `string | null`.
 
 **A URL must be absolute `http(s)`** (`https://cdn…/x.webp`) **or a root-relative path** (`/x.svg`). Anything else fails the web's schema, and the web then drops the whole payload, not just the image:
 
@@ -32,9 +32,11 @@ The web loads each URL as is, straight from the CDN: `next/image` with `unoptimi
 | --- | --- | --- | --- | --- | --- |
 | `crestUrl` | Game header, both clubs, on `/play/solo` and `/play/duel` | **24×24** drawn area below 640 px viewport width; **32×32** at 640 px and up | 48×48; 64×64 | Square box, 4 px rounded corners. `object-fit: contain`: the whole crest shows, aspect kept, letterboxed | **Transparent:** the panel shows through (`surface-raised`, #121A15, near-black green) |
 | `imageUrl` | Squad grid slot, once the player is named | **20×20** while the pitch is under 480 px wide; **32×32** at 480–559 px; **40×40** at 560 px and up. In a duel a 2 px ring in the finder's colour takes the inside down to **16 / 28 / 36** | 40, 64, 80 (duel: 32, 56, 72) | Circle. `object-fit: cover`: a centred square crop, then masked to a circle | **The disc colour,** `surface-raised` (#121A15), inside a `surface-card` slot (#1A241E) |
+| `crestUrl` | Club filter chip on `/play`, before the name (web Match Filters B) | **20×20** at every width | 40×40 | Square box, no rounding. `object-fit: contain` | **Transparent:** the page shows through: `surface` (#0A0F0C) at rest, `surface-card` (#1A241E) when the chip is pressed |
+| `logoUrl` | Competition filter chip on `/play`, before the name (web Match Filters B) | **20×20** at every width | 40×40 | Square box, no rounding. `object-fit: contain` | **Transparent:** as the club chip, `surface` (#0A0F0C) at rest, `surface-card` (#1A241E) when pressed |
 | `imageUrl` | Squad grid slot on the solo summary, for a player you missed (Pro summaries only) | Same as above | Same | Same, at 60% opacity | Same disc, inside a `surface` slot (#0A0F0C) |
 
-No other surface shows an image: not the lobby, the result cards, the profile or the filters.
+No other surface shows an image: not the lobby, the result cards or the profile. `logoUrl` shows only on the filter chips, not in the game header.
 
 **The crest box sizes against the viewport.** The 640 px breakpoint is where the full club name appears too.
 
@@ -50,20 +52,21 @@ No other surface shows an image: not the lobby, the result cards, the profile or
 
 ### Formats, background and fallbacks
 
-| Question | Crest | Headshot |
-| --- | --- | --- |
-| SVG | **Works,** as a plain `<img>`; it must be served as `image/svg+xml`. Scripts in it never run | Works, but a photo is the usual case |
-| PNG | Works | Works |
-| WebP | Works | Works |
-| Transparency | **Expected.** Nothing is painted behind a loaded crest, so a crest with a white or coloured square background shows as that square on the dark panel. A dark crest on a transparent background can be hard to see on #121A15 | Optional. A transparent PNG shows the dark disc behind it. A photo is cropped to a centred square, so the face must be centred; a tall portrait loses its top and bottom |
-| Smallest source that stays sharp | **64×64** (2× the 32 px box) | **80×80** (2× the 40 px disc) |
-| Recommended export | SVG; otherwise a square 128×128 transparent PNG or WebP. That covers 3× phones too (24 × 3 = 72) | A square 128×128, face centred |
-| URL is `null` | The club's `shortName` in 12 px semibold Inter, muted, on `surface-card` (#1A241E) inside the same box. It truncates with an ellipsis (§ 2) | The player's initials in 12 px semibold Inter, muted, on the disc: the first letter of the first and last words, e.g. "Jasper van der Linde" → **JL**, "Tavinho" → **T** |
-| The image fails to load (404, CORS, bad type) | The same fallback as `null`, at once. It's tried once per URL; a different URL tries again | The same fallback as `null` |
+| Question | Crest | Competition logo | Headshot |
+| --- | --- | --- | --- |
+| SVG | **Works,** as a plain `<img>`; it must be served as `image/svg+xml`. Scripts in it never run | Works, as for crests | Works, but a photo is the usual case |
+| PNG | Works | Works | Works |
+| WebP | Works | Works | Works |
+| Transparency | **Expected.** Nothing is painted behind a loaded crest, so a crest with a white or coloured square background shows as that square on the dark panel. A dark crest on a transparent background can be hard to see on #121A15 | **Expected,** as for crests. Many competition logos are dark or a dark wordmark, which disappears on #0A0F0C: **use a light or one-colour version** | Optional. A transparent PNG shows the dark disc behind it. A photo is cropped to a centred square, so the face must be centred; a tall portrait loses its top and bottom |
+| Smallest source that stays sharp | **64×64** (2× the 32 px box) | **40×40** (2× the 20 px box) | **80×80** (2× the 40 px disc) |
+| Recommended export | SVG; otherwise a square 128×128 transparent PNG or WebP. That covers 3× phones too (24 × 3 = 72) | SVG; otherwise a square 128×128 transparent PNG or WebP. Crop to the emblem, not the emblem plus a wordmark: a wordmark is unreadable at 20 px | A square 128×128, face centred |
+| URL is `null` | The club's `shortName` in 12 px semibold Inter, muted, on `surface-card` (#1A241E) inside the same box. It truncates with an ellipsis (§ 2) | An icon for the competition's kind, in the chip's text colour: a ball (`league`), a cup (`ucl`, `uel`), a globe (`world_cup`, `euro`) | The player's initials in 12 px semibold Inter, muted, on the disc: the first letter of the first and last words, e.g. "Jasper van der Linde" → **JL**, "Tavinho" → **T** |
+| The image fails to load (404, CORS, bad type) | The same fallback as `null`, at once. It's tried once per URL; a different URL tries again | The same kind icon, at once. Tried once per URL | The same fallback as `null` |
 
 **Measured fallback limits:**
 
-- **Crest fallback:** the text area is **24 px wide below 640 px** and 32 px above. "NGU" measures 27 px in that font, so on phones it shows as "NG…"; "YLD" (24 px) just fits.
+- **Crest fallback on a filter chip:** a plain shield glyph, `fg-dim` (#5F6D64) at rest and `fg-muted` (#9BA79E) on a pressed chip, in the same 20 px box. No short code: the name is beside it.
+- **Crest fallback in the game header:** the text area is **24 px wide below 640 px** and 32 px above. "NGU" measures 27 px in that font, so on phones it shows as "NG…"; "YLD" (24 px) just fits.
 - **Headshot fallback in a duel on a phone:** the inside of the ring is **16 px**. "GP" measures 16 px exactly; wider pairs such as "MW" are clipped at the circle's edge.
 
 ---

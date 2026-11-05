@@ -93,7 +93,12 @@ const RESULT: DuelResult = {
   outcome: 'win',
   match: {
     id: SAMPLE_MATCH.id,
-    competition: { id: 'c', kind: 'ucl', name: 'Continental Cup' },
+    competition: {
+      id: 'c',
+      kind: 'ucl',
+      name: 'Continental Cup',
+      logoUrl: null,
+    },
     season: '2004-05',
     date: '2005-05-25',
     stage: 'Final',

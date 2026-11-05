@@ -4,7 +4,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 
 | # | Request | Needed by | Asked | Status |
 | --- | --- | --- | --- | --- |
-| R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | Part 1 **Done** (2026-11-04, backend R3a); Part 2 open (backend R3b) |
+| R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | **Done**: Part 1 (2026-11-04, backend R3a), Part 2 (2026-11-05, backend R3b) |
 
 If the backend has already used R3 for something else, take the next free number and rename it here.
 
@@ -45,6 +45,10 @@ The web can't work this out itself. `GET /catalog/filter-options` sends competit
 - **Key scheme for the scraper:** `competitions/<competition-slug>/<sha256-12>.<ext>`, `ext` one of `webp`, `png`, `svg`. Same as crests (`crests/<club-slug>/…`).
 - `CompetitionRef.logoUrl: string | null`, set as `assetUrl(ASSET_BASE_URL, logo_key)` in `toCompetitionRef`. That covers every payload that carries a `CompetitionRef`: the catalog, the solo and duel match, the summary, the result and history. `null` stays `null`, as for `crestUrl` (R2).
 - Deploy the migration to `dev` and `ingest`.
+- **Built** (2026-11-05): backend `a266849` (R3b), on `main` and pushed.
+  - **Payload:** every `CompetitionRef` always carries `logoUrl`: an absolute https URL (`<ASSET_BASE_URL>/<logo_key>`) or `null`. That covers the catalog (`CompetitionOption` inherits it), the solo and duel match, the summary, the result and history.
+  - **Unchanged:** every other field. No `PROTOCOL_VERSION` change.
+  - **Data:** every competition's `logoUrl` is `null` until the scraper uploads logos, so the web shows the kind icon meanwhile.
 
 ### Contract and versions
 

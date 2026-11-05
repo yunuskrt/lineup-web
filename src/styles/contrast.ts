@@ -59,7 +59,7 @@ export const CONTRAST_PAIRS: ContrastPair[] = [
     ['fg-dim'],
     ['surface', 'surface-raised'],
     LARGE_TEXT_MIN,
-    'Large numerals, pips',
+    'Large numerals, pips, no-crest shield',
   ),
 ];
 
