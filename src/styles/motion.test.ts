@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  MISSED_REVEAL_STAGGER_MS,
   MOTION_DURATION_MS,
   MOTION_EFFECTS,
   MOTION_SECONDS,
@@ -31,6 +32,13 @@ describe('REVEAL_SPRING', () => {
   });
 });
 
+describe('missed reveal', () => {
+  it('fades each slot in over 240ms, 60ms apart', () => {
+    expect(MOTION_DURATION_MS.missedReveal).toBe(240);
+    expect(MISSED_REVEAL_STAGGER_MS).toBe(60);
+  });
+});
+
 describe('SKELETON_PULSE', () => {
   it('loops the 1.6s ease-in-out pulse from theme.md', () => {
     expect(SKELETON_PULSE.duration).toBe(1.6);
@@ -51,6 +59,7 @@ const MOVING = [
   'coinFlipScale',
   'sidePickSlide',
   'sidePickHoverLift',
+  'missedReveal',
 ] as const;
 
 const CUES = [

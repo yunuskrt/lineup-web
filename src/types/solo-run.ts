@@ -22,6 +22,8 @@ export type SoloRunState = {
   summary: SoloSummary | null;
   isGuessing: boolean;
   isChoosing: boolean;
+  // The player asked to see the missed XI
+  isMissedRevealed: boolean;
   isQuitting: boolean;
   // Server retry time after a rate-limited guess
   cooldownUntil: number | null;
@@ -46,6 +48,7 @@ export type SoloRunEvent =
   // Tagged, so a late reply can't land on a new run
   | { type: 'summaryReceived'; sessionId: string; summary: SoloSummary }
   | { type: 'summaryFailed'; sessionId: string; error: ApiError }
+  | { type: 'missedRevealed' }
   | { type: 'failed'; step: SoloRunStep; error: ApiError }
   | { type: 'retried' };
 

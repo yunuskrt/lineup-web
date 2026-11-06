@@ -1,10 +1,15 @@
 import { z } from 'zod';
+import type { Tier } from '@/types/user';
 
 export type ApiMode = 'mock' | 'real';
 
 // Names a mode, never a secret: safe to ship
 export const API_MODE: ApiMode =
   process.env.NEXT_PUBLIC_API_MODE === 'real' ? 'real' : 'mock';
+
+// Mock only: the real backend decides the tier
+export const MOCK_TIER: Tier =
+  process.env.NEXT_PUBLIC_MOCK_TIER === 'pro' ? 'pro' : 'free';
 
 const API_URL_VAR = 'NEXT_PUBLIC_API_URL';
 

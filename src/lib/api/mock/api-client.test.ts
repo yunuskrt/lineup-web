@@ -171,6 +171,35 @@ describe('mock api client', () => {
     expect(summary.match).toEqual(requireFixture(CROWN_2003).identity);
   });
 
+  it('makes new users the tier it was given, free by default', async () => {
+    const free = unwrap(await api.auth.continueAsGuest());
+    expect(free.user.tier).toBe('free');
+
+    const pro = createMockApiClient({ now: () => clock, tier: 'pro' });
+    expect(unwrap(await pro.auth.continueAsGuest()).user.tier).toBe('pro');
+    const signedUp = unwrap(
+      await pro.auth.signUp({
+        email: 'pro@example.com',
+        password: 'long-enough-password',
+        handle: 'pro_player',
+      }),
+    );
+    expect(signedUp.user.tier).toBe('pro');
+  });
+
+  it('sends a Pro run its missed players', async () => {
+    api = createMockApiClient({
+      now: () => clock,
+      random: () => draw,
+      tier: 'pro',
+    });
+    await api.auth.continueAsGuest();
+    const { sessionId } = await startRun();
+    const summary = unwrap(await api.solo.quit(sessionId));
+    expect(summary.missed).toHaveLength(11);
+    expect(summary.missedCount).toBe(11);
+  });
+
   it('carries headshots to reveals and the Pro summary', async () => {
     const store = createStore();
     api = createMockApiClient({ now: () => clock, random: () => draw, store });

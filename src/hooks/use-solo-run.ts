@@ -254,5 +254,18 @@ export function useSoloRun(params: URLSearchParams) {
     dispatch({ type: 'retried' });
   }
 
-  return { state, chooseSide, submitGuess, quit, playAgain, retry, widen };
+  function revealMissed() {
+    dispatch({ type: 'missedRevealed' });
+  }
+
+  return {
+    state,
+    chooseSide,
+    submitGuess,
+    quit,
+    playAgain,
+    retry,
+    widen,
+    revealMissed,
+  };
 }

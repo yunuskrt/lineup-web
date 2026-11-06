@@ -46,6 +46,7 @@ import type { SoloEndReason } from '@/types/game';
 import type { HistoryEntry, HistoryPage } from '@/types/profile';
 import type { RevealedPlayer } from '@/types/player';
 import type { SoloSession, SoloSummary } from '@/types/solo';
+import type { Tier } from '@/types/user';
 
 export type MockRateLimit = { max: number; windowMs: number };
 
@@ -82,6 +83,8 @@ export type MockApiOptions = {
   store?: MockStore;
   // Guesses allowed per window, per session
   rateLimit?: MockRateLimit;
+  // The tier new mock users get; free by default
+  tier?: Tier;
 };
 
 export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
@@ -89,6 +92,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
   const random = options.random ?? Math.random;
   const store: MockStore = options.store ?? createStore();
   const rateLimit = options.rateLimit ?? DEFAULT_RATE_LIMIT;
+  const tier = options.tier ?? 'free';
 
   function requireIdentity() {
     return store.identity;
@@ -251,7 +255,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           handle: guestHandle(random),
           isGuest: true,
           emailVerified: false,
-          tier: 'free',
+          tier,
         });
         return ok(signedInSession());
       },
@@ -273,7 +277,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           isGuest: false,
           // An existing account, confirmed earlier
           emailVerified: true,
-          tier: 'free',
+          tier,
         });
         return ok(signedInSession());
       },
@@ -294,7 +298,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           handle: parsed.data.handle,
           isGuest: false,
           emailVerified: false,
-          tier: 'free',
+          tier,
         });
         return ok(signedInSession());
       },

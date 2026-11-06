@@ -7,7 +7,12 @@ import { RevealCard } from '@/components/pitch/RevealCard';
 import { SquadSlot } from '@/components/pitch/SquadSlot';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { parseFormation, slotLayout } from '@/lib/formation';
-import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
+import {
+  MISSED_REVEAL_STAGGER_MS,
+  MOTION_SECONDS,
+  SKELETON_PULSE,
+  SKELETON_PULSE_OPACITY,
+} from '@/styles/motion';
 import type { GridPulse } from '@/types/feedback';
 import type {
   FoundPlayer,
@@ -31,10 +36,21 @@ export function slotWidthClass(formation: string): string {
   return SLOT_WIDTH_BY_WIDEST_LINE[widestLine] ?? 'w-[14%]';
 }
 
+// One by one, in squad order, as the player reveals
+function missedEntrance(rank: number): Transition {
+  return {
+    duration: MOTION_SECONDS.missedReveal,
+    ease: 'easeOut',
+    delay: (rank * MISSED_REVEAL_STAGGER_MS) / 1000,
+  };
+}
+
 type GridSlotProps = {
   position: PositionGroup;
   player: FoundPlayer | undefined;
   missedPlayer: RevealedPlayer | undefined;
+  // Null when the reveal doesn't animate
+  missedRank: number | null;
   isLoading: boolean;
   isNew: boolean;
   pulseKey: number | undefined;
@@ -44,6 +60,7 @@ function GridSlot({
   position,
   player,
   missedPlayer,
+  missedRank,
   isLoading,
   isNew,
   pulseKey,
@@ -51,12 +68,18 @@ function GridSlot({
   if (isLoading) return <SquadSlot state="loading" position={position} />;
   if (!player && missedPlayer) {
     return (
-      <SquadSlot
-        state="missed"
-        position={position}
-        name={missedPlayer.name}
-        imageUrl={missedPlayer.imageUrl}
-      />
+      <motion.div
+        initial={missedRank === null ? false : { opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={missedRank === null ? INSTANT : missedEntrance(missedRank)}
+      >
+        <SquadSlot
+          state="missed"
+          position={position}
+          name={missedPlayer.name}
+          imageUrl={missedPlayer.imageUrl}
+        />
+      </motion.div>
     );
   }
   if (!player) return <SquadSlot state="empty" position={position} />;
@@ -74,7 +97,7 @@ function GridSlot({
 type SquadGridProps = {
   formation: string;
   revealed: FoundPlayer[];
-  // Pro summaries only; free runs leave slots empty
+  // Pro only, and only once the player reveals
   missed?: RevealedPlayer[];
   pulse?: GridPulse;
   isLoading?: boolean;
@@ -117,6 +140,13 @@ export function SquadGrid({
   const missedBySlot = new Map(
     (missed ?? []).map((player) => [player.slot, player]),
   );
+  // Goalkeeper first: the order the slots appear in
+  const missedRankBySlot = new Map(
+    [...missedBySlot.keys()]
+      .sort((a, b) => a - b)
+      .map((slot, rank) => [slot, rank]),
+  );
+  const isRevealAnimated = runs('missedReveal');
   const isPulsing = isLoading && runs('skeletonPulse');
 
   return (
@@ -152,6 +182,11 @@ export function SquadGrid({
                       position={point.position}
                       player={player}
                       missedPlayer={missedBySlot.get(point.slot)}
+                      missedRank={
+                        isRevealAnimated
+                          ? (missedRankBySlot.get(point.slot) ?? 0)
+                          : null
+                      }
                       isLoading={isLoading}
                       isNew={player !== undefined && newIds.has(player.id)}
                       pulseKey={

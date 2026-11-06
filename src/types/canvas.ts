@@ -61,7 +61,8 @@ export type CanvasViewBase = {
 };
 
 export type SoloEndView =
-  { status: 'loading' } | { status: 'ready'; summary: SoloSummary };
+  | { status: 'loading' }
+  | { status: 'ready'; summary: SoloSummary; isMissedRevealed: boolean };
 
 export type SoloCanvasView = CanvasViewBase & {
   mode: 'solo';

@@ -3,6 +3,7 @@
 import { motion } from 'motion/react';
 import { type RefObject, useEffect, useId, useRef } from 'react';
 import { Lives } from '@/components/game/Lives';
+import { MissedReveal } from '@/components/game/MissedReveal';
 import { NamedOrder } from '@/components/game/NamedOrder';
 import {
   ResultActions,
@@ -96,7 +97,8 @@ function SummarySkeleton() {
             ))}
           </div>
         </div>
-        <div className="flex flex-col items-center gap-3 lg:mt-auto">
+        <span className={`h-10 shrink-0 lg:mt-auto ${SKELETON}`} />
+        <div className="flex flex-col items-center gap-3">
           <span className={`h-12 w-full ${SKELETON}`} />
           <span className={`h-5 w-24 ${SKELETON}`} />
         </div>
@@ -107,12 +109,14 @@ function SummarySkeleton() {
 
 type RunSummaryProps = ResultActionsProps & {
   end: SoloEndView;
+  onRevealMissed: () => void;
 };
 
 export function RunSummary({
   end,
   onPlayAgain,
   onChangeFilters,
+  onRevealMissed,
 }: RunSummaryProps) {
   const titleId = useId();
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -135,6 +139,11 @@ export function RunSummary({
     >
       <Outcome summary={summary} titleId={titleId} titleRef={titleRef} />
       <NamedOrder mode="solo" found={summary.found} />
+      <MissedReveal
+        summary={summary}
+        isRevealed={end.isMissedRevealed}
+        onReveal={onRevealMissed}
+      />
       <ResultActions
         onPlayAgain={onPlayAgain}
         onChangeFilters={onChangeFilters}

@@ -63,6 +63,7 @@ export const INITIAL_SOLO_RUN: SoloRunState = {
   summary: null,
   isGuessing: false,
   isChoosing: false,
+  isMissedRevealed: false,
   isQuitting: false,
   cooldownUntil: null,
   failure: null,
@@ -160,6 +161,10 @@ export function soloRunReducer(
         step: 'summary',
         error: event.error,
       });
+    case 'missedRevealed':
+      // Only a finished run whose summary has the list
+      if (state.phase !== 'over' || !state.summary?.missed) return state;
+      return { ...state, isMissedRevealed: true };
     case 'guessResolved':
       return resolveGuess(state, event);
     case 'guessFailed': {
@@ -278,7 +283,11 @@ function endOf(state: SoloRunState): SoloEndView | null {
   const isEnding = state.phase === 'over' || state.failure?.step === 'summary';
   if (!isEnding) return null;
   return state.summary
-    ? { status: 'ready', summary: state.summary }
+    ? {
+        status: 'ready',
+        summary: state.summary,
+        isMissedRevealed: state.isMissedRevealed,
+      }
     : { status: 'loading' };
 }
 

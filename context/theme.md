@@ -125,6 +125,7 @@ Keep corners tight. Sports and data interfaces feel sharp; pill-shaped everythin
 | Turn handover        | 240ms    | ease-out                      |
 | Life lost            | 480ms    | shake + `red-card` flash      |
 | Timer color shift    | 200ms    | ease                          |
+| Missed XI reveal     | 240ms each, 60ms apart | ease-out, fade + scale 0.96 → 1, goalkeeper first. Reduced motion: all at once |
 
 **The ring must sweep linearly.** Any easing makes the visual position of the ring disagree with the seconds remaining — the player sees the ring slow down while the clock keeps ticking. Easing a progress indicator is a lie about time, and in a game where the clock decides lives, it's a fairness bug, not a style choice.
 
@@ -244,6 +245,7 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Life lost                 | Timer hits 0       | Pip empties, flash, next round starts                                                |
 | Perfect clear             | All 11 named       | `turf` takeover, lives remaining shown prominently. The solo counterpart of the draw |
 | Run over                  | Lives at 0         | Summary: named vs missed, time per round, accuracy, streak                           |
+| Missed revealed (Pro)     | Reveal the full XI | Missed slots fill one by one in the dimmed missed style; the button becomes "Showing the N you missed." Free sees the button locked, with "Pro shows every player you missed." |
 | Quit confirm              | Quit tapped        | Modal. Mid-run quits are common — make it one tap to cancel, never a double confirm  |
 
 ### Lobby & matchmaking

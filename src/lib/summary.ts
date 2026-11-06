@@ -1,5 +1,7 @@
+import type { SoloEndView } from '@/types/canvas';
 import type { SoloEndReason } from '@/types/game';
 import type { MatchIdentity } from '@/types/match';
+import type { RevealedPlayer } from '@/types/player';
 import type { ClubNameKey, NamedOrder, NamedTiming } from '@/types/summary';
 
 const SUMMARY_TITLES: Record<SoloEndReason, string> = {
@@ -52,6 +54,14 @@ export function accuracyLabel(ratio: number): string {
 
 export function roundSecondsLabel(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
+}
+
+// Hidden until the player asks to see them
+export function missedOnPitch(
+  end: SoloEndView | null,
+): RevealedPlayer[] | undefined {
+  if (end?.status !== 'ready' || !end.isMissedRevealed) return undefined;
+  return end.summary.missed ?? undefined;
 }
 
 // The server's order, shown as is; a tie keeps the first

@@ -104,7 +104,13 @@ function summary(endReason: SoloEndReason): SoloSummary {
 }
 
 function ended(endReason: SoloEndReason): SoloCanvasView {
-  return solo({ end: { status: 'ready', summary: summary(endReason) } });
+  return solo({
+    end: {
+      status: 'ready',
+      summary: summary(endReason),
+      isMissedRevealed: false,
+    },
+  });
 }
 
 describe('soundCuesFor: reveals', () => {

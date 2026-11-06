@@ -76,3 +76,28 @@ describe('API_MODE', () => {
     expect(API_MODE).toBe('real');
   });
 });
+
+describe('MOCK_TIER', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it('defaults to free', async () => {
+    vi.stubEnv('NEXT_PUBLIC_MOCK_TIER', '');
+    const { MOCK_TIER } = await import('@/lib/api/config');
+    expect(MOCK_TIER).toBe('free');
+  });
+
+  it('reads pro', async () => {
+    vi.stubEnv('NEXT_PUBLIC_MOCK_TIER', 'pro');
+    const { MOCK_TIER } = await import('@/lib/api/config');
+    expect(MOCK_TIER).toBe('pro');
+  });
+
+  it('treats anything else as free', async () => {
+    vi.stubEnv('NEXT_PUBLIC_MOCK_TIER', 'Pro');
+    const { MOCK_TIER } = await import('@/lib/api/config');
+    expect(MOCK_TIER).toBe('free');
+  });
+});

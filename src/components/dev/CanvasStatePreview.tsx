@@ -30,6 +30,18 @@ export function CanvasStatePreview({ mode, state }: CanvasStatePreviewProps) {
     return () => clearTimeout(timer);
   }, [snapshot]);
 
+  // Snapshots reveal locally; there's no run to tell
+  function revealMissed() {
+    setFrame((current) => {
+      const { view } = current;
+      if (view.mode !== 'solo' || view.end?.status !== 'ready') return current;
+      return {
+        ...current,
+        view: { ...view, end: { ...view.end, isMissedRevealed: true } },
+      };
+    });
+  }
+
   function openGate() {
     const started = resolveCanvasState(mode, AFTER_GATE_STATE).build(
       Date.now(),
@@ -46,6 +58,7 @@ export function CanvasStatePreview({ mode, state }: CanvasStatePreviewProps) {
       // Snapshots have no server to send a guess to
       onGuessSubmit={() => {}}
       onGateAction={openGate}
+      onRevealMissed={revealMissed}
     />
   );
 }
