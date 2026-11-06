@@ -28,14 +28,14 @@ import type {
 } from '@/types/canvas';
 import type {
   DuelActor,
-  DuelFoundPlayer,
+  DuelNamedPlayer,
   DuelResult,
   FilterSubmission,
 } from '@/types/duel';
 import type { DuelLobbyView } from '@/types/duel-lobby';
 import type { Lives, RoundTiming } from '@/types/game';
 import type { MatchIdentity } from '@/types/match';
-import type { FoundPlayer, RevealedPlayer } from '@/types/player';
+import type { FoundPlayer, NamedPlayer, RevealedPlayer } from '@/types/player';
 import type { SoloSummary } from '@/types/solo';
 
 export const SNAPSHOT_EVENT_DELAY_MS = 600;
@@ -175,6 +175,24 @@ function endedView(
   return { ...toSolo(fields(null, found, { input: 'locked' }), lives), end };
 }
 
+// Seconds each name took, in naming order
+const SAMPLE_ELAPSED_MS = [
+  3_200, 6_100, 1_700, 8_800, 2_400, 4_300, 9_400, 2_900, 5_600, 7_200, 3_800,
+];
+
+function inOrder<T extends RevealedPlayer>(
+  players: T[],
+): (T & Pick<NamedPlayer, 'order' | 'elapsedMs'>)[] {
+  return players.map((player, index) => ({
+    ...player,
+    order: index + 1,
+    elapsedMs: SAMPLE_ELAPSED_MS[index],
+  }));
+}
+
+// Named out of slot order, as a real run is
+const PERFECT_CLEAR_ORDER = [9, 10, 6, 0, 2, 7, 4, 1, 8, 5, 3];
+
 function summaryState(
   description: string,
   summary: SoloSummary,
@@ -196,7 +214,7 @@ function summaryState(
 // Out of lives: 4 named rounds, 3 that ran out
 const RUN_OVER_SUMMARY: SoloSummary = {
   match: SAMPLE_IDENTITY,
-  found: SOLO_FOUND,
+  found: inOrder(playersAt([7, 0, 10, 4])),
   missedCount: SQUAD_SIZE - SOLO_FOUND.length,
   missed: null,
   livesRemaining: 0,
@@ -208,7 +226,7 @@ const RUN_OVER_SUMMARY: SoloSummary = {
 
 const PERFECT_CLEAR_SUMMARY: SoloSummary = {
   match: { ...SAMPLE_IDENTITY, nickname: 'The Long Night' },
-  found: playersAt(ALL_SLOTS),
+  found: inOrder(playersAt(PERFECT_CLEAR_ORDER)),
   missedCount: 0,
   missed: null,
   livesRemaining: 2,
@@ -223,7 +241,7 @@ const PERFECT_CLEAR_SUMMARY: SoloSummary = {
 
 const QUIT_SUMMARY: SoloSummary = {
   match: SAMPLE_IDENTITY,
-  found: playersAt(QUIT_FOUND_SLOTS),
+  found: inOrder(playersAt(QUIT_FOUND_SLOTS)),
   missedCount: SQUAD_SIZE - QUIT_FOUND_SLOTS.length,
   missed: null,
   livesRemaining: 2,
@@ -231,6 +249,19 @@ const QUIT_SUMMARY: SoloSummary = {
   accuracy: 0.6,
   bestStreak: 3,
   roundTimesMs: [4_800, 3_100, 15_000, 7_200, 2_900, 5_600, 8_300, 5_200],
+};
+
+// Quit before naming anyone: the empty line
+const QUIT_EMPTY_SUMMARY: SoloSummary = {
+  match: SAMPLE_IDENTITY,
+  found: [],
+  missedCount: SQUAD_SIZE,
+  missed: null,
+  livesRemaining: MAX_LIVES,
+  endReason: 'quit',
+  accuracy: 0,
+  bestStreak: 0,
+  roundTimesMs: [6_400],
 };
 
 function toDuel(
@@ -514,7 +545,7 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
     }),
   },
   'run-over': summaryState(
-    'Out of lives with 4 named: stats, round times, 7 missed.',
+    'Out of lives with 4 named, in order, 7 missed.',
     RUN_OVER_SUMMARY,
   ),
   'run-over-pro': summaryState(
@@ -526,6 +557,10 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
     PERFECT_CLEAR_SUMMARY,
   ),
   quit: summaryState('Quit with 6 named: "Run ended", 5 missed.', QUIT_SUMMARY),
+  'quit-empty': summaryState(
+    'Quit before naming anyone: the empty named list.',
+    QUIT_EMPTY_SUMMARY,
+  ),
   'empty-pool-competition': soloEmptyPool(
     'competition',
     'No match in those competitions: include every one.',
@@ -622,19 +657,19 @@ export const LOBBY_STATES = {
   }),
 } satisfies Record<string, CanvasState<DuelCanvasView>>;
 
-// Finder per slot; a draw splits all eleven
-const DRAW_FINDERS: DuelActor[] = [
-  'you',
-  'opponent',
-  'you',
-  'you',
-  'opponent',
-  'opponent',
-  'you',
-  'opponent',
-  'you',
-  'you',
-  'opponent',
+// Naming order; a correct name passes the turn
+const DRAW_FINDERS: [number, DuelActor][] = [
+  [0, 'you'],
+  [1, 'opponent'],
+  [2, 'you'],
+  [4, 'opponent'],
+  [3, 'you'],
+  [5, 'opponent'],
+  [6, 'you'],
+  [7, 'opponent'],
+  [8, 'you'],
+  [10, 'opponent'],
+  [9, 'you'],
 ];
 
 const LOSS_FINDERS: [number, DuelActor][] = [
@@ -649,11 +684,13 @@ const FORFEIT_FINDERS: [number, DuelActor][] = [
   [9, 'you'],
 ];
 
-function foundBy(finders: [number, DuelActor][]): DuelFoundPlayer[] {
-  return finders.map(([slot, finder]) => ({
-    ...samplePlayer(FORMATION, slot),
-    foundBy: finder,
-  }));
+function foundBy(finders: [number, DuelActor][]): DuelNamedPlayer[] {
+  return inOrder(
+    finders.map(([slot, finder]) => ({
+      ...samplePlayer(FORMATION, slot),
+      foundBy: finder,
+    })),
+  );
 }
 
 function resultOf(
@@ -706,11 +743,7 @@ export const RESULT_STATES = {
   ),
   'result-draw': resultState(
     'All eleven named: both colours, neither leading.',
-    resultOf(
-      'draw',
-      DRAW_FINDERS.map((finder, slot) => [slot, finder]),
-      { you: 2, opponent: 1 },
-    ),
+    resultOf('draw', DRAW_FINDERS, { you: 2, opponent: 1 }),
   ),
   'result-forfeit-win': resultState(
     'They left: a win card marked as a forfeit.',

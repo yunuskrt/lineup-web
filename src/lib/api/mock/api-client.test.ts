@@ -16,6 +16,7 @@ import { HANDLE_PATTERN } from '@/lib/api/schemas/auth';
 import {
   soloMatchOfferSchema,
   soloSessionSchema,
+  soloSummarySchema,
 } from '@/lib/api/schemas/solo';
 import type { ApiResult } from '@/types/api';
 import type { Filters } from '@/types/filters';
@@ -195,6 +196,10 @@ describe('mock api client', () => {
     const summary = unwrap(await api.solo.getSummary(sessionId));
     const imageOf = new Map(squad.map((e) => [e.playerId, e.imageUrl]));
     expect(summary.found).toHaveLength(2);
+    expect(soloSummarySchema.safeParse(summary).success).toBe(true);
+    // Each name 10ms into its round, on the mock clock
+    expect(summary.found.map((player) => player.order)).toEqual([1, 2]);
+    expect(summary.found.map((player) => player.elapsedMs)).toEqual([10, 10]);
     expect(summary.missed).toHaveLength(9);
     for (const player of [...summary.found, ...(summary.missed ?? [])]) {
       expect(player.imageUrl, player.name).toBe(imageOf.get(player.id));

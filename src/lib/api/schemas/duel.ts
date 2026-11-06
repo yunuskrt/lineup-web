@@ -15,7 +15,10 @@ import {
   matchInPlaySchema,
   matchIdentitySchema,
 } from '@/lib/api/schemas/match';
-import { revealedPlayerSchema } from '@/lib/api/schemas/player';
+import {
+  namedPlayerSchema,
+  revealedPlayerSchema,
+} from '@/lib/api/schemas/player';
 
 export const duelActorSchema = z.enum(['you', 'opponent']);
 
@@ -65,6 +68,10 @@ export const duelFoundPlayerSchema = revealedPlayerSchema.extend({
   foundBy: duelActorSchema,
 });
 
+export const duelNamedPlayerSchema = namedPlayerSchema.extend({
+  foundBy: duelActorSchema,
+});
+
 export const duelSessionSchema = z.object({
   sessionId: idSchema,
   match: matchInPlaySchema,
@@ -94,7 +101,8 @@ export const duelLifeLostSchema = z.object({
 export const duelResultSchema = z.object({
   outcome: duelOutcomeSchema,
   match: matchIdentitySchema,
-  found: z.array(duelFoundPlayerSchema).max(SQUAD_SIZE),
+  // Sorted by order
+  found: z.array(duelNamedPlayerSchema).max(SQUAD_SIZE),
   you: duelPlayerSchema,
   opponent: duelPlayerSchema,
   isForfeit: z.boolean(),

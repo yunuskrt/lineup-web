@@ -69,11 +69,20 @@ function duel(overrides: Partial<DuelCanvasView> = {}): DuelCanvasView {
   };
 }
 
+// End-of-game lists carry the naming order and time
+function named<T extends object>(players: T[]) {
+  return players.map((player, index) => ({
+    ...player,
+    order: index + 1,
+    elapsedMs: 1_000 * (index + 1),
+  }));
+}
+
 function result(outcome: DuelResult['outcome']): DuelResult {
   return {
     outcome,
     match: SAMPLE_IDENTITY,
-    found: foundBy(4, 'you'),
+    found: named(foundBy(4, 'you')),
     you: SAMPLE_YOU,
     opponent: SAMPLE_OPPONENT,
     isForfeit: outcome === 'forfeit_win',
@@ -83,7 +92,7 @@ function result(outcome: DuelResult['outcome']): DuelResult {
 function summary(endReason: SoloEndReason): SoloSummary {
   return {
     match: SAMPLE_IDENTITY,
-    found: found(4),
+    found: named(found(4)),
     missedCount: 7,
     missed: null,
     livesRemaining: 0,
@@ -239,7 +248,7 @@ describe('soundCuesFor: duel flow', () => {
     const prev = duel({ found: foundBy(10, 'you'), turn: 'opponent' });
     const next = duel({
       found: [...foundBy(10, 'you'), { ...PLAYERS[10], foundBy: 'opponent' }],
-      end: { ...result('draw'), found: foundBy(11, 'you') },
+      end: { ...result('draw'), found: named(foundBy(11, 'you')) },
       turn: null,
     });
     expect(soundCuesFor(prev, next)).toEqual(['theirReveal', 'resultDraw']);

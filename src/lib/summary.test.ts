@@ -4,9 +4,8 @@ import {
   matchContext,
   matchDateLabel,
   matchSubtitle,
+  namedOrder,
   roundSecondsLabel,
-  roundTimeBars,
-  roundTimeStats,
   scoreline,
   summaryTitle,
 } from '@/lib/summary';
@@ -120,29 +119,38 @@ describe('roundSecondsLabel', () => {
   });
 });
 
-describe('roundTimeBars', () => {
-  it('scales each round to its share of 15s', () => {
-    expect(roundTimeBars([7500, 3000])).toEqual([0.5, 0.2]);
+describe('namedOrder', () => {
+  const at = (order: number, elapsedMs: number) => ({ order, elapsedMs });
+
+  it('lists the rows in the order the server gave', () => {
+    const { rows } = namedOrder([at(3, 900), at(1, 4_000), at(2, 2_500)]);
+    expect(rows.map((row) => row.order)).toEqual([1, 2, 3]);
   });
 
-  it('clamps rounds past 15s', () => {
-    expect(roundTimeBars([15_400, 15_000])).toEqual([1, 1]);
+  it('marks the fastest row, by its sorted index', () => {
+    expect(namedOrder([at(2, 1_200), at(1, 4_000)]).fastestIndex).toBe(1);
   });
 
-  it('is empty with no rounds', () => {
-    expect(roundTimeBars([])).toEqual([]);
-  });
-});
-
-describe('roundTimeStats', () => {
-  it('gives the average and the fastest round', () => {
-    expect(roundTimeStats([2000, 4000, 9000])).toEqual({
-      averageMs: 5000,
-      fastestMs: 2000,
-    });
+  it('gives a tie for fastest to the first named', () => {
+    expect(namedOrder([at(2, 1_500), at(1, 1_500)]).fastestIndex).toBe(0);
   });
 
-  it('is null with no rounds', () => {
-    expect(roundTimeStats([])).toBeNull();
+  it('has no fastest with no rows', () => {
+    expect(namedOrder([])).toEqual({ rows: [], fastestIndex: null });
+  });
+
+  it('keeps all eleven, in order', () => {
+    const eleven = Array.from({ length: 11 }, (_, i) => at(11 - i, 15_000));
+    const { rows, fastestIndex } = namedOrder(eleven);
+    expect(rows.map((row) => row.order)).toEqual(
+      Array.from({ length: 11 }, (_, i) => i + 1),
+    );
+    expect(fastestIndex).toBe(0);
+  });
+
+  it('leaves the input as it was', () => {
+    const found = [at(2, 1), at(1, 2)];
+    namedOrder(found);
+    expect(found.map((row) => row.order)).toEqual([2, 1]);
   });
 });

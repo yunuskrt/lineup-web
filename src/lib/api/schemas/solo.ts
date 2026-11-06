@@ -17,7 +17,10 @@ import {
   matchInPlaySchema,
   matchIdentitySchema,
 } from '@/lib/api/schemas/match';
-import { revealedPlayerSchema } from '@/lib/api/schemas/player';
+import {
+  namedPlayerSchema,
+  revealedPlayerSchema,
+} from '@/lib/api/schemas/player';
 
 export const soloSessionStatusSchema = z.enum(['active', 'over']);
 
@@ -51,7 +54,8 @@ export const soloGuessResponseSchema = z.object({
 
 export const soloSummarySchema = z.object({
   match: matchIdentitySchema,
-  found: z.array(revealedPlayerSchema).max(SQUAD_SIZE),
+  // Sorted by order
+  found: z.array(namedPlayerSchema).max(SQUAD_SIZE),
   missedCount: squadCountSchema,
   // Pro gets the list, free gets null; server decides
   missed: z.array(revealedPlayerSchema).max(SQUAD_SIZE).nullable(),

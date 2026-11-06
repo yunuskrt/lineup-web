@@ -6,6 +6,7 @@ import {
 } from '@/lib/api/mock/data/fixtures';
 import {
   createEngineState,
+  namedInOrder,
   remainingCount,
   resolveRound,
   revealedPlayers,
@@ -222,7 +223,11 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
 
     return {
       match: fixtureOf(session).identity,
-      found: revealedPlayers(engine),
+      found: namedInOrder(engine).map(({ player, order, elapsedMs }) => ({
+        ...player,
+        order,
+        elapsedMs,
+      })),
       missedCount: remainingCount(engine),
       missed: isPro ? missed : null,
       livesRemaining: engine.lives.you,

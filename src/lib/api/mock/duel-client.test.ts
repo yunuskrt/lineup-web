@@ -27,7 +27,7 @@ import {
 } from '@/lib/api/mock/store';
 import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
 import type { MockFixture, MockSquad } from '@/lib/api/mock/types';
-import { duelSessionSchema } from '@/lib/api/schemas/duel';
+import { duelResultSchema, duelSessionSchema } from '@/lib/api/schemas/duel';
 import type { DuelResult, DuelSession } from '@/types/duel';
 import type { Filters } from '@/types/filters';
 
@@ -376,6 +376,14 @@ describe('mock duel client', () => {
     const result = lastOf<DuelResult>(log, 'finished');
     expect(result.outcome).toBe('win');
     expect(result.opponent.lives).toBe(0);
+    // A life lost between names doesn't shift the order
+    expect(result.found.map((player) => player.order)).toEqual([1, 2, 3]);
+    expect(result.found.map((player) => player.foundBy)).toEqual([
+      'you',
+      'you',
+      'you',
+    ]);
+    expect(duelResultSchema.safeParse(result).success).toBe(true);
     expect(result.you.lives).toBe(3);
   });
 
@@ -388,6 +396,10 @@ describe('mock duel client', () => {
     const result = lastOf<DuelResult>(log, 'finished');
     expect(result.outcome).toBe('draw');
     expect(result.found).toHaveLength(11);
+    expect(duelResultSchema.safeParse(result).success).toBe(true);
+    expect(result.found.map((player) => player.order)).toEqual(
+      Array.from({ length: 11 }, (_, index) => index + 1),
+    );
     expect(result.you.lives).toBe(3);
     expect(result.opponent.lives).toBe(3);
     expect(result.isForfeit).toBe(false);

@@ -66,6 +66,8 @@ export type DuelSessionState = {
   resume: DuelResumeStep | null;
   // The server dropped you from the queue
   isRequeueing: boolean;
+  // A server error mid-duel: rejoin to learn more
+  isResyncing: boolean;
   away: AwayResult | null;
   isLocking: boolean;
   isGuessing: boolean;

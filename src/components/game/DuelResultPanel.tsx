@@ -2,6 +2,7 @@
 
 import { type RefObject, useEffect, useId, useRef } from 'react';
 import { Lives } from '@/components/game/Lives';
+import { NamedOrder } from '@/components/game/NamedOrder';
 import {
   ResultActions,
   type ResultActionsProps,
@@ -127,8 +128,12 @@ export function DuelResultPanel({
     titleRef.current?.focus();
   }, []);
 
+  // From lg the pitch sets the height; the list scrolls
   return (
-    <section aria-labelledby={titleId} className="flex flex-1 flex-col gap-6">
+    <section
+      aria-labelledby={titleId}
+      className="flex flex-1 flex-col gap-6 lg:min-h-0 lg:contain-size"
+    >
       <Outcome
         result={result}
         isConnectionLost={isConnectionLost}
@@ -136,6 +141,11 @@ export function DuelResultPanel({
         titleRef={titleRef}
       />
       <Tally result={result} />
+      <NamedOrder
+        mode="duel"
+        found={result.found}
+        opponentHandle={result.opponent.handle}
+      />
       <ResultActions
         onPlayAgain={onPlayAgain}
         onChangeFilters={onChangeFilters}

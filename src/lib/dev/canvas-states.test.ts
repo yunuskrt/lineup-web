@@ -15,7 +15,10 @@ import {
   matchIdentitySchema,
   matchInPlaySchema,
 } from '@/lib/api/schemas/match';
-import { revealedPlayerSchema } from '@/lib/api/schemas/player';
+import {
+  namedPlayerSchema,
+  revealedPlayerSchema,
+} from '@/lib/api/schemas/player';
 import { soloSummarySchema } from '@/lib/api/schemas/solo';
 import {
   AFTER_GATE_STATE,
@@ -38,6 +41,7 @@ const SUMMARY_STATES = [
   'run-over-pro',
   'perfect-clear',
   'quit',
+  'quit-empty',
 ] as const;
 
 // What each `next` swap is there to demonstrate
@@ -182,11 +186,15 @@ describe.each(MODES)('%s snapshots against the contract', (mode) => {
       }
       if (view.mode === 'solo') {
         expect(livesSchema.safeParse(view.lives).success, name).toBe(true);
+        // A summary's players also carry order and time
+        const playerSchema =
+          view.end?.status === 'ready'
+            ? namedPlayerSchema
+            : revealedPlayerSchema;
         for (const player of view.found) {
-          expect(
-            revealedPlayerSchema.strict().safeParse(player).success,
-            name,
-          ).toBe(true);
+          expect(playerSchema.strict().safeParse(player).success, name).toBe(
+            true,
+          );
         }
       } else {
         for (const player of [view.you, view.opponent]) {
@@ -300,6 +308,8 @@ describe('solo summary snapshots', () => {
     expect(summaryOf('run-over').summary.endReason).toBe('lives_out');
     expect(summaryOf('perfect-clear').summary.endReason).toBe('perfect_clear');
     expect(summaryOf('quit').summary.endReason).toBe('quit');
+    expect(summaryOf('quit-empty').summary.endReason).toBe('quit');
+    expect(summaryOf('quit-empty').summary.found).toEqual([]);
   });
 
   it('load the summary with the run already over', () => {
@@ -456,6 +466,15 @@ describe('duel result snapshots', () => {
     const finders = new Set(result.found.map((player) => player.foundBy));
     expect(result.found).toHaveLength(SQUAD_SIZE);
     expect(finders).toEqual(new Set(['you', 'opponent']));
+  });
+
+  // A correct name passes the turn, so they alternate
+  it('name the draw in turn, one player after the other', () => {
+    const { result } = resultViewOf('result-draw');
+    result.found.forEach((player, index) => {
+      expect(player.order).toBe(index + 1);
+      expect(player.foundBy).toBe(index % 2 === 0 ? 'you' : 'opponent');
+    });
   });
 
   it('end the side that ran out on zero lives', () => {

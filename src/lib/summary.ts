@@ -1,7 +1,6 @@
-import { ROUND_MS } from '@/lib/canvas';
 import type { SoloEndReason } from '@/types/game';
 import type { MatchIdentity } from '@/types/match';
-import type { ClubNameKey, RoundTimeStats } from '@/types/summary';
+import type { ClubNameKey, NamedOrder, NamedTiming } from '@/types/summary';
 
 const SUMMARY_TITLES: Record<SoloEndReason, string> = {
   perfect_clear: 'Perfect clear',
@@ -55,15 +54,14 @@ export function roundSecondsLabel(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-export function roundTimeBars(roundTimesMs: number[]): number[] {
-  return roundTimesMs.map((ms) => Math.min(Math.max(ms / ROUND_MS, 0), 1));
-}
-
-export function roundTimeStats(roundTimesMs: number[]): RoundTimeStats | null {
-  if (roundTimesMs.length === 0) return null;
-  const total = roundTimesMs.reduce((sum, ms) => sum + ms, 0);
-  return {
-    averageMs: total / roundTimesMs.length,
-    fastestMs: Math.min(...roundTimesMs),
-  };
+// The server's order, shown as is; a tie keeps the first
+export function namedOrder<T extends NamedTiming>(found: T[]): NamedOrder<T> {
+  const rows = [...found].sort((a, b) => a.order - b.order);
+  let fastestIndex: number | null = null;
+  rows.forEach((row, index) => {
+    if (fastestIndex === null || row.elapsedMs < rows[fastestIndex].elapsedMs) {
+      fastestIndex = index;
+    }
+  });
+  return { rows, fastestIndex };
 }

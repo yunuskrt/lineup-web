@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -112,12 +112,21 @@ Defaults stand unless changed at load:
 
 ## Notes
 
+- **Deviations recorded during implementation:**
+  - **The finder's colour is a 2px bar, not a border.** Each duel row carries an inner 2px bar in `DUEL_ACTOR_BG`. A `DUEL_ACTOR_BORDER` class sets all four sides and would fight the row's 1px `line` border. The look is the one specified.
+  - **The rail fits by size containment.** `min-h-0` and `overflow-y-auto` alone didn't stop the rail's content from sizing the row, so the page grew instead of the list scrolling. From `lg` the result `<section>` is `contain-size` and the rows are `shrink-0`, so the pitch sets the height. At 1024×700 the page now fits the window and the list scrolls; at 1440×900 all 11 rows fit.
+  - **The draw state was reworked, not added.** The existing `result-draw` now names its 11 in turn order (you, them, you…). A new `quit-empty` state shows the empty line.
+  - **`namedOrder` returns `{ rows, fastestIndex }`,** generic over `NamedTiming` in `types/summary.ts`, which replaces `RoundTimeStats`.
+  - **`NAMED_ELAPSED_MAX_MS` (15000) lives in the player schema.** Schemas don't import the UI's `ROUND_MS`.
+  - **The re-sync is a duel-state flag.** A mid-duel `server_error` sets `isResyncing` (unless a rejoin is already under way); the hook then runs the existing `resume()`, and `resuming` clears it.
+  - **Real-mode duel checked with an empty list only.** Two browsers paired and both parsed the result, but none of the guessed names matched the drawn XIs in three tries. Non-empty duel rows were checked on the mock duel and the dev states.
 - **Source:** user request (2026-11-06), screenshot `context/screenshots/gameplay-result-bar.png`: "remove the informations at the middle (between play again button and result(lives) section)".
 - **Decisions (user, 2026-11-06):**
   - **Solo:** the named order list.
   - **Duel:** the named order list too, the opponent's rows in a different colour. That holds only if it needs no new database writes; otherwise both go compact (nothing in the middle).
   - **Duel tally:** kept.
 - **The no-new-writes condition holds.** The backend already persists every round's start and every guess's player and arrival time (`game_rounds.started_at`, `guesses.received_at`, `guesses.player_id`). The summary is built from the run's in-memory effects, which carry the same facts. R4 Part 2 only adds two fields to two payloads; nothing new is written (`context/docs/backend-requests.md` § R4).
+- **Resume check (done at load, 2026-11-06):** the resume path ends a closed duel correctly. The backend's `rejoin` sends nothing for a room it has closed. After `RESUME_WAIT_MS` (2s) with no snapshot, the web's `applyResumeMissed` moves to `endedAway` and reads the result from history. The backend saves the duel (`persistence.record`) before building the step's events, so the result is in history even when those events failed.
 - **R4b is merged** (2026-11-06, backend `57d45e8`), so this fix is unblocked. It also brought the `server_error` case above.
 - **Depends on backend R4 Part 2.** Load this fix only once R4b is merged on the backend's `main`. The web parses `order` and `elapsedMs` as required, so a web build ahead of the backend would refuse every summary and duel result in real mode.
 - **`DuelResult` is a socket payload,** but R4b only adds fields, so there's no `PROTOCOL_VERSION` change on either side.

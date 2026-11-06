@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   createEngineState,
+  namedInOrder,
   remainingCount,
   resolveRound,
   revealedPlayers,
@@ -204,5 +205,52 @@ describe('engine — grace window', () => {
 
     expect(step.outcome.kind).toBe('correct_new');
     expect(step.state.lives.you).toBe(3);
+  });
+});
+
+describe('engine — naming order and time', () => {
+  const [FIRST, SECOND] = SQUAD;
+
+  it('numbers the names 1…n, timed from each round start', () => {
+    const start = createEngineState('solo', SQUAD, T0);
+    const one = guess(start, FIRST.name, T0 + 2_100).state;
+    const two = guess(one, SECOND.name, T0 + 2_100 + 4_000).state;
+
+    const named = namedInOrder(two);
+    expect(named.map((item) => item.order)).toEqual([1, 2]);
+    expect(named.map((item) => item.elapsedMs)).toEqual([2_100, 4_000]);
+    expect(named.map((item) => item.player.id)).toEqual([
+      FIRST.playerId,
+      SECOND.playerId,
+    ]);
+  });
+
+  it('keeps the order across a life lost between two names', () => {
+    const one = guess(createEngineState('solo', SQUAD, T0), FIRST.name, T0);
+    const expiredAt = T0 + ROUND_DURATION_MS + GRACE_WINDOW_MS + 1;
+    const lost = expire(one.state, expiredAt).state;
+    const two = guess(lost, SECOND.name, expiredAt + 3_000).state;
+
+    expect(two.lives.you).toBe(STARTING_LIVES - 1);
+    const named = namedInOrder(two);
+    expect(named.map((item) => item.order)).toEqual([1, 2]);
+    expect(named.map((item) => item.elapsedMs)).toEqual([0, 3_000]);
+  });
+
+  it('caps a grace-window name at the full round', () => {
+    const start = createEngineState('solo', SQUAD, T0);
+    const late = guess(start, FIRST.name, T0 + ROUND_DURATION_MS + 200);
+    expect(late.outcome.kind).toBe('correct_new');
+    expect(namedInOrder(late.state)[0].elapsedMs).toBe(ROUND_DURATION_MS);
+  });
+
+  it('keeps each finder in a duel', () => {
+    const start = createEngineState('duel', SQUAD, T0);
+    const one = guess(start, FIRST.name, T0 + 1_000).state;
+    const two = guess(one, SECOND.name, T0 + 1_000 + 5_000).state;
+
+    const named = namedInOrder(two);
+    expect(named.map((item) => item.foundBy)).toEqual(['you', 'opponent']);
+    expect(named.map((item) => item.elapsedMs)).toEqual([1_000, 5_000]);
   });
 });

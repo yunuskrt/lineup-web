@@ -107,7 +107,11 @@ const RESULT: DuelResult = {
     score: { home: 1, away: 0 },
     nickname: null,
   },
-  found: THEIR_TURN.found,
+  found: THEIR_TURN.found.map((player, index) => ({
+    ...player,
+    order: index + 1,
+    elapsedMs: 2_000,
+  })),
   you: YOU,
   opponent: { ...OPPONENT, lives: 0 },
   isForfeit: false,
@@ -425,6 +429,64 @@ describe('the match', () => {
     expect(state.isGuessing).toBe(false);
     expect(viewOf(state).gate).toBeNull();
     expect(state.toast).not.toBeNull();
+  });
+
+  describe('a server error that may hide the end', () => {
+    const SERVER_ERROR: ApiError = {
+      code: 'server_error',
+      message: 'Something went wrong.',
+      retryAfterMs: null,
+    };
+    const failed: DuelSessionEvent = {
+      type: 'error',
+      error: SERVER_ERROR,
+      at: AT,
+    };
+
+    it('toasts it and asks to rejoin, never ending the duel', () => {
+      const state = play(...TO_PLAYING, failed);
+      expect(state.isResyncing).toBe(true);
+      expect(state.toast).not.toBeNull();
+      expect(state.phase).toBe('playing');
+      expect(state.result).toBeNull();
+    });
+
+    it('clears the ask once the rejoin starts', () => {
+      const state = play(...TO_PLAYING, failed, { type: 'resuming' });
+      expect(state.isResyncing).toBe(false);
+      expect(state.resume).toBe('connecting');
+    });
+
+    it('lets the existing away path end it if no snapshot comes', () => {
+      const state = play(
+        ...TO_PLAYING,
+        failed,
+        { type: 'resuming' },
+        { type: 'connectionRestored' },
+        { type: 'resumeMissed' },
+      );
+      expect(state.phase).toBe('endedAway');
+      expect(state.away).toEqual({ status: 'checking' });
+    });
+
+    it('asks nothing for other error codes', () => {
+      const state = play(...TO_PLAYING, {
+        type: 'error',
+        error: NETWORK,
+        at: AT,
+      });
+      expect(state.isResyncing).toBe(false);
+    });
+
+    it('asks nothing while a rejoin is already under way', () => {
+      const state = play(...TO_PLAYING, { type: 'resuming' }, failed);
+      expect(state.isResyncing).toBe(false);
+    });
+
+    it('changes nothing after the result', () => {
+      const finished = play(...TO_FINISHED);
+      expect(duelSessionReducer(finished, failed)).toBe(finished);
+    });
   });
 
   it('locks the input on a rate limit, with no toast', () => {
