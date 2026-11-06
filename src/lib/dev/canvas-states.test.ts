@@ -39,6 +39,7 @@ const MODES: CanvasMode[] = ['solo', 'duel'];
 const SUMMARY_STATES = [
   'run-over',
   'run-over-pro',
+  'run-over-pro-revealed',
   'perfect-clear',
   'quit',
   'quit-empty',
@@ -297,11 +298,19 @@ describe('solo summary snapshots', () => {
     }
   });
 
-  it('send the missed list only to the Pro snapshot', () => {
+  it('send the missed list only to the Pro snapshots', () => {
     const withList = SUMMARY_STATES.filter(
       (name) => summaryOf(name).summary.missed !== null,
     );
-    expect(withList).toEqual(['run-over-pro']);
+    expect(withList).toEqual(['run-over-pro', 'run-over-pro-revealed']);
+  });
+
+  it('hide the missed XI until the revealed snapshot', () => {
+    const revealed = SUMMARY_STATES.filter((name) => {
+      const { view } = summaryOf(name);
+      return view.end?.status === 'ready' && view.end.isMissedRevealed;
+    });
+    expect(revealed).toEqual(['run-over-pro-revealed']);
   });
 
   it('end each run the way its name says', () => {

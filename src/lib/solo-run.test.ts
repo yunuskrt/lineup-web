@@ -674,7 +674,11 @@ describe('the run summary', () => {
       found: named(ALL_FOUND.slice(0, 5)),
     });
     const view = soloCanvasView(run(...PLAYING, OVER, received(value)));
-    expect(view.end).toEqual({ status: 'ready', summary: value });
+    expect(view.end).toEqual({
+      status: 'ready',
+      summary: value,
+      isMissedRevealed: false,
+    });
     expect(view.found).toBe(value.found);
     expect(view.lives).toBe(1);
     expect(view.gate).toBeNull();
@@ -688,6 +692,42 @@ describe('the run summary', () => {
     expect(soloCanvasView(state).end).toEqual({
       status: 'ready',
       summary: quit,
+      isMissedRevealed: false,
+    });
+  });
+
+  describe('revealing the missed XI', () => {
+    const REVEAL: SoloRunEvent = { type: 'missedRevealed' };
+    const MISSED = ALL_FOUND.slice(4);
+    const pro = summary({ missed: MISSED });
+
+    it('reveals once a Pro summary is in', () => {
+      const state = run(...PLAYING, OVER, received(pro), REVEAL);
+      expect(state.isMissedRevealed).toBe(true);
+      const end = soloCanvasView(state).end;
+      expect(end?.status === 'ready' && end.isMissedRevealed).toBe(true);
+    });
+
+    it('stays hidden until the player asks', () => {
+      const end = soloCanvasView(run(...PLAYING, OVER, received(pro))).end;
+      expect(end?.status === 'ready' && end.isMissedRevealed).toBe(false);
+    });
+
+    // Free gets null: there is nothing to show
+    it('ignores a reveal with no missed list', () => {
+      const free = run(...PLAYING, OVER, received(summary()), REVEAL);
+      expect(free.isMissedRevealed).toBe(false);
+    });
+
+    it('ignores a reveal before the run is over', () => {
+      expect(run(...PLAYING, REVEAL).isMissedRevealed).toBe(false);
+      expect(run(...PLAYING, OVER, REVEAL).isMissedRevealed).toBe(false);
+    });
+
+    it('starts the next run hidden', () => {
+      const revealed = run(...PLAYING, OVER, received(pro), REVEAL);
+      const next = soloRunReducer(revealed, { type: 'finding' });
+      expect(next.isMissedRevealed).toBe(false);
     });
   });
 

@@ -9,6 +9,7 @@ export const MOTION_DURATION_MS = {
   timerColorShift: 200,
   skeletonPulse: 1600,
   sidePickEntrance: 320,
+  missedReveal: 240,
 } as const;
 
 // Motion takes seconds
@@ -23,6 +24,9 @@ export const MOTION_EASING = {
   timerColorShift: [0.25, 0.1, 0.25, 1],
   skeletonPulse: 'easeInOut',
 } as const;
+
+// The gap between missed slots as they appear
+export const MISSED_REVEAL_STAGGER_MS = 60;
 
 export const REVEAL_TRANSITION_TYPE = 'spring';
 
@@ -64,6 +68,7 @@ export const MOTION_EFFECTS = [
   'coinFlipScale',
   'sidePickSlide',
   'sidePickHoverLift',
+  'missedReveal',
 ] as const;
 
 export type MotionEffect = (typeof MOTION_EFFECTS)[number];
@@ -94,6 +99,7 @@ export const REDUCED_MOTION_POLICY: Record<MotionEffect, ReducedMotion> = {
   coinFlipScale: 'drop',
   sidePickSlide: 'drop',
   sidePickHoverLift: 'drop',
+  missedReveal: 'drop',
 };
 
 // Null before the preference is read: animate

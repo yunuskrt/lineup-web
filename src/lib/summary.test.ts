@@ -4,12 +4,15 @@ import {
   matchContext,
   matchDateLabel,
   matchSubtitle,
+  missedOnPitch,
   namedOrder,
   roundSecondsLabel,
   scoreline,
   summaryTitle,
 } from '@/lib/summary';
 import type { MatchIdentity } from '@/types/match';
+import type { RevealedPlayer } from '@/types/player';
+import type { SoloSummary } from '@/types/solo';
 
 const IDENTITY: MatchIdentity = {
   id: 'm-1',
@@ -152,5 +155,60 @@ describe('namedOrder', () => {
     const found = [at(2, 1), at(1, 2)];
     namedOrder(found);
     expect(found.map((row) => row.order)).toEqual([2, 1]);
+  });
+});
+
+describe('missedOnPitch', () => {
+  const MISSED: RevealedPlayer[] = [
+    {
+      id: 'p-1',
+      name: 'Tomas Varga',
+      slot: 0,
+      position: 'GK',
+      imageUrl: null,
+    },
+  ];
+  const summary = (missed: RevealedPlayer[] | null): SoloSummary => ({
+    match: IDENTITY,
+    found: [],
+    missedCount: 11,
+    missed,
+    livesRemaining: 0,
+    endReason: 'lives_out',
+    accuracy: 0,
+    bestStreak: 0,
+    roundTimesMs: [],
+  });
+
+  it('shows the missed players once revealed', () => {
+    const end = {
+      status: 'ready',
+      summary: summary(MISSED),
+      isMissedRevealed: true,
+    } as const;
+    expect(missedOnPitch(end)).toBe(MISSED);
+  });
+
+  it('keeps a Pro list off the pitch until then', () => {
+    const end = {
+      status: 'ready',
+      summary: summary(MISSED),
+      isMissedRevealed: false,
+    } as const;
+    expect(missedOnPitch(end)).toBeUndefined();
+  });
+
+  it('has nothing to show a free run', () => {
+    const end = {
+      status: 'ready',
+      summary: summary(null),
+      isMissedRevealed: true,
+    } as const;
+    expect(missedOnPitch(end)).toBeUndefined();
+  });
+
+  it('shows nothing while the summary loads, or mid-run', () => {
+    expect(missedOnPitch({ status: 'loading' })).toBeUndefined();
+    expect(missedOnPitch(null)).toBeUndefined();
   });
 });

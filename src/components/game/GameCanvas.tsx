@@ -24,6 +24,7 @@ import {
 } from '@/lib/duel-status';
 import { LOADING_FORMATION } from '@/lib/formation';
 import { serverClock } from '@/lib/server-clock';
+import { missedOnPitch } from '@/lib/summary';
 import { DUEL_ACTOR_TEXT, PRIMARY_BUTTON, TEXT_LINK } from '@/styles/classes';
 import type {
   CanvasGateCountdown,
@@ -220,6 +221,7 @@ type GameCanvasProps = {
   onQuit?: () => void;
   onPlayAgain?: () => void;
   onChangeFilters?: () => void;
+  onRevealMissed?: () => void;
   onLobbyAction?: (action: LobbyAction) => void;
 };
 
@@ -233,6 +235,7 @@ export function GameCanvas({
   onQuit,
   onPlayAgain = () => {},
   onChangeFilters = () => {},
+  onRevealMissed = () => {},
   onLobbyAction = () => {},
 }: GameCanvasProps) {
   const soloEnd = view.mode === 'solo' ? view.end : null;
@@ -315,7 +318,7 @@ export function GameCanvas({
                 <SquadGrid
                   formation={view.match?.formation ?? LOADING_FORMATION}
                   revealed={found}
-                  missed={summary?.missed ?? undefined}
+                  missed={missedOnPitch(soloEnd)}
                   pulse={view.pulse}
                   isLoading={view.match === null}
                 />
@@ -329,6 +332,7 @@ export function GameCanvas({
                   end={soloEnd}
                   onPlayAgain={onPlayAgain}
                   onChangeFilters={onChangeFilters}
+                  onRevealMissed={onRevealMissed}
                 />
               ) : result ? (
                 <DuelResultPanel

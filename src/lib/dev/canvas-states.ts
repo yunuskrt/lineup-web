@@ -196,6 +196,7 @@ const PERFECT_CLEAR_ORDER = [9, 10, 6, 0, 2, 7, 4, 1, 8, 5, 3];
 function summaryState(
   description: string,
   summary: SoloSummary,
+  isMissedRevealed = false,
 ): CanvasState<SoloCanvasView> {
   return {
     description,
@@ -204,6 +205,7 @@ function summaryState(
         view: endedView(summary.found, summary.livesRemaining, {
           status: 'ready',
           summary,
+          isMissedRevealed,
         }),
         guess: '',
       },
@@ -222,6 +224,12 @@ const RUN_OVER_SUMMARY: SoloSummary = {
   accuracy: 0.4,
   bestStreak: 2,
   roundTimesMs: [3_200, 15_000, 6_100, 15_000, 2_400, 8_800, 15_000],
+};
+
+// Pro gets the list; the pitch waits for Reveal
+const RUN_OVER_PRO_SUMMARY: SoloSummary = {
+  ...RUN_OVER_SUMMARY,
+  missed: playersBesides(SOLO_FOUND_SLOTS),
 };
 
 const PERFECT_CLEAR_SUMMARY: SoloSummary = {
@@ -545,12 +553,17 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
     }),
   },
   'run-over': summaryState(
-    'Out of lives with 4 named, in order, 7 missed.',
+    'Out of lives with 4 named, in order; Reveal is locked.',
     RUN_OVER_SUMMARY,
   ),
   'run-over-pro': summaryState(
-    'As run-over, with the 7 missed names on the pitch (Pro).',
-    { ...RUN_OVER_SUMMARY, missed: playersBesides(SOLO_FOUND_SLOTS) },
+    'As run-over (Pro): Reveal fills the 7 missed slots.',
+    RUN_OVER_PRO_SUMMARY,
+  ),
+  'run-over-pro-revealed': summaryState(
+    'As run-over-pro, already revealed: the 7 on the pitch.',
+    RUN_OVER_PRO_SUMMARY,
+    true,
   ),
   'perfect-clear': summaryState(
     'All 11 named with 2 lives left: the turf takeover.',

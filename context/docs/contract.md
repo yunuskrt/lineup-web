@@ -269,7 +269,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `match` | `MatchIdentity` | |
 | `found` | `NamedPlayer[]` | ≤ 11, sorted by `order`. Required since backend R4b |
 | `missedCount` | integer 0–11 | |
-| `missed` | `RevealedPlayer[]` or `null` | **Pro gets the list, free gets `null`.** The server decides. |
+| `missed` | `RevealedPlayer[]` or `null` | **Pro gets the list, free gets `null`.** The server decides. The web shows it on the pitch only after the player taps Reveal the full XI; `null` shows that button locked |
 | `livesRemaining` | 0–3 | |
 | `endReason` | `SoloEndReason` | |
 | `accuracy` | 0–1 | Correct guesses ÷ all guesses. Parsed, not shown since Gameplay Visuals C |

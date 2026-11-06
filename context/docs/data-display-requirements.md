@@ -36,7 +36,7 @@ The web loads each URL as is, straight from the CDN: `next/image` with `unoptimi
 | `crestUrl` | Club filter chip on `/play`, before the name (web Match Filters B) | **20×20** at every width | 40×40 | Square box, no rounding. `object-fit: contain` | **Transparent:** the page shows through: `surface` (#0A0F0C) at rest, `surface-card` (#1A241E) when the chip is pressed |
 | `logoUrl` | Competition filter chip on `/play`, before the name (web Match Filters B) | **20×20** at every width | 40×40 | Square box, no rounding. `object-fit: contain` | **Transparent:** as the club chip, `surface` (#0A0F0C) at rest, `surface-card` (#1A241E) when pressed |
 | `logoUrl` | Game header line two, on `/play/solo` and `/play/duel`, before the competition name (web Gameplay Visuals A) | **20×20** at every width | 40×40 | Square box, no rounding. `object-fit: contain` | **Transparent:** the panel shows through (`surface-raised`, #121A15) |
-| `imageUrl` | Squad grid slot on the solo summary, for a player you missed (Pro summaries only) | Same as above | Same | Same, at 60% opacity | Same disc, inside a `surface` slot (#0A0F0C) |
+| `imageUrl` | Squad grid slot on the solo summary, for a player you missed (Pro summaries only, once the player taps Reveal the full XI) | Same as above | Same | Same, at 60% opacity | Same disc, inside a `surface` slot (#0A0F0C) |
 
 No other surface shows an image: not the lobby, the result cards or the profile. `logoUrl` shows on the filter chips and in the game header; with no logo, both show the competition's kind icon.
 

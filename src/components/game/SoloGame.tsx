@@ -13,8 +13,16 @@ export function SoloGame() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [params, setParams] = useState(() => new URLSearchParams(searchParams));
-  const { state, chooseSide, submitGuess, quit, playAgain, retry, widen } =
-    useSoloRun(params);
+  const {
+    state,
+    chooseSide,
+    submitGuess,
+    quit,
+    playAgain,
+    retry,
+    widen,
+    revealMissed,
+  } = useSoloRun(params);
   const [guess, setGuess] = useState('');
   const [isQuitOpen, setIsQuitOpen] = useState(false);
   // Mid-play only; a gate or summary has its own exit
@@ -87,6 +95,7 @@ export function SoloGame() {
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
         onChangeFilters={leave}
+        onRevealMissed={revealMissed}
       />
       <QuitDialog
         // Closes in the render the run ends in
