@@ -240,8 +240,9 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | Field | Type |
 | --- | --- |
 | `sessionId` | id |
-| `home` | `ClubRef` |
-| `away` | `ClubRef` |
+| `match` | `MatchIdentity`. Required since backend R4a: the offered match, with no player in it. The side-pick card reads only this |
+| `home` | `ClubRef`. Deprecated by the backend; equals `match.home` |
+| `away` | `ClubRef`. Deprecated by the backend; equals `match.away` |
 
 **`SoloSession`**
 

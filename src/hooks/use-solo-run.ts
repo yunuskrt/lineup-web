@@ -156,6 +156,7 @@ export function useSoloRun(params: URLSearchParams) {
     if (!offer || state.phase !== 'choosing' || isChoosing.current) return;
 
     isChoosing.current = true;
+    dispatch({ type: 'sideChosen' });
     try {
       const sentAt = Date.now();
       const session = unwrap(

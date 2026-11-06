@@ -5,7 +5,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | # | Request | Needed by | Asked | Status |
 | --- | --- | --- | --- | --- |
 | R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | **Done**: Part 1 (2026-11-04, backend R3a), Part 2 (2026-11-05, backend R3b) |
-| R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | Part 1 **Done** (2026-11-06, backend R4a); Part 2 Open |
+| R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | **Done**: Part 1 (2026-11-06, backend R4a), Part 2 (2026-11-06, backend R4b) |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -129,6 +129,11 @@ Today `found` carries `RevealedPlayer` (plus `foundBy` in a duel) with no order 
   - a perfect clear (orders 1–11)
   - a run quit before any name (`found` empty)
   - a duel where the names alternate between the two players
+- **Built** (2026-11-06): backend `57d45e8` (R4b), on `main` and pushed.
+  - **Payload:** `SoloSummary.found` is `NamedPlayer[]` and `DuelResult.found` is `DuelNamedPlayer[]`: the old entry (plus `foundBy` in a duel) with `order` (1–11, no gaps, sorted) and `elapsedMs` (0–15000, capped; in a duel, the finder's own turn).
+  - **Unchanged:** `SoloSession.found`, `DuelSession.found`, `playerRevealed`, `correct_new.player` and `missed`. `accuracy`, `bestStreak` and `roundTimesMs` are still sent. No `PROTOCOL_VERSION` change.
+  - **New failure case:** if the backend can't build a step's events, both players get an `error` event (`server_error`) instead of them. At the end of a duel that replaces `finished`. Web Gameplay Visuals C handles it.
+  - **Docs:** OpenAPI, and backend `context/api-contract.md`.
 
 ### Contract and versions
 

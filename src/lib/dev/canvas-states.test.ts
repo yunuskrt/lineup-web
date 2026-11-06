@@ -11,7 +11,10 @@ import {
   MAX_LIVES,
   roundTimingSchema,
 } from '@/lib/api/schemas/game';
-import { matchInPlaySchema } from '@/lib/api/schemas/match';
+import {
+  matchIdentitySchema,
+  matchInPlaySchema,
+} from '@/lib/api/schemas/match';
 import { revealedPlayerSchema } from '@/lib/api/schemas/player';
 import { soloSummarySchema } from '@/lib/api/schemas/solo';
 import {
@@ -198,6 +201,20 @@ describe.each(MODES)('%s snapshots against the contract', (mode) => {
       }
     }
   });
+});
+
+describe('side-pick snapshots', () => {
+  it.each(['side-pick', 'side-pick-long'])(
+    '%s gates a loading canvas with a match the offer could carry',
+    (name) => {
+      const { frame } = CANVAS_STATES.solo[name].build(NOW);
+      const sidePick = frame.view.gate?.sidePick;
+      expect(sidePick).toBeDefined();
+      expect(matchIdentitySchema.safeParse(sidePick?.match).success).toBe(true);
+      expect(sidePick?.isChoosing).toBe(false);
+      expect(frame.view.match).toBeNull();
+    },
+  );
 });
 
 describe('the gate action', () => {

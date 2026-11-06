@@ -12,6 +12,7 @@ import {
 } from '@/lib/dev/samples';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
+import { SOLO_GATE_COPY } from '@/lib/solo-run';
 import { emptyPoolGate, reconnectingGate } from '@/lib/system-states';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import type { ApiError, EmptyPoolReason } from '@/types/api';
@@ -33,6 +34,7 @@ import type {
 } from '@/types/duel';
 import type { DuelLobbyView } from '@/types/duel-lobby';
 import type { Lives, RoundTiming } from '@/types/game';
+import type { MatchIdentity } from '@/types/match';
 import type { FoundPlayer, RevealedPlayer } from '@/types/player';
 import type { SoloSummary } from '@/types/solo';
 
@@ -83,6 +85,22 @@ const PRE_MATCH_GATE: CanvasGateView = {
   title: 'Match ready',
   detail: 'Name all eleven starters. Your clock starts when you press Start.',
   actionLabel: 'Start',
+};
+
+// Two-line names, to check the clamp at 360px
+const LONG_NAMES_IDENTITY: MatchIdentity = {
+  ...SAMPLE_IDENTITY,
+  home: {
+    ...SAMPLE_IDENTITY.home,
+    name: 'Borussia Mönchengladbach',
+    shortName: 'BMG',
+  },
+  away: {
+    ...SAMPLE_IDENTITY.away,
+    name: 'Wolverhampton Wanderers',
+    shortName: 'WOL',
+    crestUrl: null,
+  },
 };
 
 const SOLO_FOUND_SLOTS = [0, 4, 7, 10];
@@ -378,6 +396,25 @@ function loadingFields(): CanvasViewBase {
   return { ...fields(null, [], { input: 'locked' }), match: null };
 }
 
+function sidePickState(
+  description: string,
+  match: MatchIdentity,
+): CanvasState<SoloCanvasView> {
+  const gate: CanvasGateView = {
+    ...SOLO_GATE_COPY.choose,
+    sidePick: { match, isChoosing: false },
+  };
+  return {
+    description,
+    build: () => ({
+      frame: {
+        view: toSolo({ ...loadingFields(), gate }, MAX_LIVES),
+        guess: '',
+      },
+    }),
+  };
+}
+
 function emptyPoolFields(reason: EmptyPoolReason): CanvasViewBase {
   return { ...loadingFields(), gate: emptyPoolGate(emptyPoolError(reason)) };
 }
@@ -413,6 +450,14 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
       },
     }),
   },
+  'side-pick': sidePickState(
+    'The match card before a run: pick a side by its crest.',
+    SAMPLE_IDENTITY,
+  ),
+  'side-pick-long': sidePickState(
+    'Long club names clamp at two lines; one crest falls back.',
+    LONG_NAMES_IDENTITY,
+  ),
   idle: solo(SHARED.idle),
   warning: solo(SHARED.warning),
   critical: solo(SHARED.critical),

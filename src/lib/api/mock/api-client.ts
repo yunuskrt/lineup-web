@@ -366,6 +366,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
         const session = createSession(store, identity.user.id, match.id);
         return ok({
           sessionId: session.id,
+          match,
           home: match.home,
           away: match.away,
         });

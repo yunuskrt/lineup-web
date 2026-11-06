@@ -9,7 +9,7 @@ import type {
 import type { DuelLobbyView } from '@/types/duel-lobby';
 import type { GridPulse, ToastMessage } from '@/types/feedback';
 import type { Lives, RoundTiming } from '@/types/game';
-import type { MatchInPlay } from '@/types/match';
+import type { MatchIdentity, MatchInPlay } from '@/types/match';
 import type { FoundPlayer } from '@/types/player';
 import type { SoloSummary } from '@/types/solo';
 
@@ -20,7 +20,11 @@ export type CanvasClock = {
   isFrozen: boolean;
 };
 
-export type CanvasGateChoice = { id: string; label: string };
+export type CanvasSidePick = {
+  match: MatchIdentity;
+  // The pick is in flight; the tiles read busy
+  isChoosing: boolean;
+};
 
 export type CanvasGateCountdown = {
   deadline: number;
@@ -37,8 +41,8 @@ export type CanvasGateView = {
   secondaryActionLabel?: string;
   // Replaces `detail` with a ticking countdown
   countdown?: CanvasGateCountdown;
-  // One decision across equal options
-  choices?: CanvasGateChoice[];
+  // The solo side pick, drawn as a match card
+  sidePick?: CanvasSidePick;
 };
 
 export type CanvasViewBase = {

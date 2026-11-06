@@ -62,6 +62,7 @@ export const INITIAL_SOLO_RUN: SoloRunState = {
   session: null,
   summary: null,
   isGuessing: false,
+  isChoosing: false,
   isQuitting: false,
   cooldownUntil: null,
   failure: null,
@@ -90,6 +91,7 @@ function applySession(state: SoloRunState, session: SoloSession): SoloRunState {
     ...state,
     phase: phaseOf(session),
     session,
+    isChoosing: false,
     failure: null,
     lifeLostKey: state.lifeLostKey + (hasLostLife ? 1 : 0),
   };
@@ -132,6 +134,8 @@ export function soloRunReducer(
       return INITIAL_SOLO_RUN;
     case 'offerReceived':
       return { ...state, phase: 'choosing', offer: event.offer, failure: null };
+    case 'sideChosen':
+      return { ...state, isChoosing: true };
     case 'sessionReceived':
     case 'synced':
       return applySession(state, event.session);
@@ -182,6 +186,7 @@ export function soloRunReducer(
         ...state,
         phase: 'failed',
         isGuessing: false,
+        isChoosing: false,
         isQuitting: false,
         failure: { step: event.step, error: event.error },
       };
@@ -259,10 +264,7 @@ function gateOf(state: SoloRunState): CanvasGateView | null {
       if (!state.offer) return null;
       return {
         ...SOLO_GATE_COPY.choose,
-        choices: [
-          { id: 'home', label: state.offer.home.name },
-          { id: 'away', label: state.offer.away.name },
-        ],
+        sidePick: { match: state.offer.match, isChoosing: state.isChoosing },
       };
     case 'failed':
       return failedGate(state);
