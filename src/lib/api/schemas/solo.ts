@@ -23,6 +23,9 @@ export const soloSessionStatusSchema = z.enum(['active', 'over']);
 
 export const soloMatchOfferSchema = z.object({
   sessionId: idSchema,
+  // No player: safe to show before the pick
+  match: matchIdentitySchema,
+  // Deprecated by the backend; read `match`
   home: clubRefSchema,
   away: clubRefSchema,
 });

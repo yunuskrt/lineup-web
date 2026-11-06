@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -78,6 +78,12 @@ Defaults stand unless changed at load:
 
 ## Notes
 
+- **Deviations recorded during implementation:**
+  - **The gate carries a busy flag.** `CanvasSidePick` is `{ match, isChoosing }`, not `{ match }`. The old guard was a ref the view couldn't read, so `SoloRunState` gains `isChoosing` and a `sideChosen` event. `sessionReceived` and `failed` clear it. The ref guard stays, for two clicks in one tick.
+  - **Phones stack the score.** Below `sm` the score sits on its own centred row above the tiles, and each tile takes half the card (127px at 360). With the score between them, a name had 79px, so "Manchester" and "Internazionale" broke mid-word. From `sm` the layout is as specified.
+  - **Names are 14px below `sm`,** 16px from `sm`, and use `wrap-break-word`. A word wider than the tile breaks inside the two-line clamp instead of overflowing. Of the long names tried at 360, only "Mönchengladbach" still does.
+  - **Tiles stretch to one height,** so both crests line up when only one name wraps.
+  - **`CHOICE_BUTTON` is removed** with the choices branch; nothing else used it.
 - **Source:** user request (2026-11-06), screenshot `context/screenshots/gameplay-pick-your-side-box.png`:
   - "the box should at least include home team crest, away team crest, home team name, away team name, competition logo, competition name, match date"
   - "user should click the according crest"

@@ -19,10 +19,34 @@ import type { SoloRunEvent, SoloRunState } from '@/types/solo-run';
 const ROUND = { startedAt: 1_000, endsAt: 16_000 };
 const NEXT_ROUND = { startedAt: 16_400, endsAt: 31_400 };
 
+const HOME = { id: 'club-a', name: 'Aston', shortName: 'AST', crestUrl: null };
+const AWAY = {
+  id: 'club-b',
+  name: 'Borough',
+  shortName: 'BOR',
+  crestUrl: null,
+};
+
 const OFFER: SoloMatchOffer = {
   sessionId: 'session-1',
-  home: { id: 'club-a', name: 'Aston', shortName: 'AST', crestUrl: null },
-  away: { id: 'club-b', name: 'Borough', shortName: 'BOR', crestUrl: null },
+  match: {
+    id: 'match-1',
+    competition: {
+      id: 'comp-1',
+      kind: 'league',
+      name: 'Premier Division',
+      logoUrl: null,
+    },
+    season: '2004-05',
+    date: '2005-05-01',
+    stage: null,
+    home: HOME,
+    away: AWAY,
+    score: { home: 1, away: 0 },
+    nickname: null,
+  },
+  home: HOME,
+  away: AWAY,
 };
 
 function player(slot: number): RevealedPlayer {
@@ -126,6 +150,8 @@ const NETWORK: ApiError = {
 };
 
 const AT = 1_700_000_000_000;
+
+const CHOSEN: SoloRunEvent = { type: 'sideChosen' };
 
 const RATE_LIMITED: ApiError = {
   code: 'rate_limited',
@@ -506,16 +532,31 @@ describe('soloCanvasView', () => {
     });
   });
 
-  it('gates the side pick with one choice per club, home first', () => {
+  it("gates the side pick with the offer's match", () => {
     const state = run(PLAYING[0]);
     expect(soloCanvasView(state).gate).toEqual({
       ...SOLO_GATE_COPY.choose,
-      choices: [
-        { id: 'home', label: 'Aston' },
-        { id: 'away', label: 'Borough' },
-      ],
+      sidePick: { match: OFFER.match, isChoosing: false },
     });
     expect(soloGateAction(state)).toBe('choose');
+  });
+
+  it('reads busy from the pick until the server answers', () => {
+    const choosing = run(PLAYING[0], CHOSEN);
+    expect(soloCanvasView(choosing).gate?.sidePick?.isChoosing).toBe(true);
+    expect(soloGateAction(choosing)).toBe('choose');
+    expect(run(PLAYING[0], CHOSEN, PLAYING[1]).isChoosing).toBe(false);
+  });
+
+  it('clears the busy pick when it fails, so a retry can pick', () => {
+    const failed = run(PLAYING[0], CHOSEN, {
+      type: 'failed',
+      step: 'choose',
+      error: NETWORK,
+    });
+    expect(failed.isChoosing).toBe(false);
+    const retried = soloRunReducer(failed, { type: 'retried' });
+    expect(soloCanvasView(retried).gate?.sidePick?.isChoosing).toBe(false);
   });
 
   it('opens no gate while finding or playing', () => {

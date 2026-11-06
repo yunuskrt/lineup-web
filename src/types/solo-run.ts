@@ -21,6 +21,7 @@ export type SoloRunState = {
   session: SoloSession | null;
   summary: SoloSummary | null;
   isGuessing: boolean;
+  isChoosing: boolean;
   isQuitting: boolean;
   // Server retry time after a rate-limited guess
   cooldownUntil: number | null;
@@ -34,6 +35,7 @@ export type SoloRunState = {
 export type SoloRunEvent =
   | { type: 'finding' }
   | { type: 'offerReceived'; offer: SoloMatchOffer }
+  | { type: 'sideChosen' }
   | { type: 'sessionReceived'; session: SoloSession }
   | { type: 'guessSubmitted' }
   | { type: 'guessResolved'; response: SoloGuessResponse }

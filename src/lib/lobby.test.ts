@@ -139,7 +139,7 @@ describe('lobbyGate', () => {
   it('never carries a gate action; the panel owns them', () => {
     for (const lobby of STEPS) {
       expect(lobbyGate(lobby).actionLabel, lobby.step).toBeUndefined();
-      expect(lobbyGate(lobby).choices, lobby.step).toBeUndefined();
+      expect(lobbyGate(lobby).sidePick, lobby.step).toBeUndefined();
     }
   });
 

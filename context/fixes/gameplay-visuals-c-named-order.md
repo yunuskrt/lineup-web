@@ -34,7 +34,7 @@ Not Started
   - The row count isn't known until the summary arrives, so the list can grow on load. From `lg` the actions are pinned and nothing visible moves. On phones the list grows below the outcome box, under the fold.
 - **Contract (needs backend R4 Part 2).**
   - `SoloSummary.found` items become `namedPlayerSchema` = `revealedPlayerSchema` + `order` (integer 1–11) + `elapsedMs` (integer 0–15000).
-  - `DuelResult.found` items become `duelFoundPlayerSchema` + the same two fields.
+  - `DuelResult.found` items become `duelNamedPlayerSchema` = `duelFoundPlayerSchema` + the same two fields. The names follow the backend's `NamedPlayer` and `DuelNamedPlayer`.
   - **Unchanged:** `RevealedPlayer` and the live `found` payloads (`SoloSession`, `DuelSession`, `correct_new`).
   - **Kept in the schema:** `accuracy`, `bestStreak` and `roundTimesMs`. The backend still sends them and the mock still computes them, but nothing renders them.
   - **Types:** from `z.infer`.
@@ -50,6 +50,12 @@ Not Started
     - the orders run 1…n
     - `elapsedMs` matches the mock clock
     - a lost life between two names doesn't shift the orders
+- **A duel whose ending the server couldn't send (added after R4b).**
+  - **The case:** since R4b, if the backend can't build a step's events, both players get an `error` event (`server_error`) in their place. When that step ends the duel, it replaces `finished`, and nothing else follows.
+  - **Today:** `duelSessionReducer` turns a mid-match `error` into a toast (`rejectGuess`), and the duel stays on screen with nothing more to come.
+  - **Fix:** a mid-match `server_error` event keeps its toast and also re-syncs through the existing resume path (W31b). If the server still has the duel, play goes on. If not, the existing ended-away path reads the result from history.
+  - The client never decides that the duel ended; the server's answer to the resume does.
+  - **Tests** (reducer, pure): a `server_error` mid-match asks to re-sync; other error codes don't; an `error` after `finished` changes nothing.
 - **Dead code.**
   - `roundTimeBars` and `roundTimeStats` go, with their tests. Their only user was the chart.
   - `accuracyLabel` and `roundSecondsLabel` stay: the profile uses the first, and the list uses the second.
@@ -102,6 +108,7 @@ Defaults stand unless changed at load:
 
 - **"Named in order"** as the heading.
 - **No fastest mark in a duel.**
+- **Re-sync on a mid-match `server_error`** rather than ending the duel on the client. Check at load that the resume path answers correctly for a room the server has already closed.
 
 ## Notes
 
@@ -111,6 +118,7 @@ Defaults stand unless changed at load:
   - **Duel:** the named order list too, the opponent's rows in a different colour. That holds only if it needs no new database writes; otherwise both go compact (nothing in the middle).
   - **Duel tally:** kept.
 - **The no-new-writes condition holds.** The backend already persists every round's start and every guess's player and arrival time (`game_rounds.started_at`, `guesses.received_at`, `guesses.player_id`). The summary is built from the run's in-memory effects, which carry the same facts. R4 Part 2 only adds two fields to two payloads; nothing new is written (`context/docs/backend-requests.md` § R4).
+- **R4b is merged** (2026-11-06, backend `57d45e8`), so this fix is unblocked. It also brought the `server_error` case above.
 - **Depends on backend R4 Part 2.** Load this fix only once R4b is merged on the backend's `main`. The web parses `order` and `elapsedMs` as required, so a web build ahead of the backend would refuse every summary and duel result in real mode.
 - **`DuelResult` is a socket payload,** but R4b only adds fields, so there's no `PROTOCOL_VERSION` change on either side.
 - **Constraints:**

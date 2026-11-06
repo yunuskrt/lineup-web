@@ -13,7 +13,10 @@ import {
 import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
 import { createStore } from '@/lib/api/mock/store';
 import { HANDLE_PATTERN } from '@/lib/api/schemas/auth';
-import { soloSessionSchema } from '@/lib/api/schemas/solo';
+import {
+  soloMatchOfferSchema,
+  soloSessionSchema,
+} from '@/lib/api/schemas/solo';
 import type { ApiResult } from '@/types/api';
 import type { Filters } from '@/types/filters';
 import type { Side } from '@/types/match';
@@ -73,8 +76,16 @@ describe('mock api client', () => {
     const offer = unwrap(await api.solo.findMatch(ALL_FILTERS));
     expect(offer.home.id).toBe('club-northgate');
     expect(offer.away.id).toBe('club-riverton');
+    expect(soloMatchOfferSchema.safeParse(offer).success).toBe(true);
+    expect(offer.match).toEqual(requireFixture(CROWN_2003).identity);
 
     const started = unwrap(await api.solo.chooseSide(offer.sessionId, 'home'));
+    // The run plays the very match the card showed
+    expect(started.match).toEqual({
+      ...offer.match,
+      side: 'home',
+      formation: started.match.formation,
+    });
     expect(started.lives).toBe(3);
     expect(started.found).toHaveLength(0);
     expect(started.round).not.toBeNull();

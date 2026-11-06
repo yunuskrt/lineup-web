@@ -8,6 +8,7 @@ export const MOTION_DURATION_MS = {
   gateFade: 240,
   timerColorShift: 200,
   skeletonPulse: 1600,
+  sidePickEntrance: 320,
 } as const;
 
 // Motion takes seconds
@@ -61,6 +62,8 @@ export const MOTION_EFFECTS = [
   'gateFade',
   'lobbyPulse',
   'coinFlipScale',
+  'sidePickSlide',
+  'sidePickHoverLift',
 ] as const;
 
 export type MotionEffect = (typeof MOTION_EFFECTS)[number];
@@ -89,6 +92,8 @@ export const REDUCED_MOTION_POLICY: Record<MotionEffect, ReducedMotion> = {
   gateFade: 'keep',
   lobbyPulse: 'drop',
   coinFlipScale: 'drop',
+  sidePickSlide: 'drop',
+  sidePickHoverLift: 'drop',
 };
 
 // Null before the preference is read: animate

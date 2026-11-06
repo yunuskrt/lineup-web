@@ -49,6 +49,8 @@ const MOVING = [
   'toastRise',
   'lobbyPulse',
   'coinFlipScale',
+  'sidePickSlide',
+  'sidePickHoverLift',
 ] as const;
 
 const CUES = [

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  CHOICE_BUTTON,
   DOT_BUTTON,
   DUEL_ACTOR_BG,
   DUEL_ACTOR_BORDER,
@@ -65,7 +64,6 @@ describe('focus rings', () => {
     ['PRIMARY_BUTTON', PRIMARY_BUTTON],
     ['PRIMARY_BUTTON_LARGE', PRIMARY_BUTTON_LARGE],
     ['SECONDARY_BUTTON', SECONDARY_BUTTON],
-    ['CHOICE_BUTTON', CHOICE_BUTTON],
     ['TEXT_LINK', TEXT_LINK],
     ['TEXT_INPUT', TEXT_INPUT],
     ['QUIT_CHIP', QUIT_CHIP],

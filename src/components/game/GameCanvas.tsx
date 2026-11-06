@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { LOBBY_GATE_SIZE, LobbyPanel } from '@/components/duel/LobbyPanel';
-import { CanvasGate } from '@/components/game/CanvasGate';
+import { CanvasGate, type GateSize } from '@/components/game/CanvasGate';
 import { CountdownRing } from '@/components/game/CountdownRing';
 import { DuelResultPanel } from '@/components/game/DuelResultPanel';
 import { FeedbackToast } from '@/components/game/FeedbackToast';
@@ -11,6 +11,7 @@ import { LifeLostFlash } from '@/components/game/LifeLostFlash';
 import { DuelLivesCard, LivesCard } from '@/components/game/LivesCard';
 import { MatchHeader } from '@/components/game/MatchHeader';
 import { RunSummary } from '@/components/game/RunSummary';
+import { SidePickCard } from '@/components/game/SidePickCard';
 import { SoundToggle } from '@/components/game/SoundToggle';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { useGameSounds } from '@/hooks/use-game-sounds';
@@ -23,12 +24,7 @@ import {
 } from '@/lib/duel-status';
 import { LOADING_FORMATION } from '@/lib/formation';
 import { serverClock } from '@/lib/server-clock';
-import {
-  CHOICE_BUTTON,
-  DUEL_ACTOR_TEXT,
-  PRIMARY_BUTTON,
-  TEXT_LINK,
-} from '@/styles/classes';
+import { DUEL_ACTOR_TEXT, PRIMARY_BUTTON, TEXT_LINK } from '@/styles/classes';
 import type {
   CanvasGateCountdown,
   CanvasGateView,
@@ -107,7 +103,7 @@ function GateCountdown({ countdown }: { countdown: CanvasGateCountdown }) {
 
 type GateActionProps = {
   gate: CanvasGateView;
-  onGateAction: (choiceId?: string) => void;
+  onGateAction: () => void;
   onGateSecondaryAction: () => void;
 };
 
@@ -116,23 +112,6 @@ function GateAction({
   onGateAction,
   onGateSecondaryAction,
 }: GateActionProps) {
-  if (gate.choices) {
-    return (
-      <div className="flex flex-col gap-2">
-        {gate.choices.map((choice) => (
-          <button
-            key={choice.id}
-            type="button"
-            className={CHOICE_BUTTON}
-            onClick={() => onGateAction(choice.id)}
-          >
-            {choice.label}
-          </button>
-        ))}
-      </div>
-    );
-  }
-
   if (gate.secondaryActionLabel) {
     return (
       <div className="flex flex-col items-center gap-3">
@@ -264,6 +243,12 @@ export function GameCanvas({
   // The result's own links take over from quit
   const quitChip = summary || result ? null : <QuitChip onQuit={onQuit} />;
   const found = result?.found ?? view.found;
+  const sidePick = view.gate?.sidePick;
+  const gateSize: GateSize = lobby
+    ? LOBBY_GATE_SIZE[lobby.step]
+    : sidePick
+      ? 'wide'
+      : 'narrow';
   useGameSounds(view);
 
   return (
@@ -295,7 +280,7 @@ export function GameCanvas({
               view.gate?.detail
             )
           }
-          size={lobby ? LOBBY_GATE_SIZE[lobby.step] : 'narrow'}
+          size={gateSize}
           body={
             view.mode === 'duel' && lobby ? (
               <LobbyPanel
@@ -304,10 +289,12 @@ export function GameCanvas({
                 opponent={view.opponent}
                 onAction={onLobbyAction}
               />
+            ) : sidePick ? (
+              <SidePickCard sidePick={sidePick} onPick={onGateAction} />
             ) : undefined
           }
           action={
-            view.gate?.actionLabel || view.gate?.choices ? (
+            view.gate?.actionLabel ? (
               <GateAction
                 gate={view.gate}
                 onGateAction={onGateAction}
