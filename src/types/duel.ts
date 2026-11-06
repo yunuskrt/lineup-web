@@ -6,6 +6,7 @@ import type {
   duelActorSchema,
   duelFoundPlayerSchema,
   duelGuessRequestSchema,
+  duelNamedPlayerSchema,
   duelLifeLostSchema,
   duelPhaseSchema,
   duelPlayerSchema,
@@ -30,6 +31,7 @@ export type FilterSubmissionStatus = z.infer<
 export type FilterSubmission = z.infer<typeof filterSubmissionSchema>;
 export type CoinFlipResult = z.infer<typeof coinFlipResultSchema>;
 export type DuelFoundPlayer = z.infer<typeof duelFoundPlayerSchema>;
+export type DuelNamedPlayer = z.infer<typeof duelNamedPlayerSchema>;
 export type DuelSession = z.infer<typeof duelSessionSchema>;
 export type ConnectionStatus = z.infer<typeof connectionStatusSchema>;
 export type ConnectionState = z.infer<typeof connectionStateSchema>;

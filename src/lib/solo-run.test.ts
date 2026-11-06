@@ -109,6 +109,15 @@ const OVER: SoloRunEvent = {
   }),
 };
 
+// End-of-game lists carry the naming order and time
+function named<T extends object>(players: T[]) {
+  return players.map((player, index) => ({
+    ...player,
+    order: index + 1,
+    elapsedMs: 1_000 * (index + 1),
+  }));
+}
+
 function summary(overrides: Partial<SoloSummary> = {}): SoloSummary {
   return {
     match: {
@@ -127,7 +136,7 @@ function summary(overrides: Partial<SoloSummary> = {}): SoloSummary {
       score: { home: 3, away: 3 },
       nickname: null,
     },
-    found: ALL_FOUND.slice(0, 4),
+    found: named(ALL_FOUND.slice(0, 4)),
     missedCount: 7,
     missed: null,
     livesRemaining: 0,
@@ -660,7 +669,10 @@ describe('the run summary', () => {
   });
 
   it('shows the summary once it arrives, trusting its numbers', () => {
-    const value = summary({ livesRemaining: 1, found: ALL_FOUND.slice(0, 5) });
+    const value = summary({
+      livesRemaining: 1,
+      found: named(ALL_FOUND.slice(0, 5)),
+    });
     const view = soloCanvasView(run(...PLAYING, OVER, received(value)));
     expect(view.end).toEqual({ status: 'ready', summary: value });
     expect(view.found).toBe(value.found);

@@ -5,6 +5,7 @@ import { createEmitter } from '@/lib/api/duel-emitter';
 import {
   createEngineState,
   foundWithActor,
+  namedInOrder,
   resolveRound,
   type EngineActor,
   type EngineState,
@@ -37,6 +38,7 @@ import {
 import type { ApiError } from '@/types/api';
 import type {
   DuelFoundPlayer,
+  DuelNamedPlayer,
   DuelPlayer,
   DuelResult,
   DuelSession,
@@ -160,6 +162,13 @@ export function createMockDuelClient(
     }));
   }
 
+  function namedPool(state: EngineState): DuelNamedPlayer[] {
+    return namedInOrder(state).map(({ player, ...named }) => ({
+      ...player,
+      ...named,
+    }));
+  }
+
   function currentFixture(): MockFixture {
     if (!fixture) throw new Error('No fixture has been selected');
     return fixture;
@@ -193,7 +202,7 @@ export function createMockDuelClient(
     const result: DuelResult = {
       outcome,
       match: currentFixture().identity,
-      found: state ? foundPool(state) : [],
+      found: state ? namedPool(state) : [],
       you,
       opponent,
       isForfeit,

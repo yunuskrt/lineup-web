@@ -97,6 +97,7 @@ export const INITIAL_DUEL_SESSION: DuelSessionState = {
   isConnectionLost: false,
   resume: null,
   isRequeueing: false,
+  isResyncing: false,
   away: null,
   isLocking: false,
   isGuessing: false,
@@ -161,6 +162,17 @@ function rejectGuess(
     ...next,
     cooldownUntil: heldCooldown(state.cooldownUntil, error, at),
   };
+}
+
+// It may stand in for `finished`; the server says
+function applyLiveError(
+  state: DuelSessionState,
+  error: ApiError,
+  at: number,
+): DuelSessionState {
+  const next = rejectGuess(state, error, at);
+  const canResync = error.code === 'server_error' && state.resume === null;
+  return canResync ? { ...next, isResyncing: true } : next;
 }
 
 function applyYourConnection(
@@ -402,6 +414,7 @@ export function duelSessionReducer(
         phase: 'playing',
         failure: null,
         resume: 'connecting',
+        isResyncing: false,
       };
     case 'resumeMissed':
       return applyResumeMissed(state);
@@ -432,7 +445,7 @@ export function duelSessionReducer(
       };
     case 'error':
       // Mid-match a server rejection is not a gate
-      if (isLive(state)) return rejectGuess(state, event.error, event.at);
+      if (isLive(state)) return applyLiveError(state, event.error, event.at);
       if (state.result) return state;
       return duelSessionReducer(state, {
         type: 'failed',
@@ -462,6 +475,7 @@ export function duelSessionReducer(
         yourConnection: null,
         resume: null,
         isRequeueing: false,
+        isResyncing: false,
         phase: isRefusal(event.step, event.error) ? 'refused' : 'failed',
         isLocking: false,
         isGuessing: false,

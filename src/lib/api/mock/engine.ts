@@ -1,4 +1,8 @@
-import { hasExpired, startRound } from '@/lib/api/mock/clock';
+import {
+  hasExpired,
+  ROUND_DURATION_MS,
+  startRound,
+} from '@/lib/api/mock/clock';
 import { resolveGuess } from '@/lib/api/mock/matcher';
 import type { MockSquad, MockSquadEntry } from '@/lib/api/mock/types';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
@@ -13,6 +17,15 @@ export type EngineActor = 'you' | 'opponent';
 export type EngineFound = {
   playerId: string;
   foundBy: EngineActor;
+  // Receipt minus the round's start, capped
+  elapsedMs: number;
+};
+
+export type EngineNamed = {
+  player: RevealedPlayer;
+  foundBy: EngineActor;
+  order: number;
+  elapsedMs: number;
 };
 
 export type EngineState = {
@@ -66,6 +79,16 @@ export function foundWithActor(
   return state.found.map((found) => ({
     player: toRevealed(entryOf(state, found.playerId)),
     foundBy: found.foundBy,
+  }));
+}
+
+// The found pool is kept in naming order
+export function namedInOrder(state: EngineState): EngineNamed[] {
+  return state.found.map((found, index) => ({
+    player: toRevealed(entryOf(state, found.playerId)),
+    foundBy: found.foundBy,
+    order: index + 1,
+    elapsedMs: found.elapsedMs,
   }));
 }
 
@@ -125,7 +148,12 @@ function applyGuess(
     };
   }
 
-  const found = [...state.found, { playerId: entry.playerId, foundBy: actor }];
+  const startedAt = state.round?.startedAt ?? now;
+  const elapsedMs = Math.min(Math.max(now - startedAt, 0), ROUND_DURATION_MS);
+  const found = [
+    ...state.found,
+    { playerId: entry.playerId, foundBy: actor, elapsedMs },
+  ];
   const outcome: EngineOutcome = {
     kind: 'correct_new',
     player: toRevealed(entry),

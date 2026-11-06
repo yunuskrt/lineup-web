@@ -241,6 +241,12 @@ export function useDuel(params: URLSearchParams) {
     if (state.isRequeueing) requeue();
   }, [state.isRequeueing]);
 
+  // A server error mid-duel may hide its end
+  const resync = useEffectEvent(() => void resume());
+  useEffect(() => {
+    if (state.isResyncing) resync();
+  }, [state.isResyncing]);
+
   useEffect(() => {
     if (state.resume !== 'waiting') return;
     const timer = setTimeout(

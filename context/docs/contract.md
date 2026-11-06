@@ -267,14 +267,21 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | Field | Type | Rule |
 | --- | --- | --- |
 | `match` | `MatchIdentity` | |
-| `found` | `RevealedPlayer[]` | ≤ 11 |
+| `found` | `NamedPlayer[]` | ≤ 11, sorted by `order`. Required since backend R4b |
 | `missedCount` | integer 0–11 | |
 | `missed` | `RevealedPlayer[]` or `null` | **Pro gets the list, free gets `null`.** The server decides. |
 | `livesRemaining` | 0–3 | |
 | `endReason` | `SoloEndReason` | |
-| `accuracy` | 0–1 | Correct guesses ÷ all guesses |
-| `bestStreak` | integer 0–11 | |
-| `roundTimesMs` | integer ≥ 0, array | Time per round |
+| `accuracy` | 0–1 | Correct guesses ÷ all guesses. Parsed, not shown since Gameplay Visuals C |
+| `bestStreak` | integer 0–11 | Parsed, not shown since Gameplay Visuals C |
+| `roundTimesMs` | integer ≥ 0, array | Time per round. Parsed, not shown since Gameplay Visuals C |
+
+**`NamedPlayer`** = `RevealedPlayer` + the fields below. Only in end-of-game lists: `SoloSummary.found` and, with `foundBy`, `DuelResult.found` (`DuelNamedPlayer`). The live `found` payloads stay `RevealedPlayer` / `DuelFoundPlayer`.
+
+| Field | Type | Rule |
+| --- | --- | --- |
+| `order` | integer 1–11 | When it was named; 1 is first, no gaps |
+| `elapsedMs` | integer 0–15000 | The server's receipt of the correct guess minus its round's start, capped at 15000 (a grace-window guess reads 15000). In a duel, the finder's own turn |
 
 **`Profile`** = `{ user: User, stats: UserStats }`
 
@@ -400,7 +407,7 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 | --- | --- |
 | `outcome` | `DuelOutcome` (receiver's view) |
 | `match` | `MatchIdentity` |
-| `found` | `DuelFoundPlayer[]` |
+| `found` | `DuelNamedPlayer[]`, sorted by `order` (backend R4b) |
 | `you` | `DuelPlayer` |
 | `opponent` | `DuelPlayer` |
 | `isForfeit` | boolean |
@@ -434,7 +441,7 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 | The opponent leaves before `matchReady` | `session_over`: "Your opponent left." The pre-match room is gone |
 | The winning filters' pool emptied between the flip and the load | `empty_pool`: "No match fits the winning filters." + `emptyBecause`. The room is gone |
 | Another tab took the seat | `forbidden`: "You're connected somewhere else." (old socket only) |
-| A server fault | `server_error` |
+| A server fault | `server_error`. Since backend R4b it also stands in for a step's events the server couldn't build, `finished` included, and nothing else follows. Mid-duel the web toasts it and rejoins: a live duel answers with `matchReady`, a closed one with nothing, and the web then reads the result from history |
 | A command sent without an ack, then refused | that command's refusal. The web always asks for an ack |
 
 ---

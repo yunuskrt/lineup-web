@@ -73,3 +73,4 @@ Not Started
 - Fix Match Filters B: chip crests, logos, kind icons, required logoUrl.
 - Fix Gameplay Visuals A: scoreboard logo, CompetitionLogo, kind fallback.
 - Fix Gameplay Visuals B: side-pick match card, crest tiles, busy pick.
+- Fix Gameplay Visuals C: named-order list, order/elapsedMs, duel resync.
