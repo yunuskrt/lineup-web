@@ -6,6 +6,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | --- | --- | --- | --- | --- |
 | R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | **Done**: Part 1 (2026-11-04, backend R3a), Part 2 (2026-11-05, backend R3b) |
 | R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | **Done**: Part 1 (2026-11-06, backend R4a), Part 2 (2026-11-06, backend R4b) |
+| R5 | A player directory for guess suggestions | Web features Guess Suggestions A and B | 2026-11-06 | Asked |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -151,3 +152,60 @@ Today `found` carries `RevealedPlayer` (plus `foundBy` in a duel) with no order 
 ### Prompt for the backend session
 
 > Read `../lineup-web/context/docs/backend-requests.md` § R4. Write it up as backend feature specs, R4a (offer carries the match) and R4b (named order and time on the summary and the duel result), the way R3 was done. Both are additive, with no migration. Ask me anything unclear before `/feature load`.
+
+---
+
+## R5. A player directory for guess suggestions
+
+**Why:** while a player types a guess, the web will show matching players in a list above the input, each with a photo and name (user, 2026-11-06). The server's fuzzy matching doesn't change: a picked suggestion is sent as the same text guess as today.
+
+**The rule this request exists for:** typing must never send a request. So the web downloads a directory of every player **once per match**, before the clock starts (during the side pick or the lobby), and filters it in the browser on every keystroke. Photos are links in the directory; the browser downloads a photo file only when its row is on screen. Web specs: `context/features/guess-suggestions-a-mock.md` and `context/features/guess-suggestions-b-wiring.md`.
+
+### The endpoint: `GET /catalog/players` (no migration)
+
+| Field | Type | Rule |
+| --- | --- | --- |
+| `players` | `DirectoryPlayer[]` | **Every** player with at least one alias. Never scoped to a match, a filter, the pool or a session |
+| `players[].id` | uuid | `players.id`, the same id `RevealedPlayer.id` carries, so the web can mark players already named |
+| `players[].name` | string | `players.name`, the display form, diacritics kept |
+| `players[].imageUrl` | string \| null | `assetUrl(assetBase, imageKey)`, as `RevealedPlayer.imageUrl` (the `imageUrl` rule) |
+| `players[].terms` | string[] | The player's distinct `player_aliases.normalized` values, at least one. The web searches these; it never shows them |
+
+- **Hard Constraint 2 holds because the directory is the whole table.** The 11 answers sit among ~3,787 players and nothing marks them. That's why it must never be narrowed: a directory scoped to the match's clubs, season, competition, the player's filters or the pool would leak the XI. Ordering must not carry a signal either: sort by `id`.
+- **Never sent:** `slug`, `transfermarktId`, `imageKey`, lineups, matches, positions, or anything else about where a player played.
+- **Who can call it:** any session, guest included (the web only asks from a game route, where a session always exists). Not `@Public()`. Rate-limited with the `catalog` limit or a new one; a normal player makes one call per match.
+- **No game logic moves.** The web uses the directory only to suggest. It still sends a typed (or picked) name, and the server still decides everything.
+
+### Freshness: one cheap check per match
+
+The scraper writes straight to Postgres, so new or edited players can arrive at any time without the backend being told.
+
+- **A version for the directory**, cheap to compute on every request, that changes whenever a player or alias is added, edited or deleted. For example: row counts plus the latest `updated_at` of `players` and `player_aliases`.
+- **Keep the built directory in memory**, and rebuild it only when the version changes. A request whose version matches costs one small aggregate query.
+- **Headers:** a strong `ETag` from that version, and `Cache-Control: private, no-cache` (the browser keeps the copy but must ask before using it).
+- **`If-None-Match` equal to the current ETag → `304 Not Modified`**, with no body. The web's fetch sends that header itself (browser HTTP cache), so a match where nothing changed costs a few hundred bytes.
+
+### Compression
+
+The backend doesn't compress responses today. The directory is ~600 KB of JSON raw and should be ~150 KB gzipped, so it needs gzip or Brotli. Global `compression` middleware is fine if it leaves Socket.IO and Better Auth alone; compressing only this route is fine too.
+
+### Contract and versions
+
+- **Additive:** a new route, nothing else changes. No `PROTOCOL_VERSION` bump (REST only).
+- Document it in OpenAPI (`PlayerDirectory`, `DirectoryPlayer`) and `context/api-contract.md`.
+- **Measure and report** in the Built note: player count, raw and compressed size on the real database, and the time a 200 and a 304 take.
+
+### Tests
+
+- **Pure mapping:** distinct `terms`, a player without an image gets `imageUrl: null`, a player without aliases is left out, the order is by `id`, and no field outside the four above.
+- **Version:** it changes when a player is added, an alias is added or edited, and a player is deleted; it stays the same otherwise.
+- **HTTP:** a first call gets 200 with an `ETag`; a call with that `If-None-Match` gets 304; a guest session gets 200; no session gets 401.
+
+### Then
+
+1. **Web, Guess Suggestions A** (popup, local search, keyboard, on the mock directory) needs nothing from here and can ship first.
+2. **Web, Guess Suggestions B** (real endpoint, ETag revalidation, real-mode checks) needs R5 on the backend's `main`.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R5. Write it up as a backend feature spec, R5 (player directory for guess suggestions), the way R4 was done: `GET /catalog/players` with an ETag from a cheap directory version, 304 on a match, the built directory kept in memory, and gzip or Brotli on the response. No migration. Keep it unscoped (Hard Constraint 2) and session-only. Ask me anything unclear before `/feature load`.
