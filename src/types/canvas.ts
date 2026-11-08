@@ -87,6 +87,8 @@ export type DuelCanvasView = CanvasViewBase & {
   // Arrives whole with `finished`; no loading state
   end: DuelResult | null;
   endReason?: DuelEndReason;
+  // A private room's game: New room, not Play again
+  isPrivate?: boolean;
 };
 
 export type DuelEndReason = 'connectionLost';

@@ -28,6 +28,7 @@ export function DuelGame() {
     forfeit,
     searchAgain,
     playAgain,
+    newRoom,
     leave,
     retry,
     widen,
@@ -43,6 +44,13 @@ export function DuelGame() {
   if (state.clearKey !== clearKey) {
     setClearKey(state.clearKey);
     setGuess('');
+  }
+
+  // A new room got a new URL; reloads keep it
+  function follow(next: URLSearchParams | null) {
+    if (!next) return;
+    setParams(next);
+    router.replace(withQuery('/play/duel', next));
   }
 
   async function goTo(path: string, mode: PlayMode) {
@@ -68,6 +76,10 @@ export function DuelGame() {
       case 'searchAgain':
         searchAgain();
         return;
+      case 'newRoom':
+        setGuess('');
+        follow(newRoom());
+        return;
     }
   }
 
@@ -85,7 +97,7 @@ export function DuelGame() {
         backToFilters();
         return;
       case 'retry':
-        retry();
+        follow(retry());
         return;
       case 'playAgain':
         handlePlayAgain();
@@ -115,7 +127,7 @@ export function DuelGame() {
 
   function handlePlayAgain() {
     setGuess('');
-    playAgain();
+    follow(playAgain());
   }
 
   if (state.phase === 'refused') {

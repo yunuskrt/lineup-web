@@ -124,6 +124,7 @@ describe('lobbyGate', () => {
     },
     {
       step: 'coinFlip',
+      source: 'coin',
       winner: 'opponent',
       applied: [],
       opponent: SAMPLE_OPPONENT,
@@ -146,6 +147,32 @@ describe('lobbyGate', () => {
   it('titles the flip with the winner', () => {
     expect(lobbyGate(STEPS[3]).title).toBe(
       coinFlipTitle('opponent', SAMPLE_OPPONENT),
+    );
+  });
+});
+
+describe('room lobby copy', () => {
+  it('names the room, never a coin flip', () => {
+    expect(coinFlipTitle('you', SAMPLE_OPPONENT, 'room')).toBe(
+      'Playing your room',
+    );
+    expect(coinFlipTitle('opponent', SAMPLE_OPPONENT, 'room')).toBe(
+      `Playing ${SAMPLE_OPPONENT.handle}'s room`,
+    );
+  });
+
+  it('titles each room step', () => {
+    expect(
+      lobbyGate({
+        step: 'roomWaiting',
+        code: 'K7QM2X',
+        expiresAt: 0,
+        filters: [],
+      }).title,
+    ).toBe('Waiting for your friend');
+    expect(lobbyGate({ step: 'roomExpired' }).title).toBe('No one joined');
+    expect(lobbyGate({ step: 'joining', code: 'K7QM2X' }).title).toBe(
+      'Joining room K7QM2X…',
     );
   });
 });

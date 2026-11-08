@@ -1,9 +1,11 @@
 'use client';
 
 import { motion, type Transition } from 'motion/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import type { GateSize } from '@/components/game/CanvasGate';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
+import { roomClosesLabel, roomLink } from '@/lib/room-code';
+import { serverClock } from '@/lib/server-clock';
 import {
   DUEL_ACTOR_BG,
   DUEL_ACTOR_BORDER,
@@ -28,6 +30,9 @@ import type {
 
 export const LOBBY_GATE_SIZE: Record<DuelLobbyStep, GateSize> = {
   searching: 'narrow',
+  roomWaiting: 'wide',
+  roomExpired: 'narrow',
+  joining: 'narrow',
   paired: 'wide',
   filters: 'wide',
   coinFlip: 'wide',
@@ -101,6 +106,133 @@ function Searching({ onAction }: { onAction: (action: LobbyAction) => void }) {
         onClick={() => onAction('cancel')}
       >
         Cancel
+      </button>
+    </div>
+  );
+}
+
+const ROOM_TICK_MS = 1_000;
+const COPIED_MS = 2_000;
+
+type CopyTarget = 'code' | 'link';
+
+// "Copied" in place; a refused clipboard says so
+function useCopy() {
+  const [copied, setCopied] = useState<CopyTarget | null>(null);
+  const [isRefused, setIsRefused] = useState(false);
+
+  useEffect(() => {
+    if (copied === null) return;
+    const timer = setTimeout(() => setCopied(null), COPIED_MS);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  async function copy(target: CopyTarget, text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsRefused(false);
+      setCopied(target);
+    } catch {
+      setIsRefused(true);
+    }
+  }
+
+  return { copied, isRefused, copy };
+}
+
+// Counts to the server's deadline; decides nothing
+function ClosesIn({ expiresAt }: { expiresAt: number }) {
+  const [now, setNow] = useState(() => serverClock.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(serverClock.now()), ROOM_TICK_MS);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <p suppressHydrationWarning className="text-14 text-fg-muted tabular-nums">
+      {roomClosesLabel(expiresAt - now)}
+    </p>
+  );
+}
+
+type RoomWaitingProps = {
+  lobby: Extract<DuelLobbyView, { step: 'roomWaiting' }>;
+  onAction: (action: LobbyAction) => void;
+};
+
+function RoomWaiting({ lobby, onAction }: RoomWaitingProps) {
+  const { copied, isRefused, copy } = useCopy();
+  const { code } = lobby;
+
+  return (
+    <div className="flex flex-col gap-5">
+      <p
+        aria-label={`Room code ${code.split('').join(' ')}`}
+        className="text-center font-display text-48 leading-none font-bold tracking-widest tabular-nums select-all"
+      >
+        {code}
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          className={SECONDARY_BUTTON}
+          onClick={() => void copy('code', code)}
+        >
+          {copied === 'code' ? 'Copied' : 'Copy code'}
+        </button>
+        <button
+          type="button"
+          className={SECONDARY_BUTTON}
+          onClick={() =>
+            void copy('link', roomLink(window.location.origin, code))
+          }
+        >
+          {copied === 'link' ? 'Copied' : 'Copy link'}
+        </button>
+      </div>
+      <p role="status" className="text-center text-14 text-fg-muted">
+        {isRefused
+          ? "Copying isn't allowed here. Select the code instead."
+          : copied
+            ? `${copied === 'code' ? 'Code' : 'Link'} copied.`
+            : ''}
+      </p>
+      <SummaryList summary={lobby.filters} />
+      <div className="flex items-center justify-between gap-4">
+        <ClosesIn expiresAt={lobby.expiresAt} />
+        <button
+          type="button"
+          className={`text-14 ${TEXT_LINK}`}
+          onClick={() => onAction('cancel')}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RoomExpired({
+  onAction,
+}: {
+  onAction: (action: LobbyAction) => void;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <button
+        type="button"
+        className={`w-full ${PRIMARY_BUTTON}`}
+        onClick={() => onAction('newRoom')}
+      >
+        Create a new room
+      </button>
+      <button
+        type="button"
+        className={`text-14 ${TEXT_LINK}`}
+        onClick={() => onAction('cancel')}
+      >
+        Back to play
       </button>
     </div>
   );
@@ -314,7 +446,12 @@ export function LobbyPanel({
 }: LobbyPanelProps) {
   switch (lobby.step) {
     case 'searching':
+    case 'joining':
       return <Searching onAction={onAction} />;
+    case 'roomWaiting':
+      return <RoomWaiting lobby={lobby} onAction={onAction} />;
+    case 'roomExpired':
+      return <RoomExpired onAction={onAction} />;
     case 'paired':
       return <Paired you={you} opponent={lobby.opponent} />;
     case 'filters':

@@ -6,6 +6,7 @@ import { FilterPanel } from '@/components/play/FilterPanel';
 import { FilterSkeleton } from '@/components/play/FilterSkeleton';
 import { ModeChoice } from '@/components/play/ModeChoice';
 import { PlayStart } from '@/components/play/PlayStart';
+import { RoomControls } from '@/components/play/RoomControls';
 import { useFilterOptions } from '@/hooks/use-filter-options';
 import { useSoundUnlock } from '@/hooks/use-sound';
 import { authErrorMessageOf } from '@/lib/auth';
@@ -17,6 +18,7 @@ import {
   withMode,
   withQuery,
 } from '@/lib/filters';
+import { joinCodeFrom } from '@/lib/room-code';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { Filters } from '@/types/filters';
 import type { PlayMode } from '@/types/play';
@@ -101,6 +103,12 @@ export function PlayScreen() {
           mode={mode}
           href={filterParams ? withQuery(`/play/${mode}`, filterParams) : null}
         />
+        {mode === 'duel' ? (
+          <RoomControls
+            filterParams={filterParams}
+            initialCode={joinCodeFrom(params)}
+          />
+        ) : null}
       </section>
     </div>
   );

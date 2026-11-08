@@ -137,7 +137,10 @@ function sampleHeadshot(slot: number): string {
 
 // Shaped like a directory key: 22 base64url
 export function sampleDirectoryKey(name: string): string {
-  return name.replace(/[^A-Za-z0-9]/g, '').padEnd(22, '0').slice(0, 22);
+  return name
+    .replace(/[^A-Za-z0-9]/g, '')
+    .padEnd(22, '0')
+    .slice(0, 22);
 }
 
 export function samplePlayer(formation: string, slot: number): RevealedPlayer {
@@ -384,7 +387,7 @@ export const SAMPLE_EMPTY_STATS: UserStats = {
 
 type HistoryResult =
   | { mode: 'solo'; outcome: SoloEndReason }
-  | { mode: 'duel'; outcome: DuelOutcome };
+  | { mode: 'duel'; outcome: DuelOutcome; isPrivate?: boolean };
 
 type HistorySeed = HistoryResult & {
   found: number;
@@ -400,7 +403,14 @@ function days(count: number): number {
 }
 
 const HISTORY_SEEDS: HistorySeed[] = [
-  { mode: 'duel', outcome: 'win', found: 6, lives: 2, minutesAgo: 5 },
+  {
+    mode: 'duel',
+    outcome: 'win',
+    isPrivate: true,
+    found: 6,
+    lives: 2,
+    minutesAgo: 5,
+  },
   {
     mode: 'solo',
     outcome: 'perfect_clear',
@@ -464,10 +474,14 @@ const HISTORY_SEEDS: HistorySeed[] = [
   { mode: 'duel', outcome: 'win', found: 4, lives: 2, minutesAgo: days(410) },
 ];
 
-function resultOf(seed: HistorySeed): HistoryResult {
+type EntryResult =
+  | { mode: 'solo'; outcome: SoloEndReason }
+  | { mode: 'duel'; outcome: DuelOutcome; isPrivate: boolean };
+
+function resultOf(seed: HistorySeed): EntryResult {
   return seed.mode === 'solo'
     ? { mode: 'solo', outcome: seed.outcome }
-    : { mode: 'duel', outcome: seed.outcome };
+    : { mode: 'duel', outcome: seed.outcome, isPrivate: !!seed.isPrivate };
 }
 
 // Newest first, like the history endpoint

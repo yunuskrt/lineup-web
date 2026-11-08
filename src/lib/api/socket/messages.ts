@@ -12,6 +12,8 @@ import {
   pairedStateSchema,
   queueStateSchema,
   queueTimeoutSchema,
+  roomExpirySchema,
+  roomStateSchema,
 } from '@/lib/api/schemas/duel';
 import { guessResultSchema } from '@/lib/api/schemas/game';
 import { apiErrorSchema, apiResultSchema } from '@/lib/api/schemas/result';
@@ -23,6 +25,8 @@ const DUEL_EVENT_SCHEMAS: {
 } = {
   queued: queueStateSchema,
   queueTimedOut: queueTimeoutSchema,
+  roomCreated: roomStateSchema,
+  roomExpired: roomExpirySchema,
   paired: pairedStateSchema,
   filtersUpdated: filterSubmissionSchema,
   coinFlip: coinFlipResultSchema,

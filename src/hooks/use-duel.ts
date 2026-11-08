@@ -23,11 +23,16 @@ import {
 } from '@/lib/duel-session';
 import { filtersFromParams, widenFilters, withFilters } from '@/lib/filters';
 import { prepareGuess } from '@/lib/guess';
+import { CREATE_ROOM, roomIntentFrom, withRoom } from '@/lib/room-code';
 import { createRoundTrip, serverClock } from '@/lib/server-clock';
 import { widenReasonOf } from '@/lib/system-states';
 import type { Filters } from '@/types/filters';
+import type { RoomIntent } from '@/types/room';
 
 type Run = { isCancelled: boolean };
+
+// A room to create or join, else the queue
+type Plan = { intent: RoomIntent | null; filters?: Filters };
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -57,6 +62,10 @@ export function useDuel(params: URLSearchParams) {
         dispatch({ type: 'queued' });
       }),
       client.on('queueTimedOut', () => dispatch({ type: 'queueTimedOut' })),
+      client.on('roomCreated', (room) =>
+        dispatch({ type: 'roomCreated', room }),
+      ),
+      client.on('roomExpired', () => dispatch({ type: 'roomExpired' })),
       client.on('paired', ({ opponent }) =>
         dispatch({ type: 'paired', opponent }),
       ),
@@ -130,16 +139,55 @@ export function useDuel(params: URLSearchParams) {
     }
   }
 
-  async function start(current: Run) {
+  async function createRoom(current: Run, filters: Filters) {
+    try {
+      unwrap(await getDuelClient().createRoom(filters));
+    } catch (error) {
+      if (current.isCancelled) return;
+      dispatch({
+        type: 'failed',
+        step: 'createRoom',
+        error: failureOf(queryClient, error),
+        at: Date.now(),
+      });
+    }
+  }
+
+  async function joinRoom(current: Run, code: string) {
+    try {
+      unwrap(await getDuelClient().joinRoom(code));
+    } catch (error) {
+      if (current.isCancelled) return;
+      dispatch({
+        type: 'failed',
+        step: 'joinRoom',
+        error: failureOf(queryClient, error),
+        at: Date.now(),
+      });
+    }
+  }
+
+  function planFromUrl(): Plan {
+    return { intent: roomIntentFrom(params) };
+  }
+
+  async function start(current: Run, plan: Plan) {
     dispatch({ type: 'started' });
+    // Gated from the first frame, not after loading
+    if (plan.intent?.kind === 'join') {
+      dispatch({ type: 'joining', code: plan.intent.code });
+    }
+    let filters: Filters;
     try {
       await ensureSession();
       const options = await queryClient.query(filterOptionsQuery);
       if (current.isCancelled) return;
+      filters = plan.filters ?? filtersFromParams(params, options);
       dispatch({
         type: 'prepared',
-        filters: filtersFromParams(params, options),
+        filters,
         options,
+        isPrivate: plan.intent !== null,
       });
       unwrap(await getDuelClient().connect());
     } catch (error) {
@@ -153,16 +201,19 @@ export function useDuel(params: URLSearchParams) {
       return;
     }
     if (current.isCancelled) return;
-    await enterQueue(current);
+    const { intent } = plan;
+    if (intent?.kind === 'create') await createRoom(current, filters);
+    else if (intent?.kind === 'join') await joinRoom(current, intent.code);
+    else await enterQueue(current);
   }
 
   // Drops whatever ran before and starts fresh
-  function restart() {
+  function restart(plan: Plan = planFromUrl()) {
     release();
     const current: Run = { isCancelled: false };
     run.current = current;
     subscribe();
-    void start(current);
+    void start(current, plan);
   }
 
   // Back into a duel in play: no queue, wait for it
@@ -215,7 +266,7 @@ export function useDuel(params: URLSearchParams) {
 
   const startLobby = useEffectEvent((current: Run) => {
     subscribe();
-    void start(current);
+    void start(current, planFromUrl());
   });
 
   // The latest run, which a restart may have replaced
@@ -361,8 +412,25 @@ export function useDuel(params: URLSearchParams) {
     const widened = widenFilters(filters, reason, options);
     if (!widened) return null;
     dispatch({ type: 'filtersWidened', filters: widened });
+    if (failure.step === 'createRoom') {
+      void createRoom(run.current, widened);
+      return withRoom(withFilters(params, widened, options), CREATE_ROOM);
+    }
     void lockFilters(widened);
     return withFilters(params, widened, options);
+  }
+
+  // The finished room's set, whoever created it
+  function roomFilters(): Filters | null {
+    return state.coinFlip?.filters ?? state.room?.filters ?? state.filters;
+  }
+
+  // A fresh room and code; the URL follows
+  function newRoom(): URLSearchParams | null {
+    const filters = roomFilters();
+    if (!filters || !state.options) return null;
+    restart({ intent: { kind: 'create' }, filters });
+    return withRoom(withFilters(params, filters, state.options), CREATE_ROOM);
   }
 
   function searchAgain() {
@@ -371,30 +439,42 @@ export function useDuel(params: URLSearchParams) {
     void enterQueue(run.current);
   }
 
-  function playAgain() {
-    if (state.phase !== 'finished' && state.phase !== 'endedAway') return;
-    restart();
+  // A room game plays on in a new room
+  function playAgain(): URLSearchParams | null {
+    if (state.phase !== 'finished' && state.phase !== 'endedAway') return null;
+    if (state.isPrivate) return newRoom();
+    restart({ intent: null });
+    return null;
   }
 
-  // Leaving the queue is best-effort; disconnect ends it
+  // Leaving is best-effort; disconnect ends it
   async function leave() {
     const current = run.current;
     current.isCancelled = true;
     if (state.phase === 'searching') await getDuelClient().leaveQueue();
+    if (state.phase === 'hosting') await getDuelClient().leaveRoom();
     release();
   }
 
-  function retry() {
+  // Returns new params when it opens a new room
+  function retry(): URLSearchParams | null {
     switch (state.failure?.step) {
       case 'lock':
         void lockFilters();
-        return;
+        return null;
       case 'forfeit':
         void forfeit();
-        return;
+        return null;
+      case 'createRoom':
+        return newRoom();
+      case 'joinRoom':
+        restart({ intent: { kind: 'join', code: state.joinCode ?? '' } });
+        return null;
       default:
         if (canResume(state)) void resume();
-        else restart();
+        else if (state.isPrivate) return newRoom();
+        else restart({ intent: null });
+        return null;
     }
   }
 
@@ -406,6 +486,7 @@ export function useDuel(params: URLSearchParams) {
     forfeit,
     searchAgain,
     playAgain,
+    newRoom,
     leave,
     retry,
     widen,

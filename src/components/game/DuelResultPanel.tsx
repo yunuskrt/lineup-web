@@ -119,6 +119,7 @@ export function DuelResultPanel({
   isConnectionLost = false,
   onPlayAgain,
   onChangeFilters,
+  isPrivate,
 }: DuelResultPanelProps) {
   const titleId = useId();
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -149,6 +150,7 @@ export function DuelResultPanel({
       <ResultActions
         onPlayAgain={onPlayAgain}
         onChangeFilters={onChangeFilters}
+        isPrivate={isPrivate}
       />
     </section>
   );

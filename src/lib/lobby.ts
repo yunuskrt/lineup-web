@@ -1,7 +1,7 @@
 import { effectiveSeasons, rangeOf, seasonLabel } from '@/lib/filters';
 import type { CanvasGateView } from '@/types/canvas';
 import type { FilterOptions } from '@/types/catalog';
-import type { DuelActor, DuelPlayer } from '@/types/duel';
+import type { CoinFlipSource, DuelActor, DuelPlayer } from '@/types/duel';
 import type { DuelLobbyView, FilterSummary } from '@/types/duel-lobby';
 import type { EraRange, Filters } from '@/types/filters';
 
@@ -44,7 +44,17 @@ export function filterSummary(
   ];
 }
 
-export function coinFlipTitle(winner: DuelActor, opponent: DuelPlayer): string {
+export function coinFlipTitle(
+  winner: DuelActor,
+  opponent: DuelPlayer,
+  source: CoinFlipSource = 'coin',
+): string {
+  // A room has no flip: the creator's set applies
+  if (source === 'room') {
+    return winner === 'you'
+      ? 'Playing your room'
+      : `Playing ${opponent.handle}'s room`;
+  }
   return winner === 'you'
     ? 'Your filters won'
     : `${opponent.handle}'s filters won`;
@@ -57,6 +67,19 @@ export function lobbyGate(lobby: DuelLobbyView): CanvasGateView {
         title: 'Finding an opponent',
         detail: "You'll be matched with the next player who's searching.",
       };
+    case 'roomWaiting':
+      return {
+        title: 'Waiting for your friend',
+        detail:
+          'Send them the code or the link. The match starts when they join.',
+      };
+    case 'roomExpired':
+      return {
+        title: 'No one joined',
+        detail: 'The room closed after 10 minutes.',
+      };
+    case 'joining':
+      return { title: `Joining room ${lobby.code}…` };
     case 'paired':
       return { title: 'Opponent found', detail: 'Filters are next.' };
     case 'filters':
@@ -66,7 +89,7 @@ export function lobbyGate(lobby: DuelLobbyView): CanvasGateView {
       };
     case 'coinFlip':
       return {
-        title: coinFlipTitle(lobby.winner, lobby.opponent),
+        title: coinFlipTitle(lobby.winner, lobby.opponent, lobby.source),
         detail: 'The match comes from these filters.',
       };
     case 'noOpponent':

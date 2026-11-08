@@ -465,6 +465,9 @@ describe('createSocketDuelClient', () => {
       await duel.submitFilters(filters);
       await duel.guess(guess);
       await duel.forfeit();
+      await duel.createRoom(filters);
+      await duel.joinRoom('K7QM2X');
+      await duel.leaveRoom();
 
       expect(latest().emits).toEqual([
         { event: 'queue:enter', args: [] },
@@ -472,6 +475,9 @@ describe('createSocketDuelClient', () => {
         { event: 'filters:submit', args: [filters] },
         { event: 'duel:guess', args: [guess] },
         { event: 'duel:forfeit', args: [] },
+        { event: 'room:create', args: [filters] },
+        { event: 'room:join', args: [{ code: 'K7QM2X' }] },
+        { event: 'room:leave', args: [] },
       ]);
     });
 

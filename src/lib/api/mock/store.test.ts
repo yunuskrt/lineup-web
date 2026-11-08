@@ -62,13 +62,13 @@ let sequence = 0;
 function game(
   result:
     | { mode: 'solo'; outcome: SoloEndReason }
-    | { mode: 'duel'; outcome: DuelOutcome },
+    | { mode: 'duel'; outcome: DuelOutcome; isPrivate?: boolean },
   overrides: Partial<Omit<GameRecord, 'entry'>> = {},
 ): GameRecord {
   sequence += 1;
   return {
     entry: {
-      ...result,
+      ...(result.mode === 'duel' ? { isPrivate: false, ...result } : result),
       id: `history-${sequence}`,
       playedAt: '2026-01-01T00:00:00.000Z',
       match: MATCH,

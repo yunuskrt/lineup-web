@@ -7,6 +7,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | **Done**: Part 1 (2026-11-04, backend R3a), Part 2 (2026-11-05, backend R3b) |
 | R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | **Done**: Part 1 (2026-11-06, backend R4a), Part 2 (2026-11-06, backend R4b) |
 | R5 | A player directory for guess suggestions | Web features Guess Suggestions A and B | 2026-11-06 | **Done** (2026-11-08, backend R5): an opaque `key`, not `players.id` |
+| R6 | Private rooms: create a room, join it with a code | Web features Private Rooms A and B | 2026-11-08 | Asked |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -228,3 +229,104 @@ The backend doesn't compress responses today. The directory is ~600 KB of JSON r
 ### Prompt for the backend session
 
 > Read `../lineup-web/context/docs/backend-requests.md` § R5. Write it up as a backend feature spec, R5 (player directory for guess suggestions), the way R4 was done: `GET /catalog/players` with an ETag from a cheap directory version, 304 on a match, the built directory kept in memory, and gzip or Brotli on the response. No migration. Keep it unscoped (Hard Constraint 2) and session-only. Ask me anything unclear before `/feature load`.
+
+---
+
+## R6. Private rooms: create a room, join it with a code
+
+**Why:** players want to duel a friend, not only a stranger (user, 2026-11-08). The public queue stays exactly as it is. A second way in is added: one player **creates a room** and gets a **code**, and their friend **joins with that code**. A room holds two players. Once both are in, the game is today's duel. Web specs: `context/features/private-rooms-a-mock.md` and `context/features/private-rooms-b-wiring.md`.
+
+**Decisions (user, 2026-11-08):**
+
+- **Anyone can create and join**, guests included. Pro gating (the Free vs Pro row "Private lobbies: Free join only, Pro host + join") is a later decision, not enforced now.
+- **The creator's filters are used.** They're fixed when the room is created; there's no filter window and no coin flip in a room.
+- **On join, the game starts at once**, after a short beat that names the creator's filters.
+- **The code** is 6 characters from letters and digits without look-alikes, shared by copy or by a link.
+- **A room waits 10 minutes** for the friend, then closes.
+- **Room games count in stats** like any duel; history marks them.
+- **Rematch is a later request.** Not part of R6.
+
+### The shape: a second way to pair
+
+Today `MatchmakingService.enter` pairs two queued players with `DuelRooms.open(first, second)`, sends `paired` to both, and everything after (filters, coin flip, load, play, result, reconnect, persistence) runs from there. A room only adds a new way to reach the pairing, and skips the filter window.
+
+### Socket commands (acked with the §2 envelope, `data` empty; outcomes arrive as events)
+
+| Command | Payload | Errors in the ack |
+| --- | --- | --- |
+| `room:create` | `Filters` | `forbidden` (already queued, already hosting a room, or in a duel), `invalid_input`, `empty_pool` + `emptyBecause` (checked now, so a friend never joins a room with no match; nothing is stored) |
+| `room:join` | `{ code }`: 6 characters, any case | `not_found` (no open room has that code: wrong, expired or closed), `forbidden` (your own room, the room is full, you're queued, hosting or in a duel), `invalid_input` (not 6 characters of the code alphabet) |
+| `room:leave` | — | `forbidden` (not hosting an open room) |
+
+- **Rate limits** (B42's per-user socket limit): `room:join` needs a tight one (for example 10 a minute), so codes can't be guessed by trying. `room:create` can share the others' limit.
+- **Queue and rooms exclude each other.** A host can't `queue:enter`; a queued player can't create or join.
+
+### Server events
+
+| Event | Payload | When |
+| --- | --- | --- |
+| `roomCreated` | `RoomState` | To the creator, after an accepted `room:create` |
+| `roomExpired` | `RoomExpiry` | To the creator, 10 minutes after `roomCreated` if no one joined. The room is gone and the code is free |
+| `paired` | `PairedState` (unchanged) | To both, at once on an accepted `room:join` |
+| `coinFlip` | `CoinFlipResult` + **new** `source` | To both, right after `paired`. In a room, `winner` is **the creator** (from each receiver's view) and `filters` are the room's |
+| `matchReady` | `DuelSession` (unchanged) | 2 s after that `coinFlip`, as today |
+
+Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect window, forfeit, `finished`.
+
+**New and changed types**
+
+| Type | Fields |
+| --- | --- |
+| `RoomState` | `code` (6 characters, uppercase), `filters: Filters` (as applied), `expiresAt: epoch ms` |
+| `RoomExpiry` | `code` |
+| `CoinFlipResult` | `winner: DuelActor`, `filters: Filters`, **`source: 'coin' \| 'room'`**. `coin` for a queue pairing, `room` for a room |
+
+### Rules
+
+- **The code:** 6 characters from `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (no `0 O 1 I L`); about 887 million codes. Unique among open rooms. `room:join` uppercases what it's given before matching. A code is never reused while its room is open.
+- **One open room per creator.** Creating again while hosting is `forbidden`; `room:leave` first.
+- **The creator's connection:** the room lives while the creator is connected. If the creator's socket closes (or is taken over) before anyone joins, the room closes at once, like leaving the queue. No reconnect window before the pairing.
+- **The 10-minute wait:** a server-owned timer (a constant, injectable for tests like `QUEUE_TIMEOUT_MS`). `expiresAt` lets the web show the time left; the web never decides the expiry.
+- **Joining:** the joiner becomes seat 1, the creator seat 0. After that the room is full: a third `room:join` with the same code is `not_found` (the open room is gone) or `forbidden` (full), whichever is simpler, as long as it's documented.
+- **Who starts:** in a duel, the player who loses the coin flip names first. In a room there's no flip, so **the joiner names first** (the creator's filters were used). Document it if a different rule is simpler.
+- **Empty pool between create and join:** the filters were checked on create. If the pool empties before the friend joins (an ingest run), the existing `empty_pool` error event after `coinFlip` applies ("No match fits the winning filters."), and both are told.
+- **Hard Constraint 2 holds:** no squad leaves the server; a room only changes how two players meet.
+- **Hard Constraint 15 holds:** a room changes nothing about the rules; both players face identical rules.
+
+### Persistence (one migration)
+
+- **`game_sessions` gains a flag** for a room game, for example `is_private BOOLEAN NOT NULL DEFAULT false`, or an `origin` enum (`queue`, `room`) if you'd rather leave room for more later. Written when the duel is persisted (B41).
+- **History:** the duel variant of `HistoryEntry` (`GET /profile/history`) gains **`isPrivate: boolean`**. The web tags those rows "vs friend".
+- **Stats unchanged:** room games count toward wins, losses, draws, accuracy and streaks like any duel.
+- No code is stored: rooms are ephemeral, in memory, like the queue (Hard Constraint 6).
+
+### Contract and versions
+
+- **Additive:** three new commands, two new events, one new field on `CoinFlipResult` and one on the history entry. A web build from before R6 never sends a room command and ignores the new fields.
+- **No `PROTOCOL_VERSION` bump** needed for that reason. If you see one, say why in the Built note.
+- Document it in `context/api-contract.md` (socket section) and OpenAPI for the history entry (`isPrivate`).
+
+### Tests
+
+- **Rooms (pure where possible):** create gives a code from the alphabet, unique while open; join pairs creator (seat 0) and joiner (seat 1); join is case-insensitive; a wrong code is `not_found`; joining your own room, a full room, or while queued is `forbidden`; leave frees the code; the timer expires the room with `roomExpired`; the creator's disconnect closes it.
+- **Start:** after a join, `paired` → `coinFlip` (`source: room`, `winner` = creator, room filters) → `matchReady`; no `filtersUpdated`; the joiner names first. A queue pairing still sends `source: coin`.
+- **Two-client harness (B43):** a room game from create to `finished`, and one where the creator leaves while waiting.
+- **Persistence:** a room duel is saved with the flag, and its history rows have `isPrivate: true`; a queue duel has `false`.
+- **Rate limit:** a burst of `room:join` is refused with `rate_limited` + `retryAfterMs`.
+
+### Report in the Built note
+
+- The final command, event and field names, and anything that differs from this request.
+- The join rate limit chosen, and who names first.
+- The migration name.
+
+### Then
+
+1. **Web, Private Rooms A** (the /play controls, the waiting screen, join errors, the "vs friend" tag, on the mock) needs nothing from here and can ship first.
+2. **Web, Private Rooms B** (the real socket commands and events, two-browser checks) needs R6 on the backend's `main`.
+3. **Later:** a rematch request (both tap Rematch, the same pair plays again).
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R6. Write it up as a backend feature spec (or two, if you'd split rooms from persistence), the way R4 and R5 were done: `room:create` with the creator's filters, `room:join` with a 6-character code, `room:leave`, `roomCreated` and `roomExpired`, then the existing `paired` → `coinFlip` (new `source: 'room'`) → `matchReady` with no filter window. Rooms are in memory and wait 10 minutes; one migration flags room games, and history gains `isPrivate`. Also apply the `project-overview.md` changes listed in `../lineup-web/context/features/private-rooms-a-mock.md` § Shared spec, so the file stays identical in both repos. Ask me anything unclear before `/feature load`.
+

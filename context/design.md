@@ -25,8 +25,8 @@ The game routes want FotMob's posture with lichess's restraint.
 | Route                       | Shape                                                        | Nav                                  | Footer             |
 | --------------------------- | ------------------------------------------------------------ | ------------------------------------ | ------------------ |
 | `/`                         | **Statement fold** — one line fills the viewport, Play below | Wordmark left, CTA right             | Closing statement  |
-| `/play`                     | **Diptych** — solo and duel side by side, filters beneath    | Wordmark left, CTA right             | Single inline line |
-| `/play/solo`, `/play/duel`  | **Canvas** — the squad grid is the composition               | **None** — quit and sound chips only | **None**           |
+| `/play`                     | **Diptych** — solo and duel side by side, filters beneath; with Duel chosen, a quiet "Play a friend" row (Create room, or a code and Join) under the start button | Wordmark left, CTA right             | Single inline line |
+| `/play/solo`, `/play/duel`  | **Canvas** — the squad grid is the composition. `/play/duel` also hosts private rooms (`?room=create`, `?room=<code>`) | **None** — quit and sound chips only | **None**           |
 | `/profile`                  | **Stat-led** — the numbers are the narrative                 | Wordmark left, CTA right             | Single inline line |
 | `/leaderboard` _(post-MVP)_ | **Index** — the page is the list                             | Wordmark left, CTA right             | Single inline line |
 

@@ -10,12 +10,16 @@ import {
   COIN_FLIP_REVEAL_MS,
   DISCONNECT_AFTER_MS,
   createMockDuelClient,
+  FRIEND_JOIN_MS,
   OPPONENT_FILTER_MS,
   OPPONENT_FILTERS,
   QUEUE_WAIT_MS,
   RECONNECT_AFTER_MS,
   RECONNECT_WINDOW_MS,
   RETURN_AFTER_WINDOW_MS,
+  ROOM_EXPIRES_AFTER_MS,
+  ROOM_JOIN_MS,
+  ROOM_WAIT_MS,
   type MockDuelOptions,
 } from '@/lib/api/mock/duel-client';
 import { createMockApiClient } from '@/lib/api/mock/api-client';
@@ -27,8 +31,17 @@ import {
 } from '@/lib/api/mock/store';
 import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
 import type { MockFixture, MockSquad } from '@/lib/api/mock/types';
-import { duelResultSchema, duelSessionSchema } from '@/lib/api/schemas/duel';
-import type { DuelResult, DuelSession } from '@/types/duel';
+import {
+  duelResultSchema,
+  duelSessionSchema,
+  roomCodeSchema,
+} from '@/lib/api/schemas/duel';
+import type {
+  CoinFlipResult,
+  DuelResult,
+  DuelSession,
+  RoomState,
+} from '@/types/duel';
 import type { Filters } from '@/types/filters';
 
 const FILTERS: Filters = {
@@ -60,6 +73,8 @@ const SQUAD = expectedSquad(0.99);
 const EVENTS: DuelEvent[] = [
   'queued',
   'queueTimedOut',
+  'roomCreated',
+  'roomExpired',
   'paired',
   'filtersUpdated',
   'coinFlip',
@@ -791,5 +806,146 @@ describe('mock duel client recording', () => {
     if (!profile.success) throw new Error('Expected a profile');
     expect(profile.data.stats.played).toBe(2);
     expect(profile.data.stats.losses).toBe(1);
+  });
+});
+
+describe('mock duel client rooms', () => {
+  let store: MockStore;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    store = createStore();
+    store.identity = createIdentity({
+      id: 'guest-1',
+      handle: 'guest-1abc2def',
+      isGuest: true,
+      emailVerified: false,
+      tier: 'free',
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function errorOf(result: Awaited<ReturnType<DuelClient['joinRoom']>>) {
+    if (result.success) throw new Error('Expected a refusal');
+    return result.error;
+  }
+
+  it('creates a room with a code, then the friend joins', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    const log = record(client);
+
+    expect((await client.createRoom(FILTERS)).success).toBe(true);
+    const room = lastOf<RoomState>(log, 'roomCreated');
+    expect(roomCodeSchema.safeParse(room.code).success).toBe(true);
+    expect(room.filters).toEqual(FILTERS);
+    expect(room.expiresAt).toBe(Date.now() + ROOM_WAIT_MS);
+
+    await vi.advanceTimersByTimeAsync(FRIEND_JOIN_MS);
+    expect(names(log)).toEqual(['roomCreated', 'paired', 'coinFlip']);
+    expect(lastOf<CoinFlipResult>(log, 'coinFlip')).toEqual({
+      winner: 'you',
+      filters: FILTERS,
+      source: 'room',
+    });
+
+    await vi.advanceTimersByTimeAsync(COIN_FLIP_REVEAL_MS);
+    const session = lastOf<DuelSession>(log, 'matchReady');
+    expect(duelSessionSchema.safeParse(session).success).toBe(true);
+    // The joiner names first
+    expect(session.turn).toBe('opponent');
+  });
+
+  it("joins a friend's room by code and names first", async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    const log = record(client);
+
+    expect((await client.joinRoom('K7QM2X')).success).toBe(true);
+    await vi.advanceTimersByTimeAsync(ROOM_JOIN_MS);
+    expect(names(log)).toEqual(['paired', 'coinFlip']);
+    expect(lastOf<CoinFlipResult>(log, 'coinFlip')).toEqual({
+      winner: 'opponent',
+      filters: OPPONENT_FILTERS,
+      source: 'room',
+    });
+
+    await vi.advanceTimersByTimeAsync(COIN_FLIP_REVEAL_MS);
+    expect(lastOf<DuelSession>(log, 'matchReady').turn).toBe('you');
+  });
+
+  it('refuses a code that is not 6 characters of the alphabet', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    expect(errorOf(await client.joinRoom('K7QM2O')).code).toBe('invalid_input');
+    expect(errorOf(await client.joinRoom('k7qm2x')).code).toBe('invalid_input');
+  });
+
+  it.each([
+    ['roomNotFound', 'not_found'],
+    ['roomFull', 'forbidden'],
+    ['roomOwn', 'forbidden'],
+  ] as const)('refuses a join in the %s scenario', async (scenario, code) => {
+    const client = createMockDuelClient(scripted({ store, scenario }));
+    expect(errorOf(await client.joinRoom('K7QM2X')).code).toBe(code);
+  });
+
+  it('refuses a second room, a join or the queue while hosting', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    await client.createRoom(FILTERS);
+    expect(errorOf(await client.createRoom(FILTERS)).code).toBe('forbidden');
+    expect(errorOf(await client.joinRoom('K7QM2X')).code).toBe('forbidden');
+    expect(errorOf(await client.enterQueue()).code).toBe('forbidden');
+  });
+
+  it('closes the room on leave, so no friend joins', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    const log = record(client);
+    await client.createRoom(FILTERS);
+
+    expect((await client.leaveRoom()).success).toBe(true);
+    await vi.advanceTimersByTimeAsync(FRIEND_JOIN_MS + COIN_FLIP_REVEAL_MS);
+    expect(names(log)).toEqual(['roomCreated']);
+    expect(errorOf(await client.leaveRoom()).code).toBe('forbidden');
+  });
+
+  it('refuses a room whose filters have no match', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    const empty: Filters = { ...FILTERS, clubIds: ['club-nowhere'] };
+    expect(errorOf(await client.createRoom(empty)).code).toBe('empty_pool');
+  });
+
+  it('expires an unjoined room in the roomExpires scenario', async () => {
+    const client = createMockDuelClient(
+      scripted({ store, scenario: 'roomExpires' }),
+    );
+    const log = record(client);
+    await client.createRoom(FILTERS);
+    const { code } = lastOf<RoomState>(log, 'roomCreated');
+
+    await vi.advanceTimersByTimeAsync(ROOM_EXPIRES_AFTER_MS);
+    expect(lastOf(log, 'roomExpired')).toEqual({ code });
+    // Closed: a new room can be made
+    expect((await client.createRoom(FILTERS)).success).toBe(true);
+  });
+
+  it('records a room game as private in history', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    await client.createRoom(FILTERS);
+    await vi.advanceTimersByTimeAsync(FRIEND_JOIN_MS + COIN_FLIP_REVEAL_MS);
+    await client.forfeit();
+
+    const [entry] = store.identity?.history ?? [];
+    expect(entry.mode === 'duel' && entry.isPrivate).toBe(true);
+  });
+
+  it('records a queue duel as not private', async () => {
+    const client = createMockDuelClient(scripted({ store }));
+    await reachMatch(client);
+    await client.forfeit();
+
+    const [entry] = store.identity?.history ?? [];
+    expect(entry.mode === 'duel' && entry.isPrivate).toBe(false);
   });
 });
