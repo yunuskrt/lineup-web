@@ -261,6 +261,11 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Match retrieved         | Squad resolved      | Match header in full: both crests and names, the score, the competition and the date. The named side is emphasised: its crest is ringed in `bone`, and the other side's name is `muted` |
 | No opponent             | Queue timeout       | Offer solo with the same filters. Never a dead end                                                               |
 | Cancelled               | You leave the queue | Back to `/play`, filters preserved                                                                               |
+| Room waiting            | Your room is open   | The code alone is large: display face, tabular, letter-spaced. Copy code and Copy link confirm in place ("Copied"). A quiet "Closes in 9:41" and the room's filters. **No countdown ring**: nothing is lost while you wait |
+| Room filters            | A friend joins      | The coin-flip card, named for the room: "Playing your room" or "Playing {creator}'s room". No coin-flip wording |
+| Joining                 | A code is sent      | "Joining room K7QM2X…" over the gated canvas, the ambient pulse, Cancel. Never a spinner on an empty panel        |
+| Join refused            | Wrong, full or own  | Say which, and Back to play with the code kept in the box. Never "something went wrong"                          |
+| Room expired            | 10 minutes, no one  | "No one joined", Create a new room. Never a dead end                                                             |
 
 ### System
 

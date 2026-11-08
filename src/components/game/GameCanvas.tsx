@@ -364,6 +364,7 @@ export function GameCanvas({
                   }
                   onPlayAgain={onPlayAgain}
                   onChangeFilters={onChangeFilters}
+                  isPrivate={view.mode === 'duel' && view.isPrivate}
                 />
               ) : (
                 <ActiveRail

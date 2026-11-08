@@ -9,6 +9,10 @@ export const DUEL_SCENARIOS = [
   'rateLimited',
   'protocolRefused',
   'connectedElsewhere',
+  'roomNotFound',
+  'roomFull',
+  'roomOwn',
+  'roomExpires',
 ] as const;
 
 export type DuelScenario = (typeof DUEL_SCENARIOS)[number];

@@ -132,6 +132,7 @@ const PREPARED: DuelSessionEvent = {
   type: 'prepared',
   filters: SAMPLE_FILTERS,
   options: SAMPLE_FILTER_OPTIONS,
+  isPrivate: false,
 };
 
 const TO_SEARCHING: DuelSessionEvent[] = [
@@ -152,12 +153,12 @@ const TO_FILTERS: DuelSessionEvent[] = [
 
 const YOU_WIN: DuelSessionEvent = {
   type: 'coinFlip',
-  result: { winner: 'you', filters: SAMPLE_FILTERS },
+  result: { winner: 'you', filters: SAMPLE_FILTERS, source: 'coin' },
 };
 
 const THEY_WIN: DuelSessionEvent = {
   type: 'coinFlip',
-  result: { winner: 'opponent', filters: SAMPLE_OPEN_FILTERS },
+  result: { winner: 'opponent', filters: SAMPLE_OPEN_FILTERS, source: 'coin' },
 };
 
 const TO_PLAYING: DuelSessionEvent[] = [
@@ -257,6 +258,7 @@ describe('the lobby', () => {
     expect(state.phase).toBe('coinFlip');
     expect(view.lobby).toEqual({
       step: 'coinFlip',
+      source: 'coin',
       winner: 'opponent',
       applied: filterSummary(SAMPLE_OPEN_FILTERS, SAMPLE_FILTER_OPTIONS),
       opponent: OPPONENT,
@@ -1462,8 +1464,20 @@ describe('awayResultOf', () => {
   it("finds this duel's entry by its session id", () => {
     const result = awayResultOf(
       [
-        { ...ENTRY, id: 'duel-0', mode: 'duel', outcome: 'win' },
-        { ...ENTRY, id: 'duel-1', mode: 'duel', outcome: 'loss' },
+        {
+          ...ENTRY,
+          id: 'duel-0',
+          mode: 'duel',
+          outcome: 'win',
+          isPrivate: false,
+        },
+        {
+          ...ENTRY,
+          id: 'duel-1',
+          mode: 'duel',
+          outcome: 'loss',
+          isPrivate: false,
+        },
       ],
       'duel-1',
     );
@@ -1474,7 +1488,13 @@ describe('awayResultOf', () => {
     expect(
       awayResultOf(
         [
-          { ...ENTRY, id: 'duel-0', mode: 'duel', outcome: 'win' },
+          {
+            ...ENTRY,
+            id: 'duel-0',
+            mode: 'duel',
+            outcome: 'win',
+            isPrivate: false,
+          },
           { ...ENTRY, id: 'duel-1', mode: 'solo', outcome: 'lives_out' },
         ],
         'duel-1',
@@ -1513,7 +1533,12 @@ describe('against the mock adapter', () => {
   function drive(client: DuelClient) {
     let state = play(
       { type: 'started' },
-      { type: 'prepared', filters: OPEN, options: SAMPLE_FILTER_OPTIONS },
+      {
+        type: 'prepared',
+        filters: OPEN,
+        options: SAMPLE_FILTER_OPTIONS,
+        isPrivate: false,
+      },
     );
     const phases = [state.phase];
     const apply = (event: DuelSessionEvent) => {
@@ -1869,5 +1894,243 @@ describe('against the mock adapter', () => {
     await vi.advanceTimersByTimeAsync(OPPONENT_FILTER_MS);
     expect(duel.current().phase).toBe('coinFlip');
     client.disconnect();
+  });
+});
+
+describe('private rooms', () => {
+  const PRIVATE: DuelSessionEvent = { ...PREPARED, isPrivate: true } as const;
+  const ROOM = { code: 'K7QM2X', filters: SAMPLE_FILTERS, expiresAt: AT + 1 };
+  const CREATED: DuelSessionEvent = { type: 'roomCreated', room: ROOM };
+  const JOINING: DuelSessionEvent = { type: 'joining', code: 'K7QM2X' };
+
+  function refused(code: ApiError['code'], message = 'Refused.') {
+    return {
+      type: 'failed',
+      step: 'joinRoom',
+      error: { code, message, retryAfterMs: null },
+      at: AT,
+    } as const;
+  }
+
+  it('waits with the code, the deadline and the filters', () => {
+    const state = play({ type: 'started' }, PRIVATE, CREATED);
+    const view = viewOf(state);
+    expect(state.phase).toBe('hosting');
+    expect(view.lobby).toEqual({
+      step: 'roomWaiting',
+      code: 'K7QM2X',
+      expiresAt: AT + 1,
+      filters: filterSummary(SAMPLE_FILTERS, SAMPLE_FILTER_OPTIONS),
+    });
+    expect(view.gate?.title).toBe('Waiting for your friend');
+    expect(view.isPrivate).toBe(true);
+  });
+
+  it("names the creator's room, not a coin flip, once joined", () => {
+    const state = play(
+      PRIVATE,
+      CREATED,
+      { type: 'paired', opponent: OPPONENT },
+      {
+        type: 'coinFlip',
+        result: { winner: 'you', filters: SAMPLE_FILTERS, source: 'room' },
+      },
+    );
+    expect(viewOf(state).gate?.title).toBe('Playing your room');
+  });
+
+  it('marks a room game private from the server, even unprepared', () => {
+    const state = play(PREPARED, {
+      type: 'coinFlip',
+      result: { winner: 'opponent', filters: SAMPLE_FILTERS, source: 'room' },
+    });
+    expect(state.isPrivate).toBe(true);
+    expect(viewOf({ ...state, opponent: OPPONENT }).gate?.title).toBe(
+      `Playing ${OPPONENT.handle}'s room`,
+    );
+  });
+
+  it('shows the code while joining', () => {
+    const state = play({ type: 'started' }, JOINING, PRIVATE);
+    expect(state.phase).toBe('joining');
+    expect(viewOf(state).gate?.title).toBe('Joining room K7QM2X…');
+  });
+
+  it('closes a waiting room on expiry, and only then', () => {
+    const expired = play(PRIVATE, CREATED, { type: 'roomExpired' });
+    expect(viewOf(expired).lobby).toEqual({ step: 'roomExpired' });
+    expect(viewOf(expired).gate?.title).toBe('No one joined');
+
+    const searching = play(
+      PREPARED,
+      { type: 'queued' },
+      { type: 'roomExpired' },
+    );
+    expect(searching.phase).toBe('searching');
+  });
+
+  it.each([
+    [
+      'not_found',
+      'No open room has that code. Check it, or ask your friend for a new one.',
+    ],
+    [
+      'invalid_input',
+      "That code isn't valid. Room codes are 6 letters and numbers.",
+    ],
+    ['forbidden', "That's your own room. Send the code to a friend."],
+  ] as const)(
+    'sends a %s join back to play with its reason',
+    (code, detail) => {
+      const state = play(JOINING, refused(code, detail));
+      const view = viewOf(state);
+      expect(view.gate?.title).toBe("Couldn't join the room");
+      expect(view.gate?.detail).toBe(detail);
+      expect(view.gate?.actionLabel).toBe(DUEL_GATE_COPY.backToPlay);
+      expect(duelGateAction(state)).toBe('leave');
+    },
+  );
+
+  it("keeps the web's words over the server's for a wrong code", () => {
+    const state = play(JOINING, refused('not_found', 'Room not found.'));
+    expect(viewOf(state).gate?.detail).toMatch(/^No open room has that code/);
+  });
+
+  it('lets a network failure on join be tried again', () => {
+    const state = play(JOINING, { ...refused('network'), error: NETWORK });
+    expect(duelGateAction(state)).toBe('retry');
+  });
+
+  it('offers to widen a room whose filters have no match', () => {
+    const state = play(PRIVATE, {
+      type: 'failed',
+      step: 'createRoom',
+      error: {
+        code: 'empty_pool',
+        message: 'No match fits.',
+        retryAfterMs: null,
+        emptyBecause: 'club',
+      },
+      at: AT,
+    });
+    expect(duelGateAction(state)).toBe('widen');
+  });
+
+  it('says the room closed when the connection drops while waiting', () => {
+    const state = play(PRIVATE, CREATED, { type: 'connectionRestored' });
+    const view = viewOf(state);
+    expect(state.failure?.step).toBe('createRoom');
+    expect(state.room).toBeNull();
+    expect(view.gate?.title).toBe(DUEL_GATE_COPY.roomClosed);
+    expect(view.gate?.actionLabel).toBe(DUEL_GATE_COPY.newRoom);
+    expect(duelGateAction(state)).toBe('retry');
+  });
+
+  it('offers a new room when the friend leaves before the match', () => {
+    const state = play(
+      PRIVATE,
+      CREATED,
+      { type: 'paired', opponent: OPPONENT },
+      {
+        type: 'error',
+        error: {
+          code: 'session_over',
+          message: 'Your opponent left.',
+          retryAfterMs: null,
+        },
+        at: AT,
+      },
+    );
+    expect(viewOf(state).gate?.actionLabel).toBe(DUEL_GATE_COPY.newRoom);
+  });
+
+  it('keeps Search again for a queue duel called off', () => {
+    const state = play(
+      PREPARED,
+      { type: 'paired', opponent: OPPONENT },
+      {
+        type: 'error',
+        error: {
+          code: 'session_over',
+          message: 'Your opponent left.',
+          retryAfterMs: null,
+        },
+        at: AT,
+      },
+    );
+    expect(viewOf(state).gate?.actionLabel).toBe(DUEL_GATE_COPY.searchAgain);
+  });
+
+  it.each(['createRoom', 'joinRoom'] as const)(
+    'keeps a resumed duel when a reload resends %s',
+    (step) => {
+      const live = play(PRIVATE, { type: 'matchReady', session: YOUR_TURN });
+      const state = duelSessionReducer(live, {
+        type: 'failed',
+        step,
+        error: {
+          code: 'forbidden',
+          message: "You're already in a duel.",
+          retryAfterMs: null,
+        },
+        at: AT,
+      });
+      expect(state.phase).toBe('playing');
+      expect(state.failure).toBeNull();
+    },
+  );
+
+  it('marks a finished room game private, for New room', () => {
+    const state = play(
+      PRIVATE,
+      { type: 'matchReady', session: YOUR_TURN },
+      { type: 'finished', result: RESULT },
+    );
+    const view = viewOf(state);
+    expect(view.end).toEqual(RESULT);
+    expect(view.isPrivate).toBe(true);
+  });
+
+  it("keeps a queue duel's result on Play again", () => {
+    const state = play(
+      PREPARED,
+      { type: 'matchReady', session: YOUR_TURN },
+      { type: 'finished', result: RESULT },
+    );
+    expect(viewOf(state).isPrivate).toBe(false);
+  });
+
+  it('offers a new room after a room game ended away', () => {
+    const away: DuelSessionState = {
+      ...INITIAL_DUEL_SESSION,
+      phase: 'endedAway',
+      isPrivate: true,
+      away: { status: 'unknown' },
+    };
+    expect(viewOf(away).gate?.actionLabel).toBe(DUEL_GATE_COPY.newRoom);
+    expect(viewOf({ ...away, isPrivate: false }).gate?.actionLabel).toBe(
+      DUEL_GATE_COPY.playAgain,
+    );
+  });
+
+  it('clears an empty-pool failure once the wider room opens', () => {
+    const state = play(
+      PRIVATE,
+      {
+        type: 'failed',
+        step: 'createRoom',
+        error: {
+          code: 'empty_pool',
+          message: 'No match fits.',
+          retryAfterMs: null,
+          emptyBecause: 'club',
+        },
+        at: AT,
+      },
+      CREATED,
+    );
+    expect(state.phase).toBe('hosting');
+    expect(state.failure).toBeNull();
+    expect(viewOf(state).gate?.title).toBe('Waiting for your friend');
   });
 });

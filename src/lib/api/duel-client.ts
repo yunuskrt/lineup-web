@@ -11,6 +11,8 @@ import type {
   PairedState,
   QueueState,
   QueueTimeout,
+  RoomExpiry,
+  RoomState,
 } from '@/types/duel';
 import type { Filters } from '@/types/filters';
 import type { GuessResult } from '@/types/game';
@@ -19,6 +21,8 @@ import type { GuessResult } from '@/types/game';
 export type DuelEventMap = {
   queued: QueueState;
   queueTimedOut: QueueTimeout;
+  roomCreated: RoomState;
+  roomExpired: RoomExpiry;
   paired: PairedState;
   filtersUpdated: FilterSubmission;
   coinFlip: CoinFlipResult;
@@ -50,6 +54,10 @@ export interface DuelClient {
   disconnect(): void;
   enterQueue(): Promise<ApiResult<void>>;
   leaveQueue(): Promise<ApiResult<void>>;
+  // The creator's filters are the match's (R6)
+  createRoom(filters: Filters): Promise<ApiResult<void>>;
+  joinRoom(code: string): Promise<ApiResult<void>>;
+  leaveRoom(): Promise<ApiResult<void>>;
   submitFilters(filters: Filters): Promise<ApiResult<void>>;
   // Acks receipt; the outcome comes as `guessResolved`
   guess(request: DuelGuessRequest): Promise<ApiResult<void>>;

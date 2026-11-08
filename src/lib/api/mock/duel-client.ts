@@ -28,7 +28,12 @@ import {
   toGuessResult,
 } from '@/lib/api/mock/shared';
 import type { MockFixture } from '@/lib/api/mock/types';
-import { duelGuessRequestSchema } from '@/lib/api/schemas/duel';
+import {
+  duelGuessRequestSchema,
+  ROOM_CODE_ALPHABET,
+  ROOM_CODE_LENGTH,
+  roomJoinRequestSchema,
+} from '@/lib/api/schemas/duel';
 import {
   FIRST_SEASON_START,
   filtersSchema,
@@ -57,6 +62,12 @@ export const DISCONNECT_AFTER_MS = 1_000;
 export const RECONNECT_AFTER_MS = 5_000;
 // `youDisconnect` comes back after the window
 export const RETURN_AFTER_WINDOW_MS = 2_000;
+// The server's wait for a friend (R6)
+export const ROOM_WAIT_MS = 10 * 60_000;
+export const FRIEND_JOIN_MS = 3_000;
+export const ROOM_JOIN_MS = 800;
+// `roomExpires` closes the room early, to be seen
+export const ROOM_EXPIRES_AFTER_MS = 3_000;
 
 // Scripted filters never narrow, so always match
 export const OPPONENT_FILTERS: Filters = {
@@ -64,6 +75,8 @@ export const OPPONENT_FILTERS: Filters = {
   clubIds: [],
   era: { from: FIRST_SEASON_START, to: LAST_SEASON_START },
 };
+
+const BUSY_MESSAGE = "You're already in a room, the queue or a duel.";
 
 // The server's copy when another tab takes over
 const CONNECTED_ELSEWHERE_ERROR: ApiError = {
@@ -87,7 +100,7 @@ export type MockDuelOptions = {
   store?: MockStore;
 };
 
-type Phase = 'idle' | 'queued' | 'filters' | 'playing' | 'finished';
+type Phase = 'idle' | 'queued' | 'hosting' | 'filters' | 'playing' | 'finished';
 
 export function createMockDuelClient(
   options: MockDuelOptions = {},
@@ -129,6 +142,7 @@ export function createMockDuelClient(
     theirs: 'pending',
   };
   let tally = { guesses: 0, hits: 0 };
+  let isRoomGame = false;
   let expiryTimer: ReturnType<typeof setTimeout> | null = null;
   let opponentTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -224,6 +238,7 @@ export function createMockDuelClient(
         mode: 'duel',
         match: result.match,
         outcome: result.outcome,
+        isPrivate: isRoomGame,
         foundCount: result.found.length,
         livesRemaining: result.you.lives,
       },
@@ -342,15 +357,50 @@ export function createMockDuelClient(
     startRound(step.state);
   }
 
+  function roomCode(): string {
+    return Array.from(
+      { length: ROOM_CODE_LENGTH },
+      () =>
+        ROOM_CODE_ALPHABET[Math.floor(random() * ROOM_CODE_ALPHABET.length)],
+    ).join('');
+  }
+
+  // No window and no flip: the creator's set (R6)
+  function startRoom(filters: Filters, creator: EngineActor): void {
+    isRoomGame = true;
+    phase = 'filters';
+    emit('paired', { phase: 'paired', opponent });
+    emit('coinFlip', { winner: creator, filters, source: 'room' });
+
+    const selection = selectFixture(filters, random);
+    if ('emptyBecause' in selection) {
+      emit('error', {
+        code: 'empty_pool',
+        message: 'No match fits the winning filters.',
+        retryAfterMs: null,
+      });
+      return;
+    }
+
+    // The joiner names first
+    const first: EngineActor = creator === 'you' ? 'opponent' : 'you';
+    schedule(COIN_FLIP_REVEAL_MS, () => {
+      if (phase === 'filters') beginMatch(selection.fixture, first);
+    });
+  }
+
   // A coin here; the server weights side (B32)
-  function beginMatch(selected: MockFixture): void {
+  function beginMatch(selected: MockFixture, first: EngineActor = 'you'): void {
     phase = 'playing';
     duelId = nextId(store, 'duel');
     fixture = selected;
     side = random() < 0.5 ? 'home' : 'away';
     tally = { guesses: 0, hits: 0 };
 
-    const state = createEngineState('duel', squadFor(selected, side), now());
+    const state = {
+      ...createEngineState('duel', squadFor(selected, side), now()),
+      turn: first,
+    };
     engine = state;
     syncPlayers(state);
     emit('matchReady', sessionOf(state));
@@ -435,6 +485,7 @@ export function createMockDuelClient(
       closeHandlers.clear();
       connectionHandlers.clear();
       isAway = false;
+      isRoomGame = false;
       phase = 'idle';
       engine = null;
       fixture = null;
@@ -442,7 +493,7 @@ export function createMockDuelClient(
 
     async enterQueue() {
       if (phase !== 'idle') {
-        return fail('forbidden', 'Already in a duel.');
+        return fail('forbidden', BUSY_MESSAGE);
       }
 
       phase = 'queued';
@@ -487,6 +538,77 @@ export function createMockDuelClient(
       return ACK;
     },
 
+    async createRoom(filters: Filters) {
+      if (phase !== 'idle') return fail('forbidden', BUSY_MESSAGE);
+
+      const parsed = filtersSchema.safeParse(filters);
+      if (!parsed.success) {
+        return fail('invalid_input', 'Those filters are not valid.');
+      }
+      // Checked now, so a friend never joins an empty room
+      const reason = emptyReason(parsed.data);
+      if (reason) return emptyPool(reason);
+
+      phase = 'hosting';
+      const code = roomCode();
+      emit('roomCreated', {
+        code,
+        filters: parsed.data,
+        expiresAt: now() + ROOM_WAIT_MS,
+      });
+
+      if (scenario === 'roomExpires') {
+        schedule(ROOM_EXPIRES_AFTER_MS, () => {
+          if (phase !== 'hosting') return;
+          phase = 'idle';
+          emit('roomExpired', { code });
+        });
+        return ACK;
+      }
+
+      schedule(FRIEND_JOIN_MS, () => {
+        if (phase === 'hosting') startRoom(parsed.data, 'you');
+      });
+      return ACK;
+    },
+
+    async joinRoom(code: string) {
+      if (phase !== 'idle') return fail('forbidden', BUSY_MESSAGE);
+
+      const parsed = roomJoinRequestSchema.safeParse({ code });
+      if (!parsed.success) {
+        return fail('invalid_input', "That code isn't valid.");
+      }
+      if (scenario === 'roomNotFound') {
+        return fail('not_found', 'No open room has that code.');
+      }
+      if (scenario === 'roomFull') {
+        return fail('forbidden', 'That room already has two players.');
+      }
+      if (scenario === 'roomOwn') {
+        return fail(
+          'forbidden',
+          "That's your own room. Send the code to a friend.",
+        );
+      }
+
+      phase = 'filters';
+      schedule(ROOM_JOIN_MS, () => {
+        if (phase === 'filters') startRoom(OPPONENT_FILTERS, 'opponent');
+      });
+      return ACK;
+    },
+
+    async leaveRoom() {
+      if (phase !== 'hosting') {
+        return fail('forbidden', "You aren't hosting a room.");
+      }
+
+      clearTimers();
+      phase = 'idle';
+      return ACK;
+    },
+
     async submitFilters(filters: Filters) {
       if (phase !== 'filters') {
         return fail('forbidden', 'Filters are not open right now.');
@@ -514,7 +636,7 @@ export function createMockDuelClient(
         // One set applied whole, never merged (HC 19)
         const winner = random() < 0.5 ? 'you' : 'opponent';
         const applied = winner === 'you' ? yours : OPPONENT_FILTERS;
-        emit('coinFlip', { winner, filters: applied });
+        emit('coinFlip', { winner, filters: applied, source: 'coin' });
 
         const selection = selectFixture(applied, random);
         if ('emptyBecause' in selection) {

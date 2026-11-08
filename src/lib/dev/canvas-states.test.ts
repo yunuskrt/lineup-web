@@ -26,6 +26,7 @@ import {
   DEFAULT_CANVAS_STATE,
   EMPTY_POOL_REASONS,
   LOBBY_STATES,
+  ROOM_STATES,
   RESULT_STATES,
   resolveCanvasState,
 } from '@/lib/dev/canvas-states';
@@ -93,6 +94,8 @@ function changedKeys(before: CanvasView, after: CanvasView): string[] {
     )
     .sort();
 }
+
+const ROOM_NAMES = Object.keys(ROOM_STATES);
 
 describe('resolveCanvasState', () => {
   it.each(MODES)('resolves every %s state by name', (mode) => {
@@ -428,7 +431,8 @@ describe('duel lobby snapshots', () => {
 
   it('leave every live-play state without a lobby', () => {
     for (const [name, view] of viewsOf('duel')) {
-      if (LOBBY_NAMES.includes(name) || view.mode !== 'duel') continue;
+      if (LOBBY_NAMES.includes(name) || ROOM_NAMES.includes(name)) continue;
+      if (view.mode !== 'duel') continue;
       expect(view.lobby, name).toBeNull();
       expect(view.opponent, name).not.toBeNull();
     }
@@ -506,7 +510,8 @@ describe('duel result snapshots', () => {
 
   it('leave every live duel state without a result', () => {
     for (const [name, view] of viewsOf('duel')) {
-      if (RESULT_NAMES.includes(name) || view.mode !== 'duel') continue;
+      if (RESULT_NAMES.includes(name) || ROOM_NAMES.includes(name)) continue;
+      if (view.mode !== 'duel') continue;
       expect(view.end, name).toBeNull();
     }
   });
@@ -600,5 +605,24 @@ describe('system state snapshots', () => {
         );
       }
     }
+  });
+});
+
+describe('room snapshots', () => {
+  it('build a private duel view with a gate or a result', () => {
+    for (const name of ROOM_NAMES) {
+      const { view } = CANVAS_STATES.duel[name].build(NOW).frame;
+      if (view.mode !== 'duel') throw new Error('not a duel');
+      expect(view.isPrivate, name).toBe(true);
+      expect(view.gate !== null || view.end !== null, name).toBe(true);
+    }
+  });
+
+  it('count down the waiting room from a future deadline', () => {
+    const { view } = CANVAS_STATES.duel['room-waiting'].build(NOW).frame;
+    if (view.mode !== 'duel' || view.lobby?.step !== 'roomWaiting') {
+      throw new Error('not a waiting room');
+    }
+    expect(view.lobby.expiresAt).toBeGreaterThan(NOW);
   });
 });

@@ -204,6 +204,9 @@ export function createSocketDuelClient(
     // No payload means none: `{}` fails the server
     enterQueue: () => send('queue:enter'),
     leaveQueue: () => send('queue:leave'),
+    createRoom: (filters) => send('room:create', filters),
+    joinRoom: (code) => send('room:join', { code }),
+    leaveRoom: () => send('room:leave'),
     submitFilters: (filters) => send('filters:submit', filters),
     guess: (request) => send('duel:guess', request),
     forfeit: () => send('duel:forfeit'),

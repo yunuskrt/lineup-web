@@ -54,7 +54,7 @@ function solo(outcome: SoloEndReason): HistoryEntry {
 }
 
 function duel(outcome: DuelOutcome): HistoryEntry {
-  return { ...BASE, mode: 'duel', outcome };
+  return { ...BASE, mode: 'duel', outcome, isPrivate: false };
 }
 
 // Local wall-clock times, so the viewer's zone is the test's

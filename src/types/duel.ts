@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 import type {
   coinFlipResultSchema,
+  coinFlipSourceSchema,
   connectionStateSchema,
   connectionStatusSchema,
   duelActorSchema,
@@ -17,6 +18,9 @@ import type {
   pairedStateSchema,
   queueStateSchema,
   queueTimeoutSchema,
+  roomExpirySchema,
+  roomJoinRequestSchema,
+  roomStateSchema,
 } from '@/lib/api/schemas/duel';
 
 export type DuelActor = z.infer<typeof duelActorSchema>;
@@ -29,7 +33,11 @@ export type FilterSubmissionStatus = z.infer<
   typeof filterSubmissionStatusSchema
 >;
 export type FilterSubmission = z.infer<typeof filterSubmissionSchema>;
+export type CoinFlipSource = z.infer<typeof coinFlipSourceSchema>;
 export type CoinFlipResult = z.infer<typeof coinFlipResultSchema>;
+export type RoomState = z.infer<typeof roomStateSchema>;
+export type RoomExpiry = z.infer<typeof roomExpirySchema>;
+export type RoomJoinRequest = z.infer<typeof roomJoinRequestSchema>;
 export type DuelFoundPlayer = z.infer<typeof duelFoundPlayerSchema>;
 export type DuelNamedPlayer = z.infer<typeof duelNamedPlayerSchema>;
 export type DuelSession = z.infer<typeof duelSessionSchema>;

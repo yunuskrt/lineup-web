@@ -56,6 +56,9 @@ export const DUEL_GATE_COPY = {
   awayUnknown: "We couldn't find its result in your history.",
   playAgain: 'Play again',
   viewProfile: 'View profile',
+  newRoom: 'New room',
+  backToPlay: 'Back to play',
+  roomClosed: 'Your room closed',
 } as const;
 
 const AWAY_OUTCOMES: Record<DuelOutcome, string> = {
@@ -72,9 +75,25 @@ const DROPPED_ROOM_ERROR: ApiError = {
   retryAfterMs: null,
 };
 
+// The server closes a room whose creator drops (R6)
+const ROOM_CLOSED_ERROR: ApiError = {
+  code: 'session_over',
+  message: 'It closed when your connection dropped.',
+  retryAfterMs: null,
+};
+
+// Our words; `forbidden` keeps the server's
+const JOIN_REFUSALS: Partial<Record<ApiError['code'], string>> = {
+  not_found:
+    'No open room has that code. Check it, or ask your friend for a new one.',
+  invalid_input: "That code isn't valid. Room codes are 6 letters and numbers.",
+};
+
 const FAILED_TITLES: Record<DuelFailureStep, string> = {
   connect: "Couldn't start the duel",
   queue: "Couldn't join the queue",
+  createRoom: "Couldn't create the room",
+  joinRoom: "Couldn't join the room",
   lock: "Couldn't lock in your filters",
   match: "Couldn't set up the match",
   forfeit: "Couldn't forfeit the duel",
@@ -87,6 +106,9 @@ export const INITIAL_DUEL_SESSION: DuelSessionState = {
   phase: 'connecting',
   filters: null,
   options: null,
+  isPrivate: false,
+  room: null,
+  joinCode: null,
   opponent: null,
   submission: NO_SUBMISSIONS,
   coinFlip: null,
@@ -117,6 +139,11 @@ function stepOf(phase: DuelSessionPhase): DuelFailureStep {
     case 'searching':
     case 'noOpponent':
       return 'queue';
+    case 'hosting':
+    case 'roomExpired':
+      return 'createRoom';
+    case 'joining':
+      return 'joinRoom';
     default:
       return 'match';
   }
@@ -126,6 +153,11 @@ function stepOf(phase: DuelSessionPhase): DuelFailureStep {
 function isRefusal(step: DuelFailureStep, error: ApiError): boolean {
   if (error.code !== 'protocol_refused') return false;
   return step === 'connect' || step === 'connection';
+}
+
+// The ways in; a reload resends one mid-duel
+function isEntryStep(step: DuelFailureStep): boolean {
+  return step === 'queue' || step === 'createRoom' || step === 'joinRoom';
 }
 
 // A match is on until the server sends the result
@@ -244,6 +276,14 @@ function applyRestored(state: DuelSessionState): DuelSessionState {
   switch (state.phase) {
     case 'searching':
       return { ...state, isRequeueing: true };
+    case 'hosting':
+      return {
+        ...state,
+        phase: 'failed',
+        room: null,
+        failure: { step: 'createRoom', error: ROOM_CLOSED_ERROR },
+      };
+    case 'joining':
     case 'paired':
     case 'filters':
     case 'coinFlip':
@@ -304,6 +344,9 @@ type LobbyEvent = Extract<
     type:
       | 'started'
       | 'prepared'
+      | 'roomCreated'
+      | 'roomExpired'
+      | 'joining'
       | 'queued'
       | 'queueTimedOut'
       | 'paired'
@@ -326,7 +369,20 @@ function lobbyReducer(
         options: state.options,
       };
     case 'prepared':
-      return { ...state, filters: event.filters, options: event.options };
+      return {
+        ...state,
+        filters: event.filters,
+        options: event.options,
+        isPrivate: event.isPrivate,
+      };
+    case 'roomCreated':
+      return { ...state, phase: 'hosting', room: event.room, failure: null };
+    case 'roomExpired':
+      return state.phase === 'hosting'
+        ? { ...state, phase: 'roomExpired' }
+        : state;
+    case 'joining':
+      return { ...state, phase: 'joining', joinCode: event.code };
     case 'queued':
       return {
         ...INITIAL_DUEL_SESSION,
@@ -358,6 +414,7 @@ function lobbyReducer(
         ...state,
         phase: 'coinFlip',
         coinFlip: event.result,
+        isPrivate: state.isPrivate || event.result.source === 'room',
         isLocking: false,
       };
     default: {
@@ -464,7 +521,7 @@ export function duelSessionReducer(
       });
     case 'failed':
       // A resumed duel answers before the queue does
-      if (event.step === 'queue' && isLive(state)) return state;
+      if (isEntryStep(event.step) && isLive(state)) return state;
       return {
         ...state,
         cooldownUntil:
@@ -484,6 +541,9 @@ export function duelSessionReducer(
       };
     case 'started':
     case 'prepared':
+    case 'roomCreated':
+    case 'roomExpired':
+    case 'joining':
     case 'queued':
     case 'queueTimedOut':
     case 'paired':
@@ -546,6 +606,18 @@ function lobbyOf(state: DuelSessionState): DuelLobbyView | null {
   switch (state.phase) {
     case 'searching':
       return { step: 'searching' };
+    case 'hosting':
+      if (!state.room) return null;
+      return {
+        step: 'roomWaiting',
+        code: state.room.code,
+        expiresAt: state.room.expiresAt,
+        filters: summaryOf(state, state.room.filters),
+      };
+    case 'roomExpired':
+      return { step: 'roomExpired' };
+    case 'joining':
+      return { step: 'joining', code: state.joinCode ?? '' };
     case 'paired':
       return opponent ? { step: 'paired', opponent } : null;
     case 'filters':
@@ -559,6 +631,7 @@ function lobbyOf(state: DuelSessionState): DuelLobbyView | null {
       if (!opponent || !coinFlip) return null;
       return {
         step: 'coinFlip',
+        source: coinFlip.source,
         winner: coinFlip.winner,
         applied: summaryOf(state, coinFlip.filters),
         opponent,
@@ -595,13 +668,53 @@ export function duelGateAction(state: DuelSessionState): DuelGateAction | null {
     return null;
   }
   const { error } = state.failure;
+  if (isRoomRefusal(state)) return 'leave';
   if (canWidenLock(state) && widenReasonOf(error)) return 'widen';
   return error.code === 'empty_pool' ? 'leave' : 'retry';
 }
 
-// Only your own refused lock can be widened
+// Your own refused set: a lock or a new room
 function canWidenLock(state: DuelSessionState): boolean {
-  return state.failure?.step === 'lock';
+  const step = state.failure?.step;
+  return step === 'lock' || step === 'createRoom';
+}
+
+// Final: trying the same again can't work
+function isRoomRefusal(state: DuelSessionState): boolean {
+  const { failure } = state;
+  if (!failure) return false;
+  const { code } = failure.error;
+  if (failure.step === 'joinRoom') {
+    return (
+      code === 'not_found' || code === 'invalid_input' || code === 'forbidden'
+    );
+  }
+  return failure.step === 'createRoom' && code === 'forbidden';
+}
+
+function joinRefusalDetail(error: ApiError): string {
+  return JOIN_REFUSALS[error.code] ?? error.message;
+}
+
+function roomFailedGate(state: DuelSessionState): CanvasGateView | null {
+  const { failure } = state;
+  if (!failure) return null;
+  if (failure.error === ROOM_CLOSED_ERROR) {
+    return {
+      title: DUEL_GATE_COPY.roomClosed,
+      detail: failure.error.message,
+      actionLabel: DUEL_GATE_COPY.newRoom,
+    };
+  }
+  if (!isRoomRefusal(state)) return null;
+  return {
+    title: FAILED_TITLES[failure.step],
+    detail:
+      failure.step === 'joinRoom'
+        ? joinRefusalDetail(failure.error)
+        : failure.error.message,
+    actionLabel: DUEL_GATE_COPY.backToPlay,
+  };
 }
 
 // Try again only once the server's wait is over
@@ -626,11 +739,15 @@ function failedGate(state: DuelSessionState): CanvasGateView | null {
   if (failure.error.code === 'empty_pool') {
     return emptyPoolGate(failure.error, canWidenLock(state));
   }
+  const roomGate = roomFailedGate(state);
+  if (roomGate) return roomGate;
   if (isCalledOff(state)) {
     return {
       title: DUEL_GATE_COPY.calledOff,
       detail: failure.error.message,
-      actionLabel: DUEL_GATE_COPY.searchAgain,
+      actionLabel: state.isPrivate
+        ? DUEL_GATE_COPY.newRoom
+        : DUEL_GATE_COPY.searchAgain,
     };
   }
   if (failure.error.code === 'rate_limited') {
@@ -645,7 +762,7 @@ function failedGate(state: DuelSessionState): CanvasGateView | null {
 }
 
 // Only what history says; never inferred
-function awayGate(away: AwayResult | null): CanvasGateView {
+function awayGate(away: AwayResult | null, isPrivate: boolean): CanvasGateView {
   if (!away || away.status === 'checking') {
     return { title: DUEL_GATE_COPY.away, detail: DUEL_GATE_COPY.awayChecking };
   }
@@ -656,7 +773,7 @@ function awayGate(away: AwayResult | null): CanvasGateView {
   return {
     title: DUEL_GATE_COPY.away,
     detail,
-    actionLabel: DUEL_GATE_COPY.playAgain,
+    actionLabel: isPrivate ? DUEL_GATE_COPY.newRoom : DUEL_GATE_COPY.playAgain,
     secondaryActionLabel: DUEL_GATE_COPY.viewProfile,
   };
 }
@@ -680,7 +797,9 @@ function gateOf(
   lobby: DuelLobbyView | null,
 ): CanvasGateView | null {
   if (lobby) return lobbyGate(lobby);
-  if (state.phase === 'endedAway') return awayGate(state.away);
+  if (state.phase === 'endedAway') {
+    return awayGate(state.away, state.isPrivate);
+  }
   if (state.resume !== null && !state.yourConnection) {
     return { title: RECONNECTING_TITLE };
   }
@@ -726,5 +845,6 @@ export function duelCanvasView(
     yourConnection: result ? null : state.yourConnection,
     end: result,
     endReason: result && state.isConnectionLost ? 'connectionLost' : undefined,
+    isPrivate: state.isPrivate,
   };
 }

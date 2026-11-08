@@ -8,6 +8,7 @@ import type {
   DuelResult,
   DuelSession,
   FilterSubmission,
+  RoomState,
 } from '@/types/duel';
 import type { GridPulse, ToastMessage } from '@/types/feedback';
 import type { Filters } from '@/types/filters';
@@ -16,6 +17,10 @@ import type { DuelOutcome, GuessResult } from '@/types/game';
 export type DuelSessionPhase =
   | 'connecting'
   | 'searching'
+  // Your room is open, waiting for a friend
+  | 'hosting'
+  | 'roomExpired'
+  | 'joining'
   | 'paired'
   | 'filters'
   | 'coinFlip'
@@ -31,6 +36,8 @@ export type DuelSessionPhase =
 export type DuelFailureStep =
   | 'connect'
   | 'queue'
+  | 'createRoom'
+  | 'joinRoom'
   | 'lock'
   | 'match'
   | 'forfeit'
@@ -53,6 +60,10 @@ export type DuelSessionState = {
   // Read from the URL once the catalog loads
   filters: Filters | null;
   options: FilterOptions | null;
+  // A room game: New room replaces Play again
+  isPrivate: boolean;
+  room: RoomState | null;
+  joinCode: string | null;
   opponent: DuelPlayer | null;
   submission: FilterSubmission;
   coinFlip: CoinFlipResult | null;
@@ -85,7 +96,15 @@ export type DuelSessionState = {
 
 export type DuelSessionEvent =
   | { type: 'started' }
-  | { type: 'prepared'; filters: Filters; options: FilterOptions }
+  | {
+      type: 'prepared';
+      filters: Filters;
+      options: FilterOptions;
+      isPrivate: boolean;
+    }
+  | { type: 'roomCreated'; room: RoomState }
+  | { type: 'roomExpired' }
+  | { type: 'joining'; code: string }
   | { type: 'queued' }
   | { type: 'queueTimedOut' }
   | { type: 'paired'; opponent: DuelPlayer }

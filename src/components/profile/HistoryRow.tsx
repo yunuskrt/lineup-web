@@ -19,6 +19,19 @@ const MODE_LABELS: Record<HistoryEntry['mode'], string> = {
   duel: 'Duel',
 };
 
+// A private room's duel; the column fits one word
+function ModeTag({ entry }: { entry: HistoryEntry }) {
+  const isFriend = entry.mode === 'duel' && entry.isPrivate;
+  return isFriend ? (
+    <>
+      <span aria-hidden="true">Friend</span>
+      <span className="sr-only">Duel with a friend</span>
+    </>
+  ) : (
+    MODE_LABELS[entry.mode]
+  );
+}
+
 function Outcome({ entry }: { entry: HistoryEntry }) {
   const tone = historyTone(entry);
 
@@ -54,7 +67,7 @@ export function HistoryRow({ entry, today }: HistoryRowProps) {
         <span
           className={`sm:col-start-1 sm:row-start-1 sm:justify-self-start ${PROFILE_TAG}`}
         >
-          {MODE_LABELS[entry.mode]}
+          <ModeTag entry={entry} />
         </span>
         <Outcome entry={entry} />
         <span className="truncate font-display text-16 leading-6 font-semibold tabular-nums sm:col-start-3 sm:row-start-1">

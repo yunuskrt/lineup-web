@@ -59,9 +59,36 @@ export const filterSubmissionSchema = z.object({
   theirs: filterSubmissionStatusSchema,
 });
 
+export const coinFlipSourceSchema = z.enum(['coin', 'room']);
+
 export const coinFlipResultSchema = z.object({
   winner: duelActorSchema,
   filters: filtersSchema,
+  // Defaults until backend R6 sends it
+  source: coinFlipSourceSchema.default('coin'),
+});
+
+export const ROOM_CODE_LENGTH = 6;
+
+// No look-alikes: 0, O, 1, I and L are left out
+export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+
+export const roomCodeSchema = z
+  .string()
+  .regex(new RegExp(`^[${ROOM_CODE_ALPHABET}]{${ROOM_CODE_LENGTH}}$`));
+
+export const roomStateSchema = z.object({
+  code: roomCodeSchema,
+  filters: filtersSchema,
+  expiresAt: epochMsSchema,
+});
+
+export const roomExpirySchema = z.object({
+  code: roomCodeSchema,
+});
+
+export const roomJoinRequestSchema = z.object({
+  code: roomCodeSchema,
 });
 
 export const duelFoundPlayerSchema = revealedPlayerSchema.extend({

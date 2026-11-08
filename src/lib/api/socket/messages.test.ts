@@ -78,7 +78,9 @@ describe('ackResultOf', () => {
 
 describe('parseEvent', () => {
   it('knows every event the duel screen listens to', () => {
-    expect(DUEL_EVENTS).toHaveLength(15);
+    expect(DUEL_EVENTS).toHaveLength(17);
+    expect(DUEL_EVENTS).toContain('roomCreated');
+    expect(DUEL_EVENTS).toContain('roomExpired');
     expect(DUEL_EVENTS).toContain('error');
     expect(DUEL_EVENTS).toContain('matchReady');
   });
@@ -91,6 +93,27 @@ describe('parseEvent', () => {
     expect(parseEvent('error', OUT_OF_DATE)).toEqual({
       success: true,
       payload: OUT_OF_DATE,
+    });
+  });
+
+  it('parses the room events', () => {
+    const room = {
+      code: 'K7QM2X',
+      filters: {
+        competitionIds: [],
+        clubIds: [],
+        era: { from: 2000, to: 2025 },
+      },
+      expiresAt: 1_000,
+    };
+    expect(parseEvent('roomCreated', room)).toEqual({
+      success: true,
+      payload: room,
+    });
+    expect(parseEvent('roomExpired', { code: 'K7QM2X' }).success).toBe(true);
+    expect(parseEvent('roomCreated', { ...room, code: 'oops' })).toEqual({
+      success: false,
+      paths: ['code'],
     });
   });
 

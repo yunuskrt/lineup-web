@@ -10,6 +10,7 @@ import {
   SAMPLE_YOU,
   samplePlayer,
 } from '@/lib/dev/samples';
+import { duelCanvasView, INITIAL_DUEL_SESSION } from '@/lib/duel-session';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
 import { SOLO_GATE_COPY } from '@/lib/solo-run';
@@ -33,6 +34,7 @@ import type {
   FilterSubmission,
 } from '@/types/duel';
 import type { DuelLobbyView } from '@/types/duel-lobby';
+import type { DuelSessionState } from '@/types/duel-session';
 import type { Lives, RoundTiming } from '@/types/game';
 import type { MatchIdentity } from '@/types/match';
 import type { FoundPlayer, NamedPlayer, RevealedPlayer } from '@/types/player';
@@ -614,6 +616,7 @@ function coinFlipStep(winner: DuelActor): DuelLobbyView {
   const applied = winner === 'you' ? SAMPLE_FILTERS : SAMPLE_OPEN_FILTERS;
   return {
     step: 'coinFlip',
+    source: 'coin',
     winner,
     applied: filterSummary(applied, SAMPLE_FILTER_OPTIONS),
     opponent: FRESH_OPPONENT,
@@ -677,6 +680,102 @@ export const LOBBY_STATES = {
   'no-opponent': lobbyState('The queue timed out: play solo or search again.', {
     step: 'noOpponent',
   }),
+} satisfies Record<string, CanvasState<DuelCanvasView>>;
+
+const SAMPLE_ROOM_CODE = 'K7QM2X';
+// Close to the server's 10 minutes, still running
+const ROOM_LEFT_MS = 9 * 60_000 + 41_000;
+
+function roomRefusal(code: ApiError['code'], message: string): ApiError {
+  return { code, message, retryAfterMs: null };
+}
+
+// Through the real view, so the copy can't drift
+function roomState(
+  description: string,
+  patch: (now: number) => Partial<DuelSessionState>,
+): CanvasState<DuelCanvasView> {
+  return {
+    description,
+    build: (now) => ({
+      frame: {
+        view: duelCanvasView(
+          {
+            ...INITIAL_DUEL_SESSION,
+            filters: SAMPLE_FILTERS,
+            options: SAMPLE_FILTER_OPTIONS,
+            isPrivate: true,
+            ...patch(now),
+          },
+          { ...SAMPLE_YOU, lives: MAX_LIVES },
+        ),
+        guess: '',
+      },
+    }),
+  };
+}
+
+function joinRefused(error: ApiError): Partial<DuelSessionState> {
+  return {
+    phase: 'failed',
+    joinCode: SAMPLE_ROOM_CODE,
+    failure: { step: 'joinRoom', error },
+  };
+}
+
+export const ROOM_STATES = {
+  'room-waiting': roomState(
+    'Your room is open: the code, Copy code and Copy link, Closes in.',
+    (now) => ({
+      phase: 'hosting',
+      room: {
+        code: SAMPLE_ROOM_CODE,
+        filters: SAMPLE_FILTERS,
+        expiresAt: now + ROOM_LEFT_MS,
+      },
+    }),
+  ),
+  'room-expired': roomState(
+    'No one joined in 10 minutes: create a new room.',
+    () => ({ phase: 'roomExpired' }),
+  ),
+  'room-joining': roomState("Joining a friend's room by its code.", () => ({
+    phase: 'joining',
+    joinCode: SAMPLE_ROOM_CODE,
+  })),
+  'room-filters': roomState(
+    "Joined: their room's filters are used, no coin flip.",
+    () => ({
+      phase: 'coinFlip',
+      opponent: FRESH_OPPONENT,
+      coinFlip: {
+        winner: 'opponent',
+        filters: SAMPLE_OPEN_FILTERS,
+        source: 'room',
+      },
+    }),
+  ),
+  'room-not-found': roomState('A wrong or closed code.', () =>
+    joinRefused(roomRefusal('not_found', 'No open room has that code.')),
+  ),
+  'room-full': roomState('The room already has two players.', () =>
+    joinRefused(roomRefusal('forbidden', 'That room already has two players.')),
+  ),
+  'room-own': roomState("Your own room's code, typed by you.", () =>
+    joinRefused(
+      roomRefusal(
+        'forbidden',
+        "That's your own room. Send the code to a friend.",
+      ),
+    ),
+  ),
+  'room-result': roomState(
+    'A room game ended: New room and Back to play.',
+    () => ({
+      phase: 'finished',
+      result: resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 }),
+    }),
+  ),
 } satisfies Record<string, CanvasState<DuelCanvasView>>;
 
 // Naming order; a correct name passes the turn
@@ -798,6 +897,7 @@ export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
     }),
   },
   ...LOBBY_STATES,
+  ...ROOM_STATES,
   idle: duel(SHARED.idle),
   warning: duel(SHARED.warning),
   critical: duel(SHARED.critical),
