@@ -884,7 +884,7 @@ describe('mock duel client rooms', () => {
 
   it.each([
     ['roomNotFound', 'not_found'],
-    ['roomFull', 'forbidden'],
+    ['roomFull', 'not_found'],
     ['roomOwn', 'forbidden'],
   ] as const)('refuses a join in the %s scenario', async (scenario, code) => {
     const client = createMockDuelClient(scripted({ store, scenario }));

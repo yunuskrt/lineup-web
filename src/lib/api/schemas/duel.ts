@@ -64,8 +64,7 @@ export const coinFlipSourceSchema = z.enum(['coin', 'room']);
 export const coinFlipResultSchema = z.object({
   winner: duelActorSchema,
   filters: filtersSchema,
-  // Defaults until backend R6 sends it
-  source: coinFlipSourceSchema.default('coin'),
+  source: coinFlipSourceSchema,
 });
 
 export const ROOM_CODE_LENGTH = 6;

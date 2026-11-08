@@ -46,8 +46,8 @@ export const historyEntrySchema = z.discriminatedUnion('mode', [
     ...historyEntryBase,
     mode: z.literal('duel'),
     outcome: duelOutcomeSchema,
-    // A private room's game; defaults until R6
-    isPrivate: z.boolean().default(false),
+    // A private room's game (R6)
+    isPrivate: z.boolean(),
   }),
 ]);
 

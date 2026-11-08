@@ -7,7 +7,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | **Done**: Part 1 (2026-11-04, backend R3a), Part 2 (2026-11-05, backend R3b) |
 | R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | **Done**: Part 1 (2026-11-06, backend R4a), Part 2 (2026-11-06, backend R4b) |
 | R5 | A player directory for guess suggestions | Web features Guess Suggestions A and B | 2026-11-06 | **Done** (2026-11-08, backend R5): an opaque `key`, not `players.id` |
-| R6 | Private rooms: create a room, join it with a code | Web features Private Rooms A and B | 2026-11-08 | Asked |
+| R6 | Private rooms: create a room, join it with a code | Web features Private Rooms A and B | 2026-11-08 | **Done** (2026-11-08): rooms (backend R6a), history `isPrivate` (backend R6b) |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -313,6 +313,31 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 - **Two-client harness (B43):** a room game from create to `finished`, and one where the creator leaves while waiting.
 - **Persistence:** a room duel is saved with the flag, and its history rows have `isPrivate: true`; a queue duel has `false`.
 - **Rate limit:** a burst of `room:join` is refused with `rate_limited` + `retryAfterMs`.
+
+### Built
+
+- **Rooms** (2026-11-08): backend `e7a722b` (R6a), on `main` and pushed.
+  - **Commands** (acked with the envelope, `data` null; outcomes arrive as events):
+    - `room:create` takes `Filters`. Errors: `forbidden` (queued, already hosting, or in a duel), `invalid_input`, `empty_pool` + `emptyBecause`. The pool is checked on create; nothing is stored if it's empty.
+    - `room:join` takes `{ code }`, 6 characters **in any case** (the backend uppercases before checking). Errors: `not_found` (wrong, expired, left, or **already joined: a full room also answers `not_found`**), `forbidden` (your own room, or you're queued, hosting or in a duel), `invalid_input` (not 6 characters of `ABCDEFGHJKMNPQRSTUVWXYZ23456789`).
+    - `room:leave` takes nothing. Error: `forbidden` (not hosting an open room).
+  - **Events:** `roomCreated` sends `RoomState { code (uppercase), filters, expiresAt }` to the creator; `roomExpired` sends `RoomExpiry { code }` to the creator after 10 minutes with no join.
+  - **On join:** both get `paired`, then `coinFlip` with `source: 'room'` (`winner` is the creator: `you` to the creator, `opponent` to the joiner; `filters` are the room's), then `matchReady` 2 s later. No `filtersUpdated`. **The joiner names first.** A queue pairing now sends `source: 'coin'`. Everything from `matchReady` on is unchanged.
+  - **Rules:** queue and rooms exclude each other; the room closes when the creator leaves, or at once when the creator's socket closes or is taken over (no reconnect window).
+  - **Rate limits:** `room:join` and `room:create` are **10 a minute each**.
+  - **No `PROTOCOL_VERSION` bump** (additive).
+  - **Docs:** OpenAPI and `x-socket` (`RoomState`, `RoomExpiry`, `RoomJoinRequest`, `CoinFlipSource`); backend `context/api-contract.md` § 5, "Private rooms (R6)". The backend's `project-overview.md` carries the six shared edits, byte-identical to the web's (committed in web Private Rooms A, `dc36f25`).
+- **History** (2026-11-08): backend `0542a71` (R6b), on `main` and pushed.
+  - `GET /profile/history`: every duel entry carries **`isPrivate: boolean`** (required in OpenAPI), `true` for a private room's game. Solo entries have no such field.
+  - **Migration** `20261108165917_game_session_is_private`: `game_sessions.is_private BOOLEAN NOT NULL DEFAULT false` (older duels read `false`), and a CHECK that keeps solo runs from being private. Applied to dev and ingest.
+  - **Stats unchanged:** a room game counts like any duel. Additive, REST only, no `PROTOCOL_VERSION` bump.
+  - **Docs:** OpenAPI; backend `context/api-contract.md` § 4.
+- **Differences from this request:** a full room answers `not_found` (the request allowed either); `room:create` is rate-limited too; codes are accepted in any case.
+- **Checked from the web** (2026-11-09, web Private Rooms B, 3000 against 8080):
+  - A two-browser room game from create to result: the creator got `roomCreated → paired → coinFlip → matchReady`, the joiner `paired → coinFlip → matchReady`, a lowercase code joined, the joiner named first, and both histories show the game as private ("Friend").
+  - A wrong code, a full room, a cancelled room and a closed tab all answer `not_found`; the link joins a signed-out friend as a guest; a queue duel still flips with `source: 'coin'`.
+  - **Own code in a second tab** never reaches `forbidden`: the tab takes the creator's connection over ("You're connected somewhere else"), which closes the room, so the join answers `not_found`.
+  - **Not checked live:** the join and create rate limits (`RATE_LIMITS_ENABLED` is off on the dev backend) and a real creator drop (the browser's offline mode doesn't close an open WebSocket).
 
 ### Report in the Built note
 

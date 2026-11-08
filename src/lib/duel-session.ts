@@ -84,8 +84,9 @@ const ROOM_CLOSED_ERROR: ApiError = {
 
 // Our words; `forbidden` keeps the server's
 const JOIN_REFUSALS: Partial<Record<ApiError['code'], string>> = {
+  // Also a full room: the server can't say which
   not_found:
-    'No open room has that code. Check it, or ask your friend for a new one.',
+    'No open room has that code. It may have closed or filled up; ask your friend for a new one.',
   invalid_input: "That code isn't valid. Room codes are 6 letters and numbers.",
 };
 

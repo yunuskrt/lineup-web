@@ -78,3 +78,4 @@ Not Started
 - Guess Suggestions A: directory, local search, combobox popup, Named rows.
 - Guess Suggestions B: no-cache directory, ETag revalidation, real checks.
 - Private Rooms A: create, join by code, waiting room, Friend tag, mock.
+- Private Rooms B: R6 shapes required, full room not_found, two-browser.
