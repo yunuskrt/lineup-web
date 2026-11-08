@@ -215,6 +215,10 @@ The backend doesn't compress responses today. The directory is ~600 KB of JSON r
   - **Measured:** 3,787 players. 884 KB raw, 229 KB gzip, 193 KB Brotli; about half of it is the image URLs. The first build after a data change takes ~2.4 s; after that a 200 or a 304 costs ~65 ms on the server, nearly all of it the database round trip.
   - **Unchanged:** additive, a new route and a new field. No `PROTOCOL_VERSION` bump.
   - **Docs:** OpenAPI (`PlayerDirectory`, `DirectoryPlayer`, `RevealedPlayer.directoryKey`) and backend `context/api-contract.md`.
+- **Checked from the web** (2026-11-08, web Guess Suggestions B, 3000 against 8080 on the seeded data):
+  - The first call is a 200, `content-encoding: br`, with the strong `ETag` and `private, no-cache`. Play again sends `If-None-Match` and gets no body back.
+  - The shapes match the web's transcription. `directoryKey` arrives on solo reveals and duel socket payloads: in a two-browser duel each side's finds show as named for the other.
+  - The local database holds the 167 seeded players (6,162 bytes Brotli, no photos), so the production sizes above weren't re-measured from the browser.
 
 ### Then
 

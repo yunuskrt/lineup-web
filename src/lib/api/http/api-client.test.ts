@@ -173,6 +173,17 @@ describe('createHttpApiClient', () => {
     expect(result).toEqual(NOT_FOUND);
   });
 
+  // Only the directory may be kept by the browser
+  it('revalidates the directory and nothing else', async () => {
+    for (const row of ROWS) {
+      respondWith(NOT_FOUND);
+      await row.call(client);
+      const expected =
+        row.name === 'catalog.getPlayerDirectory' ? 'no-cache' : 'no-store';
+      expect(lastCall().init.cache, row.name).toBe(expected);
+    }
+  });
+
   it('sends the history cursor when it is set', async () => {
     respondWith(NOT_FOUND);
     await client.profile.getHistory({ cursor: 'h-9', limit: 5 });

@@ -20,9 +20,13 @@ export type HttpMethod = 'GET' | 'POST';
 
 export type QueryValue = string | number | null | undefined;
 
+// no-cache: kept by the browser, asked again by ETag
+export type RequestCacheMode = 'no-store' | 'no-cache';
+
 export type RequestOptions = {
   body?: unknown;
   query?: Record<string, QueryValue>;
+  cache?: RequestCacheMode;
 };
 
 export type Transport = <S extends z.ZodType>(
@@ -42,13 +46,17 @@ function urlOf(baseUrl: string, path: string, query: RequestOptions['query']) {
   return url;
 }
 
-function initOf(method: HttpMethod, body: unknown): RequestInit {
+function initOf(
+  method: HttpMethod,
+  body: unknown,
+  cache: RequestCacheMode,
+): RequestInit {
   const hasBody = body !== undefined;
   return {
     method,
     // Sends the session cookie cross-origin
     credentials: 'include',
-    cache: 'no-store',
+    cache,
     headers: hasBody ? { 'Content-Type': 'application/json' } : undefined,
     body: hasBody ? JSON.stringify(body) : undefined,
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -80,7 +88,7 @@ export function createTransport(baseUrl: string): Transport {
     try {
       const response = await fetch(
         urlOf(baseUrl, path, options.query),
-        initOf(method, options.body),
+        initOf(method, options.body, options.cache ?? 'no-store'),
       );
       text = await response.text();
     } catch {

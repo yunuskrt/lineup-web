@@ -249,7 +249,8 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `terms` | string[] | Normalised aliases, distinct, sorted, at least one. Searched, never shown |
 
 - Any session, guests included; no session gets `unauthorized`. The `catalog` rate limit, 60 a minute.
-- Strong `ETag` and `Cache-Control: private, no-cache`; `If-None-Match` with the current tag gets 304 with no body. Brotli or gzip. The web's revalidation is Guess Suggestions B.
+- Strong `ETag` and `Cache-Control: private, no-cache`; `If-None-Match` with the current tag gets 304 with no body. Brotli or gzip.
+- **The web revalidates it, and nothing else** (Guess Suggestions B): this call alone is sent with `cache: 'no-cache'`, every other call with `no-store`. The browser keeps the 200 and its `ETag`, sends `If-None-Match` itself, and hands a 304 back as the cached body. One check per new match; the web has no ETag code of its own.
 
 **`SoloMatchOffer`.** The run is created and the player picks a side next.
 
