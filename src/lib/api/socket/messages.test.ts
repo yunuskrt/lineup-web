@@ -96,6 +96,25 @@ describe('parseEvent', () => {
     });
   });
 
+  // R6 always sends it; without it, it's drift
+  it('drops a coin flip that has no source', () => {
+    const flip = {
+      winner: 'you',
+      filters: {
+        competitionIds: [],
+        clubIds: [],
+        era: { from: 2000, to: 2025 },
+      },
+    };
+    expect(parseEvent('coinFlip', flip)).toEqual({
+      success: false,
+      paths: ['source'],
+    });
+    expect(parseEvent('coinFlip', { ...flip, source: 'room' }).success).toBe(
+      true,
+    );
+  });
+
   it('parses the room events', () => {
     const room = {
       code: 'K7QM2X',

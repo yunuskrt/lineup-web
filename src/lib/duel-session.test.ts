@@ -1972,7 +1972,7 @@ describe('private rooms', () => {
   it.each([
     [
       'not_found',
-      'No open room has that code. Check it, or ask your friend for a new one.',
+      'No open room has that code. It may have closed or filled up; ask your friend for a new one.',
     ],
     [
       'invalid_input',
@@ -2133,4 +2133,29 @@ describe('private rooms', () => {
     expect(state.failure).toBeNull();
     expect(viewOf(state).gate?.title).toBe('Waiting for your friend');
   });
+
+  it.each(['createRoom', 'joinRoom'] as const)(
+    'counts down a rate-limited %s, then offers Try again',
+    (step) => {
+      const limited = play(PRIVATE, {
+        type: 'failed',
+        step,
+        error: {
+          code: 'rate_limited',
+          message: 'Too many attempts.',
+          retryAfterMs: 4_000,
+        },
+        at: AT,
+      });
+      const waiting = viewOf(limited);
+      expect(waiting.gate?.countdown?.deadline).toBe(AT + 4_000);
+      expect(waiting.gate?.actionLabel).toBeUndefined();
+      expect(duelGateAction(limited)).toBeNull();
+
+      const over = duelSessionReducer(limited, { type: 'cooldownEnded' });
+      expect(viewOf(over).gate?.actionLabel).toBe(DUEL_GATE_COPY.tryAgain);
+      expect(duelGateAction(over)).toBe('retry');
+    },
+  );
 });
+

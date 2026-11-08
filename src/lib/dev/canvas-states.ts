@@ -758,8 +758,8 @@ export const ROOM_STATES = {
   'room-not-found': roomState('A wrong or closed code.', () =>
     joinRefused(roomRefusal('not_found', 'No open room has that code.')),
   ),
-  'room-full': roomState('The room already has two players.', () =>
-    joinRefused(roomRefusal('forbidden', 'That room already has two players.')),
+  'room-full': roomState('A full room answers as a closed one.', () =>
+    joinRefused(roomRefusal('not_found', 'No open room has that code.')),
   ),
   'room-own': roomState("Your own room's code, typed by you.", () =>
     joinRefused(

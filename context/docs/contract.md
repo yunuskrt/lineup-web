@@ -322,7 +322,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `livesRemaining` | 0–3 |
 | `mode` | `solo` or `duel` |
 | `outcome` | `SoloEndReason` when `mode: solo`; `DuelOutcome` when `mode: duel` |
-| `isPrivate` | boolean, `mode: duel` only: a private room's game (R6). The web reads a missing one as `false` until R6 ships, and shows the row as "Friend" |
+| `isPrivate` | boolean, `mode: duel` only, always sent: a private room's game (R6b). The web shows the row as "Friend" |
 
 ### Errors the web handles, per call
 
@@ -369,7 +369,7 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 | `enterQueue()` | `queue:enter` | — | `forbidden` (already queued, or already in a duel) |
 | `leaveQueue()` | `queue:leave` | — | `forbidden` (not queued) |
 | `createRoom(filters)` | `room:create` | `Filters` | `forbidden` (queued, already hosting, or in a duel), `invalid_input`, `empty_pool` + `emptyBecause` (nothing stored) |
-| `joinRoom(code)` | `room:join` | `{ code }` (6 characters, any case) | `not_found` (no open room: wrong, expired or closed), `forbidden` (your own room, full, or you're queued, hosting or in a duel), `invalid_input` |
+| `joinRoom(code)` | `room:join` | `{ code }` (6 characters, any case; the server uppercases) | `not_found` (no open room: wrong, expired, left, or **already full**), `forbidden` (your own room, or you're queued, hosting or in a duel), `invalid_input` |
 | `leaveRoom()` | `room:leave` | — | `forbidden` (not hosting an open room) |
 | `submitFilters(filters)` | `filters:submit` | `Filters` | `forbidden` (filters not open, or already submitted), `invalid_input`, `empty_pool` + `emptyBecause` (not stored, so a wider set may be sent) |
 | `guess(request)` | `duel:guess` | `{ sessionId, guess }` (guess trimmed, 1–64) | `invalid_input` (another duel's id), `session_over` (round already ended, or duel not running), `forbidden` (not your turn) |
@@ -408,7 +408,7 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 | `QueueTimeout` | `phase: 'queued'`, `waitedMs: integer ≥ 0` |
 | `PairedState` | `phase: 'paired'`, `opponent: DuelPlayer` |
 | `FilterSubmission` | `yours: FilterSubmissionStatus`, `theirs: FilterSubmissionStatus` |
-| `CoinFlipResult` | `winner: DuelActor`, `filters: Filters` (the set applied), `source: 'coin' \| 'room'` (R6; the web reads a missing one as `coin` until R6 ships) |
+| `CoinFlipResult` | `winner: DuelActor`, `filters: Filters` (the set applied), `source: 'coin' \| 'room'` (R6, always sent) |
 | `RoomState` | `code` (6 characters from `ABCDEFGHJKMNPQRSTUVWXYZ23456789`), `filters: Filters`, `expiresAt: epoch ms` |
 | `RoomExpiry` | `code` |
 | `DuelPlayer` | `id`, `handle` (non-empty), `lives` (0–3) |
@@ -456,7 +456,8 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 - **Private rooms (R6):**
   - `room:create` → `roomCreated`; the creator waits up to 10 minutes (`roomExpired`). `room:join` with the code → `paired` → `coinFlip` (`source: 'room'`, the creator's filters, no filter window) → `matchReady` 2 s later. Then the duel as below.
   - **The joiner names first,** since there was no flip.
-  - **The creator's socket closing** before anyone joins closes the room: no reconnect window before the pairing.
+  - **The creator's socket closing** before anyone joins closes the room: no reconnect window before the pairing. A second tab of the creator takes the connection over, so it closes the room too: joining your own code from another tab answers `not_found`, not `forbidden`.
+  - **Rate limits:** `room:join` and `room:create` are 10 a minute each, per user (only when the backend's `RATE_LIMITS_ENABLED` is on).
   - History marks the game `isPrivate: true`; stats count it like any duel.
 - **Nothing follows `finished`.** Outcomes pair up: `win` with `loss`, `draw` with `draw`, `forfeit_win` with `loss`. The player who forfeits gets a plain `loss`, with `isForfeit: true` on both sides.
 - **The player who loses the coin flip names first.**

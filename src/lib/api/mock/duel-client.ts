@@ -582,8 +582,9 @@ export function createMockDuelClient(
       if (scenario === 'roomNotFound') {
         return fail('not_found', 'No open room has that code.');
       }
+      // A full room answers as a closed one (R6)
       if (scenario === 'roomFull') {
-        return fail('forbidden', 'That room already has two players.');
+        return fail('not_found', 'No open room has that code.');
       }
       if (scenario === 'roomOwn') {
         return fail(

@@ -46,9 +46,12 @@ describe('room payloads', () => {
 describe('coinFlipResultSchema', () => {
   const FLIP = { winner: 'you', filters: SAMPLE_FILTERS };
 
-  // Until backend R6, the server sends no source
-  it('reads a flip with no source as a coin', () => {
-    expect(coinFlipResultSchema.parse(FLIP).source).toBe('coin');
+  // R6 always sends it now
+  it('refuses a flip with no source', () => {
+    expect(coinFlipResultSchema.safeParse(FLIP).success).toBe(false);
+    expect(coinFlipResultSchema.parse({ ...FLIP, source: 'coin' }).source).toBe(
+      'coin',
+    );
   });
 
   it('keeps a room source and refuses an unknown one', () => {
@@ -72,8 +75,9 @@ describe('historyEntrySchema, duel', () => {
     outcome: 'win',
   };
 
-  it('reads a duel with no isPrivate as a queue duel', () => {
-    const entry = historyEntrySchema.parse(DUEL);
+  it('refuses a duel with no isPrivate, and reads false', () => {
+    expect(historyEntrySchema.safeParse(DUEL).success).toBe(false);
+    const entry = historyEntrySchema.parse({ ...DUEL, isPrivate: false });
     expect(entry.mode === 'duel' && entry.isPrivate).toBe(false);
   });
 
