@@ -6,6 +6,9 @@ export const SQUAD_SIZE = 11;
 
 export const idSchema = z.string().min(1);
 
+// Opaque, never a player id: ids sort by teammate
+export const directoryKeySchema = z.string().regex(/^[A-Za-z0-9_-]{22}$/);
+
 export const ratioSchema = z.number().min(0).max(1);
 
 export const squadCountSchema = z.number().int().min(0).max(SQUAD_SIZE);

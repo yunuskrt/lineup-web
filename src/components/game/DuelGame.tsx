@@ -6,6 +6,7 @@ import { GameCanvas } from '@/components/game/GameCanvas';
 import { ProtocolRefused } from '@/components/game/ProtocolRefused';
 import { DUEL_FORFEIT_COPY, QuitDialog } from '@/components/game/QuitDialog';
 import { useDuel } from '@/hooks/use-duel';
+import { usePlayerDirectory } from '@/hooks/use-player-directory';
 import {
   canConfirmForfeit,
   duelCanvasView,
@@ -31,6 +32,7 @@ export function DuelGame() {
     retry,
     widen,
   } = useDuel(params);
+  const directory = usePlayerDirectory(state.session?.sessionId ?? null);
   const [guess, setGuess] = useState('');
   const [clearKey, setClearKey] = useState(state.clearKey);
   const [isForfeitOpen, setIsForfeitOpen] = useState(false);
@@ -129,6 +131,7 @@ export function DuelGame() {
       <GameCanvas
         view={duelCanvasView(state, you)}
         guess={guess}
+        directory={directory}
         onGuessChange={setGuess}
         onGuessSubmit={(text) => void submitGuess(text)}
         onGateAction={handleGateAction}

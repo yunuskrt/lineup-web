@@ -37,6 +37,7 @@ The web loads each URL as is, straight from the CDN: `next/image` with `unoptimi
 | `logoUrl` | Competition filter chip on `/play`, before the name (web Match Filters B) | **20×20** at every width | 40×40 | Square box, no rounding. `object-fit: contain` | **Transparent:** as the club chip, `surface` (#0A0F0C) at rest, `surface-card` (#1A241E) when pressed |
 | `logoUrl` | Game header line two, on `/play/solo` and `/play/duel`, before the competition name (web Gameplay Visuals A) | **20×20** at every width | 40×40 | Square box, no rounding. `object-fit: contain` | **Transparent:** the panel shows through (`surface-raised`, #121A15) |
 | `imageUrl` | Squad grid slot on the solo summary, for a player you missed (Pro summaries only, once the player taps Reveal the full XI) | Same as above | Same | Same, at 60% opacity | Same disc, inside a `surface` slot (#0A0F0C) |
+| `imageUrl` (`DirectoryPlayer`) | Guess suggestion row, above the guess input on `/play/solo` and `/play/duel`, while the player types (web Guess Suggestions A) | **32×32** at every width | 64×64 | Circle. `object-fit: cover`, as the squad slot. Loaded lazily: only rows on screen fetch their photo | **The disc colour,** `surface-raised` (#121A15), on a `surface-card` row (#1A241E); the highlighted row is `surface-raised` too |
 
 No other surface shows an image: not the lobby, the result cards or the profile. `logoUrl` shows on the filter chips and in the game header; with no logo, both show the competition's kind icon.
 
@@ -111,6 +112,7 @@ Capitals and W/M run wider, so treat the counts as an upper bound.
 | `nickname` | **Profile history subtitle only,** as a prefix: "The Comeback at Northgate: Continental Champions Cup semi-final, 3 May 2005" | Inter 400 14 px | **The whole subtitle gets 263 px ≈ 39 characters at 390** | **494 px ≈ 73 characters** | Truncate; the full text is in a hover tooltip (`title`) |
 | `season` (`"2004-05"` or `"2006"`) | **Not shown anywhere.** The era filter shows its own labels ("2004–05"), built from the catalog's start years | — | — | — | — |
 | `RevealedPlayer.name` | Squad grid slot, under the headshot | Inter 500, **12 px while the pitch is under 480 px wide, 14 px above** | Per line: **52.7 px ≈ 8 characters at 360; 68.8 px ≈ 11 at 390.** Two lines in all, so ≈ 16 / 22 | Per line: **127 px ≈ 18 characters**, two lines ≈ 36 | Clamp to 2 lines. Breaks at spaces and hyphens, then mid-word if one word is longer than a line |
+| `DirectoryPlayer.name` | Guess suggestion row, beside the 32 px photo | Inter 500 14 px | **232 px ≈ 32 characters at 360; 262 px ≈ 36 at 390.** A named row also carries a "Named" tag: 179 / 209 px ≈ 25 / 29 | **248 px ≈ 34 characters**; named row 195 px ≈ 27 | Truncate |
 
 **These player-name widths are for a formation whose widest line is 4** (4-4-2, 4-3-3, 4-2-3-1, 4-1-4-1, 3-4-3, 3-4-1-2, 4-1-2-1-2). A widest line of 5 (3-5-2, 5-3-2) makes every slot narrower: about 42 px at 360, 55 at 390 and 103 at 1440. A widest line of 6 makes them narrower still.
 

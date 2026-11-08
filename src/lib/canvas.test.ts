@@ -22,6 +22,7 @@ function playersOf(count: number): FoundPlayer[] {
     slot,
     position: 'MF',
     imageUrl: null,
+    directoryKey: `p-${slot}`.padEnd(22, 'x'),
   }));
 }
 

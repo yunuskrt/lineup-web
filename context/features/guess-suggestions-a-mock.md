@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -13,24 +13,28 @@ Not Started
   - **Local search.** Every keystroke searches it in the browser.
   - **Photos.** They load only for rows on screen.
 - **The contract, transcribed from backend request R5** (`context/docs/backend-requests.md` § R5).
-  - **Schemas:** `directoryPlayerSchema = { id, name, imageUrl: string | null, terms: string[] (min 1) }` and `playerDirectorySchema = { players: DirectoryPlayer[] }`, in `src/lib/api/schemas/catalog.ts`. The types come from `z.infer`, in `src/types/catalog.ts`.
+  - **Schemas:** `directoryPlayerSchema = { key, name, imageUrl: string | null, terms: string[] (min 1) }` and `playerDirectorySchema = { players: DirectoryPlayer[] }`, in `src/lib/api/schemas/catalog.ts`. The types come from `z.infer`, in `src/types/catalog.ts`.
+    - **`key`:** 22 base64url characters, opaque. It is **not** a player id.
+  - **`RevealedPlayer` gains `directoryKey`** (`src/lib/api/schemas/player.ts`): the same string as that player's `DirectoryPlayer.key`. Every shape built on `revealedPlayerSchema` picks it up (found, missed, named, duel found, socket payloads).
   - **Call:** `CatalogApi.getPlayerDirectory(): Promise<ApiResult<PlayerDirectory>>`.
-  - **HTTP adapter:** `GET /catalog/players`, validated like every response. Until R5 ships, real mode gets an error back and simply shows no suggestions.
-  - **Mock adapter:** the directory is every fixture player (`PLAYERS`, 167, 20 of them without a photo), with `terms` from their aliases. Its order isn't the squad's.
+  - **HTTP adapter:** `GET /catalog/players`, validated like every response. R5 has shipped, so real mode gets the directory; until B it's downloaded in full each match (`no-store`).
+  - **Mock adapter:** the directory is every fixture player (`PLAYERS`, 167, 20 of them without a photo), with `terms` from their aliases.
+    - **Keys:** each fixture player gets a stable 22-character base64url key derived from its id (a hash, so it doesn't sort like the id). The directory is sorted by key, as the backend's is.
+    - **Revealed players** from the mock carry the same key as `directoryKey`.
 - **The query normalizer moves out of the mock.**
   - `src/lib/api/mock/normalize.ts` becomes `src/lib/normalize.ts`. The mock matcher imports it from there, and its tests move with it.
   - **It's brought in line with the backend's current `normalizeName`** (`lineup-backend/src/game/normalize.ts`): NFKD, all combining marks (`\p{M}`), and format characters (`\p{Cf}`) removed.
   - It only shapes the query to compare with `terms`. If it ever drifts from the backend, suggestions get worse, but no answer changes.
 - **Search, pure, in `src/lib/suggestions.ts`.**
   - **`buildSuggestionIndex(players)`:** built once per directory. Each player's searchable terms are their `terms` plus `normalizeName(name)`, deduplicated.
-  - **`suggest(index, query, namedIds)`:**
+  - **`suggest(index, query, namedKeys)`:**
     - **Minimum:** nothing until the normalized query has **3 letters**, spaces not counted (`MIN_SUGGESTION_LETTERS = 3`).
     - **Start of any word:** a term matches if it starts with the query, or holds the query right after a space. So `ibr`, `zla` and `zlatan ibr` match "Zlatan Ibrahimović", but `movi` doesn't.
     - **Ranking:**
       1. a term equal to the query;
       2. a term starting with it;
       3. a later word starting with it.
-      - Ties go by name, then id. Players already named come after all the others.
+      - Ties go by name, then key. Players already named come after all the others.
     - **At most 20 results** (`MAX_SUGGESTIONS = 20`). Each one is `{ player, isNamed }`.
     - **Ranks on text alone.** It never takes the match, the squad or the filters, so the order can't hint at an answer.
 - **The directory hook, `usePlayerDirectory()`** (TanStack Query, `queryKeys.playerDirectory`).
@@ -38,7 +42,7 @@ Not Started
   - **What it gives back:** the index, memoised from the data, or `null` while loading or after an error.
   - **A failure shows nothing.** No toast and no gate: the input works exactly as it does today. Suggestions aren't a game action, so "never fail silently" doesn't apply. The guess itself still surfaces every failure, as today.
 - **Wiring.**
-  - **Computing:** `GameCanvas` computes the suggestions from the guess value, through `useDeferredValue`, and from `view.found` (whose ids are the named players: yours and your opponent's in a duel).
+  - **Computing:** `GameCanvas` computes the suggestions from the guess value, through `useDeferredValue`, and from the `directoryKey` of each player in `view.found` (yours and your opponent's in a duel). Never `RevealedPlayer.id`.
   - **Passing:** it hands them to `GuessInput` as a `suggestions` prop.
 - **The popup (in `GuessInput`).**
   - **Position:** it sits right above the input (`bottom-full`), as wide as the input, over whatever is above it. It never moves the layout.
@@ -87,9 +91,9 @@ Not Started
     - the cap of 20;
     - an empty directory.
   - **`normalize.test.ts`:** moved, with cases added for NFKD and format characters.
-  - **The mock and the schema:** the mock directory holds every fixture player and passes `playerDirectorySchema`.
+  - **The mock and the schema:** the mock directory holds every fixture player, sorted by key, and passes `playerDirectorySchema`. A revealed player's `directoryKey` equals its directory entry's `key`, and no key equals a player id.
 - **Docs:**
-  - **`context/docs/contract.md`:** call 8, `catalog.getPlayerDirectory` (`GET /catalog/players`), and the two types.
+  - **`context/docs/contract.md`:** call 8, `catalog.getPlayerDirectory` (`GET /catalog/players`), the two types, and `RevealedPlayer.directoryKey`.
   - **`context/docs/data-display-requirements.md`:** a directory row, saying the photo shows in a suggestion row and that rows without one show initials.
   - **`context/theme.md` § States:** a "Suggesting" row in "Duel — your turn", which Solo picks up as identical: "Up to 5 rows above the input, then it scrolls; photo + name; named rows dimmed".
 
@@ -114,7 +118,7 @@ GUESS A PLAYER            Press Enter ↵
 
 - **The real endpoint and ETag revalidation.** That's Guess Suggestions B, after backend R5.
 - **Any change to the guess, the matcher or the rules.** A picked name is a text guess like any other, and the rate limit applies to it the same way.
-- **Telling two players with the same name apart** by anything but their photo (club, years). The directory carries only id, name, photo and terms, and the server resolves a bare name within the XI anyway.
+- **Telling two players with the same name apart** by anything but their photo (club, years). The directory carries only key, name, photo and terms, and the server resolves a bare name within the XI anyway.
 - **Ranking by fame or popularity,** and fuzzy or typo matching in the suggestions. The server's matcher already forgives typos on submit.
 - **Mobile.** `lineup-mobile` transcribes it later.
 
@@ -139,9 +143,21 @@ Defaults stand unless changed at load:
   - **Rows:** 5 visible, scrolls for more.
   - **Matching:** start of any word.
   - **Split:** A now on the mock, B after the backend.
+- **Contract update before load (R5 built, 2026-11-08):**
+  - The directory carries an opaque `key`, not `players.id`: uuid v7 ids sort by creation, so listing them all would let one revealed id point at its teammates.
+  - Named players are marked by `RevealedPlayer.directoryKey`, a new field. The goals above use the built contract.
+- **Deviations recorded during implementation:**
+  - **Query key:** `PLAYER_DIRECTORY_QUERY_KEY` in the hook file, as `FILTER_OPTIONS_QUERY_KEY` is; the repo has no `queryKeys` object.
+  - **One check per match, by match key, not per mount:** Play again doesn't remount `SoloGame` or `DuelGame`. The hook fetches on mount, then refetches when the solo offer's `sessionId` or the duel session's id changes.
+  - **Waits for a session:** a 401 from any query signs the player out, and a first game mount races the guest creation, so the query is enabled only once a session exists.
+  - **A failed refetch keeps the last directory** (TanStack keeps its data); `null` only before the first success.
+  - **Mock refuses without a session** (`unauthorized`), as the backend does.
+  - **`PlayerHeadshot` gained `sizeClass`:** its default size follows a container query, which a 32px class can't override reliably.
+  - **Arrow keys wrap** at the ends; the spec didn't say. Pickable rows also highlight on hover.
+  - **Dev:** every `?state=` snapshot gets the sample directory, so typing in any of them suggests.
 - **Measured cost (2026-11-06):**
   - **Photos:** the scraper's image cache holds 3,620 player photos, 128×128 WebP, median 3.1 KB, at most 7.8 KB. All of them would be ~12 MB, so they're never fetched up front.
-  - **The directory:** ~600 KB raw, ~150 KB compressed (to be confirmed by R5's Built note).
+  - **The directory (R5's Built note, 2026-11-08):** 3,787 players, 884 KB raw, 229 KB gzip, 193 KB Brotli. About half is the image URLs.
   - **Search:** 3,787 players searched per keystroke takes well under 1 ms.
 - **Hard constraints:**
   - **2:** the directory is never scoped, so the XI is indistinguishable within it.
@@ -167,4 +183,4 @@ Defaults stand unless changed at load:
   - **Duel (mock):** the list shows on your turn only, and the opponent's finds are marked "Named".
   - **States:** pending, locked and cooldown hide the list.
   - **Screen reader:** the combobox roles and the count announcement work, checked with VoiceOver.
-  - **Real mode before R5:** no suggestions, and the game is unaffected.
+  - **Real mode (R5 shipped):** suggestions appear; a failed directory call means none, and the game is unaffected.

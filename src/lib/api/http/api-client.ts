@@ -2,7 +2,10 @@ import { z } from 'zod';
 import type { ApiClient } from '@/lib/api/client';
 import { createTransport } from '@/lib/api/http/transport';
 import { gatewayTokenSchema, sessionSchema } from '@/lib/api/schemas/auth';
-import { filterOptionsSchema } from '@/lib/api/schemas/catalog';
+import {
+  filterOptionsSchema,
+  playerDirectorySchema,
+} from '@/lib/api/schemas/catalog';
 import { historyPageSchema, profileSchema } from '@/lib/api/schemas/profile';
 import {
   soloGuessResponseSchema,
@@ -42,6 +45,8 @@ export function createHttpApiClient(baseUrl: string): ApiClient {
     catalog: {
       getFilterOptions: () =>
         request('GET', '/catalog/filter-options', filterOptionsSchema),
+      getPlayerDirectory: () =>
+        request('GET', '/catalog/players', playerDirectorySchema),
     },
     solo: {
       findMatch: (filters) =>

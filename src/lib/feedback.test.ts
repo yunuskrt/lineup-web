@@ -10,6 +10,7 @@ const CORRECT_NEW: GuessResult = {
     slot: 4,
     position: 'DF',
     imageUrl: null,
+    directoryKey: 'p-harlow'.padEnd(22, 'x'),
   },
 };
 

@@ -1,11 +1,24 @@
 'use client';
 
 import { motion, useAnimate } from 'motion/react';
-import { type SubmitEvent, useEffect, useId, useRef, useState } from 'react';
+import {
+  type KeyboardEvent,
+  type SubmitEvent,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
+import { SuggestionList } from '@/components/game/SuggestionList';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MAX_GUESS_LENGTH } from '@/lib/api/schemas/common';
 import { prepareGuess } from '@/lib/guess';
+import {
+  stepHighlight,
+  type Suggestion,
+  suggestionCountLabel,
+} from '@/lib/suggestions';
 import { cooldownAnnouncement, cooldownLabel } from '@/lib/system-states';
 import { FOCUS_RING } from '@/styles/classes';
 import { MOTION_SECONDS } from '@/styles/motion';
@@ -96,7 +109,11 @@ type GuessInputProps = {
   onValueChange: (value: string) => void;
   onSubmit: (guess: string) => void;
   shakeKey: number;
+  // Typing aid only; a pick is a plain text guess
+  suggestions?: readonly Suggestion[];
 };
+
+const NO_SUGGESTIONS: readonly Suggestion[] = [];
 
 export function GuessInput({
   status,
@@ -105,8 +122,10 @@ export function GuessInput({
   onValueChange,
   onSubmit,
   shakeKey,
+  suggestions = NO_SUGGESTIONS,
 }: GuessInputProps) {
   const inputId = useId();
+  const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const runs = useMotionPolicy();
   const canShake = runs('inputShake');
@@ -114,6 +133,18 @@ export function GuessInput({
   const hasShaken = useChangedSinceMount(shakeKey);
   const shakenKey = useRef(shakeKey);
   const isCoolingDown = status === 'cooldown' && cooldownUntil !== undefined;
+  const [isFocused, setIsFocused] = useState(false);
+  // Escape, or a sent guess, until the text changes
+  const [isDismissed, setIsDismissed] = useState(false);
+  const [highlightedKey, setHighlightedKey] = useState<string | null>(null);
+  const isListOpen =
+    status === 'live' && isFocused && !isDismissed && suggestions.length > 0;
+  const highlighted = isListOpen
+    ? (suggestions.find(
+        (item) => item.player.key === highlightedKey && !item.isNamed,
+      ) ?? null)
+    : null;
+  const optionId = (key: string) => `${listId}-${key}`;
 
   useEffect(() => {
     if (status === 'live') inputRef.current?.focus();
@@ -130,12 +161,51 @@ export function GuessInput({
     );
   }, [animate, canShake, scope, shakeKey]);
 
+  useEffect(() => {
+    if (!highlighted) return;
+    document
+      .getElementById(`${listId}-${highlighted.player.key}`)
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [highlighted, listId]);
+
+  function send(text: string) {
+    const guess = prepareGuess(text);
+    if (guess === null) return;
+    setIsDismissed(true);
+    onSubmit(guess);
+  }
+
+  function pick({ player }: Suggestion) {
+    if (status !== 'live') return;
+    onValueChange(player.name);
+    send(player.name);
+  }
+
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (status !== 'live') return;
+    if (highlighted) pick(highlighted);
+    else send(value);
+  }
 
-    const guess = prepareGuess(value);
-    if (guess !== null) onSubmit(guess);
+  function handleChange(next: string) {
+    setIsDismissed(false);
+    setHighlightedKey(null);
+    onValueChange(next);
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (!isListOpen) return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const direction = event.key === 'ArrowDown' ? 1 : -1;
+      setHighlightedKey(
+        stepHighlight(suggestions, highlighted?.player.key ?? null, direction),
+      );
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      setIsDismissed(true);
+    }
   }
 
   return (
@@ -152,12 +222,31 @@ export function GuessInput({
         </span>
       </div>
       <div ref={scope} className="relative">
+        {isListOpen ? (
+          <SuggestionList
+            id={listId}
+            suggestions={suggestions}
+            highlightedKey={highlighted?.player.key ?? null}
+            optionId={optionId}
+            onPick={pick}
+          />
+        ) : null}
         <input
           ref={inputRef}
           id={inputId}
           type="text"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isListOpen}
+          aria-controls={isListOpen ? listId : undefined}
+          aria-activedescendant={
+            highlighted ? optionId(highlighted.player.key) : undefined
+          }
           value={value}
-          onChange={(event) => onValueChange(event.target.value)}
+          onChange={(event) => handleChange(event.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           readOnly={status !== 'live'}
           aria-busy={status === 'pending'}
           aria-disabled={status === 'locked' || status === 'cooldown'}
@@ -192,6 +281,9 @@ export function GuessInput({
         {isCoolingDown ? (
           <CooldownAnnouncement key={cooldownUntil} until={cooldownUntil} />
         ) : null}
+      </p>
+      <p role="status" className="sr-only">
+        {isListOpen ? suggestionCountLabel(suggestions.length) : ''}
       </p>
     </form>
   );

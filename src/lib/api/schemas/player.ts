@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { idSchema, imageUrlSchema, SQUAD_SIZE } from '@/lib/api/schemas/common';
+import {
+  directoryKeySchema,
+  idSchema,
+  imageUrlSchema,
+  SQUAD_SIZE,
+} from '@/lib/api/schemas/common';
 
 export const positionGroupSchema = z.enum(['GK', 'DF', 'MF', 'FW']);
 
@@ -13,6 +18,8 @@ export const revealedPlayerSchema = z.object({
     .max(SQUAD_SIZE - 1),
   position: positionGroupSchema,
   imageUrl: imageUrlSchema.nullable(),
+  // Marks this player in the guess suggestions
+  directoryKey: directoryKeySchema,
 });
 
 // The server caps elapsed time at one round

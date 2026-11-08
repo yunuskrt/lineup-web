@@ -166,6 +166,7 @@ describe('missedOnPitch', () => {
       slot: 0,
       position: 'GK',
       imageUrl: null,
+      directoryKey: 'p-1'.padEnd(22, 'x'),
     },
   ];
   const summary = (missed: RevealedPlayer[] | null): SoloSummary => ({

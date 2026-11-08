@@ -75,3 +75,4 @@ Not Started
 - Fix Gameplay Visuals B: side-pick match card, crest tiles, busy pick.
 - Fix Gameplay Visuals C: named-order list, order/elapsedMs, duel resync.
 - Reveal Missed XI: Pro reveal button, locked free, stagger-in, mock tier.
+- Guess Suggestions A: directory, local search, combobox popup, Named rows.

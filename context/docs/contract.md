@@ -138,8 +138,9 @@ Every `MatchIdentity` field, **plus**:
 | `slot` | integer 0–10 | 0 is the goalkeeper; then the lines from defence to attack, filling right to left |
 | `position` | `PositionGroup` | Must match the slot in the formation |
 | `imageUrl` | imageUrl or `null` | |
+| `directoryKey` | directory key | The player's `DirectoryPlayer.key` (backend R5). Marks named players in the guess suggestions. **Never compare `id` with a directory entry** |
 
-`DuelFoundPlayer` = `RevealedPlayer` + `foundBy: DuelActor`.
+`DuelFoundPlayer` = `RevealedPlayer` + `foundBy: DuelActor`. `directoryKey` rides on every shape built from `RevealedPlayer`: found, missed, named, duel found and the socket payloads.
 
 ### `RoundTiming`
 
@@ -192,14 +193,15 @@ Paths are suggestions. Every response body is the envelope from §2, wrapping th
 | 5 | `auth.upgradeGuest` | `POST /auth/upgrade` | `UpgradeGuestRequest` | `Session` (same user id, `isGuest: false`) |
 | 6 | `auth.signOut` | `POST /auth/sign-out` | — | none (`data` empty) |
 | 7 | `catalog.getFilterOptions` | `GET /catalog/filter-options` | — | `FilterOptions` |
-| 8 | `solo.findMatch` | `POST /solo/sessions` | `Filters` | `SoloMatchOffer` |
-| 9 | `solo.chooseSide` | `POST /solo/sessions/:sessionId/side` | `{ side: Side }` | `SoloSession` |
-| 10 | `solo.guess` | `POST /solo/sessions/:sessionId/guesses` | `SoloGuessRequest` | `SoloGuessResponse` |
-| 11 | `solo.syncSession` | `GET /solo/sessions/:sessionId` | — | `SoloSession` |
-| 12 | `solo.quit` | `POST /solo/sessions/:sessionId/quit` | — | `SoloSummary` |
-| 13 | `solo.getSummary` | `GET /solo/sessions/:sessionId/summary` | — | `SoloSummary` |
-| 14 | `profile.getProfile` | `GET /profile` | — | `Profile` |
-| 15 | `profile.getHistory` | `GET /profile/history?cursor=&limit=` | `HistoryQuery` | `HistoryPage` |
+| 8 | `catalog.getPlayerDirectory` | `GET /catalog/players` | — | `PlayerDirectory` |
+| 9 | `solo.findMatch` | `POST /solo/sessions` | `Filters` | `SoloMatchOffer` |
+| 10 | `solo.chooseSide` | `POST /solo/sessions/:sessionId/side` | `{ side: Side }` | `SoloSession` |
+| 11 | `solo.guess` | `POST /solo/sessions/:sessionId/guesses` | `SoloGuessRequest` | `SoloGuessResponse` |
+| 12 | `solo.syncSession` | `GET /solo/sessions/:sessionId` | — | `SoloSession` |
+| 13 | `solo.quit` | `POST /solo/sessions/:sessionId/quit` | — | `SoloSummary` |
+| 14 | `solo.getSummary` | `GET /solo/sessions/:sessionId/summary` | — | `SoloSummary` |
+| 15 | `profile.getProfile` | `GET /profile` | — | `Profile` |
+| 16 | `profile.getHistory` | `GET /profile/history?cursor=&limit=` | `HistoryQuery` | `HistoryPage` |
 
 Better Auth (B10) mounts its own routes. Calls 1–6 may map onto them rather than onto these paths; the web only needs the shapes.
 
@@ -234,6 +236,20 @@ The web only checks password **length**. The backend owns the password policy.
 | `seasonStarts` | integer[] | Season starts of its pool matches. Ascending, no repeats, never empty, each inside `era` |
 
 The `Filters` request is unchanged. The web sends at most one competition id; the backend accepts any number.
+
+**`PlayerDirectory`** (backend R5). `{ players: DirectoryPlayer[] }`: **every** player with at least one alias, sorted by `key`, never scoped to a match, filter or session (Hard Constraint 2). Fetched once per match for the guess suggestions; typing never sends a request.
+
+**`DirectoryPlayer`**
+
+| Field | Type | Rule |
+| --- | --- | --- |
+| `key` | directory key | 22 base64url characters, opaque and stable. **Not** `players.id`: ids sort by creation, so one revealed id would point at its teammates |
+| `name` | string | Display form, diacritics kept |
+| `imageUrl` | imageUrl or `null` | |
+| `terms` | string[] | Normalised aliases, distinct, sorted, at least one. Searched, never shown |
+
+- Any session, guests included; no session gets `unauthorized`. The `catalog` rate limit, 60 a minute.
+- Strong `ETag` and `Cache-Control: private, no-cache`; `If-None-Match` with the current tag gets 304 with no body. Brotli or gzip. The web's revalidation is Guess Suggestions B.
 
 **`SoloMatchOffer`.** The run is created and the player picks a side next.
 
@@ -319,6 +335,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `syncSession`, `quit` | `not_found`, `invalid_input` (no side chosen yet) |
 | `getSummary` | `not_found`, `invalid_input`, `forbidden` (run still in progress) |
 | `getProfile`, `getHistory` | `unauthorized`; `getHistory` also `invalid_input` |
+| `getPlayerDirectory` | `unauthorized` (session lost), `rate_limited`. Any failure means no suggestions; the game is unaffected |
 | Any | `server_error` |
 
 ### Solo behaviour the web relies on

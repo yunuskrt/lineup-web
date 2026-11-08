@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { GameCanvas } from '@/components/game/GameCanvas';
 import { QuitDialog } from '@/components/game/QuitDialog';
+import { usePlayerDirectory } from '@/hooks/use-player-directory';
 import { useSoloRun } from '@/hooks/use-solo-run';
 import { sideSchema } from '@/lib/api/schemas/common';
 import { withQuery } from '@/lib/filters';
@@ -23,6 +24,7 @@ export function SoloGame() {
     widen,
     revealMissed,
   } = useSoloRun(params);
+  const directory = usePlayerDirectory(state.offer?.sessionId ?? null);
   const [guess, setGuess] = useState('');
   const [isQuitOpen, setIsQuitOpen] = useState(false);
   // Mid-play only; a gate or summary has its own exit
@@ -88,6 +90,7 @@ export function SoloGame() {
       <GameCanvas
         view={soloCanvasView(state)}
         guess={guess}
+        directory={directory}
         onGuessChange={setGuess}
         onGuessSubmit={handleGuess}
         onGateAction={handleGateAction}

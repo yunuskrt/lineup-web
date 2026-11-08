@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeName } from '@/lib/api/mock/normalize';
+import { normalizeName } from '@/lib/normalize';
 
 describe('normalizeName', () => {
   it('strips diacritics from Latin Extended-A names', () => {
@@ -33,6 +33,17 @@ describe('normalizeName', () => {
       'zlatan ibrahimovic',
     );
     expect(normalizeName('\tRafa\n')).toBe('rafa');
+  });
+
+  it('folds compatibility forms under NFKD', () => {
+    expect(normalizeName('ﬁgo')).toBe('figo');
+    expect(normalizeName('Ｒａｆａ')).toBe('rafa');
+  });
+
+  it('drops format characters inside a name', () => {
+    expect(normalizeName('Ibra​himović')).toBe('ibrahimovic');
+    expect(normalizeName('Pen­nock')).toBe('pennock');
+    expect(normalizeName('﻿Zlatan')).toBe('zlatan');
   });
 
   it('is idempotent', () => {

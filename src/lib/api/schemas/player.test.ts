@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { duelNamedPlayerSchema } from '@/lib/api/schemas/duel';
-import { namedPlayerSchema } from '@/lib/api/schemas/player';
+import {
+  namedPlayerSchema,
+  revealedPlayerSchema,
+} from '@/lib/api/schemas/player';
 
 const NAMED = {
   id: 'player-1',
@@ -8,6 +11,7 @@ const NAMED = {
   slot: 0,
   position: 'GK',
   imageUrl: null,
+  directoryKey: 'player-1'.padEnd(22, 'x'),
   order: 1,
   elapsedMs: 2_100,
 };
@@ -43,6 +47,26 @@ describe('namedPlayerSchema', () => {
   it('rejects a player without order or time', () => {
     expect(parses({ order: undefined })).toBe(false);
     expect(parses({ elapsedMs: undefined })).toBe(false);
+  });
+});
+
+describe('revealedPlayerSchema', () => {
+  function revealedParses(patch: Record<string, unknown>): boolean {
+    const revealed = { ...NAMED, order: undefined, elapsedMs: undefined };
+    return revealedPlayerSchema.safeParse({ ...revealed, ...patch }).success;
+  }
+
+  // Backend R5 sends it on every revealed player
+  it('needs a directory key', () => {
+    expect(revealedParses({})).toBe(true);
+    expect(revealedParses({ directoryKey: undefined })).toBe(false);
+  });
+
+  it('takes only 22 base64url characters as the key', () => {
+    expect(revealedParses({ directoryKey: 'Ab-_'.padEnd(22, '9') })).toBe(true);
+    expect(revealedParses({ directoryKey: 'x'.repeat(21) })).toBe(false);
+    expect(revealedParses({ directoryKey: 'x'.repeat(23) })).toBe(false);
+    expect(revealedParses({ directoryKey: '+/'.padEnd(22, 'x') })).toBe(false);
   });
 });
 

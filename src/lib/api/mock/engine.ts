@@ -3,6 +3,7 @@ import {
   ROUND_DURATION_MS,
   startRound,
 } from '@/lib/api/mock/clock';
+import { directoryKeyFor } from '@/lib/api/mock/directory';
 import { resolveGuess } from '@/lib/api/mock/matcher';
 import type { MockSquad, MockSquadEntry } from '@/lib/api/mock/types';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
@@ -102,13 +103,14 @@ function entryOf(state: EngineState, playerId: string): MockSquadEntry {
   return entry;
 }
 
-function toRevealed(entry: MockSquadEntry): RevealedPlayer {
+export function toRevealed(entry: MockSquadEntry): RevealedPlayer {
   return {
     id: entry.playerId,
     name: entry.name,
     slot: entry.slot,
     position: entry.position,
     imageUrl: entry.imageUrl,
+    directoryKey: directoryKeyFor(entry.playerId),
   };
 }
 

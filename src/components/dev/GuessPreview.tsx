@@ -1,16 +1,26 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import {
   GuessInput,
   type GuessInputStatus,
 } from '@/components/game/GuessInput';
-import { GUESS_OUTCOME_OPTIONS, samplePlayer } from '@/lib/dev/samples';
+import {
+  GUESS_OUTCOME_OPTIONS,
+  sampleDirectoryKey,
+  samplePlayer,
+  SAMPLE_SUGGESTION_INDEX,
+} from '@/lib/dev/samples';
 import { guessFeedback } from '@/lib/feedback';
+import { suggest } from '@/lib/suggestions';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
 import type { GuessOutcome, GuessResult } from '@/types/game';
 
 const STATUSES: GuessInputStatus[] = ['live', 'pending', 'locked'];
+
+// One named row, as if found earlier in the run
+const NAMED_KEYS = new Set([sampleDirectoryKey('Rhys Harlow')]);
+const OPEN_LIST_QUERY = 'har';
 
 const SERVER_DELAY_MS = 600;
 const NEXT_ROUND_DELAY_MS = 900;
@@ -32,6 +42,8 @@ export function GuessPreview() {
   const [nextOutcome, setNextOutcome] = useState<GuessOutcome>('not_in_xi');
   const [submissions, setSubmissions] = useState<string[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const query = useDeferredValue(value);
+  const suggestions = suggest(SAMPLE_SUGGESTION_INDEX, query, NAMED_KEYS);
 
   useEffect(() => () => clearPending(), []);
 
@@ -61,6 +73,13 @@ export function GuessPreview() {
     setSubmissions((current) => [guess, ...current]);
     setStatus('pending');
     schedule(SERVER_DELAY_MS, () => apply(verdictFor(nextOutcome)));
+  }
+
+  // Focus moves back so the list can open
+  function openList() {
+    forceStatus('live');
+    setValue(OPEN_LIST_QUERY);
+    document.querySelector<HTMLInputElement>('[role="combobox"]')?.focus();
   }
 
   function forceStatus(next: GuessInputStatus) {
@@ -107,6 +126,13 @@ export function GuessPreview() {
           >
             Shake
           </button>
+          <button
+            type="button"
+            className={DEV_PREVIEW_BUTTON}
+            onClick={openList}
+          >
+            Open list
+          </button>
         </div>
       </div>
       <div className="w-full max-w-sm rounded-lg border border-line bg-surface-raised p-4">
@@ -116,6 +142,7 @@ export function GuessPreview() {
           onValueChange={setValue}
           onSubmit={handleSubmit}
           shakeKey={shakeKey}
+          suggestions={suggestions}
         />
       </div>
       <div className="flex flex-col gap-2">

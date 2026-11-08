@@ -16,6 +16,8 @@ type PlayerHeadshotProps = {
   imageUrl: string | null;
   // Duel only: rings the disc in the finder's colour
   foundBy?: DuelActor;
+  // Replaces the container-sized disc
+  sizeClass?: string;
   className?: string;
 };
 
@@ -23,6 +25,7 @@ export function PlayerHeadshot({
   name,
   imageUrl,
   foundBy,
+  sizeClass = HEADSHOT_SIZE,
   className = '',
 }: PlayerHeadshotProps) {
   const { showsImage, onError } = useImageFallback(imageUrl);
@@ -31,7 +34,7 @@ export function PlayerHeadshot({
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-raised ${HEADSHOT_SIZE} ${ring} ${className}`}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-raised ${sizeClass} ${ring} ${className}`}
     >
       {showsImage && imageUrl ? (
         // Fetched straight from the CDN, never proxied

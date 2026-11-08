@@ -18,6 +18,7 @@ function player(slot: number, foundBy: DuelFoundPlayer['foundBy']) {
     slot,
     position: 'MF',
     imageUrl: null,
+    directoryKey: `p-${slot}`.padEnd(22, 'x'),
     foundBy,
   } satisfies DuelFoundPlayer;
 }

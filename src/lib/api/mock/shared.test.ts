@@ -17,6 +17,7 @@ const PLAYER = {
   slot: 0,
   position: 'GK' as const,
   imageUrl: null,
+  directoryKey: 'pl-01'.padEnd(22, 'x'),
 };
 
 describe('isGuessable', () => {

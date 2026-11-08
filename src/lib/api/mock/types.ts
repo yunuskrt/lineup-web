@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { normalizeName } from '@/lib/api/mock/normalize';
+import { normalizeName } from '@/lib/normalize';
 import {
   FIRST_SEASON_START,
   idSchema,

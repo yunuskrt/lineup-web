@@ -10,6 +10,7 @@ import {
 } from '@/lib/api/mock/engine';
 import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
 import { requireFixture, squadFor } from '@/lib/api/mock/data/fixtures';
+import { directoryKeyFor } from '@/lib/api/mock/directory';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 
 const T0 = 1_700_000_000_000;
@@ -187,6 +188,7 @@ describe('engine — terminal on eleven', () => {
         slot: 10,
         position: 'FW',
         imageUrl: '/mock/players/headshot-5.svg',
+        directoryKey: directoryKeyFor('pl-brandon-keele'),
       },
     ]);
   });

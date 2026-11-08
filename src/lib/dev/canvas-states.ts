@@ -80,6 +80,8 @@ const SOLO_LIVES: Lives = 2;
 const PENDING_GUESS = "Ciaran O'Donovan";
 const ALREADY_FOUND_GUESS = 'Pennock';
 const MISS_GUESS = 'Marco Bellandi';
+// Matches Rhys Harlow, already named at slot 4
+const SUGGESTING_GUESS = 'har';
 
 const PRE_MATCH_GATE: CanvasGateView = {
   title: 'Match ready',
@@ -335,6 +337,12 @@ function staticState(
 
 const SHARED = {
   idle: staticState('4 of 11 found, 12s left, input live.', 12_000),
+  suggesting: staticState(
+    '"har" typed: nine suggestions, one named, one without a photo.',
+    12_000,
+    {},
+    SUGGESTING_GUESS,
+  ),
   warning: staticState('7s left: the clock turns ember.', 7_000),
   critical: staticState('3s left: red and pulsing.', 3_000),
   pending: staticState(
@@ -498,6 +506,7 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
     LONG_NAMES_IDENTITY,
   ),
   idle: solo(SHARED.idle),
+  suggesting: solo(SHARED.suggesting),
   warning: solo(SHARED.warning),
   critical: solo(SHARED.critical),
   pending: solo(SHARED.pending),

@@ -56,6 +56,7 @@ function player(slot: number): RevealedPlayer {
     slot,
     position: 'MF',
     imageUrl: null,
+    directoryKey: `player-${slot}`.padEnd(22, 'x'),
   };
 }
 

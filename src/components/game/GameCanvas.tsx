@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { LOBBY_GATE_SIZE, LobbyPanel } from '@/components/duel/LobbyPanel';
 import { CanvasGate, type GateSize } from '@/components/game/CanvasGate';
 import { CountdownRing } from '@/components/game/CountdownRing';
@@ -24,6 +24,11 @@ import {
 } from '@/lib/duel-status';
 import { LOADING_FORMATION } from '@/lib/formation';
 import { serverClock } from '@/lib/server-clock';
+import {
+  suggest,
+  type Suggestion,
+  type SuggestionIndex,
+} from '@/lib/suggestions';
 import { missedOnPitch } from '@/lib/summary';
 import { DUEL_ACTOR_TEXT, PRIMARY_BUTTON, TEXT_LINK } from '@/styles/classes';
 import type {
@@ -148,6 +153,7 @@ function GateAction({
 type ActiveRailProps = {
   view: CanvasView;
   guess: string;
+  suggestions: readonly Suggestion[];
   onGuessChange: (value: string) => void;
   onGuessSubmit: (guess: string) => void;
 };
@@ -155,6 +161,7 @@ type ActiveRailProps = {
 function ActiveRail({
   view,
   guess,
+  suggestions,
   onGuessChange,
   onGuessSubmit,
 }: ActiveRailProps) {
@@ -194,6 +201,7 @@ function ActiveRail({
               onValueChange={onGuessChange}
               onSubmit={onGuessSubmit}
               shakeKey={view.shakeKey}
+              suggestions={suggestions}
             />
           </div>
           {view.mode === 'duel' && isTheirTurn ? (
@@ -213,6 +221,8 @@ function ActiveRail({
 type GameCanvasProps = {
   view: CanvasView;
   guess: string;
+  // Null while loading or after a failed fetch
+  directory?: SuggestionIndex | null;
   onGuessChange: (value: string) => void;
   onGuessSubmit: (guess: string) => void;
   onGateAction: (choiceId?: string) => void;
@@ -228,6 +238,7 @@ type GameCanvasProps = {
 export function GameCanvas({
   view,
   guess,
+  directory = null,
   onGuessChange,
   onGuessSubmit,
   onGateAction,
@@ -253,6 +264,17 @@ export function GameCanvas({
       ? 'wide'
       : 'narrow';
   useGameSounds(view);
+  const query = useDeferredValue(guess);
+  // Keyed by value: views are rebuilt every render
+  const namedList = view.found.map((player) => player.directoryKey).join(' ');
+  const namedKeys = useMemo(
+    () => new Set(namedList.split(' ').filter(Boolean)),
+    [namedList],
+  );
+  const suggestions = useMemo(
+    () => (directory ? suggest(directory, query, namedKeys) : []),
+    [directory, query, namedKeys],
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4">
@@ -347,6 +369,7 @@ export function GameCanvas({
                 <ActiveRail
                   view={view}
                   guess={guess}
+                  suggestions={suggestions}
                   onGuessChange={onGuessChange}
                   onGuessSubmit={onGuessSubmit}
                 />
