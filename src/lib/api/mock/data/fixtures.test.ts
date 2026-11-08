@@ -13,7 +13,7 @@ import type { FixtureSource } from '@/lib/api/mock/data/fixtures';
 import { MATCHES } from '@/lib/api/mock/data/matches';
 import { PLAYERS } from '@/lib/api/mock/data/players';
 import { resolveGuess } from '@/lib/api/mock/matcher';
-import { normalizeName } from '@/lib/api/mock/normalize';
+import { normalizeName } from '@/lib/normalize';
 import { seasonStart } from '@/lib/api/mock/pool';
 import type { MockFixture } from '@/lib/api/mock/types';
 import { competitionKindSchema } from '@/lib/api/schemas/common';

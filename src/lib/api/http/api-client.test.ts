@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ApiClient } from '@/lib/api/client';
 import { createHttpApiClient } from '@/lib/api/http/api-client';
+import { BAD_RESPONSE_ERROR } from '@/lib/api/http/transport';
 import type { ApiResult } from '@/types/api';
 
 const BASE_URL = 'http://localhost:8080';
@@ -71,6 +72,12 @@ const ROWS: Row[] = [
     call: (c) => c.catalog.getFilterOptions(),
     method: 'GET',
     path: '/catalog/filter-options',
+  },
+  {
+    name: 'catalog.getPlayerDirectory',
+    call: (c) => c.catalog.getPlayerDirectory(),
+    method: 'GET',
+    path: '/catalog/players',
   },
   {
     name: 'solo.findMatch',
@@ -149,7 +156,7 @@ describe('createHttpApiClient', () => {
   });
 
   it('covers every REST call in the contract', () => {
-    expect(ROWS).toHaveLength(15);
+    expect(ROWS).toHaveLength(16);
   });
 
   it.each(ROWS)('$name → $method $path', async (row) => {
@@ -200,6 +207,38 @@ describe('createHttpApiClient', () => {
     expect(await client.auth.getSession()).toEqual({
       success: true,
       data: { user },
+    });
+  });
+
+  describe('player directory', () => {
+    const PLAYER = {
+      key: 'Q2xmV3rT9kLmN0pZ_aB-cd',
+      name: 'Oğuzhan Şimşek',
+      imageUrl: 'https://cdn.lineup.gg/players/oguzhan-simsek.webp',
+      terms: ['oguzhan simsek', 'simsek'],
+    };
+
+    it('parses the backend R5 shape', async () => {
+      respondWith({ success: true, data: { players: [PLAYER] } });
+      expect(await client.catalog.getPlayerDirectory()).toEqual({
+        success: true,
+        data: { players: [PLAYER] },
+      });
+    });
+
+    // A player id in place of the key is drift
+    it('refuses an entry carrying an id instead of a key', async () => {
+      const drift = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { name, imageUrl, terms } = PLAYER;
+      respondWith({
+        success: true,
+        data: { players: [{ id: 'player-uuid-1', name, imageUrl, terms }] },
+      });
+      expect(await client.catalog.getPlayerDirectory()).toEqual({
+        success: false,
+        error: BAD_RESPONSE_ERROR,
+      });
+      drift.mockRestore();
     });
   });
 

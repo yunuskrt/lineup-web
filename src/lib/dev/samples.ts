@@ -3,7 +3,9 @@ import {
   LAST_SEASON_START,
 } from '@/lib/api/schemas/common';
 import { slotLayout } from '@/lib/formation';
-import type { FilterOptions } from '@/types/catalog';
+import { normalizeName } from '@/lib/normalize';
+import { buildSuggestionIndex } from '@/lib/suggestions';
+import type { DirectoryPlayer, FilterOptions } from '@/types/catalog';
 import type { DuelPlayer } from '@/types/duel';
 import type { Filters } from '@/types/filters';
 import type { DuelOutcome, GuessOutcome, SoloEndReason } from '@/types/game';
@@ -133,6 +135,11 @@ function sampleHeadshot(slot: number): string {
   return `/mock/players/headshot-${(slot % 6) + 1}.svg`;
 }
 
+// Shaped like a directory key: 22 base64url
+export function sampleDirectoryKey(name: string): string {
+  return name.replace(/[^A-Za-z0-9]/g, '').padEnd(22, '0').slice(0, 22);
+}
+
 export function samplePlayer(formation: string, slot: number): RevealedPlayer {
   return {
     id: `sample-${slot}`,
@@ -140,8 +147,39 @@ export function samplePlayer(formation: string, slot: number): RevealedPlayer {
     slot,
     position: slotLayout(formation)?.[slot]?.position ?? 'GK',
     imageUrl: slot === NO_IMAGE_SLOT ? null : sampleHeadshot(slot),
+    directoryKey: sampleDirectoryKey(SAMPLE_NAMES[slot]),
   };
 }
+
+// Not in the XI; with it, "har" scrolls the list
+const SAMPLE_DIRECTORY_EXTRAS: [string, string | null][] = [
+  ['Daniel Harcourt', null],
+  ['Harry Lindqvist', sampleHeadshot(2)],
+  ['Tom Hargreaves', sampleHeadshot(3)],
+  ['Glen Hartigan', sampleHeadshot(4)],
+  ['Harvey Lomax', sampleHeadshot(5)],
+  ['Leon Hartwig', sampleHeadshot(0)],
+  ['Marcus Hart', sampleHeadshot(1)],
+];
+
+function directoryEntry(name: string, imageUrl: string | null) {
+  const surname = name.split(' ').at(-1) ?? name;
+  return {
+    key: sampleDirectoryKey(name),
+    name,
+    imageUrl,
+    terms: [...new Set([normalizeName(name), normalizeName(surname)])],
+  } satisfies DirectoryPlayer;
+}
+
+export const SAMPLE_SUGGESTION_INDEX = buildSuggestionIndex([
+  ...SAMPLE_NAMES.map((name, slot) =>
+    directoryEntry(name, slot === NO_IMAGE_SLOT ? null : sampleHeadshot(slot)),
+  ),
+  ...SAMPLE_DIRECTORY_EXTRAS.map(([name, imageUrl]) =>
+    directoryEntry(name, imageUrl),
+  ),
+]);
 
 function club(id: string, name: string, shortName: string): ClubRef {
   return { id, name, shortName, crestUrl: null };

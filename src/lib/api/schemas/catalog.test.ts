@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { competitionOptionSchema } from '@/lib/api/schemas/catalog';
+import {
+  competitionOptionSchema,
+  directoryPlayerSchema,
+  playerDirectorySchema,
+} from '@/lib/api/schemas/catalog';
 
 const OPTION = {
   id: 'comp-a',
@@ -44,5 +48,37 @@ describe('competitionOptionSchema', () => {
 
   it('rejects an empty club id', () => {
     expect(parses({ clubIds: [''] })).toBe(false);
+  });
+});
+
+describe('directoryPlayerSchema', () => {
+  const PLAYER = {
+    key: 'Zq3_-k'.padEnd(22, 'A'),
+    name: 'Zlatan Ibrahimović',
+    imageUrl: 'https://cdn.example.com/players/zlatan.webp',
+    terms: ['ibrahimovic', 'zlatan ibrahimovic'],
+  };
+
+  function directoryParses(patch: Record<string, unknown>): boolean {
+    return directoryPlayerSchema.safeParse({ ...PLAYER, ...patch }).success;
+  }
+
+  it('accepts a player with a photo or without one', () => {
+    expect(directoryParses({})).toBe(true);
+    expect(directoryParses({ imageUrl: null })).toBe(true);
+  });
+
+  it('rejects a key that is not 22 base64url characters', () => {
+    expect(directoryParses({ key: 'player-1' })).toBe(false);
+    expect(directoryParses({ key: '+'.repeat(22) })).toBe(false);
+  });
+
+  it('needs at least one search term', () => {
+    expect(directoryParses({ terms: [] })).toBe(false);
+    expect(directoryParses({ terms: [''] })).toBe(false);
+  });
+
+  it('accepts an empty directory', () => {
+    expect(playerDirectorySchema.safeParse({ players: [] }).success).toBe(true);
   });
 });

@@ -9,6 +9,7 @@ import {
   resolveCanvasState,
   SNAPSHOT_EVENT_DELAY_MS,
 } from '@/lib/dev/canvas-states';
+import { SAMPLE_SUGGESTION_INDEX } from '@/lib/dev/samples';
 import type { CanvasMode } from '@/types/canvas';
 
 type CanvasStatePreviewProps = {
@@ -54,6 +55,7 @@ export function CanvasStatePreview({ mode, state }: CanvasStatePreviewProps) {
     <GameCanvas
       view={frame.view}
       guess={frame.guess}
+      directory={SAMPLE_SUGGESTION_INDEX}
       onGuessChange={(guess) => setFrame((current) => ({ ...current, guess }))}
       // Snapshots have no server to send a guess to
       onGuessSubmit={() => {}}

@@ -1,4 +1,4 @@
-import { normalizeName } from '@/lib/api/mock/normalize';
+import { normalizeName } from '@/lib/normalize';
 import type { MockSquadEntry } from '@/lib/api/mock/types';
 
 // Keeps "ronaldo" off "ronaldinho" (0.72 apart)

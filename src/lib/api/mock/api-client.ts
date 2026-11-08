@@ -4,12 +4,14 @@ import {
   requireFixture,
   squadFor,
 } from '@/lib/api/mock/data/fixtures';
+import { PLAYER_DIRECTORY } from '@/lib/api/mock/directory';
 import {
   createEngineState,
   namedInOrder,
   remainingCount,
   resolveRound,
   revealedPlayers,
+  toRevealed,
   type EngineState,
 } from '@/lib/api/mock/engine';
 import { filterOptionsFrom, selectFixture } from '@/lib/api/mock/pool';
@@ -125,13 +127,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
     const foundIds = new Set(engine.found.map((item) => item.playerId));
     return engine.squad
       .filter((entry) => !foundIds.has(entry.playerId))
-      .map((entry) => ({
-        id: entry.playerId,
-        name: entry.name,
-        slot: entry.slot,
-        position: entry.position,
-        imageUrl: entry.imageUrl,
-      }));
+      .map(toRevealed);
   }
 
   function recordRoundTime(
@@ -351,6 +347,13 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
     catalog: {
       async getFilterOptions() {
         return ok(filterOptionsFrom(FIXTURES));
+      },
+
+      async getPlayerDirectory() {
+        if (!store.identity) {
+          return fail('unauthorized', 'Sign in or continue as a guest first.');
+        }
+        return ok(PLAYER_DIRECTORY);
       },
     },
 

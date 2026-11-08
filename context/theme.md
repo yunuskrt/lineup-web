@@ -206,6 +206,7 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | State         | Trigger                          | Ring                             | Numeral     | Squad grid                                     | Input                       | Feedback                                   |
 | ------------- | -------------------------------- | -------------------------------- | ----------- | ---------------------------------------------- | --------------------------- | ------------------------------------------ |
 | Idle          | Turn starts                      | `bone`, sweeping                 | 64px `bone` | Unfound slots `pitch-600` outline              | Focused, live               | —                                          |
+| Suggesting    | 3+ letters typed, matches found  | **keeps sweeping**               | unchanged   | unchanged                                      | Live; up to 5 rows above the input, then it scrolls; photo + name; named rows dimmed | — (no motion, no sound)                    |
 | Warning       | 7s left                          | `ember`                          | `ember`     | unchanged                                      | live                        | —                                          |
 | Critical      | 3s left                          | `red-card`, 1s pulse             | `red-card`  | unchanged                                      | live                        | —                                          |
 | Pending       | Guess submitted, awaiting server | **keeps sweeping**               | unchanged   | unchanged                                      | Locked, 16px spinner inline | —                                          |
@@ -242,6 +243,7 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Idle / warning / critical | as duel            | Identical. One ring, `floodlight` throughout                                         |
 | Correct, new              | Valid unfound name | Slot fills, **next round starts immediately** — no handover pause                    |
 | Already found / not in XI | as duel            | Identical, same two channels                                                         |
+| Suggesting                | as duel            | Identical, the same list above the input                                             |
 | Life lost                 | Timer hits 0       | Pip empties, flash, next round starts                                                |
 | Perfect clear             | All 11 named       | `turf` takeover, lives remaining shown prominently. The solo counterpart of the draw |
 | Run over                  | Lives at 0         | Summary: named vs missed, time per round, accuracy, streak                           |

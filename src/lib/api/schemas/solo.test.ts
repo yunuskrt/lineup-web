@@ -31,6 +31,7 @@ describe('soloSummarySchema', () => {
     slot: 0,
     position: 'GK',
     imageUrl: null,
+    directoryKey: 'player-1'.padEnd(22, 'x'),
   };
   const SUMMARY = {
     match: SAMPLE_IDENTITY,

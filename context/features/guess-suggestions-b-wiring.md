@@ -10,16 +10,17 @@ Not Started
   - **Needs:** R5 on the backend's `main` and Guess Suggestions A merged.
 - **Transcribe what the backend built.**
   - Read R5's Built note in `context/docs/backend-requests.md` and the backend's OpenAPI.
-  - Change `directoryPlayerSchema` and `playerDirectorySchema` wherever they differ from A's transcription.
+  - Check the three shapes against A's transcription: `DirectoryPlayer` (`key`, not `id`), `PlayerDirectory`, and `RevealedPlayer.directoryKey`. A was written after R5 was built, so they should already agree.
   - Record any difference as a deviation.
 - **One cheap check per match.**
   - **Revalidate this call only.** The transport sends every request with `cache: 'no-store'` (`src/lib/api/http/transport.ts`). The directory call alone uses `cache: 'no-cache'`, through a per-request option on the transport. Every other call stays `no-store`.
   - **How the check works:** with `no-cache`, the browser keeps the response with its `ETag`, sends `If-None-Match` on the next call, and turns a 304 into the cached 200 body. The web needs no ETag code of its own.
-  - **When:** the hook from A already refetches on every game mount, so that's one check per match: ~300 bytes when nothing changed, and the full directory once after players change.
+  - **When:** the hook from A already refetches on every game mount, so that's one check per match: ~300 bytes when nothing changed, and the full directory (~193 KB Brotli) once after players change.
   - **Credentials:** the transport stays credentialed. The response is `Cache-Control: private`, so only this browser keeps it.
+  - **Cross-origin:** the backend's CORS allows `If-None-Match` and exposes `ETag` (R5), so the browser's revalidation works from 3000 to 8080.
 - **Failure stays quiet.** A 401 goes through the normal session-loss path. Any other error, or a schema mismatch, means no suggestions for that match, and the game is unaffected.
 - **Measure and record** (Notes, under deviations):
-  - the directory's compressed and raw size on the real database;
+  - the directory's compressed and raw size as the browser sees it (the backend measured 884 KB raw, 229 KB gzip, 193 KB Brotli);
   - the time to parse it and build the index, once (`performance.now`);
   - the longest `suggest` call while typing.
 - **Tests:**
@@ -27,7 +28,7 @@ Not Started
   - **The HTTP adapter:** it parses a real-shaped payload, and it returns a schema error on a bad one.
 - **Docs:**
   - **`context/docs/contract.md`:** call 8 matches what was built, including its caching.
-  - **`context/docs/backend-requests.md`:** mark R5 Done.
+  - **`context/docs/backend-requests.md`:** R5 is already marked Done (2026-11-08); add anything the real-mode check finds.
 
 ## Out of Scope
 
@@ -56,5 +57,5 @@ Defaults stand unless changed at load:
     - Turkish and accented names are found from their plain spelling (`ibrahimovic`, `sahin`, `ozil`).
     - A player without a photo shows initials.
     - An alias-only match, such as a nickname, shows the player.
-  - **Duel, two browsers:** both get suggestions on their own turn, and each other's finds are marked "Named".
+  - **Duel, two browsers:** both get suggestions on their own turn, and each other's finds are marked "Named" (by `directoryKey`).
   - **Backend down or 500 on the directory:** no suggestions, and the solo run plays normally.

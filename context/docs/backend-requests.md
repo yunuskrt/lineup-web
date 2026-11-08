@@ -6,7 +6,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | --- | --- | --- | --- | --- |
 | R3 | Filter options per competition, and competition logos | Web fixes Match Filters A and B | 2026-11-04 | **Done**: Part 1 (2026-11-04, backend R3a), Part 2 (2026-11-05, backend R3b) |
 | R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | **Done**: Part 1 (2026-11-06, backend R4a), Part 2 (2026-11-06, backend R4b) |
-| R5 | A player directory for guess suggestions | Web features Guess Suggestions A and B | 2026-11-06 | Asked |
+| R5 | A player directory for guess suggestions | Web features Guess Suggestions A and B | 2026-11-06 | **Done** (2026-11-08, backend R5): an opaque `key`, not `players.id` |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -200,6 +200,21 @@ The backend doesn't compress responses today. The directory is ~600 KB of JSON r
 - **Pure mapping:** distinct `terms`, a player without an image gets `imageUrl: null`, a player without aliases is left out, the order is by `id`, and no field outside the four above.
 - **Version:** it changes when a player is added, an alias is added or edited, and a player is deleted; it stays the same otherwise.
 - **HTTP:** a first call gets 200 with an `ETag`; a call with that `If-None-Match` gets 304; a guest session gets 200; no session gets 401.
+
+### Built
+
+- **Built** (2026-11-08): backend `e78adda` (R5), on `main` and pushed.
+  - **Endpoint:** `GET /catalog/players`, any session, guests included; no session gets 401. The `catalog` rate limit, 60 a minute. The usual envelope around `PlayerDirectory = { players: DirectoryPlayer[] }`: every player with at least one alias, sorted by `key`, never scoped.
+  - **Changed from the request: `key`, not `id`.** `DirectoryPlayer` is `{ key, name, imageUrl, terms }`.
+    - `key` is 22 base64url characters, opaque and stable. It isn't `players.id`.
+    - **Why:** ids are uuid v7, so players loaded together sort next to each other. On the seeded data, 6.3 of a starter's 10 nearest ids were teammates. With every id listed, one revealed id would point at the rest of the XI (Hard Constraint 2).
+  - **Marking named players:** `RevealedPlayer` gains `directoryKey`, equal to that player's `DirectoryPlayer.key`. It appears everywhere a revealed player does: `SoloSession.found`, `correct_new.player`, `missed`, `DuelFoundPlayer`, `NamedPlayer`, `DuelNamedPlayer`, and the socket payloads. Match on `directoryKey`, never `RevealedPlayer.id`.
+  - **Fields:** `name` is the display form, diacritics kept. `imageUrl` is an absolute URL or null, the `RevealedPlayer.imageUrl` rule. `terms` are the normalised aliases, distinct, sorted, at least one; searched, never shown.
+  - **Caching:** a strong `ETag` and `Cache-Control: private, no-cache`. `If-None-Match` with the current tag gets 304 with no body. CORS allows `If-None-Match` and exposes `ETag`.
+  - **Compression:** Brotli when accepted, else gzip, with `Vary: Accept-Encoding`.
+  - **Measured:** 3,787 players. 884 KB raw, 229 KB gzip, 193 KB Brotli; about half of it is the image URLs. The first build after a data change takes ~2.4 s; after that a 200 or a 304 costs ~65 ms on the server, nearly all of it the database round trip.
+  - **Unchanged:** additive, a new route and a new field. No `PROTOCOL_VERSION` bump.
+  - **Docs:** OpenAPI (`PlayerDirectory`, `DirectoryPlayer`, `RevealedPlayer.directoryKey`) and backend `context/api-contract.md`.
 
 ### Then
 
