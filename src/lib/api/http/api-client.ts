@@ -45,8 +45,11 @@ export function createHttpApiClient(baseUrl: string): ApiClient {
     catalog: {
       getFilterOptions: () =>
         request('GET', '/catalog/filter-options', filterOptionsSchema),
+      // Revalidated by ETag: ~300 bytes when unchanged
       getPlayerDirectory: () =>
-        request('GET', '/catalog/players', playerDirectorySchema),
+        request('GET', '/catalog/players', playerDirectorySchema, {
+          cache: 'no-cache',
+        }),
     },
     solo: {
       findMatch: (filters) =>

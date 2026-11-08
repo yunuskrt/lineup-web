@@ -47,6 +47,13 @@ describe('createTransport', () => {
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 
+  // The browser keeps it and asks again by ETag
+  it('revalidates a request that asks for no-cache', async () => {
+    respondWith('{"success":true,"data":{"name":"a"}}');
+    await request('GET', '/catalog/players', dataSchema, { cache: 'no-cache' });
+    expect(lastCall().init.cache).toBe('no-cache');
+  });
+
   it('sends a JSON body with its content type', async () => {
     respondWith('{"success":true,"data":{"name":"a"}}');
     await request('POST', '/auth/sign-in', dataSchema, {

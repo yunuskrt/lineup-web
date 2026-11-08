@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -45,6 +45,17 @@ Defaults stand unless changed at load:
 ## Notes
 
 - **Source:** the split decided with the user (2026-11-06). A builds the popup on the mock; B wires the real directory once backend R5 exists.
+- **Already in place from A (at load, 2026-11-08):**
+  - The hook checks once per **new match** (the solo offer's `sessionId`, or the duel session's id), not per mount, because Play again doesn't remount the game (A's deviation). So the "When" goal above already holds for Play again.
+  - The HTTP adapter tests already parse an R5-shaped payload and refuse one with `id` instead of `key` (A's `/feature test`).
+- **Deviations recorded during implementation:**
+  - **Transcription:** nothing to change. The web's schemas match the backend's `contract/catalog.ts` and `contract/player.ts` exactly (key pattern, `terms` min 1, nullable `imageUrl`).
+  - **Transport option:** `RequestOptions.cache` (`'no-store' | 'no-cache'`, default `no-store`); only `catalog.getPlayerDirectory` passes `no-cache`.
+  - **Sizes from the browser, local backend (seeded data):** 167 players, 6,162 bytes Brotli on the first 200; the revalidation transfers 0 body bytes (~360 bytes of headers). The 3,787-player sizes weren't measurable locally; R5's Built note stands (884 KB raw, 229 KB gzip, 193 KB Brotli).
+  - **Parse and index, once per match** (Node 22, a synthetic 3,787-player directory of 607 KB raw, 3 runs): `JSON.parse` ~1.4 ms, schema check 11–23 ms, `buildSuggestionIndex` 8–13 ms, so ~25–40 ms in all, during the side pick or lobby.
+  - **Longest `suggest`:** `mar` (20 results), ~2 ms warm, 10 ms on the very first call. Well inside a frame, and `useDeferredValue` keeps typing responsive.
+  - **Failure:** a simulated 500 leaves the list off and the run playing; the app's retry policy asks 3 times in all.
+  - **Real names:** the local database only holds the seeded fixture players, so `sahin`, `ozil` and `ibrahimovic` against real data, and a nickname-only match, weren't checked here. Turkish plain spelling was checked on the seeded names (`isik` → Onur Işıklar).
 - **Freshness (user, 2026-11-06):** checked once per match with an ETag. A player added mid-match appears from the next match; typing that name still works in the current one, because the server matches it.
 - **Verification:**
   - `npm test`, `npm run lint`, `npm run build`.
