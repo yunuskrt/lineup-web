@@ -4,9 +4,11 @@ import { FIXTURES } from '@/lib/api/mock/data/fixtures';
 import {
   emptyReason,
   filterOptionsFrom,
+  PLAYABLE_FIXTURES,
   seasonStart,
   selectFixture,
 } from '@/lib/api/mock/pool';
+import { MOCK_SHOWCASE } from '@/lib/api/mock/showcase';
 import type { FixtureSelection } from '@/lib/api/mock/pool';
 import type { MockFixture } from '@/lib/api/mock/types';
 import { filterOptionsSchema } from '@/lib/api/schemas/catalog';
@@ -48,8 +50,22 @@ describe('selectFixture', () => {
     expect(again.identity.id).toBe(first.identity.id);
   });
 
-  it('reaches every fixture with no filters', () => {
-    expect(reachable(OPEN)).toHaveLength(FIXTURES.length);
+  it('reaches every playable fixture with no filters', () => {
+    expect(reachable(OPEN)).toHaveLength(PLAYABLE_FIXTURES.length);
+  });
+
+  // Its XI is on the landing page (HC 2)
+  it('never serves the showcase fixture', () => {
+    expect(PLAYABLE_FIXTURES).toHaveLength(FIXTURES.length - 1);
+    const ids = reachable(OPEN).map((f) => f.identity.id);
+    expect(ids).not.toContain(MOCK_SHOWCASE.fixtureId);
+    const theirs = reachable({
+      ...OPEN,
+      competitionIds: ['comp-continental-cup'],
+    });
+    expect(theirs.map((f) => f.identity.id)).not.toContain(
+      MOCK_SHOWCASE.fixtureId,
+    );
   });
 
   it('stays in range when random returns its upper edge', () => {
@@ -59,12 +75,12 @@ describe('selectFixture', () => {
   it('narrows by competition', () => {
     const matches = reachable({
       ...OPEN,
-      competitionIds: ['comp-continental-cup'],
+      competitionIds: ['comp-crown-league'],
     });
 
     expect(matches.length).toBeGreaterThan(1);
     for (const f of matches) {
-      expect(f.identity.competition.id).toBe('comp-continental-cup');
+      expect(f.identity.competition.id).toBe('comp-crown-league');
     }
   });
 

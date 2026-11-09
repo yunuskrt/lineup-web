@@ -1,9 +1,5 @@
 import type { ApiClient } from '@/lib/api/client';
-import {
-  FIXTURES,
-  requireFixture,
-  squadFor,
-} from '@/lib/api/mock/data/fixtures';
+import { requireFixture, squadFor } from '@/lib/api/mock/data/fixtures';
 import { PLAYER_DIRECTORY } from '@/lib/api/mock/directory';
 import {
   createEngineState,
@@ -14,6 +10,7 @@ import {
   toRevealed,
   type EngineState,
 } from '@/lib/api/mock/engine';
+import { overviewFrom } from '@/lib/api/mock/overview';
 import { filterOptionsFrom, selectFixture } from '@/lib/api/mock/pool';
 import {
   createIdentity,
@@ -346,7 +343,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
 
     catalog: {
       async getFilterOptions() {
-        return ok(filterOptionsFrom(FIXTURES));
+        return ok(filterOptionsFrom());
       },
 
       async getPlayerDirectory() {
@@ -354,6 +351,10 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           return fail('unauthorized', 'Sign in or continue as a guest first.');
         }
         return ok(PLAYER_DIRECTORY);
+      },
+
+      async getOverview() {
+        return ok(overviewFrom());
       },
     },
 

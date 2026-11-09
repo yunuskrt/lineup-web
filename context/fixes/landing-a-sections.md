@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -107,6 +107,19 @@ Defaults stand unless changed at load:
 
 ## Notes
 
+- **Deviations recorded during implementation:**
+  - **Showcase players carry `directoryKey`** (full `RevealedPlayer`), and `demo.miss` is `{ name, imageUrl, directoryKey }`. `SquadGrid` takes `FoundPlayer`, and Landing B's suggestion rows key on it. R7 in `backend-requests.md` updated to match.
+  - **The mock showcase is `match-continental-2019-semi`** (Northgate's XI; reveals Nwosu, Şimşek, Rowntree, Benedetti, Pritchard; miss Samuel Ekwueme). It is the one fixture no test names, and leaving it out keeps the mock's era range and every filter non-empty. `PLAYABLE_FIXTURES` in `pool.ts` is the new default for selection, empty-pool checks and filter options.
+  - **Mock fixtures gain optional `extraTime` and `shootout`** (set on the two 3–3 finals), so the mock's highlights aren't zero. The game never reads them.
+  - **Tests that counted every fixture now count the playable ones**, and "narrows by competition" uses the Crown League (the Continental Cup has one playable fixture left).
+  - **The headline is two lines from `lg`** (`whitespace-nowrap` per sentence, a 6 : 5 column split). In half the width it broke into three ("Beat the / Clock.").
+  - **The rules strip lost its closing line** ("Play solo, or take someone on live in a 1v1 duel."): the new modes section right below says the same. The spec said `HomeRules` unchanged.
+  - **The showcase's ring and input stack on phones**, as the game's band does: side by side, the 144px ring left the input about 80px at 320.
+  - **Crests use `ClubCrest`'s `header` size:** 32px below `sm`, 40px from `sm`.
+  - **The era line reads "Seasons 2000–01 to 2025–26."**; a bare range under the numbers read as unlabelled.
+  - **`CatalogOverview` and `Showcase` sit in `contract.md` § 4 › Response types**, beside `FilterOptions`, where the other response shapes live, rather than § 3.
+  - **`HomeFold` takes an optional `showcase` slot**, so `/dev/landing` can pass a fixed frame; the page passes nothing and gets the fetched one.
+  - **The competition row's skeleton is approximate:** 8 placeholders (two rows wide), since the real row's height depends on how many competitions there are and how long their names are. Every other skeleton matches its loaded height (measured at 375 and 1440).
 - **Source:** user request (2026-11-09), decisions in `context/docs/landing-page-improvements.md` § 1, the match and mock decisions from 2026-11-09 (`backend-requests.md` § R7).
 - **Order:** Landing A → Landing B → (backend R7, any time before C) → Landing C.
 - **Hard limits:** no Three.js or WebGL; no sideways scroll at any width; no game logic in the page (the still frame only draws slots it's given).

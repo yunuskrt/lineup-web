@@ -6,7 +6,11 @@ import type {
   SignUpRequest,
   UpgradeGuestRequest,
 } from '@/types/auth';
-import type { FilterOptions, PlayerDirectory } from '@/types/catalog';
+import type {
+  CatalogOverview,
+  FilterOptions,
+  PlayerDirectory,
+} from '@/types/catalog';
 import type { Filters } from '@/types/filters';
 import type { Side } from '@/types/match';
 import type { HistoryPage, HistoryQuery, Profile } from '@/types/profile';
@@ -33,6 +37,8 @@ export interface CatalogApi {
   getFilterOptions(): Promise<ApiResult<FilterOptions>>;
   // Once per match, for guess suggestions
   getPlayerDirectory(): Promise<ApiResult<PlayerDirectory>>;
+  // Public: the landing page, before any session
+  getOverview(): Promise<ApiResult<CatalogOverview>>;
 }
 
 export interface SoloApi {

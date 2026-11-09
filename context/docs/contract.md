@@ -194,6 +194,7 @@ Paths are suggestions. Every response body is the envelope from §2, wrapping th
 | 6 | `auth.signOut` | `POST /auth/sign-out` | — | none (`data` empty) |
 | 7 | `catalog.getFilterOptions` | `GET /catalog/filter-options` | — | `FilterOptions` |
 | 8 | `catalog.getPlayerDirectory` | `GET /catalog/players` | — | `PlayerDirectory` |
+| 8a | `catalog.getOverview` | `GET /catalog/overview` | — | `CatalogOverview` (backend R7, not built yet) |
 | 9 | `solo.findMatch` | `POST /solo/sessions` | `Filters` | `SoloMatchOffer` |
 | 10 | `solo.chooseSide` | `POST /solo/sessions/:sessionId/side` | `{ side: Side }` | `SoloSession` |
 | 11 | `solo.guess` | `POST /solo/sessions/:sessionId/guesses` | `SoloGuessRequest` | `SoloGuessResponse` |
@@ -251,6 +252,28 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 - Any session, guests included; no session gets `unauthorized`. The `catalog` rate limit, 60 a minute.
 - Strong `ETag` and `Cache-Control: private, no-cache`; `If-None-Match` with the current tag gets 304 with no body. Brotli or gzip.
 - **The web revalidates it, and nothing else** (Guess Suggestions B): this call alone is sent with `cache: 'no-cache'`, every other call with `no-store`. The browser keeps the 200 and its `ETag`, sends `If-None-Match` itself, and hands a 304 back as the cached body. One check per new match; the web has no ETag code of its own.
+
+**`CatalogOverview`** (backend R7, transcribed ahead of it by web Landing A). What the landing page shows. Public, like `filter-options`.
+
+| Field | Type | Rule |
+| --- | --- | --- |
+| `counts` | `{ matches, players, clubs, nationalTeams, seasons }` | Non-negative integers over the **playable pool only** (the selector's candidates; never the showcase) |
+| `era` | `{ from, to }` | As `FilterOptions.era` |
+| `highlights` | `{ finals, shootouts, extraTime, goals }` | Non-negative integers over the same matches |
+| `competitions` | `CompetitionRef[]` | The pool's competitions; the web orders them as `/play` groups them |
+| `topClubs` | `ClubRef[]`, at most 12 | Clubs only (no national teams), most playable matches first, then by name |
+| `showcase` | `Showcase` or `null` | `null` when the backend's constant no longer fits the data |
+
+**`Showcase`.** One famous XI for the landing demo. **Its match is excluded from the pool**, so sending its XI breaks no Hard Constraint 2.
+
+| Field | Type | Rule |
+| --- | --- | --- |
+| `match` | `MatchInPlay` | The whole match, plus the named `side` and its `formation` |
+| `players` | `RevealedPlayer[]` | Exactly 11, one per slot, `directoryKey` included |
+| `demo.reveals` | integer[] | 1–11 distinct slots of `players`, in the order the demo names them |
+| `demo.miss` | `{ name, imageUrl, directoryKey }` or `null` | The demo's wrong guess: a player from the **other** side's XI, so "Not in this XI" is true |
+
+- Any failure (until R7 exists, every call) means the landing page leaves out the numbers, the competitions and the showcase. No error copy.
 
 **`SoloMatchOffer`.** The run is created and the player picks a side next.
 
@@ -338,6 +361,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `getSummary` | `not_found`, `invalid_input`, `forbidden` (run still in progress) |
 | `getProfile`, `getHistory` | `unauthorized`; `getHistory` also `invalid_input` |
 | `getPlayerDirectory` | `unauthorized` (session lost), `rate_limited`. Any failure means no suggestions; the game is unaffected |
+| `getOverview` | `rate_limited`. Any failure leaves the landing page's data sections out |
 | Any | `server_error` |
 
 ### Solo behaviour the web relies on

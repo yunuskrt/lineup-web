@@ -230,8 +230,8 @@ CatalogOverview {
 
 Showcase {
   match:   MatchInPlay                      // identity (R4) + side + formation
-  players: { id, slot, position, name, imageUrl | null }[11]
-  demo:    { reveals: slot[], miss: { name, imageUrl } | null }
+  players: RevealedPlayer[11]               // directoryKey included
+  demo:    { reveals: slot[], miss: { name, imageUrl, directoryKey } | null }
 }
 ```
 

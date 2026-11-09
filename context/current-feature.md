@@ -79,3 +79,4 @@ Not Started
 - Guess Suggestions B: no-cache directory, ETag revalidation, real checks.
 - Private Rooms A: create, join by code, waiting room, Friend tag, mock.
 - Private Rooms B: R6 shapes required, full room not_found, two-browser.
+- Fix Landing A: six sections, overview numbers, showcase still, count-up.

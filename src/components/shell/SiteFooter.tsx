@@ -1,4 +1,5 @@
-import { SITE_CONTAINER } from '@/styles/classes';
+import Link from 'next/link';
+import { SITE_CONTAINER, TEXT_LINK } from '@/styles/classes';
 
 type SiteFooterProps = {
   variant: 'statement' | 'inline';
@@ -8,11 +9,16 @@ export function SiteFooter({ variant }: SiteFooterProps) {
   if (variant === 'statement') {
     return (
       <footer className="border-t border-line">
-        <p
-          className={`${SITE_CONTAINER} py-16 font-display text-24 font-bold uppercase font-stretch-expanded sm:text-32`}
+        <div
+          className={`${SITE_CONTAINER} flex flex-col items-start gap-4 py-16 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8`}
         >
-          Eleven names. Fifteen seconds.
-        </p>
+          <p className="font-display text-24 font-bold uppercase font-stretch-expanded sm:text-32">
+            Eleven names. Fifteen seconds.
+          </p>
+          <Link href="/play" className={`shrink-0 text-16 ${TEXT_LINK}`}>
+            Play
+          </Link>
+        </div>
       </footer>
     );
   }

@@ -5,14 +5,13 @@ import {
   MOCK_REJECTED_PASSWORD,
 } from '@/lib/api/mock/api-client';
 import { GRACE_WINDOW_MS, ROUND_DURATION_MS } from '@/lib/api/mock/clock';
-import {
-  FIXTURES,
-  requireFixture,
-  squadFor,
-} from '@/lib/api/mock/data/fixtures';
+import { requireFixture, squadFor } from '@/lib/api/mock/data/fixtures';
+import { PLAYABLE_FIXTURES } from '@/lib/api/mock/pool';
 import { EMPTY_POOL_MESSAGES } from '@/lib/api/mock/shared';
+import { MOCK_SHOWCASE } from '@/lib/api/mock/showcase';
 import { createStore } from '@/lib/api/mock/store';
 import { HANDLE_PATTERN } from '@/lib/api/schemas/auth';
+import { catalogOverviewSchema } from '@/lib/api/schemas/catalog';
 import {
   soloMatchOfferSchema,
   soloSessionSchema,
@@ -48,9 +47,9 @@ function errorOf<T>(result: ApiResult<T>) {
 
 // The draw that hits a fixture with no filter set
 function drawFor(fixtureId: string): number {
-  const index = FIXTURES.findIndex((f) => f.identity.id === fixtureId);
+  const index = PLAYABLE_FIXTURES.findIndex((f) => f.identity.id === fixtureId);
   if (index < 0) throw new Error(`Unknown fixture ${fixtureId}`);
-  return (index + 0.5) / FIXTURES.length;
+  return (index + 0.5) / PLAYABLE_FIXTURES.length;
 }
 
 describe('mock api client', () => {
@@ -121,7 +120,7 @@ describe('mock api client', () => {
   });
 
   it('never returns an unrevealed player, on any fixture or side', async () => {
-    for (const fixture of FIXTURES) {
+    for (const fixture of PLAYABLE_FIXTURES) {
       for (const side of ['home', 'away'] as const) {
         draw = drawFor(fixture.identity.id);
         api = createMockApiClient({ now: () => clock, random: () => draw });
@@ -679,5 +678,15 @@ describe('mock api client', () => {
     expect(options.clubs).toHaveLength(11);
     expect(options.era).toEqual({ from: 2002, to: 2023 });
     expect(JSON.stringify(options)).not.toContain('memorability');
+  });
+
+  // Public, like filter options: no session yet
+  it('serves the overview before any session', async () => {
+    const overview = unwrap(await api.catalog.getOverview());
+
+    expect(catalogOverviewSchema.safeParse(overview).success).toBe(true);
+    expect(overview.counts.matches).toBe(PLAYABLE_FIXTURES.length);
+    expect(overview.showcase?.match.id).toBe(MOCK_SHOWCASE.fixtureId);
+    expect(JSON.stringify(overview)).not.toContain('memorability');
   });
 });
