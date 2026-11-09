@@ -46,6 +46,13 @@ describe('SKELETON_PULSE', () => {
     expect(MOTION_EASING.countUp).toBe('easeOut');
   });
 
+  it('types, checks and holds the landing demo at play speed', () => {
+    expect(MOTION_DURATION_MS.demoTypeStep).toBe(110);
+    expect(MOTION_DURATION_MS.demoPending).toBe(300);
+    expect(MOTION_DURATION_MS.demoHold).toBe(3000);
+    expect(MOTION_DURATION_MS.demoFade).toBe(MOTION_DURATION_MS.gateFade);
+  });
+
   it('loops the 1.6s ease-in-out pulse from theme.md', () => {
     expect(SKELETON_PULSE.duration).toBe(1.6);
     expect(SKELETON_PULSE.ease).toBe('easeInOut');
@@ -67,6 +74,7 @@ const MOVING = [
   'sidePickHoverLift',
   'missedReveal',
   'countUp',
+  'demoLoop',
 ] as const;
 
 const CUES = [

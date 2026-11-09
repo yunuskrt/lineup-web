@@ -11,6 +11,17 @@ export const MOTION_DURATION_MS = {
   sidePickEntrance: 320,
   missedReveal: 240,
   countUp: 800,
+  // The landing demo's script, one solo turn
+  demoStart: 1200,
+  demoLead: 450,
+  demoTypeStep: 110,
+  demoSuggest: 700,
+  demoPick: 250,
+  demoPending: 300,
+  demoReveal: 1470,
+  demoMiss: 1000,
+  demoHold: 3000,
+  demoFade: 240,
 } as const;
 
 // Motion takes seconds
@@ -72,6 +83,7 @@ export const MOTION_EFFECTS = [
   'sidePickHoverLift',
   'missedReveal',
   'countUp',
+  'demoLoop',
 ] as const;
 
 export type MotionEffect = (typeof MOTION_EFFECTS)[number];
@@ -104,6 +116,7 @@ export const REDUCED_MOTION_POLICY: Record<MotionEffect, ReducedMotion> = {
   sidePickHoverLift: 'drop',
   missedReveal: 'drop',
   countUp: 'drop',
+  demoLoop: 'drop',
 };
 
 // Null before the preference is read: animate

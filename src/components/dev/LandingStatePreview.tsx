@@ -9,8 +9,20 @@ import { ShowcaseFrame } from '@/components/home/ShowcaseFrame';
 import type { LandingState } from '@/lib/dev/landing-states';
 
 // The landing body on fixed data; no fetch
-export function LandingStatePreview({ state }: { state: LandingState }) {
+type LandingStatePreviewProps = {
+  state: LandingState;
+  frozenAtMs?: number;
+};
+
+export function LandingStatePreview({
+  state,
+  frozenAtMs,
+}: LandingStatePreviewProps) {
   const { overview, isLoading } = state;
+  const playback =
+    frozenAtMs === undefined
+      ? state.playback
+      : { ...state.playback, frozenAtMs };
 
   return (
     <>
@@ -19,6 +31,7 @@ export function LandingStatePreview({ state }: { state: LandingState }) {
           <ShowcaseFrame
             showcase={overview?.showcase ?? null}
             isLoading={isLoading}
+            playback={playback}
           />
         }
       />

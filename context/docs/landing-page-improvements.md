@@ -163,6 +163,20 @@ The one moving thing on the page: one solo turn on Real Madrid's XI, replayed wi
 
 The ring sweeps **linearly**, at the real 15-second rate (`theme.md` § Motion). Reveals land before it runs out, so the demo never shows a life lost, and it never misstates the time.
 
+**Tuned step lengths** (Landing B, 2026-11-09; `MOTION_DURATION_MS` in `src/styles/motion.ts`):
+
+| Step | Length |
+| --- | --- |
+| Start, before the first name | 1,200ms |
+| Each guess: wait, then type 3 letters | 450ms + 3 × 110ms |
+| Suggestion row shown (highlighted halfway) | 700ms |
+| Picked: the full name in the input | 250ms |
+| Pending, with the spinner | 300ms |
+| After a reveal / after the miss | 1,470ms / 1,000ms |
+| Hold, then fade | 3,000ms, then 240ms |
+
+One loop is 24.97s (5 reveals of 3.5s, a 3.03s miss). The longest round is 6.53s, the one holding the miss, well inside the 15s.
+
 ### Rules
 
 - **Presentation only.** A fixed timeline in the client, with no matcher, no lives accounting and no outcome logic. It plays back events, the way a recorded match would.

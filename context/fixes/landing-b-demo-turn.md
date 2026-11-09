@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -68,5 +68,17 @@ Defaults stand unless changed at load:
 
 ## Notes
 
+- **Deviations recorded during implementation:**
+  - **No "5 of 11 named" caption during the hold:** the match header already counts "5/11" and the caption keeps naming the match. Swapping a visible caption under a figure for 3s added motion without information.
+  - **The Pause / Play chip sits in the caption row,** right of the caption, not in the demo's top corner: the top-right corner is the header's "N/11" count.
+  - **The chip's visible text is "Pause" / "Play"** (uppercase, `QUIT_CHIP`); its accessible name is "Pause demo" / "Play demo".
+  - **`GuessInput` gains `drivenHighlight?: string | null`,** not `readOnly`: the list opened only on focus, and the demo's input is inert. When it is set, the input also skips its focus call and its scroll-into-view, so the demo can never move focus or scroll the page (checked: scrollY stays 0 over 9s of play).
+  - **A `demoLoop` motion effect** (`drop`) decides demo vs still frame, so the choice reads `useMotionPolicy` like every other effect. The step lengths are ten `demo*` entries in `MOTION_DURATION_MS`, not three.
+  - **The toast sits above the input** in the band, as in the game's rail, so the still frame and the demo share one height.
+  - **Only the header and pitch fade** at the loop's end, not the whole panel, so its border doesn't flicker.
+  - **The ring is driven by its round's start, not re-rendered per frame:** one `requestAnimationFrame` loop updates React only when the frame changes (about 40 times a loop); `CountdownRing` keeps its own sweep, and in `frozen` mode holds the paused moment.
+  - **Dev states:** `ready` is the playing demo (no separate `demo`), plus `demo-paused`, `still` (the reduced-motion frame) and `&at=<ms>`. In an `at` snapshot the toast replays on mount; live, it shows once per loop.
+  - **Loop length** 24.97s, not about 26s (the step lengths above).
+  - **The ring runs only once a run's clock is set:** on resume the ring stays frozen until the first frame tick sets the new start, so it never shows one frame of "time lost while paused" (checked: 13 held through a 4s pause, then 13 → 12). `ShowcasePlayback` lives in `src/types/landing.ts`, so `src/lib/dev` doesn't import a component.
 - **Source:** user request (2026-11-09): the demo on Real Madrid's 2017 XI with Bale, Cristiano Ronaldo, Benzema, Modrić and Kroos; Lionel Messi as the wrong guess; a fictional XI on the mock.
 - **Order:** after Landing A, before Landing C. Backend R7 can be built in parallel.

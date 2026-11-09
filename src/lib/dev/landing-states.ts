@@ -1,10 +1,12 @@
 import { overviewFrom } from '@/lib/api/mock/overview';
 import type { CatalogOverview } from '@/types/catalog';
+import type { ShowcasePlayback } from '@/types/landing';
 
 export type LandingState = {
   description: string;
   overview: CatalogOverview | null;
   isLoading: boolean;
+  playback?: ShowcasePlayback;
 };
 
 const READY = overviewFrom();
@@ -44,9 +46,22 @@ const LONG: CatalogOverview = {
 
 export const LANDING_STATES: Record<string, LandingState> = {
   ready: {
-    description: 'The mock overview, with its fictional showcase.',
+    description:
+      'The mock overview; the demo plays. Add &at=<ms> to freeze a moment.',
     overview: READY,
     isLoading: false,
+  },
+  'demo-paused': {
+    description: 'The demo, paused before it starts: Play resumes it.',
+    overview: READY,
+    isLoading: false,
+    playback: { startsPaused: true },
+  },
+  still: {
+    description: 'The reduced-motion frame: five slots filled, nothing moves.',
+    overview: READY,
+    isLoading: false,
+    playback: { isStill: true },
   },
   loading: {
     description: 'The first fetch: every section as a skeleton.',
