@@ -111,6 +111,8 @@ type GuessInputProps = {
   shakeKey: number;
   // Typing aid only; a pick is a plain text guess
   suggestions?: readonly Suggestion[];
+  // Landing demo: the list opens without focus
+  drivenHighlight?: string | null;
 };
 
 const NO_SUGGESTIONS: readonly Suggestion[] = [];
@@ -123,6 +125,7 @@ export function GuessInput({
   onSubmit,
   shakeKey,
   suggestions = NO_SUGGESTIONS,
+  drivenHighlight,
 }: GuessInputProps) {
   const inputId = useId();
   const listId = useId();
@@ -137,18 +140,22 @@ export function GuessInput({
   // Escape, or a sent guess, until the text changes
   const [isDismissed, setIsDismissed] = useState(false);
   const [highlightedKey, setHighlightedKey] = useState<string | null>(null);
+  const isDriven = drivenHighlight !== undefined;
   const isListOpen =
-    status === 'live' && isFocused && !isDismissed && suggestions.length > 0;
+    status === 'live' &&
+    (isDriven || (isFocused && !isDismissed)) &&
+    suggestions.length > 0;
+  const highlightKey = isDriven ? drivenHighlight : highlightedKey;
   const highlighted = isListOpen
     ? (suggestions.find(
-        (item) => item.player.key === highlightedKey && !item.isNamed,
+        (item) => item.player.key === highlightKey && !item.isNamed,
       ) ?? null)
     : null;
   const optionId = (key: string) => `${listId}-${key}`;
 
   useEffect(() => {
-    if (status === 'live') inputRef.current?.focus();
-  }, [status]);
+    if (status === 'live' && !isDriven) inputRef.current?.focus();
+  }, [isDriven, status]);
 
   useEffect(() => {
     if (shakeKey === shakenKey.current) return;
@@ -162,11 +169,12 @@ export function GuessInput({
   }, [animate, canShake, scope, shakeKey]);
 
   useEffect(() => {
-    if (!highlighted) return;
+    // A driven list must never scroll the page
+    if (!highlighted || isDriven) return;
     document
       .getElementById(`${listId}-${highlighted.player.key}`)
       ?.scrollIntoView({ block: 'nearest' });
-  }, [highlighted, listId]);
+  }, [highlighted, isDriven, listId]);
 
   function send(text: string) {
     const guess = prepareGuess(text);

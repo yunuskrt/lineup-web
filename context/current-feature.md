@@ -80,3 +80,4 @@ Not Started
 - Private Rooms A: create, join by code, waiting room, Friend tag, mock.
 - Private Rooms B: R6 shapes required, full room not_found, two-browser.
 - Fix Landing A: six sections, overview numbers, showcase still, count-up.
+- Fix Landing B: demo turn loop, typed picks, miss shake, pause, still.

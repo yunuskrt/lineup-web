@@ -277,6 +277,17 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Connection lost     | Reconnect failed             | Result screen, marked as a forfeit                                              |
 | Rate limited        | Guess spam trips the limiter | Input locks briefly with a reason. Not silent — silent lockouts read as a crash |
 
+### Landing demo
+
+The showcase on `/` plays one solo turn on a loop. It is presentation, not a game: the reveals and the wrong guess come from the response.
+
+| State          | Trigger                         | Treatment                                                                                                                         |
+| -------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Playing        | At least half in view, tab shown | Typing, the suggestion row, reveals with the 320ms spring, one "Not in this XI" shake. The ring sweeps linearly at the real rate |
+| Paused         | Pause, out of view, tab hidden  | Everything stops where it was, the ring included. A Pause / Play chip beside the caption is the demo's only control              |
+| Reduced motion | `prefers-reduced-motion`        | One still frame: five slots filled, the ring full and **still**, no chip. In play the ring never stops; in the demo it carries no time, so it does |
+| Sound          | Always                          | None. The game's cues never play on `/`                                                                                           |
+
 ### Loading
 
 Every wait in this app has a **known shape** — a squad is always 11 slots, a lobby row is always crest + name + rating. So loading is a skeleton of the real thing, never a centered spinner on an empty panel.

@@ -15,9 +15,11 @@ export default async function LandingPreviewPage({
   searchParams,
 }: PageProps<'/dev/landing'>) {
   requireDevEnv();
-  const { state } = await searchParams;
+  const { state, at } = await searchParams;
   const name = typeof state === 'string' ? state : DEFAULT_LANDING_STATE;
   const resolved = resolveLandingState(state);
+  const frozenAtMs =
+    typeof at === 'string' && /^\d+$/.test(at) ? Number(at) : undefined;
 
   return (
     <div className="flex min-h-full flex-col">
@@ -38,7 +40,11 @@ export default async function LandingPreviewPage({
         <span className="text-fg-muted">{resolved.description}</span>
       </nav>
       <main className="flex flex-1 flex-col">
-        <LandingStatePreview key={name} state={resolved} />
+        <LandingStatePreview
+          key={`${name}-${frozenAtMs ?? 'live'}`}
+          state={resolved}
+          frozenAtMs={frozenAtMs}
+        />
       </main>
       <SiteFooter variant="statement" />
     </div>
