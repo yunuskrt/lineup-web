@@ -1,4 +1,5 @@
 import { FIXTURES } from '@/lib/api/mock/data/fixtures';
+import { MOCK_SHOWCASE } from '@/lib/api/mock/showcase';
 import type { MockFixture } from '@/lib/api/mock/types';
 import {
   FIRST_SEASON_START,
@@ -15,6 +16,11 @@ export type FixtureSelection =
   { fixture: MockFixture } | { emptyBecause: EmptyPoolReason };
 
 const FILTER_ORDER: readonly FilterKey[] = ['competition', 'club', 'era'];
+
+// The showcase is shown, never served (HC 2)
+export const PLAYABLE_FIXTURES: readonly MockFixture[] = FIXTURES.filter(
+  (fixture) => fixture.identity.id !== MOCK_SHOWCASE.fixtureId,
+);
 
 export function seasonStart(fixture: MockFixture): number {
   return Number.parseInt(fixture.identity.season.slice(0, 4), 10);
@@ -62,7 +68,7 @@ function blame(
 
 export function emptyReason(
   filters: Filters,
-  fixtures: readonly MockFixture[] = FIXTURES,
+  fixtures: readonly MockFixture[] = PLAYABLE_FIXTURES,
 ): EmptyPoolReason | null {
   if (matching(fixtures, filters).length > 0) return null;
   return blame(filters, fixtures);
@@ -71,7 +77,7 @@ export function emptyReason(
 export function selectFixture(
   filters: Filters,
   random: () => number,
-  fixtures: readonly MockFixture[] = FIXTURES,
+  fixtures: readonly MockFixture[] = PLAYABLE_FIXTURES,
 ): FixtureSelection {
   const pool = matching(fixtures, filters);
   if (pool.length === 0) return { emptyBecause: blame(filters, fixtures) };
@@ -113,7 +119,7 @@ function competitionOptionFrom(
 }
 
 export function filterOptionsFrom(
-  fixtures: readonly MockFixture[] = FIXTURES,
+  fixtures: readonly MockFixture[] = PLAYABLE_FIXTURES,
 ): FilterOptions {
   const competitions: CompetitionRef[] = fixtures.map(
     (fixture) => fixture.identity.competition,

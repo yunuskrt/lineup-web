@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MISSED_REVEAL_STAGGER_MS,
   MOTION_DURATION_MS,
+  MOTION_EASING,
   MOTION_EFFECTS,
   MOTION_SECONDS,
   motionFor,
@@ -40,6 +41,11 @@ describe('missed reveal', () => {
 });
 
 describe('SKELETON_PULSE', () => {
+  it('counts the landing numbers up once, over 800ms', () => {
+    expect(MOTION_DURATION_MS.countUp).toBe(800);
+    expect(MOTION_EASING.countUp).toBe('easeOut');
+  });
+
   it('loops the 1.6s ease-in-out pulse from theme.md', () => {
     expect(SKELETON_PULSE.duration).toBe(1.6);
     expect(SKELETON_PULSE.ease).toBe('easeInOut');
@@ -60,6 +66,7 @@ const MOVING = [
   'sidePickSlide',
   'sidePickHoverLift',
   'missedReveal',
+  'countUp',
 ] as const;
 
 const CUES = [

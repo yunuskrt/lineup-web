@@ -59,8 +59,9 @@ export function RoomControls({ filterParams, initialCode }: RoomControlsProps) {
 
   return (
     <section
+      id="play-a-friend"
       aria-labelledby={headingId}
-      className="flex flex-col gap-3 border-t border-line pt-6"
+      className="flex scroll-mt-6 flex-col gap-3 border-t border-line pt-6"
     >
       <h3 id={headingId} className="text-16 font-semibold">
         Play a friend

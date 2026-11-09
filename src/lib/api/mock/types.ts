@@ -130,6 +130,9 @@ export const mockFixtureRecordSchema = matchIdentitySchema
     awayClubId: idSchema,
     home: mockSideSchema,
     away: mockSideSchema,
+    // Landing highlights only; the game never reads them
+    extraTime: z.boolean().optional(),
+    shootout: z.boolean().optional(),
   });
 
 const mockFixtureSideSchema = z.object({
@@ -173,6 +176,8 @@ export const mockFixtureSchema = z
     identity: matchIdentitySchema,
     home: mockFixtureSideSchema,
     away: mockFixtureSideSchema,
+    extraTime: z.boolean().optional(),
+    shootout: z.boolean().optional(),
   })
   .superRefine((fixture, ctx) => {
     if (fixture.identity.home.id === fixture.identity.away.id) {

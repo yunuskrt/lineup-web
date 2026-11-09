@@ -396,9 +396,9 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `match` | `MatchInPlay` | The `MatchIdentity` shape (R4) plus `side` and `formation`, as solo uses: here `side: 'home'`, `formation: '4-3-3'` |
-| `players` | 11 × `{ id, name, slot, position, imageUrl }` | The named side's whole XI, as `RevealedPlayer` without `directoryKey` |
+| `players` | 11 × `RevealedPlayer` | The named side's whole XI, **with `directoryKey`** (the grid and the demo's suggestion rows key on it) |
 | `demo.reveals` | `int[]`, 1–11 distinct slots | The slots the demo reveals, in order. Here Bale, Cristiano Ronaldo, Benzema, Modrić, Kroos |
-| `demo.miss` | `{ name, imageUrl } \| null` | The demo's wrong guess. Here Lionel Messi, from the other side's XI |
+| `demo.miss` | `{ name, imageUrl, directoryKey } \| null` | The demo's wrong guess. Here Lionel Messi, from the other side's XI |
 
 ### Rules
 

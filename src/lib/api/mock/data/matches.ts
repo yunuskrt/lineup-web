@@ -55,6 +55,8 @@ export const MATCHES = [
     awayClubId: 'club-northgate',
     score: { home: 3, away: 3 },
     nickname: 'The Night of the Six',
+    extraTime: true,
+    shootout: true,
     home: {
       formation: '4-2-3-1',
       lineup: [
@@ -356,6 +358,8 @@ export const MATCHES = [
     awayClubId: 'nat-kaltmark',
     score: { home: 3, away: 3 },
     nickname: null,
+    extraTime: true,
+    shootout: true,
     home: {
       formation: '4-2-3-1',
       lineup: [

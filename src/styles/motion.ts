@@ -10,6 +10,7 @@ export const MOTION_DURATION_MS = {
   skeletonPulse: 1600,
   sidePickEntrance: 320,
   missedReveal: 240,
+  countUp: 800,
 } as const;
 
 // Motion takes seconds
@@ -23,6 +24,7 @@ export const MOTION_EASING = {
   // CSS `ease` as a cubic-bezier
   timerColorShift: [0.25, 0.1, 0.25, 1],
   skeletonPulse: 'easeInOut',
+  countUp: 'easeOut',
 } as const;
 
 // The gap between missed slots as they appear
@@ -69,6 +71,7 @@ export const MOTION_EFFECTS = [
   'sidePickSlide',
   'sidePickHoverLift',
   'missedReveal',
+  'countUp',
 ] as const;
 
 export type MotionEffect = (typeof MOTION_EFFECTS)[number];
@@ -100,6 +103,7 @@ export const REDUCED_MOTION_POLICY: Record<MotionEffect, ReducedMotion> = {
   sidePickSlide: 'drop',
   sidePickHoverLift: 'drop',
   missedReveal: 'drop',
+  countUp: 'drop',
 };
 
 // Null before the preference is read: animate

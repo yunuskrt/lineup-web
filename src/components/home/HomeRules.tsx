@@ -29,9 +29,6 @@ export function HomeRules() {
             </div>
           ))}
         </dl>
-        <p className="mt-8 text-16 text-fg-muted">
-          Play solo, or take someone on live in a 1v1 duel.
-        </p>
       </div>
     </section>
   );

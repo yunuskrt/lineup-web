@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ApiClient } from '@/lib/api/client';
 import { createHttpApiClient } from '@/lib/api/http/api-client';
 import { BAD_RESPONSE_ERROR } from '@/lib/api/http/transport';
+import { overviewFrom } from '@/lib/api/mock/overview';
 import type { ApiResult } from '@/types/api';
 
 const BASE_URL = 'http://localhost:8080';
@@ -80,6 +81,12 @@ const ROWS: Row[] = [
     path: '/catalog/players',
   },
   {
+    name: 'catalog.getOverview',
+    call: (c) => c.catalog.getOverview(),
+    method: 'GET',
+    path: '/catalog/overview',
+  },
+  {
     name: 'solo.findMatch',
     call: (c) => c.solo.findMatch(FILTERS),
     method: 'POST',
@@ -156,7 +163,7 @@ describe('createHttpApiClient', () => {
   });
 
   it('covers every REST call in the contract', () => {
-    expect(ROWS).toHaveLength(16);
+    expect(ROWS).toHaveLength(17);
   });
 
   it.each(ROWS)('$name → $method $path', async (row) => {
@@ -246,6 +253,39 @@ describe('createHttpApiClient', () => {
         data: { players: [{ id: 'player-uuid-1', name, imageUrl, terms }] },
       });
       expect(await client.catalog.getPlayerDirectory()).toEqual({
+        success: false,
+        error: BAD_RESPONSE_ERROR,
+      });
+      drift.mockRestore();
+    });
+  });
+
+  describe('catalog overview', () => {
+    const OVERVIEW = overviewFrom();
+
+    it('parses the backend R7 shape', async () => {
+      respondWith({ success: true, data: OVERVIEW });
+      expect(await client.catalog.getOverview()).toEqual({
+        success: true,
+        data: OVERVIEW,
+      });
+    });
+
+    // The grid and the demo key on it
+    it('refuses a showcase player without a directory key', async () => {
+      const drift = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const showcase = OVERVIEW.showcase;
+      if (!showcase) throw new Error('The mock has a showcase');
+      // JSON drops an undefined field
+      const players = showcase.players.map((player) => ({
+        ...player,
+        directoryKey: undefined,
+      }));
+      respondWith({
+        success: true,
+        data: { ...OVERVIEW, showcase: { ...showcase, players } },
+      });
+      expect(await client.catalog.getOverview()).toEqual({
         success: false,
         error: BAD_RESPONSE_ERROR,
       });

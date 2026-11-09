@@ -74,8 +74,16 @@ export function buildFixtures(source: FixtureSource): MockFixture[] {
   return source.matches.map((raw) => {
     const label = `Fixture ${raw.id}`;
     const record = parseOrThrow(mockFixtureRecordSchema, raw, label);
-    const { competitionId, homeClubId, awayClubId, home, away, ...rest } =
-      record;
+    const {
+      competitionId,
+      homeClubId,
+      awayClubId,
+      home,
+      away,
+      extraTime,
+      shootout,
+      ...rest
+    } = record;
 
     const toSquadSide = (side: MockSide) => ({
       formation: side.formation,
@@ -101,6 +109,8 @@ export function buildFixtures(source: FixtureSource): MockFixture[] {
         },
         home: toSquadSide(home),
         away: toSquadSide(away),
+        extraTime,
+        shootout,
       },
       label,
     );

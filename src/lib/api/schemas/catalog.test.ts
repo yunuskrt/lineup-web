@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { overviewFrom } from '@/lib/api/mock/overview';
 import {
+  catalogOverviewSchema,
   competitionOptionSchema,
   directoryPlayerSchema,
   playerDirectorySchema,
+  TOP_CLUBS_MAX,
 } from '@/lib/api/schemas/catalog';
+import type { CatalogOverview, Showcase } from '@/types/catalog';
 
 const OPTION = {
   id: 'comp-a',
@@ -80,5 +84,77 @@ describe('directoryPlayerSchema', () => {
 
   it('accepts an empty directory', () => {
     expect(playerDirectorySchema.safeParse({ players: [] }).success).toBe(true);
+  });
+});
+
+const OVERVIEW = overviewFrom();
+
+function showcaseOf(overview: CatalogOverview): Showcase {
+  if (!overview.showcase) throw new Error('The mock has a showcase');
+  return overview.showcase;
+}
+
+function withShowcase(patch: Partial<Showcase>): CatalogOverview {
+  return { ...OVERVIEW, showcase: { ...showcaseOf(OVERVIEW), ...patch } };
+}
+
+function overviewParses(overview: unknown): boolean {
+  return catalogOverviewSchema.safeParse(overview).success;
+}
+
+describe('catalogOverviewSchema', () => {
+  it('accepts the R7 shape, with or without a showcase', () => {
+    expect(overviewParses(OVERVIEW)).toBe(true);
+    expect(overviewParses({ ...OVERVIEW, showcase: null })).toBe(true);
+  });
+
+  it('rejects a negative or fractional count', () => {
+    const counts = { ...OVERVIEW.counts, matches: -1 };
+    expect(overviewParses({ ...OVERVIEW, counts })).toBe(false);
+    const highlights = { ...OVERVIEW.highlights, goals: 1.5 };
+    expect(overviewParses({ ...OVERVIEW, highlights })).toBe(false);
+  });
+
+  it(`rejects more than ${TOP_CLUBS_MAX} top clubs`, () => {
+    const [club] = OVERVIEW.topClubs;
+    const topClubs = Array.from({ length: TOP_CLUBS_MAX + 1 }, (_, index) => ({
+      ...club,
+      id: `club-${index}`,
+    }));
+    expect(overviewParses({ ...OVERVIEW, topClubs })).toBe(false);
+  });
+
+  it('rejects a showcase without its whole XI', () => {
+    const players = showcaseOf(OVERVIEW).players.slice(1);
+    expect(overviewParses(withShowcase({ players }))).toBe(false);
+  });
+
+  it('rejects two players in one slot', () => {
+    const [first, second, ...rest] = showcaseOf(OVERVIEW).players;
+    const players = [first, { ...second, slot: first.slot }, ...rest];
+    expect(overviewParses(withShowcase({ players }))).toBe(false);
+  });
+
+  it('rejects a duplicate reveal', () => {
+    const { demo } = showcaseOf(OVERVIEW);
+    const reveals = [demo.reveals[0], demo.reveals[0]];
+    expect(overviewParses(withShowcase({ demo: { ...demo, reveals } }))).toBe(
+      false,
+    );
+  });
+
+  it('rejects a reveal outside the XI', () => {
+    const { demo } = showcaseOf(OVERVIEW);
+    const reveals = [...demo.reveals, 11];
+    expect(overviewParses(withShowcase({ demo: { ...demo, reveals } }))).toBe(
+      false,
+    );
+  });
+
+  it('accepts a demo with no wrong guess', () => {
+    const { demo } = showcaseOf(OVERVIEW);
+    expect(
+      overviewParses(withShowcase({ demo: { ...demo, miss: null } })),
+    ).toBe(true);
   });
 });
