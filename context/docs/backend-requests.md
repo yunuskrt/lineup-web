@@ -8,6 +8,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | **Done**: Part 1 (2026-11-06, backend R4a), Part 2 (2026-11-06, backend R4b) |
 | R5 | A player directory for guess suggestions | Web features Guess Suggestions A and B | 2026-11-06 | **Done** (2026-11-08, backend R5): an opaque `key`, not `players.id` |
 | R6 | Private rooms: create a room, join it with a code | Web features Private Rooms A and B | 2026-11-08 | **Done** (2026-11-08): rooms (backend R6a), history `isPrivate` (backend R6b) |
+| R7 | A catalog overview for the landing page, with a showcase match | Web fixes Landing A, B and C | 2026-11-09 | Open |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -355,3 +356,87 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 
 > Read `../lineup-web/context/docs/backend-requests.md` § R6. Write it up as a backend feature spec (or two, if you'd split rooms from persistence), the way R4 and R5 were done: `room:create` with the creator's filters, `room:join` with a 6-character code, `room:leave`, `roomCreated` and `roomExpired`, then the existing `paired` → `coinFlip` (new `source: 'room'`) → `matchReady` with no filter window. Rooms are in memory and wait 10 minutes; one migration flags room games, and history gains `isPrivate`. Also apply the `project-overview.md` changes listed in `../lineup-web/context/features/private-rooms-a-mock.md` § Shared spec, so the file stays identical in both repos. Ask me anything unclear before `/feature load`.
 
+
+---
+
+## R7. A catalog overview for the landing page, with a showcase match
+
+**Why:** the landing page (`/`) feels empty (user, 2026-11-09). It will show what the archive holds (matches, players, clubs, seasons, finals, shootouts), the competitions and the most-played clubs, and a scripted demo turn on one real, famous XI. The design is in `context/docs/landing-page-improvements.md`; the web fixes are `context/fixes/landing-a-sections.md`, `landing-b-demo-turn.md` and `landing-c-wiring.md`.
+
+**Decisions (user, 2026-11-09):**
+
+- **The numbers come from the backend**, so they grow with the pool. No constants in the web.
+- **No community activity** (games played, players online). Dataset numbers only.
+- **The demo uses Real Madrid's XI from Real Madrid 2–3 Barcelona, La Liga, 23 April 2017** (match slug `2017-04-23-real-madrid-barcelona`, home side). The demo reveals Bale, Cristiano Ronaldo, Benzema, Modrić and Kroos, in that order, and shows one wrong guess: Lionel Messi, who started for Barcelona in the same match.
+- **The showcase match leaves the playable pool.** A real XI on a public page is that match's answer key (Hard Constraint 2), so the selector must never serve it, in solo or in a duel.
+
+### The endpoint: `GET /catalog/overview` (no migration)
+
+- **Public**, like `GET /catalog/filter-options` (the landing page renders before any session). Rate-limited as `catalog`. Returns the §2 envelope.
+- **Client-agnostic:** mobile's home can read it too. Nothing in it is web-specific.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `counts.matches` | int | Matches the selector can serve (`MatchSelectorService.candidates()`). The showcase is not one of them |
+| `counts.players` | int | Distinct players in those matches' lineups, both sides |
+| `counts.clubs` | int | Distinct sides of those matches with `kind = club` |
+| `counts.nationalTeams` | int | Distinct sides with `kind = national_team` |
+| `counts.seasons` | int | Distinct season start years of those matches |
+| `era` | `EraRange` | As `filter-options` returns it |
+| `highlights.finals` | int | Those matches with `stage = 'Final'` (the scraper's stage-name curation normalises it) |
+| `highlights.shootouts` | int | Those matches with `shootout_home` set |
+| `highlights.extraTime` | int | Those matches with `extra_time` true |
+| `highlights.goals` | int | Sum of both sides' `goals` over those matches |
+| `competitions` | `CompetitionRef[]` | The competitions those matches belong to, with `logoUrl`, sorted by name as `filter-options` sorts them |
+| `topClubs` | `ClubRef[]`, at most 12 | `kind = club` only, ordered by number of those matches (most first), then by name |
+| `showcase` | `Showcase \| null` | Below |
+
+**`Showcase`:**
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `match` | `MatchInPlay` | The `MatchIdentity` shape (R4) plus `side` and `formation`, as solo uses: here `side: 'home'`, `formation: '4-3-3'` |
+| `players` | 11 × `{ id, name, slot, position, imageUrl }` | The named side's whole XI, as `RevealedPlayer` without `directoryKey` |
+| `demo.reveals` | `int[]`, 1–11 distinct slots | The slots the demo reveals, in order. Here Bale, Cristiano Ronaldo, Benzema, Modrić, Kroos |
+| `demo.miss` | `{ name, imageUrl } \| null` | The demo's wrong guess. Here Lionel Messi, from the other side's XI |
+
+### Rules
+
+- **The showcase is a backend constant**, for example in `src/catalog/showcase.ts`:
+  - `matchSlug: '2017-04-23-real-madrid-barcelona'`, `side: 'home'`
+  - `reveals: ['gareth-bale', 'cristiano-ronaldo', 'karim-benzema', 'luka-modric', 'toni-kroos']` (player slugs)
+  - `miss: 'lionel-messi'`
+- **The selector excludes it.** `poolWhere` in `src/matches/match-selector.service.ts` gains `slug: { notIn: [SHOWCASE.matchSlug] }`. That one change covers solo, duel, rooms, `filter-options`, the empty-pool check and these counts.
+- **Checked on every read; never thrown.** If the match isn't loaded, its side's lineup isn't 11, a `reveals` slug isn't in that side's XI, or `miss` isn't in the **other** side's XI, `showcase` is `null`, and a warning is logged. The rest of the response is unaffected.
+  - The `miss` check is what keeps the demo honest: the wrong guess really is not in this XI.
+- **Hard Constraint 2 holds:** the only XI this endpoint sends is one the selector can never serve.
+- **Hard Constraint 20 holds:** no memorability score in any field.
+- **Cost:** `filter-options` already runs `candidates()` per request, and this endpoint does the same plus a few aggregates. An in-memory cache (for a few minutes, or until the pool changes) is fine if you measure a need. Not required.
+
+### Contract and versions
+
+- **Additive:** one new REST endpoint and one changed `where` clause. No socket change, no `PROTOCOL_VERSION` bump.
+- Document it in OpenAPI (`CatalogOverview`, `Showcase`, `ShowcasePlayer`, `ShowcaseDemo`) and in the backend's `context/api-contract.md`.
+
+### Tests
+
+- **The exclusion:** `candidates()` never returns the showcase match, and `filter-options` coverage doesn't count it.
+- **The counts** as a pure function over candidate rows: two matches sharing a player count it once; clubs and national teams are split by `kind`; finals, shootouts, extra time and goals add up.
+- **`topClubs`:** clubs only, at most 12, ordered by match count, ties by name.
+- **The showcase:** the real constant builds 11 players and 5 reveals with Messi as the miss. A missing match, a `reveals` slug from the wrong side, or a `miss` from the same side each give `showcase: null`, and the rest of the response still returns.
+- **The endpoint:** answers without a session, and conforms to its schema.
+
+### Report in the Built note
+
+- The final field names, and anything that differs from this request.
+- **The real numbers** on the dev database: every count and highlight, and the `topClubs` order. Web Landing C checks the page against them.
+- Where the showcase constant lives.
+
+### Then
+
+1. **Web, Landing A and B** (the sections, the numbers and the demo turn, on the mock) need nothing from here and can ship first.
+2. **Web, Landing C** (the real endpoint) needs R7 on the backend's `main`.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R7. Write it up as one backend feature spec, the way R5 was done: a public `GET /catalog/overview` with the playable pool's counts, highlights, competitions and top 12 clubs, plus a `showcase`: Real Madrid's XI from `2017-04-23-real-madrid-barcelona` (home side), with the demo's reveal order (Bale, Cristiano Ronaldo, Benzema, Modrić, Kroos) and Lionel Messi as the wrong guess. The showcase is a backend constant, checked on every read (`null` if anything is off), and `poolWhere` must exclude its match so it is never served as a game. No migration, no `PROTOCOL_VERSION` bump. Report the real counts in the Built note. Ask me anything unclear before `/feature load`.
