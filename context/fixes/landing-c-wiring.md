@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -41,5 +41,14 @@ Defaults stand unless changed at load:
 
 ## Notes
 
+- **Deviations recorded during implementation:**
+  - **No code change:** web Landing A's schemas matched R7 (`d5cdcb6`) field for field; `contract.md` now says R7 is built, the 5-minute server cache, and that OpenAPI names the miss `ShowcasePlayer`.
+  - **Checks ran on both databases:** dev first (the user's backend on the seed: `showcase: null`), then ingest, after the user switched the backend; the user then stopped it for the failure check.
+  - **The pool check went through the API, not the UI:** 15 solo offers as a guest (`POST /solo/sessions`) on LaLiga 2016-17 with Real Madrid; none was the showcase. They left 15 abandoned guest sessions on ingest, with no side chosen.
+  - **LCP measured with a `PerformanceObserver`,** not DevTools: the largest paint is the `<h1>`'s "Beat the Clock." at 104 ms.
+  - **The off-screen elements at narrow widths are the squad grid's own full-bleed slot boxes,** clipped by the pitch as in the game; nothing scrolls sideways at 320, 375, 768, 1024 or 1440.
 - **Source:** the split decided on 2026-11-09. A and B build on the mock; C wires them once backend R7 exists.
 - **Order:** last. Landing A → Landing B → backend R7 → Landing C.
+- **R7 built** (backend `d5cdcb6`, 2026-11-09); its Built note has the dev and ingest numbers.
+- **The local backend's dev database has no showcase** (`showcase: null`: the match isn't seeded) and only the 10 seed matches. The archive and inside checks can run on dev against the dev numbers; **the demo and the real numbers need the backend pointed at the ingest branch.** Ask before switching the backend's database: the user runs it.
+- **The server caches the overview for 5 minutes:** a fresh ingest load shows within that.

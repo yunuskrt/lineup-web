@@ -81,3 +81,4 @@ Not Started
 - Private Rooms B: R6 shapes required, full room not_found, two-browser.
 - Fix Landing A: six sections, overview numbers, showcase still, count-up.
 - Fix Landing B: demo turn loop, typed picks, miss shake, pause, still.
+- Fix Landing C: R7 overview live, dev and ingest checks, pool excluded.
