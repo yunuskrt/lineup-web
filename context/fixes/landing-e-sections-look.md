@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -127,6 +127,20 @@ Defaults stand unless changed at load:
 
 ## Notes
 
+- **Deviations recorded during implementation:**
+  - **The pips mark draws the game's shirt glyph itself** (`SHIRT_PATH`, `fill-you`), not the `Lives` component: `Lives` has no per-pip entrance, and adding one for a marketing mark would change a game component.
+  - **No new layout helper:** the 11 mark reuses `slotLayout('4-3-3')` from `src/lib/formation.ts`. Its circles are 5.5 units with a 2.5 stroke, so the keeper (16 units below the back line) clears the defenders.
+  - **One shared hook, `useEntrance`,** gives every section its in-view trigger and staggered item props; under reduced motion it returns an instant, visible state, so nothing can stay hidden after hydration.
+  - **`SECONDARY_BUTTON_LARGE` hovers to `surface-card`,** not `surface-raised`: it sits on a `surface-raised` panel, where that hover would not show. Its 11px padding plus the 1px border matches the primary button's 48px height.
+  - **The count-ups keep their own trigger** (60% of the number in view), so they start with, not exactly at, their tile's entrance. If the data arrives after the visitor has scrolled past, the numbers count up when they scroll back.
+  - **The archive's label box keeps two lines** (`min-h-10`, `sm:min-h-12`), so a wrapping label never changes a tile's height and the skeleton matches it.
+  - **"What's inside" shows in the loading state too:** it is not data, so the skeleton sits under the real heading.
+  - **The footer's button centres on the statement** (`items-center`) instead of sharing its baseline.
+  - **`eraLine` and its test are removed:** the era line was its only use.
+  - **Measured:** the archive skeleton matches the tiles at every width; what's inside matches from 768 up (the competition row is data-dependent, as in Landing A); no sideways scroll at 320–1440, `long` included; reduced motion shows everything complete; Tab runs Play solo → Find a duel → Play a friend → Play.
+  - **Real data on ingest:** tiles 1,924 / 3,786 / 100 / 26, 11 competitions, 12 crests, highlights 56 / 53 / 84 / 5,343.
+  - **Valid list markup (review):** each `<dl>` group holds only `<dt>` and `<dd>`, so the archive's brand bar sits inside the number's `<dd>` and each rule's mark inside its number's `<dt>` (aria-hidden). Heights unchanged.
+  - **The entrance props are a pure helper** (`entranceItemProps` in `src/lib/entrance.ts`, used by `useEntrance`), so the reduced-motion guarantee (always visible) and the stagger delays are unit-tested.
 - **Source:** user request (2026-11-10), with the choices made that day: scoreboard tiles for the archive; three columns with game marks for the rules; amber buttons with "Play a friend" outlined; one visible "What's inside" heading.
 - **Order:** after Landing D (the two touch different files and can be built in either order; D first because it touches the fold).
 - **The skill note for this phase:** `frontend-design` for layout and a templated-tells check, with `theme.md` and `design.md` as the brief.

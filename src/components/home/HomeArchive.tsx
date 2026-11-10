@@ -1,33 +1,70 @@
 'use client';
 
+import { motion } from 'motion/react';
 import { CountUp } from '@/components/home/CountUp';
 import {
   LandingSkeleton,
   SKELETON_BLOCK,
 } from '@/components/home/LandingSkeleton';
 import { useCatalogOverview } from '@/hooks/use-catalog-overview';
-import { archiveFigures, eraLine } from '@/lib/landing';
+import { useEntrance } from '@/hooks/use-entrance';
+import { archiveFigures } from '@/lib/landing';
 import { SITE_CONTAINER } from '@/styles/classes';
 import type { CatalogOverview } from '@/types/catalog';
 
 const FIGURE_COUNT = 4;
 
-const FIGURES = 'grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4';
+const TILES = 'grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4';
 
-// Same heights as the loaded row, so nothing shifts
+const TILE =
+  'flex flex-col gap-3 rounded-md border border-line bg-surface-raised p-4 sm:p-6';
+
+const BAR = 'h-0.5 w-8 bg-brand';
+
+// Two label lines kept, so tiles never jump
+const LABEL_BOX = 'min-h-10 sm:min-h-12';
+
+// Same tiles as the loaded row, so nothing shifts
 function ArchiveSkeleton() {
   return (
     <LandingSkeleton>
-      <div className={FIGURES}>
+      <div className={TILES}>
         {Array.from({ length: FIGURE_COUNT }, (_, index) => (
-          <div key={index} className="flex flex-col gap-1">
-            <span className={`h-10 w-28 sm:h-15 sm:w-40 ${SKELETON_BLOCK}`} />
-            <span className={`h-6 w-24 sm:h-7.5 ${SKELETON_BLOCK}`} />
+          <div key={index} className={TILE}>
+            <span className={BAR} />
+            <span className={`h-10 w-24 sm:h-15 sm:w-32 ${SKELETON_BLOCK}`} />
+            <span className={LABEL_BOX}>
+              <span className={`block h-5 w-20 sm:h-6 ${SKELETON_BLOCK}`} />
+            </span>
           </div>
         ))}
       </div>
-      <span className={`mt-6 block h-6 w-56 sm:h-7.5 ${SKELETON_BLOCK}`} />
     </LandingSkeleton>
+  );
+}
+
+function ArchiveTiles({ overview }: { overview: CatalogOverview }) {
+  const { ref, item } = useEntrance<HTMLDListElement>();
+
+  return (
+    <dl ref={ref} className={TILES}>
+      {archiveFigures(overview).map((figure, index) => (
+        <motion.div key={figure.key} className={TILE} {...item(index)}>
+          <dt
+            className={`order-last text-14 leading-5 text-fg-muted sm:text-16 sm:leading-6 ${LABEL_BOX}`}
+          >
+            {figure.label}
+          </dt>
+          {/* A dl group holds only dt and dd */}
+          <dd className="flex flex-col gap-3 font-display text-32 leading-10 font-bold tabular-nums sm:text-48 sm:leading-15">
+            <span aria-hidden="true" className={BAR} />
+            <span>
+              <CountUp value={figure.value} />
+            </span>
+          </dd>
+        </motion.div>
+      ))}
+    </dl>
   );
 }
 
@@ -45,27 +82,7 @@ export function ArchiveBand({ overview, isLoading }: ArchiveBandProps) {
         <h2 id="home-archive" className="sr-only">
           The archive
         </h2>
-        {overview ? (
-          <>
-            <dl className={FIGURES}>
-              {archiveFigures(overview).map((figure) => (
-                <div key={figure.key} className="flex flex-col gap-1">
-                  <dt className="order-2 text-16 text-fg-muted sm:text-20">
-                    {figure.label}
-                  </dt>
-                  <dd className="order-1 font-display text-32 leading-10 font-bold tabular-nums sm:text-48 sm:leading-15">
-                    <CountUp value={figure.value} />
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <p className="mt-6 text-16 text-fg-muted sm:text-20">
-              Seasons {eraLine(overview.era)}.
-            </p>
-          </>
-        ) : (
-          <ArchiveSkeleton />
-        )}
+        {overview ? <ArchiveTiles overview={overview} /> : <ArchiveSkeleton />}
       </div>
     </section>
   );

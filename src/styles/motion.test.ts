@@ -2,6 +2,11 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  LANDING_PIP_STAGGER_MS,
+  LANDING_RISE_PX,
+  LANDING_SLOT_STAGGER_MS,
+  LANDING_STAGGER_MS,
+  LANDING_TIGHT_STAGGER_MS,
   MISSED_REVEAL_STAGGER_MS,
   MOTION_DURATION_MS,
   MOTION_EASING,
@@ -53,6 +58,16 @@ describe('SKELETON_PULSE', () => {
     expect(MOTION_DURATION_MS.demoFade).toBe(MOTION_DURATION_MS.gateFade);
   });
 
+  it('enters landing sections once: 320ms, 8px, 60ms apart', () => {
+    expect(MOTION_DURATION_MS.landingRise).toBe(320);
+    expect(LANDING_RISE_PX).toBe(8);
+    expect(LANDING_STAGGER_MS).toBe(60);
+    expect(LANDING_TIGHT_STAGGER_MS).toBe(40);
+    expect(LANDING_SLOT_STAGGER_MS).toBe(30);
+    expect(LANDING_PIP_STAGGER_MS).toBe(80);
+    expect(MOTION_DURATION_MS.landingArcDraw).toBe(600);
+  });
+
   it('loops the 1.6s ease-in-out pulse from theme.md', () => {
     expect(SKELETON_PULSE.duration).toBe(1.6);
     expect(SKELETON_PULSE.ease).toBe('easeInOut');
@@ -75,6 +90,7 @@ const MOVING = [
   'missedReveal',
   'countUp',
   'demoLoop',
+  'landingEntrance',
 ] as const;
 
 const CUES = [

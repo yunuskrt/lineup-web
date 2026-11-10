@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { overviewFrom } from '@/lib/api/mock/overview';
 import {
   archiveFigures,
-  eraLine,
   formatCount,
   highlightFigures,
   landingCompetitions,
@@ -52,16 +51,6 @@ describe('highlightFigures', () => {
       'went to extra time',
       'goals',
     ]);
-  });
-});
-
-describe('eraLine', () => {
-  it('names the first and last seasons', () => {
-    expect(eraLine({ from: 2000, to: 2025 })).toBe('2000–01 to 2025–26');
-  });
-
-  it('names one season once', () => {
-    expect(eraLine({ from: 2004, to: 2004 })).toBe('2004–05');
   });
 });
 
