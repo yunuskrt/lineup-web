@@ -101,6 +101,7 @@ describe('showcaseFrom', () => {
       (slot) => showcase.players.find((player) => player.slot === slot)?.id,
     );
     expect(named).toEqual(MOCK_SHOWCASE.reveals);
+    expect(named).toHaveLength(8);
   });
 
   // The demo's "Not in this XI" must be true

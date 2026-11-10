@@ -9,7 +9,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R5 | A player directory for guess suggestions | Web features Guess Suggestions A and B | 2026-11-06 | **Done** (2026-11-08, backend R5): an opaque `key`, not `players.id` |
 | R6 | Private rooms: create a room, join it with a code | Web features Private Rooms A and B | 2026-11-08 | **Done** (2026-11-08): rooms (backend R6a), history `isPrivate` (backend R6b) |
 | R7 | A catalog overview for the landing page, with a showcase match | Web fixes Landing A, B and C | 2026-11-09 | **Done** (2026-11-09, backend R7 `d5cdcb6`): 5-minute server cache |
-| R8 | Three more reveals in the landing showcase | Web fix Landing D | 2026-11-10 | Open |
+| R8 | Three more reveals in the landing showcase | Web fix Landing D | 2026-11-10 | **Done** (2026-11-10, backend R8 `aca22bf`) |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -495,6 +495,14 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 
 - The real constant builds 8 reveals in that order, with Messi as the miss.
 - The existing null cases still hold.
+
+### Built
+
+- **The constant** (2026-11-10): backend `aca22bf`, on `main` and pushed. `LANDING_SHOWCASE` reveals `sergio-ramos`, `keylor-navas` and `marcelo` after `toni-kroos`; the miss is still `lionel-messi`.
+- **On ingest** the build returns `demo.reveals = [8, 10, 9, 7, 5, 2, 0, 4]`: Bale, Cristiano Ronaldo, Benzema, Modrić, Kroos, Ramos, Navas, Marcelo (FW, FW, FW, MF, MF, DF, GK, DF). All 11 players and the miss have images, and the showcase match is still out of the pool.
+- **Unchanged:** the contract and `PROTOCOL_VERSION`; no migration. A running server shows the new reveals within 5 minutes of a deploy (R7's cache).
+- **Differences from this request:** none.
+- **Checked from the web** (2026-11-10, web Landing D, 3000 against 8080 on ingest): the demo types "Bal", "Ron", "Mes" ("Not in this XI"), "Ben", "Mod", "Kro", "Ram", "Nav", "Mar" and fills Bale, Cristiano Ronaldo, Benzema, Modrić, Kroos, Ramos, Navas and Marcelo with photos (8/11); no ring; the sentence reads "eight of Real Madrid's starting eleven".
 
 ### Report in the Built note
 

@@ -2,7 +2,6 @@
 
 import { motion } from 'motion/react';
 import { type ReactNode, useMemo } from 'react';
-import { CountdownRing } from '@/components/game/CountdownRing';
 import { FeedbackToast } from '@/components/game/FeedbackToast';
 import {
   GuessInput,
@@ -14,7 +13,6 @@ import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { useCatalogOverview } from '@/hooks/use-catalog-overview';
 import { useDemoPlayback } from '@/hooks/use-demo-playback';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
-import { UNSTARTED_ROUND } from '@/lib/canvas';
 import { LOADING_FORMATION } from '@/lib/formation';
 import {
   showcaseCaption,
@@ -26,9 +24,7 @@ import type { Suggestion } from '@/lib/suggestions';
 import { QUIT_CHIP } from '@/styles/classes';
 import { MOTION_SECONDS } from '@/styles/motion';
 import type { Showcase } from '@/types/catalog';
-import type { RingMode } from '@/types/countdown';
 import type { ToastMessage } from '@/types/feedback';
-import type { RoundTiming } from '@/types/game';
 import type { ShowcasePlayback } from '@/types/landing';
 import type { MatchInPlay } from '@/types/match';
 import type { FoundPlayer } from '@/types/player';
@@ -40,8 +36,6 @@ const NO_SUGGESTIONS: readonly Suggestion[] = [];
 type StageProps = {
   match: MatchInPlay | null;
   found: FoundPlayer[];
-  round: RoundTiming;
-  ringMode: RingMode;
   value: string;
   status: GuessInputStatus;
   shakeKey: number;
@@ -68,7 +62,7 @@ function Stage(props: StageProps) {
         transition={{ duration: MOTION_SECONDS.demoFade, ease: 'easeOut' }}
       >
         <MatchHeader match={match} found={found} />
-        <div className="h-72 sm:h-80">
+        <div className="h-80 sm:h-96">
           <SquadGrid
             formation={match?.formation ?? LOADING_FORMATION}
             revealed={found}
@@ -76,10 +70,9 @@ function Stage(props: StageProps) {
           />
         </div>
       </motion.div>
-      {/* Phones stack them, as the game's band does */}
-      <div className="flex flex-col items-center gap-3 border-t border-line px-2 pt-3 pb-1 sm:flex-row sm:gap-4">
-        <CountdownRing round={props.round} mode={props.ringMode} />
-        <div className="flex w-full min-w-0 flex-col gap-1 sm:flex-1">
+      {/* No clock in the demo: the input alone */}
+      <div className="flex justify-center border-t border-line px-2 pt-3 pb-2">
+        <div className="flex w-full min-w-0 flex-col gap-1 sm:max-w-sm">
           <FeedbackToast toast={props.toast} />
           <GuessInput
             status={props.status}
@@ -119,8 +112,6 @@ function Caption({
 const FIGURE = 'flex w-full max-w-140 flex-col gap-3 lg:max-w-none';
 
 const STILL_STAGE = {
-  round: UNSTARTED_ROUND,
-  ringMode: 'frozen',
   value: '',
   status: 'live',
   shakeKey: 0,
@@ -129,7 +120,7 @@ const STILL_STAGE = {
   isFading: false,
 } as const;
 
-// Reduced motion: nothing moves, the ring included
+// Reduced motion: nothing moves
 function ShowcaseStill({ showcase }: { showcase: Showcase }) {
   return (
     <figure className={FIGURE}>
@@ -163,12 +154,11 @@ type ShowcaseDemoProps = {
 // Plays the response's script back; decides nothing
 function ShowcaseDemo({ showcase, playback }: ShowcaseDemoProps) {
   const timeline = useMemo(() => demoTimeline(showcase), [showcase]);
-  const { ref, frame, round, ringMode, isPaused, togglePause } =
-    useDemoPlayback(timeline, {
-      isEnabled: true,
-      startsPaused: playback.startsPaused,
-      frozenAtMs: playback.frozenAtMs,
-    });
+  const { ref, frame, isPaused, togglePause } = useDemoPlayback(timeline, {
+    isEnabled: true,
+    startsPaused: playback.startsPaused,
+    frozenAtMs: playback.frozenAtMs,
+  });
   const revealedKey = frame.revealed.join(' ');
   const found = useMemo(
     () =>
@@ -191,8 +181,6 @@ function ShowcaseDemo({ showcase, playback }: ShowcaseDemoProps) {
       <Stage
         match={showcase.match}
         found={found}
-        round={round}
-        ringMode={ringMode}
         value={frame.text}
         status={frame.isPending ? 'pending' : 'live'}
         shakeKey={frame.shakes}

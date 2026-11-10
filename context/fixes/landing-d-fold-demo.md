@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -64,6 +64,12 @@ Defaults stand unless changed at load:
 
 ## Notes
 
+- **Deviations recorded during implementation:**
+  - **The mock's three new reveals mirror the real positions** (defender, goalkeeper, defender): `pl-ibrahim-sarr`, `pl-matthias-kuhn`, `pl-alfie-barraclough`, not the order the spec listed them in.
+  - **The demo's clock is `performance.now()`,** not the server clock: with no ring there is nothing to line up with server time.
+  - **The band's bottom padding grows to 8px** (`pb-2`) so the centred input doesn't sit on the frame's edge.
+  - **Measured:** one frame height per width across `ready`, `still`, `loading` and `demo-paused` (547px on phones, 619px from 768); the input centred to the pixel, 384px from `sm`; the suggestion row inside the frame; no sideways scroll at 320, 375, 768, 1024 or 1440.
+  - **Real data checked on ingest** (R8 live): the eight reveals in order with photos, "Mes" → "Not in this XI", no ring, console clean.
 - **Source:** user request (2026-11-10): "Remove the clock, center the input, adjust the demo accordingly. Add 3 more players to be found: Ramos, Navas, Marcelo."
 - **Order:** backend R8 first (a one-line constant change), then Landing D, then Landing E. D can be built on the mock before R8; its real-data check waits for R8.
 - **Slots in the showcase XI** (ingest, checked 2026-11-10): Keylor Navas 0 (GK), Sergio Ramos 2 (DF), Marcelo 4 (DF).

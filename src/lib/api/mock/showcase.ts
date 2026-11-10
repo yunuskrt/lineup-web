@@ -15,6 +15,9 @@ export const MOCK_SHOWCASE: {
     'pl-jake-rowntree',
     'pl-luca-benedetti',
     'pl-sean-pritchard',
+    'pl-ibrahim-sarr',
+    'pl-matthias-kuhn',
+    'pl-alfie-barraclough',
   ],
   // Started for the other side
   miss: 'pl-samuel-ekwueme',

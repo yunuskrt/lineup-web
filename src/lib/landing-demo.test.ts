@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { overviewFrom } from '@/lib/api/mock/overview';
-import { ROUND_MS } from '@/lib/canvas';
 import {
   type DemoStep,
   type DemoTimeline,
   demoFrameAt,
   demoTimeline,
-  longestRoundMs,
   MISS_AFTER_REVEALS,
   sameFrame,
   typedPrefix,
@@ -61,6 +59,7 @@ describe('typedPrefix', () => {
 
   it('types a mononym and a short surname whole or in part', () => {
     expect(typedPrefix('Casemiro')).toBe('Cas');
+    expect(typedPrefix('Marcelo')).toBe('Mar');
     expect(typedPrefix('Li Ka')).toBe('Ka');
   });
 
@@ -80,9 +79,13 @@ describe('demoTimeline', () => {
       'reveal',
       'reveal',
       'reveal',
+      'reveal',
+      'reveal',
+      'reveal',
       'hold',
       'fade',
     ]);
+    expect(SHOWCASE.demo.reveals).toHaveLength(8);
     const slots = guessSteps(TIMELINE)
       .filter((step) => step.kind === 'reveal')
       .map((step) => step.slot);
@@ -117,6 +120,24 @@ describe('demoTimeline', () => {
     ]);
   });
 
+  // Three-letter prefixes: every guess types three
+  it('runs eight reveals and the miss in about 35.5 seconds', () => {
+    const guess =
+      MS.demoLead +
+      3 * MS.demoTypeStep +
+      MS.demoSuggest +
+      MS.demoPick +
+      MS.demoPending;
+    const expected =
+      MS.demoStart +
+      8 * (guess + MS.demoReveal) +
+      (guess + MS.demoMiss) +
+      MS.demoHold +
+      MS.demoFade;
+    expect(TIMELINE.loopMs).toBe(expected);
+    expect(TIMELINE.loopMs).toBe(35_470);
+  });
+
   it('lays steps end to end; the loop is their sum', () => {
     let at = 0;
     for (const step of TIMELINE.steps) {
@@ -124,20 +145,6 @@ describe('demoTimeline', () => {
       at += step.durationMs;
     }
     expect(TIMELINE.loopMs).toBe(at);
-  });
-
-  // The demo must never show a life lost
-  it('keeps every round inside the 15 seconds', () => {
-    expect(longestRoundMs(TIMELINE)).toBeLessThan(ROUND_MS);
-  });
-
-  // After a reveal, the miss, then the next reveal's check
-  it('measures the longest round as the one holding the miss', () => {
-    const check = OUTCOME - 1;
-    const missStep = stepAt(TIMELINE, MISS_AFTER_REVEALS + 1);
-    expect(longestRoundMs(TIMELINE)).toBe(
-      MS.demoReveal + missStep.durationMs + check,
-    );
   });
 });
 
@@ -149,11 +156,10 @@ describe('demoFrameAt', () => {
     return demoFrameAt(TIMELINE, step.startMs + local);
   }
 
-  it('opens on an empty grid with the round started', () => {
+  it('opens on an empty grid and an empty input', () => {
     const frame = demoFrameAt(TIMELINE, 0);
     expect(frame.revealed).toEqual([]);
     expect(frame.text).toBe('');
-    expect(frame.roundStartMs).toBe(0);
   });
 
   it('types letter by letter, then shows the row, then highlights it', () => {
@@ -177,23 +183,20 @@ describe('demoFrameAt', () => {
     expect(at(first, PENDING).revealed).toEqual([]);
   });
 
-  it('reveals the slot, clears the input and starts the next round', () => {
+  it('reveals the slot and clears the input', () => {
     const frame = at(first, OUTCOME);
     expect(frame.revealed).toEqual([SHOWCASE.demo.reveals[0]]);
     expect(frame.text).toBe('');
     expect(frame.isPending).toBe(false);
-    // Moments sit 1ms in; the round starts on the edge
-    expect(frame.roundStartMs).toBe(first.startMs + OUTCOME - 1);
   });
 
-  it('shakes on the miss, keeps the text and the round, and toasts', () => {
+  it('shakes on the miss, keeps the text, and toasts', () => {
     const before = at(miss, PENDING);
     const frame = at(miss, OUTCOME);
     expect(before.shakes).toBe(0);
     expect(frame.shakes).toBe(1);
     expect(frame.text).toBe(SHOWCASE.demo.miss?.name);
     expect(frame.toast?.message).toBe('Not in this XI');
-    expect(frame.roundStartMs).toBe(before.roundStartMs);
     expect(frame.revealed).toHaveLength(MISS_AFTER_REVEALS);
   });
 
@@ -213,7 +216,6 @@ describe('demoFrameAt', () => {
     expect(next.isFading).toBe(false);
     expect(next.shakes).toBe(end.shakes);
     expect(next.toast).toBeNull();
-    expect(next.roundStartMs).toBe(TIMELINE.loopMs);
   });
 
   it('gives each loop its own toast, so it shows again', () => {
@@ -248,7 +250,6 @@ describe('sameFrame', () => {
     ['revealed', { revealed: [8] }],
     ['shakes', { shakes: 1 }],
     ['toast', { toast: { id: 1, message: 'Not in this XI' } }],
-    ['roundStartMs', { roundStartMs: 1 }],
     ['isFading', { isFading: true }],
   ];
 

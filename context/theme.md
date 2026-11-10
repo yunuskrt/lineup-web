@@ -279,14 +279,14 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 
 ### Landing demo
 
-The showcase on `/` plays one solo turn on a loop. It is presentation, not a game: the reveals and the wrong guess come from the response.
+The showcase on `/` plays one solo turn on a loop. It is presentation, not a game: the reveals and the wrong guess come from the response. **It has no countdown ring** (user, 2026-11-10): the game's ring is untouched.
 
-| State          | Trigger                         | Treatment                                                                                                                         |
-| -------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Playing        | At least half in view, tab shown | Typing, the suggestion row, reveals with the 320ms spring, one "Not in this XI" shake. The ring sweeps linearly at the real rate |
-| Paused         | Pause, out of view, tab hidden  | Everything stops where it was, the ring included. A Pause / Play chip beside the caption is the demo's only control              |
-| Reduced motion | `prefers-reduced-motion`        | One still frame: five slots filled, the ring full and **still**, no chip. In play the ring never stops; in the demo it carries no time, so it does |
-| Sound          | Always                          | None. The game's cues never play on `/`                                                                                           |
+| State          | Trigger                          | Treatment                                                                                                    |
+| -------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Playing        | At least half in view, tab shown | Typing into the centred input, the suggestion row, reveals with the 320ms spring, one "Not in this XI" shake |
+| Paused         | Pause, out of view, tab hidden   | Everything stops where it was. A Pause / Play chip beside the caption is the demo's only control             |
+| Reduced motion | `prefers-reduced-motion`         | One still frame: the demo's reveals filled, the input empty, no chip                                         |
+| Sound          | Always                           | None. The game's cues never play on `/`                                                                      |
 
 ### Loading
 

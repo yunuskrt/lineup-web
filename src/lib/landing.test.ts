@@ -87,7 +87,7 @@ describe('the showcase copy', () => {
 
   it('tells screen readers how many are named', () => {
     expect(showcaseSentence(showcase())).toBe(
-      "A turn being played: five of Northgate United's starting eleven named against the clock.",
+      "A turn being played: eight of Northgate United's starting eleven named against the clock.",
     );
   });
 
