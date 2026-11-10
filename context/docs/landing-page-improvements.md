@@ -197,11 +197,13 @@ Lead with the one orchestrated moment, the demo, and keep everything else still.
 | Element | Motion | Reduced motion |
 | --- | --- | --- |
 | Demo turn | § 4 | One still frame |
-| Archive numbers | A single count-up the first time the row enters view, about 800ms, ease-out, with tabular numerals so nothing jitters | The final value at once |
-| Highlights | None | — |
-| Crests and logos | None; a hover shows the club or competition name as a tooltip, and the same name is the image's `alt` | — |
-| Mode links, closing link | The existing link and button hover styles | — |
-| Sections | **No fade-up on scroll.** Entrance animations on every section are the most generic pattern there is, and they delay reading | — |
+| Archive tiles | Enter once (fade, 8px rise, 60ms apart), each number counting up as its tile appears | Shown at once, final values |
+| Rules columns | Enter once; the marks play with their column (slots 30ms apart, the arc drawing to two thirds over 600ms linear, pips 80ms apart) | Shown at once, marks complete |
+| Logos and crests | Enter once, 40ms apart, after the archive; crests grow from 0.92 | Shown at once |
+| Highlights | Count up once | The final values |
+| Mode panels, closing button | None beyond the button hover | — |
+
+*Changed 2026-11-10 (Landing E, user request):* entrances on the archive, rules and what's inside, once each. The original plan had no section entrances.
 
 - Motion animates `transform` and `opacity` only, and reads `useMotionPolicy` the way the game components do (W26a). Never a global kill switch.
 - Durations and easings come from `motion.ts`; none are invented for this page.

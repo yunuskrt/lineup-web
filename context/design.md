@@ -24,7 +24,7 @@ The game routes want FotMob's posture with lichess's restraint.
 
 | Route                       | Shape                                                        | Nav                                  | Footer             |
 | --------------------------- | ------------------------------------------------------------ | ------------------------------------ | ------------------ |
-| `/`                         | **Statement fold** with the showcase beside it (below on phones), then the archive numbers, the rules, the two ways to play and what's inside (`context/docs/landing-page-improvements.md`) | Wordmark left, CTA right             | Closing statement and a Play link |
+| `/`                         | **Statement fold** with the showcase beside it (below on phones), then the archive tiles, the rules with game marks, the two mode panels with buttons and what's inside (`context/docs/landing-page-improvements.md`) | Wordmark left, CTA right             | Closing statement and a Play button |
 | `/play`                     | **Diptych** — solo and duel side by side, filters beneath; with Duel chosen, a quiet "Play a friend" row (Create room, or a code and Join) under the start button | Wordmark left, CTA right             | Single inline line |
 | `/play/solo`, `/play/duel`  | **Canvas** — the squad grid is the composition. `/play/duel` also hosts private rooms (`?room=create`, `?room=<code>`) | **None** — quit and sound chips only | **None**           |
 | `/profile`                  | **Stat-led** — the numbers are the narrative                 | Wordmark left, CTA right             | Single inline line |
@@ -89,6 +89,8 @@ A squad is always 11 slots; a lobby row is always crest + name. So loading is a 
 ### One primary action per view
 
 `/` has Play. A duel round has the input. A result screen has Play again. Two adjacent primary buttons of equal weight means the design hasn't decided, and this app never has two equally important things to do at once.
+
+**The landing exception** (user, 2026-11-10): below the fold, `/` offers its two modes side by side, so "Play solo" and "Find a duel" are both amber (`PRIMARY_BUTTON_LARGE`) in one view, with "Play a friend" outlined (`SECONDARY_BUTTON_LARGE`) beside "Find a duel". The fold still has one Play, and game routes keep the rule.
 
 ---
 

@@ -288,6 +288,8 @@ The showcase on `/` plays one solo turn on a loop. It is presentation, not a gam
 | Reduced motion | `prefers-reduced-motion`         | One still frame: the demo's reveals filled, the input empty, no chip                                         |
 | Sound          | Always                           | None. The game's cues never play on `/`                                                                      |
 
+**Landing sections** (below the fold, Landing E): the archive tiles, the rules columns and what's inside each enter **once**, the first time they are 30% in view: fade in and rise 8px, 320ms, ease-out, items 60ms apart (40ms for logos and crests, which grow from 0.92). The rules' marks play with their column: slots 30ms apart, the arc drawing to two thirds over 600ms **linear** (it is the clock's mark), pips 80ms apart. Reduced motion: everything is simply there, the marks complete. Never on the fold, the modes or the footer.
+
 ### Loading
 
 Every wait in this app has a **known shape** — a squad is always 11 slots, a lobby row is always crest + name + rating. So loading is a skeleton of the real thing, never a centered spinner on an empty panel.

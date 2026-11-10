@@ -24,6 +24,9 @@ export const PRIMARY_BUTTON = `rounded-sm bg-brand px-4 py-1.5 text-14 font-semi
 
 export const PRIMARY_BUTTON_LARGE = `rounded-sm bg-brand px-8 py-3 text-16 font-semibold text-on-accent disabled:opacity-70 ${FOCUS_RING}`;
 
+// Primary's size; 11px padding plus the 1px border
+export const SECONDARY_BUTTON_LARGE = `rounded-sm border border-line px-8 py-2.75 text-16 font-semibold text-fg hover:bg-surface-card ${FOCUS_RING}`;
+
 export const SECONDARY_BUTTON = `rounded-sm border border-line px-4 py-2 text-14 font-semibold text-fg hover:bg-surface-raised disabled:text-fg-muted disabled:hover:bg-transparent ${FOCUS_RING}`;
 
 export const TEXT_INPUT = `w-full rounded-sm border border-line bg-surface-card px-3 py-2.5 text-16 text-fg aria-invalid:border-danger read-only:text-fg-muted ${FOCUS_RING}`;

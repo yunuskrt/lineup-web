@@ -1,7 +1,6 @@
-import { competitionGroups, seasonLabel } from '@/lib/filters';
+import { competitionGroups } from '@/lib/filters';
 import { matchDateLabel } from '@/lib/summary';
 import type { CatalogOverview, Showcase } from '@/types/catalog';
-import type { EraRange } from '@/types/filters';
 import type { CompetitionRef } from '@/types/match';
 import type { FoundPlayer } from '@/types/player';
 
@@ -66,11 +65,6 @@ export function highlightFigures({ highlights }: CatalogOverview): Figure[] {
     }),
     figure('goals', highlights.goals, { one: 'goal', other: 'goals' }),
   ];
-}
-
-export function eraLine({ from, to }: EraRange): string {
-  if (from === to) return seasonLabel(from);
-  return `${seasonLabel(from)} to ${seasonLabel(to)}`;
 }
 
 // Leagues, then European cups, then international

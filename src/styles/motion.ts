@@ -22,6 +22,9 @@ export const MOTION_DURATION_MS = {
   demoMiss: 1000,
   demoHold: 3000,
   demoFade: 240,
+  // Landing sections: one quiet entrance each
+  landingRise: 320,
+  landingArcDraw: 600,
 } as const;
 
 // Motion takes seconds
@@ -40,6 +43,13 @@ export const MOTION_EASING = {
 
 // The gap between missed slots as they appear
 export const MISSED_REVEAL_STAGGER_MS = 60;
+
+// Landing entrances: items, then logos and crests
+export const LANDING_STAGGER_MS = 60;
+export const LANDING_TIGHT_STAGGER_MS = 40;
+export const LANDING_SLOT_STAGGER_MS = 30;
+export const LANDING_PIP_STAGGER_MS = 80;
+export const LANDING_RISE_PX = 8;
 
 export const REVEAL_TRANSITION_TYPE = 'spring';
 
@@ -84,6 +94,7 @@ export const MOTION_EFFECTS = [
   'missedReveal',
   'countUp',
   'demoLoop',
+  'landingEntrance',
 ] as const;
 
 export type MotionEffect = (typeof MOTION_EFFECTS)[number];
@@ -117,6 +128,7 @@ export const REDUCED_MOTION_POLICY: Record<MotionEffect, ReducedMotion> = {
   missedReveal: 'drop',
   countUp: 'drop',
   demoLoop: 'drop',
+  landingEntrance: 'drop',
 };
 
 // Null before the preference is read: animate
