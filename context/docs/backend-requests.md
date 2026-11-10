@@ -9,6 +9,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R5 | A player directory for guess suggestions | Web features Guess Suggestions A and B | 2026-11-06 | **Done** (2026-11-08, backend R5): an opaque `key`, not `players.id` |
 | R6 | Private rooms: create a room, join it with a code | Web features Private Rooms A and B | 2026-11-08 | **Done** (2026-11-08): rooms (backend R6a), history `isPrivate` (backend R6b) |
 | R7 | A catalog overview for the landing page, with a showcase match | Web fixes Landing A, B and C | 2026-11-09 | **Done** (2026-11-09, backend R7 `d5cdcb6`): 5-minute server cache |
+| R8 | Three more reveals in the landing showcase | Web fix Landing D | 2026-11-10 | Open |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -473,3 +474,36 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 ### Prompt for the backend session
 
 > Read `../lineup-web/context/docs/backend-requests.md` § R7. Write it up as one backend feature spec, the way R5 was done: a public `GET /catalog/overview` with the playable pool's counts, highlights, competitions and top 12 clubs, plus a `showcase`: Real Madrid's XI from `2017-04-23-real-madrid-barcelona` (home side), with the demo's reveal order (Bale, Cristiano Ronaldo, Benzema, Modrić, Kroos) and Lionel Messi as the wrong guess. The showcase is a backend constant, checked on every read (`null` if anything is off), and `poolWhere` must exclude its match so it is never served as a game. No migration, no `PROTOCOL_VERSION` bump. Report the real counts in the Built note. Ask me anything unclear before `/feature load`.
+
+---
+
+## R8. Three more reveals in the landing showcase
+
+**Why:** the landing demo should find eight Real Madrid players, not five (user, 2026-11-10). Web fix: `context/fixes/landing-d-fold-demo.md`.
+
+### The change (no migration, no contract change)
+
+- **The showcase constant** (`LANDING_SHOWCASE` in `src/matches/showcase.ts`, R7) gains three reveals, after Kroos, in this order:
+  - `sergio-ramos` (slot 2, DF)
+  - `keylor-navas` (slot 0, GK)
+  - `marcelo` (slot 4, DF)
+- `demo.reveals` becomes `[8, 10, 9, 7, 5, 2, 0, 4]`. The miss (Messi) is unchanged.
+- **Nothing else changes:** `ShowcaseDemo.reveals` already allows 1–11 distinct slots, and the build-time checks (each reveal in the named XI) cover the new three.
+- **The overview cache** (5 minutes) means the new reveals show within 5 minutes of a deploy.
+
+### Tests
+
+- The real constant builds 8 reveals in that order, with Messi as the miss.
+- The existing null cases still hold.
+
+### Report in the Built note
+
+- The commit, and the `demo.reveals` the ingest build returns.
+
+### Then
+
+- **Web, Landing D** plays the eight on real data with no web change; its real-data check waits for this.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R8. It's a small change to R7's showcase constant, `LANDING_SHOWCASE` in `src/matches/showcase.ts`: add `sergio-ramos`, `keylor-navas` and `marcelo` to the reveals, after `toni-kroos`, in that order, so `demo.reveals` becomes `[8, 10, 9, 7, 5, 2, 0, 4]`. Update the showcase tests. No migration, no contract change. Report the commit and the `demo.reveals` the ingest build returns.
