@@ -82,3 +82,4 @@ Not Started
 - Fix Landing A: six sections, overview numbers, showcase still, count-up.
 - Fix Landing B: demo turn loop, typed picks, miss shake, pause, still.
 - Fix Landing C: R7 overview live, dev and ingest checks, pool excluded.
+- Fix Landing D: demo without the clock, centred input, eight reveals.

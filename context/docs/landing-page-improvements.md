@@ -16,7 +16,7 @@ Settled with the user on 2026-11-09.
 | --- | --- | --- |
 | 1 | Where do the numbers come from? | **A new public backend endpoint** (§ 7, request R7), cached. The numbers grow with the pool; no constants to keep in step |
 | 2 | Community activity (games played, players online)? | **Not yet.** Early numbers are small and read as an empty game. Dataset numbers only |
-| 3 | Show how a turn plays? | **A scripted, non-interactive demo turn, on a real famous XI**, built from the real game components. **Refined 2026-11-09:** Real Madrid's XI from Real Madrid 2–3 Barcelona (La Liga, 23 April 2017). The demo reveals Bale, Cristiano Ronaldo, Benzema, Modrić and Kroos, and its wrong guess is Lionel Messi (Barcelona's XI). The mock uses a fictional XI |
+| 3 | Show how a turn plays? | **A scripted, non-interactive demo turn, on a real famous XI**, built from the real game components. **Refined 2026-11-09:** Real Madrid's XI from Real Madrid 2–3 Barcelona (La Liga, 23 April 2017). The demo reveals Bale, Cristiano Ronaldo, Benzema, Modrić and Kroos, and its wrong guess is Lionel Messi (Barcelona's XI). The mock uses a fictional XI. **2026-11-10:** Ramos, Navas and Marcelo added after Kroos (eight reveals, backend R8), and the demo has no countdown ring (Landing D) |
 | 4 | Crests and logos? | **Yes:** competition logos and a row of club crests, the same assets `/play` already shows |
 
 **What decision 3 requires.** A real XI on a public page is that match's answer key, and HC 2 says a playable squad never reaches the client. So **the showcase match is taken out of the playable pool**: the backend's selector never serves it, and only the showcase field of the endpoint sends it. One match of 1,925 is a small price for this. The XI is read from the database. It is never typed by hand or recalled from memory (HC 4).
@@ -149,19 +149,19 @@ Pre-release, crests carry the same trademark question as everywhere else in the 
 
 ## 4. The demo turn
 
-The one moving thing on the page: one solo turn on Real Madrid's XI, replayed with the game's own components (`SquadGrid`, `RevealCard`, `CountdownRing` and the match header). The point is to show, in about 20 seconds, what "name the XI against the clock" means.
+The one moving thing on the page: one solo turn on Real Madrid's XI, replayed with the game's own components (`SquadGrid`, `RevealCard`, `GuessInput`, `FeedbackToast` and the match header; no countdown ring since Landing D). The point is to show, in one loop of about 35 seconds, what "name the XI" means.
 
-**The match (user, 2026-11-09):** Real Madrid 2–3 Barcelona, La Liga Matchday 33, 23 April 2017, Real Madrid's XI (home, 4-3-3). All 11 photos are in the dataset. The demo reveals Gareth Bale, Cristiano Ronaldo, Karim Benzema, Luka Modrić and Toni Kroos, in that order. Its wrong guess is Lionel Messi, who started for Barcelona. The pick is a backend constant (§ 7), so changing it later needs no web change. This replaces the 2009 Barcelona XI first suggested.
+**The match (user, 2026-11-09):** Real Madrid 2–3 Barcelona, La Liga Matchday 33, 23 April 2017, Real Madrid's XI (home, 4-3-3). All 11 photos are in the dataset. The demo reveals Gareth Bale, Cristiano Ronaldo, Karim Benzema, Luka Modrić and Toni Kroos, then (since 2026-11-10, backend R8) Sergio Ramos, Keylor Navas and Marcelo, in that order. Its wrong guess is Lionel Messi, who started for Barcelona. The pick is a backend constant (§ 7), so changing it later needs no web change. This replaces the 2009 Barcelona XI first suggested.
 
 ### The script (one loop)
 
-1. The match header and the empty formation show, with the ring full.
+1. The match header and the empty formation show.
 2. A name is typed letter by letter into a read-only copy of the guess input. At 3 letters the suggestion row appears, exactly as in play.
-3. The reveal lands: the slot fills with the turf flash, and the card springs in over 320ms. The ring resets, because in solo a new name starts the next round at once.
-4. Steps 2 and 3 repeat for 5 players in about 20 seconds. Once, a typed name is not in this XI: the input shakes and the "Not in this XI" toast shows, which teaches the no-penalty rule.
-5. A 3-second hold on "5 of 11 named", then a fade to step 1.
+3. The reveal lands: the slot fills with the turf flash, and the card springs in over 320ms.
+4. Steps 2 and 3 repeat for each reveal (8 since Landing D). Once, a typed name is not in this XI: the input shakes and the "Not in this XI" toast shows, which teaches the no-penalty rule.
+5. A 3-second hold on the filled grid, then a fade to step 1.
 
-The ring sweeps **linearly**, at the real 15-second rate (`theme.md` § Motion). Reveals land before it runs out, so the demo never shows a life lost, and it never misstates the time.
+**No countdown ring** (Landing D, user, 2026-11-10): the band under the pitch holds only the guess input, centred, and its toast. Landing B's ring swept linearly at the real 15-second rate; it was removed with the code that drove it.
 
 **Tuned step lengths** (Landing B, 2026-11-09; `MOTION_DURATION_MS` in `src/styles/motion.ts`):
 
@@ -175,7 +175,7 @@ The ring sweeps **linearly**, at the real 15-second rate (`theme.md` § Motion).
 | After a reveal / after the miss | 1,470ms / 1,000ms |
 | Hold, then fade | 3,000ms, then 240ms |
 
-One loop is 24.97s (5 reveals of 3.5s, a 3.03s miss). The longest round is 6.53s, the one holding the miss, well inside the 15s.
+One loop is 35.47s with 8 reveals of 3.5s and the 3.03s miss (24.97s with Landing B's 5 reveals).
 
 ### Rules
 
@@ -184,8 +184,8 @@ One loop is 24.97s (5 reveals of 3.5s, a 3.03s miss). The longest round is 6.53s
 - **Pause control.** The demo loops for longer than 5 seconds, so it needs a visible pause button (WCAG 2.2.2). It sits in the demo's corner, in the same style as the quit and sound chips.
 - **It runs only when seen.** It is paused while scrolled out of view and while the tab is hidden, and it starts when it first enters view.
 - **No sound.** The game's cues never play on `/`.
-- **Reduced motion:** one still frame, with 5 slots filled, the ring at rest and no typing. The ring keeps sweeping in play because it carries information there. In a demo it carries none, so here it stops.
-- **Screen readers** get one sentence ("A turn being played: five of Real Madrid's starting eleven named against the clock") and none of the frames.
+- **Reduced motion:** one still frame, with the reveals filled and no typing.
+- **Screen readers** get one sentence ("A turn being played: eight of Real Madrid's starting eleven named against the clock") and none of the frames.
 - **Caption** under the demo: the match, the side and the date, so it's clear this is a real game.
 
 ---

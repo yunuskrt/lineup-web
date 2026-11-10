@@ -58,7 +58,7 @@ export const LANDING_STATES: Record<string, LandingState> = {
     playback: { startsPaused: true },
   },
   still: {
-    description: 'The reduced-motion frame: five slots filled, nothing moves.',
+    description: 'The reduced-motion frame: eight slots filled, nothing moves.',
     overview: READY,
     isLoading: false,
     playback: { isStill: true },

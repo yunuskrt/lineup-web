@@ -32,8 +32,6 @@ export type DemoFrame = {
   // Across loops, so a wrap never shakes
   shakes: number;
   toast: ToastMessage | null;
-  // Elapsed time the current round began at
-  roundStartMs: number;
   isFading: boolean;
 };
 
@@ -162,7 +160,6 @@ export function demoFrameAt(
   const missesPerLoop = steps.filter((step) => step.kind === 'miss').length;
 
   const revealed: number[] = [];
-  let roundStart = 0;
   let shakes = 0;
   let view = IDLE_GUESS;
   let isFading = false;
@@ -177,7 +174,6 @@ export function demoFrameAt(
       if (local >= pendingEnd) {
         if (step.kind === 'reveal' && step.slot !== null) {
           revealed.push(step.slot);
-          roundStart = step.startMs + pendingEnd;
         } else {
           shakes += 1;
         }
@@ -195,21 +191,8 @@ export function demoFrameAt(
     shakes: loop * missesPerLoop + shakes,
     toast:
       shakes > 0 ? { id: loop + 1, message: FEEDBACK_MESSAGES.notInXi } : null,
-    roundStartMs: loop * loopMs + roundStart,
     isFading,
   };
-}
-
-// The longest any round runs, wrap included
-export function longestRoundMs({ steps, loopMs }: DemoTimeline): number {
-  const starts = [0];
-  for (const step of steps) {
-    if (step.kind === 'reveal') {
-      starts.push(step.startMs + phasesOf(step.typed).pendingEnd);
-    }
-  }
-  const ends = [...starts.slice(1), loopMs];
-  return Math.max(...starts.map((start, index) => ends[index] - start));
 }
 
 export function sameFrame(a: DemoFrame, b: DemoFrame): boolean {
@@ -222,7 +205,6 @@ export function sameFrame(a: DemoFrame, b: DemoFrame): boolean {
     a.revealed.length === b.revealed.length &&
     a.shakes === b.shakes &&
     a.toast?.id === b.toast?.id &&
-    a.roundStartMs === b.roundStartMs &&
     a.isFading === b.isFading
   );
 }
