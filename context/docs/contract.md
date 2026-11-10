@@ -194,7 +194,7 @@ Paths are suggestions. Every response body is the envelope from §2, wrapping th
 | 6 | `auth.signOut` | `POST /auth/sign-out` | — | none (`data` empty) |
 | 7 | `catalog.getFilterOptions` | `GET /catalog/filter-options` | — | `FilterOptions` |
 | 8 | `catalog.getPlayerDirectory` | `GET /catalog/players` | — | `PlayerDirectory` |
-| 8a | `catalog.getOverview` | `GET /catalog/overview` | — | `CatalogOverview` (backend R7, not built yet) |
+| 8a | `catalog.getOverview` | `GET /catalog/overview` | — | `CatalogOverview` (backend R7) |
 | 9 | `solo.findMatch` | `POST /solo/sessions` | `Filters` | `SoloMatchOffer` |
 | 10 | `solo.chooseSide` | `POST /solo/sessions/:sessionId/side` | `{ side: Side }` | `SoloSession` |
 | 11 | `solo.guess` | `POST /solo/sessions/:sessionId/guesses` | `SoloGuessRequest` | `SoloGuessResponse` |
@@ -253,7 +253,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 - Strong `ETag` and `Cache-Control: private, no-cache`; `If-None-Match` with the current tag gets 304 with no body. Brotli or gzip.
 - **The web revalidates it, and nothing else** (Guess Suggestions B): this call alone is sent with `cache: 'no-cache'`, every other call with `no-store`. The browser keeps the 200 and its `ETag`, sends `If-None-Match` itself, and hands a 304 back as the cached body. One check per new match; the web has no ETag code of its own.
 
-**`CatalogOverview`** (backend R7, transcribed ahead of it by web Landing A). What the landing page shows. Public, like `filter-options`.
+**`CatalogOverview`** (backend R7, `d5cdcb6`; transcribed ahead of it by web Landing A, checked by Landing C). What the landing page shows. Public, like `filter-options`, with the `catalog` rate limit; the server rebuilds it at most every 5 minutes.
 
 | Field | Type | Rule |
 | --- | --- | --- |
@@ -271,9 +271,9 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `match` | `MatchInPlay` | The whole match, plus the named `side` and its `formation` |
 | `players` | `RevealedPlayer[]` | Exactly 11, one per slot, `directoryKey` included |
 | `demo.reveals` | integer[] | 1–11 distinct slots of `players`, in the order the demo names them |
-| `demo.miss` | `{ name, imageUrl, directoryKey }` or `null` | The demo's wrong guess: a player from the **other** side's XI, so "Not in this XI" is true |
+| `demo.miss` | `{ name, imageUrl, directoryKey }` or `null` | The demo's wrong guess: a player from the **other** side's XI, so "Not in this XI" is true. OpenAPI names it `ShowcasePlayer`; the web calls it `ShowcaseMiss` |
 
-- Any failure (until R7 exists, every call) means the landing page leaves out the numbers, the competitions and the showcase. No error copy.
+- Any failure means the landing page leaves out the numbers, the competitions and the showcase. No error copy.
 
 **`SoloMatchOffer`.** The run is created and the player picks a side next.
 

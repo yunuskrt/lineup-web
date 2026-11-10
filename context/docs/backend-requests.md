@@ -8,7 +8,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R4 | The match on the solo offer, and the order and time of each named player | Web fixes Gameplay Visuals B and C | 2026-11-06 | **Done**: Part 1 (2026-11-06, backend R4a), Part 2 (2026-11-06, backend R4b) |
 | R5 | A player directory for guess suggestions | Web features Guess Suggestions A and B | 2026-11-06 | **Done** (2026-11-08, backend R5): an opaque `key`, not `players.id` |
 | R6 | Private rooms: create a room, join it with a code | Web features Private Rooms A and B | 2026-11-08 | **Done** (2026-11-08): rooms (backend R6a), history `isPrivate` (backend R6b) |
-| R7 | A catalog overview for the landing page, with a showcase match | Web fixes Landing A, B and C | 2026-11-09 | Open |
+| R7 | A catalog overview for the landing page, with a showcase match | Web fixes Landing A, B and C | 2026-11-09 | **Done** (2026-11-09, backend R7 `d5cdcb6`): 5-minute server cache |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -425,6 +425,39 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 - **`topClubs`:** clubs only, at most 12, ordered by match count, ties by name.
 - **The showcase:** the real constant builds 11 players and 5 reveals with Messi as the miss. A missing match, a `reveals` slug from the wrong side, or a `miss` from the same side each give `showcase: null`, and the rest of the response still returns.
 - **The endpoint:** answers without a session, and conforms to its schema.
+
+### Built
+
+- **The endpoint** (2026-11-09): backend `d5cdcb6`, on `main` and pushed.
+  - `GET /catalog/overview`, public (no session), the `catalog` rate limit (60 a minute), the usual envelope around `CatalogOverview`.
+  - **Fields as requested:** `counts { matches, players, clubs, nationalTeams, seasons }`, `era`, `highlights { finals, shootouts, extraTime, goals }`, `competitions: CompetitionRef[]` by name (as `filter-options`), `topClubs: ClubRef[]` (at most 12, clubs only, most pool matches first, then by name), `showcase: Showcase | null`.
+  - **`Showcase`:** `{ match: MatchInPlay, players: RevealedPlayer[11], demo: { reveals: slot[], miss: ShowcasePlayer | null } }`, where `ShowcasePlayer` is `{ name, imageUrl, directoryKey }`. Players carry `directoryKey`, as web Landing A asked.
+  - **Checked on every build:** `showcase` is `null` if the match isn't loaded, the XI isn't 11, a slot breaks the formation, a reveal isn't in that XI, or the miss isn't in the other XI. The rest of the response always returns.
+  - **The pool excludes the match:** solo, duels, rooms and `filter-options` never serve it.
+  - **Docs:** OpenAPI components `CatalogOverview`, `Showcase`, `ShowcaseDemo`, `ShowcasePlayer`; backend `context/api-contract.md` § 4, row 17.
+- **Differences from this request:**
+  - **A 5-minute server cache** of the built overview: new data shows within 5 minutes. A build takes about 6 s on ingest.
+  - **The constant lives in `src/matches/showcase.ts`,** not `src/catalog/`.
+  - **The miss's type is named `ShowcasePlayer`** in OpenAPI; the web calls the same shape `ShowcaseMiss`. Same fields.
+- **Numbers on dev** (the seed; what the web sees locally):
+  - Counts: 10 matches, 167 players, 7 clubs, 4 national teams, 10 seasons. Era 2002–2023.
+  - Highlights: 3 finals, 0 shootouts, 0 extra time, 40 goals.
+  - Competitions (6): Continental Champions Cup, Continental Nations Championship, Crown League, Federation Trophy, Global Nations Cup, Liga Meridiana.
+  - `topClubs` (7): Northgate United, Real Solvara, Atlético Castellmar, FC Weerdam, Kingsmere City, Riverton Athletic, Yıldırımspor.
+  - **`showcase: null`:** the match isn't seeded on dev.
+- **Numbers on ingest** (the real data):
+  - Counts: 1,924 matches, 3,786 players, 53 clubs, 47 national teams, 26 seasons. Era 2000–2025.
+  - Highlights: 56 finals, 53 shootouts, 84 extra time, 5,343 goals (the dataset's 5,348 less the showcase's 5).
+  - Competitions (11): Bundesliga, Champions League, Euro, LaLiga, Liga Portugal, Ligue 1, Premier League, Serie A, Süper Lig, UEFA Cup / Europa League, World Cup.
+  - `topClubs` (12): Manchester United, Arsenal, Chelsea FC, Liverpool FC, Tottenham Hotspur, Manchester City, Real Madrid, Barcelona, AC Milan, Inter, Paris Saint-Germain, Juventus.
+  - **The showcase builds:** Real Madrid 2–3 Barcelona, LaLiga Matchday 33, home side, 4-3-3, all 11 players with images. `demo.reveals` is slots `[8, 10, 9, 7, 5]` (Bale, Cristiano Ronaldo, Benzema, Modrić, Kroos); Messi is the miss, with an image.
+- **Backend's note, accepted:** the showcase XI is now public, and other 2016–17 Real Madrid matches still in the pool share most of its starters. The demo shows 5 of those names, all famous and public football knowledge; every visitor sees the same page, so duels stay fair (Hard Constraint 15), and no served match's squad is sent (Hard Constraint 2).
+- **Checked from the web** (2026-11-10, web Landing C, 3000 against 8080):
+  - **The transcription held:** web Landing A's schemas match `d5cdcb6` field for field; no code change. Both the dev and ingest responses parse.
+  - **Dev:** every count, highlight, competition and club matches the numbers above; with `showcase: null` the fold's right column stays empty and the text doesn't move.
+  - **Ingest:** every number above shows on `/` (1,924 / 3,786 / 100 / 26; 56 / 53 / 84 / 5,343; "Seasons 2000–01 to 2025–26"), the 11 competitions and 12 crests load, and the demo plays "Real Madrid's XI, 23 April 2017": Bale, Cristiano Ronaldo, "Mes" → Lionel Messi ("Not in this XI"), Benzema, Modrić, Kroos, with photos, looping at 25 s.
+  - **The pool:** 15 solo offers on LaLiga 2016-17 with Real Madrid gave only the other three matches (Atlético away, Barcelona away, Atlético at home), never the showcase. They left 15 abandoned guest sessions on ingest (no side chosen, so no runs or stats).
+  - **Backend down:** `/` shows the fold, rules and modes only; no skeleton left behind, no zeros, no error copy (the three network retries take about 3 s). Started again (on ingest), a reload brings every section and the Real Madrid demo back.
 
 ### Report in the Built note
 
