@@ -10,6 +10,12 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R6 | Private rooms: create a room, join it with a code | Web features Private Rooms A and B | 2026-11-08 | **Done** (2026-11-08): rooms (backend R6a), history `isPrivate` (backend R6b) |
 | R7 | A catalog overview for the landing page, with a showcase match | Web fixes Landing A, B and C | 2026-11-09 | **Done** (2026-11-09, backend R7 `d5cdcb6`): 5-minute server cache |
 | R8 | Three more reveals in the landing showcase | Web fix Landing D | 2026-11-10 | **Done** (2026-11-10, backend R8 `aca22bf`) |
+| R9 | The Pro tier and the `PRO_ENABLED` switch | Web feature Pro A | 2026-11-10 | Asked |
+| R10 | Pro-only room hosting | Web feature Pro B | 2026-11-10 | Asked |
+| R11 | The solo daily cap | Web feature Pro C | 2026-11-10 | Asked |
+| R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | Asked |
+| R13 | Exact match selection | Web feature Pro E | 2026-11-10 | Asked |
+| R14 | Practice mode | Web feature Pro F | 2026-11-10 | Asked |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -515,3 +521,304 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 ### Prompt for the backend session
 
 > Read `../lineup-web/context/docs/backend-requests.md` § R8. It's a small change to R7's showcase constant, `LANDING_SHOWCASE` in `src/matches/showcase.ts`: add `sergio-ramos`, `keylor-navas` and `marcelo` to the reveals, after `toni-kroos`, in that order, so `demo.reveals` becomes `[8, 10, 9, 7, 5, 2, 0, 4]`. Update the showcase tests. No migration, no contract change. Report the commit and the `demo.reveals` the ingest build returns.
+
+---
+
+## R9. The Pro tier and the `PRO_ENABLED` switch
+
+**Why:** five Pro features are coming (user, 2026-11-10), all behind one switch. This request builds the switch and the tier; R10–R14 each gate one feature on it. Overview: `context/docs/pro-features.md`. Web spec: `context/features/pro-a-switch.md`.
+
+**Decisions (user, 2026-11-10):**
+
+- **`PRO_ENABLED=false`** (production at launch): no split. Every user and every guest is Pro.
+- **`PRO_ENABLED=true`** (development now, production later): the real split. Build and test with `true`.
+- **The backend alone decides** (Hard Constraint 16). The web has no switch of its own; it reads the tier and the switch from here.
+- **Guests can be Pro**, and upgrading a guest keeps the tier, as it keeps the history.
+- **Payments are out of scope.** Development needs only a way to set a tier by hand.
+
+### The switch
+
+- `PRO_ENABLED: z.stringbool().default(false)` in `src/config/env.schema.ts`. A missing variable means "everyone is Pro", so nobody is ever locked out by a deploy mistake.
+- `.env.example` documents both values. Your dev `.env` sets `PRO_ENABLED=true`.
+
+### The stored tier (one migration)
+
+- `users.tier`: a `Tier` enum (`free`, `pro`), `NOT NULL DEFAULT 'free'`. Every existing user and guest reads `free`.
+- **Upgrade keeps it:** a guest upgrade keeps the same `users` row (B11), so the tier carries over. Add a test for it anyway.
+- **A dev script, not an endpoint:** `npm run user:tier -- <email or handle> <free|pro>` sets one user's stored tier. A guest is found by its `guest-…` handle. No HTTP route can change a tier.
+
+### The effective tier
+
+- **One pure function:** `effectiveTier(stored, proEnabled)` returns `stored` when `proEnabled` is on, and `'pro'` when it's off. Unit tested.
+- **Every `User` the API returns carries it:** session, sign-in, sign-up, guest, upgrade and profile. Today `toContractUser` (`src/auth/auth-flow.service.ts`) hard-codes `'free'`.
+- **Every gate reads it fresh,** from the `users` row at the time of the request: never from the gateway token or a cached copy. A tier set by the script, or later by a purchase, then applies without signing in again. The socket reads it at each gated command (R10).
+- **The solo summary already follows it:** `toSoloSummary(run, user.tier)` sends `missed` to Pro. With the effective tier, everyone gets the list while the switch is off.
+
+### Public config: `GET /config` (no migration)
+
+- **Public**, no session, so the landing page and signed-out visitors can read it. Use the `catalog` rate limit.
+- **Response `AppConfig`:** `{ proEnabled: boolean }`, the switch's value. `Cache-Control: public, max-age=300` is fine; the value only changes on a restart.
+- **The web uses it** to decide whether any Pro wording, lock or `/pro` page exists. It never uses it to grant anything.
+
+### A reason on `forbidden`
+
+- **`ApiError` gains an optional `reason`:** `'pro_required' | 'daily_cap'`, set only with `forbidden`. It goes in the same §2 envelope on REST and in socket acks.
+- `pro_required` is used by R10, R12, R13 and R14, and `daily_cap` by R11. Both are defined now so the contract changes once.
+- **Messages stay safe to show,** as every message is (for example "That needs Pro.").
+
+### Contract and versions
+
+- **Additive:** `User.tier` already exists (it becomes real), `AppConfig` and `GET /config` are new, and `reason` is optional.
+- **No `PROTOCOL_VERSION` bump.**
+- **Docs:** OpenAPI (`AppConfig`, `ApiError.reason`), backend `context/api-contract.md`.
+
+### Shared spec
+
+- **`project-overview.md`:** copy `../lineup-web/context/project-overview.md` over the backend's copy; it must stay identical. The web edited the Free vs Pro table (5 solo runs a day, practice not saved), added the switch paragraph under it, and added the `/archive` and `/pro` routes.
+
+### Tests
+
+- `effectiveTier` with both switch values and both stored tiers.
+- **Every session-returning call** reports `pro` for a stored-`free` user with the switch off, and `free` with it on.
+- A guest set to `pro` stays `pro` after upgrading.
+- `GET /config` with both values, with no session.
+- An error envelope with `reason` parses; one without still does.
+- The script sets a tier by email and by guest handle, and refuses an unknown user.
+
+### Report in the Built note
+
+- The commit(s) and the migration name.
+- The script's exact command.
+- Anything that differs from this request.
+
+### Then
+
+- **Web, Pro A** (`context/features/pro-a-switch.md`) needs R9 on the backend's `main`.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R9 and `../lineup-web/context/docs/pro-features.md`. Write R9 up as one backend feature spec: a `PRO_ENABLED` env var (stringbool, default `false`), a `users.tier` column (default `free`), a pure `effectiveTier(stored, proEnabled)` used by every `User` the API returns (replacing the hard-coded `'free'` in `toContractUser`), a public `GET /config` returning `{ proEnabled }`, an optional `reason` (`pro_required` | `daily_cap`) on `forbidden` errors, and a dev script `npm run user:tier -- <email or handle> <free|pro>`. Gates read the tier fresh from the database per request. Copy `../lineup-web/context/project-overview.md` over this repo's copy. No `PROTOCOL_VERSION` bump. Ask me anything unclear before `/feature load`. When it's merged to `main` and pushed, give me everything listed in § R9 "Report in the Built note", plus anything that differs from the request.
+
+---
+
+## R10. Pro-only room hosting
+
+**Why:** "Private lobbies: Free join only, Pro host + join" (`project-overview.md` § Free vs Pro). Rooms are built (R6); only the gate is missing. Web spec: `context/features/pro-b-room-hosting.md`. Needs R9.
+
+### The change (no migration)
+
+- **`room:create`:** a user whose effective tier is `free` gets `forbidden`, `reason: 'pro_required'`, message "Hosting a room needs Pro. Anyone can join one." Check it right after payload validation, before the queue and hosting checks.
+- **Read the tier fresh** from the `users` row at the command (R9). The gateway token's claims are not enough.
+- **`room:join` is unchanged:** a Free player can join a Pro player's room, and the duel inside is identical for both (Hard Constraint 15).
+- **An open room stays open** if its host's tier drops while it waits. It is used or expires as usual.
+- **With `PRO_ENABLED=false`** everyone is Pro, so nothing changes for anyone.
+
+### Tests
+
+- With the switch on, a Free `room:create` gets the refusal with its reason, and nothing is stored. A Pro one opens a room.
+- With the switch off, a stored-`free` user opens a room.
+- **Two-client harness:** a Pro creator and a Free joiner play a room game to `finished`.
+
+### Report in the Built note
+
+- The commit and the exact message.
+- Where the check sits among the existing `forbidden` checks.
+
+### Then
+
+- **Web, Pro B** needs R10 on `main`.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R10. Gate `room:create` on the effective tier from R9: Free gets `forbidden` with `reason: 'pro_required'` and the message "Hosting a room needs Pro. Anyone can join one.", read fresh from the database at the command. `room:join` is unchanged, and an open room survives its host dropping to Free. Tests as listed, including a Pro creator and a Free joiner in the two-client harness. No migration, no `PROTOCOL_VERSION` bump. When it's merged to `main` and pushed, give me everything listed in § R10 "Report in the Built note", plus anything that differs from the request.
+
+---
+
+## R11. The solo daily cap
+
+**Why:** Free plays 5 solo runs a day; Pro is unlimited (user, 2026-11-10). Duels are never capped (`monetization.md` § Rejected). Web spec: `context/features/pro-c-solo-cap.md`. Needs R9.
+
+**Decisions (user, 2026-11-10):**
+
+- **5 runs a day,** resetting at **UTC midnight** for everyone. The client never sends a time zone.
+- **A run counts when its side is picked** (`POST /solo/sessions/:id/side` accepted). Taking an offer and leaving it doesn't count. Quitting later doesn't give the run back.
+- **Practice runs (R14) never count.**
+
+### Rules
+
+- A constant `SOLO_DAILY_RUNS = 5`, applied only when the effective tier is `free`.
+- **What counts:** the user's solo runs whose side was picked since the last UTC midnight, **including a run still in play**. Today a run may only be written to `game_sessions` when it ends; count the open in-memory run too, or write the row at side pick. Your choice; document it.
+- **`POST /solo/sessions`:** at 5 used, refused with `forbidden`, `reason: 'daily_cap'`, `retryAfterMs` = the milliseconds to the next UTC midnight, and the message "You've played your 5 solo runs today. Duels are unlimited."
+- **`POST /solo/sessions/:id/side`:** checks again and counts in one step, so two tabs can't both take the fifth run. It refuses the same way.
+- **The clock is injected** (the existing `CLOCK`), so the reset is testable.
+
+### New: `GET /solo/allowance` (session required)
+
+- **Response `SoloAllowance`:** `{ limit: number | null, used: number, resetsAt: epoch ms }`.
+  - `limit` is `5` for Free and `null` for unlimited (Pro, or the switch off).
+  - `used` counts as above, for every tier.
+  - `resetsAt` is the next UTC midnight.
+- The web shows "N of 5 solo runs left today" from this, and never counts on its own.
+
+### Contract and versions
+
+- Additive: one new call, one new type, and `reason: 'daily_cap'` (defined in R9). No `PROTOCOL_VERSION` bump.
+
+### Tests
+
+- Free: five side picks, then the sixth start is refused with `daily_cap` and the right `retryAfterMs`.
+- After UTC midnight (moved clock), Free can start again.
+- Pro, and any user with the switch off, are never refused.
+- An offer with no side pick doesn't count; a quit run does.
+- Two concurrent side picks at 4 used: exactly one succeeds.
+- `GET /solo/allowance` for Free, Pro and the switch off.
+
+### Report in the Built note
+
+- The commit, and whether runs are written at side pick or counted in memory.
+- The exact message.
+
+### Then
+
+- **Web, Pro C** needs R11 on `main`.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R11. Add a solo daily cap for Free users (effective tier from R9): 5 runs per UTC day, counted when a side is picked (including a run in play), never for Pro or with `PRO_ENABLED=false`. `POST /solo/sessions` and the side pick refuse past the cap with `forbidden`, `reason: 'daily_cap'`, and `retryAfterMs` to the next UTC midnight; the side pick counts atomically. Add `GET /solo/allowance` returning `{ limit, used, resetsAt }` (`limit` null when unlimited). Practice runs (R14, later) never count. Tests as listed. No `PROTOCOL_VERSION` bump. Ask me anything unclear before `/feature load`. When it's merged to `main` and pushed, give me everything listed in § R11 "Report in the Built note", plus anything that differs from the request.
+
+---
+
+## R12. Archive browse and search
+
+**Why:** Pro browses and searches every match in the game; it is also the way into exact match selection (R13). Web spec: `context/features/pro-d-archive.md`. Needs R9.
+
+### The endpoint: `GET /catalog/matches` (no migration)
+
+- **Who:** with `PRO_ENABLED=true`, a session with the effective tier `pro`. Free gets `forbidden`, `reason: 'pro_required'`; no session gets `unauthorized`. With the switch off it is **public**, like the rest of the catalog.
+- **Query:** all optional.
+
+  | Param | Rule |
+  | --- | --- |
+  | `q` | Trimmed text, 1–64 characters |
+  | `competitionId` | One competition id |
+  | `clubId` | One club id, on either side |
+  | `from`, `to` | Season starts, inside the covered era, `from ≤ to` |
+  | `cursor` | From the previous page |
+  | `limit` | 1–50, default 20 |
+
+- **Response `ArchivePage`:** `{ entries: MatchIdentity[], nextCursor: string | null, total: number }`. `total` counts every match the query matches.
+- **The pool only:** the playable pool (both gates), with the landing showcase excluded through the same `poolWhere`. Every entry is a match R13 accepts.
+- **Order:** newest first by date, then by id. Never by `memorability_score` (Hard Constraint 20).
+- **Search:** `q` matches club names, short names and club aliases, the competition name, the match nickname and the season. Use the same normalization as guesses (`normalizeName`: diacritics, Turkish letters, case). **Every word must match** somewhere, so "milan 2005" and "istanbul" both work.
+- **Never in the response:** lineups, players, sides or formations (Hard Constraint 2), and no memorability score (Hard Constraint 20). `MatchIdentity` is already safe; send nothing more.
+- **Rate limit:** `catalog`.
+- **Performance:** about 1,900 matches today. Searching the selector's in-memory candidates is fine, or a query with an index; your choice, report it.
+
+### Contract and versions
+
+- Additive: one new call and one new type. No `PROTOCOL_VERSION` bump.
+
+### Tests
+
+- The access rules for Free, Pro, no session, and the switch off.
+- Each filter on its own and combined; `from`/`to` bounds.
+- `q`: diacritics ("atletico" finds Atlético), Turkish letters, several words, a nickname.
+- Order, cursor paging with no repeats or gaps, `total`.
+- The showcase match never appears; nothing outside the pool appears.
+
+### Report in the Built note
+
+- The commit, how search is done (memory or SQL), and a sample response time on ingest.
+
+### Then
+
+- **Web, Pro D** needs R12 on `main`.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R12. Add `GET /catalog/matches`: a paged, searchable list of the playable pool (showcase excluded) as `MatchIdentity` entries, newest first, with `q`, `competitionId`, `clubId`, `from`, `to`, `cursor` and `limit`, returning `{ entries, nextCursor, total }`. Search normalizes like guesses and needs every word to match. With `PRO_ENABLED=true` it needs a Pro session (Free gets `forbidden` + `reason: 'pro_required'`); with the switch off it's public. No lineups, players or memorability scores. Tests as listed. No migration, no `PROTOCOL_VERSION` bump. Ask me anything unclear before `/feature load`. When it's merged to `main` and pushed, give me everything listed in § R12 "Report in the Built note", plus anything that differs from the request.
+
+---
+
+## R13. Exact match selection
+
+**Why:** Pro picks the exact match to play: "I want to play Istanbul 2005 right now" (`monetization.md`). The match comes from the archive (R12). Web spec: `context/features/pro-e-exact-match.md`. Needs R9 and R12.
+
+### The change: `POST /solo/sessions` takes a `matchId` (no migration)
+
+- **The request body becomes `SoloStartRequest`:** today's `Filters` plus an optional `matchId`. The web keeps sending filters, so the body stays valid for an older server. When `matchId` is present, the filters are ignored.
+- **Pro only:** a Free user with `matchId` gets `forbidden`, `reason: 'pro_required'`.
+- **The match must be in the pool:** unknown, not playable, or the showcase → `not_found`, "That match isn't in the game."
+- **Everything after is today's solo run:** the same `SoloMatchOffer`, the player picks the side, and the run counts in history and stats like any other.
+- **Replays are allowed:** a match can be picked again any number of times.
+- **Solo only:** the queue and rooms never take a `matchId`. A Pro-only duel pool is rejected (`monetization.md`).
+- **Practice:** R14 adds `practice` to the same body; the two combine.
+
+### Contract and versions
+
+- Additive: an optional field on the start body. No `PROTOCOL_VERSION` bump.
+
+### Tests
+
+- Pro with a pool match gets that exact match offered, whatever the filters say.
+- Free with `matchId` is refused with the reason; Free without it is unchanged.
+- An unknown id, a match outside the pool and the showcase match are `not_found`.
+- With the switch off, any user can pick a match.
+- The run counts in stats and history.
+
+### Report in the Built note
+
+- The commit and the final body shape.
+
+### Then
+
+- **Web, Pro E** needs R13 on `main`.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R13. Let `POST /solo/sessions` take an optional `matchId` alongside the filters (ignored when it's set): Pro only (`forbidden` + `reason: 'pro_required'` for Free), the match must be in the playable pool (`not_found` otherwise, the showcase included), and everything after is today's solo run, counted in stats. Replays are allowed; duels never take a `matchId`. Tests as listed. No migration, no `PROTOCOL_VERSION` bump. When it's merged to `main` and pushed, give me everything listed in § R13 "Report in the Built note", plus anything that differs from the request.
+
+---
+
+## R14. Practice mode
+
+**Why:** Pro can practise a match with no lives and no clock (user, 2026-11-10). Web spec: `context/features/pro-f-practice.md`. Needs R9 (and R13, to combine with a picked match).
+
+**Decisions (user, 2026-11-10):**
+
+- **No lives, no 15-second clock.** The run ends when all 11 are named or the player quits.
+- **Not saved at all:** no `game_sessions` row, no rounds or guesses, no history, no stats, and it never counts toward the daily cap (R11).
+
+### The change (no migration)
+
+- **The start body** (`SoloStartRequest`, R13) gains an optional `practice: boolean`. It combines with `matchId`. Pro only: a Free user gets `forbidden`, `reason: 'pro_required'`.
+- **The rules stay in `src/game/`** (Hard Constraint 7). A practice game has no round clock and never loses a life. Every guess is still validated on the server, with today's matching, collisions and rate limit.
+- **Endings:** `perfect_clear` (all 11) or `quit`. Never `lives_out`.
+- **`SoloSession` gains `practice: boolean`** (always sent). In practice, `round` is always `null` and `lives` stays `3`.
+- **`SoloSummary` gains `practice: boolean`.** `livesRemaining` is `3`, `missed` follows the tier as today (always Pro here), and `roundTimesMs` measures the time between finds.
+- **Idle runs end:** a practice run with no guess for 30 minutes is dropped from memory. A later call on it answers as an ended run does today. Report the value.
+
+### Contract and versions
+
+- Additive: one optional request field and two response fields. No `PROTOCOL_VERSION` bump.
+
+### Tests
+
+- Rules engine: no expiry however much time passes; 11 finds → `perfect_clear`; quit; no life lost.
+- A practice run writes nothing to the database, and stats and history are unchanged after it.
+- It doesn't count toward the cap, even for a Free user with the switch off.
+- Free with `practice` is refused; with the switch off anyone can practise.
+- `practice` with `matchId` plays that match.
+- The idle drop.
+
+### Report in the Built note
+
+- The commit, the idle timeout, and what a call on a dropped run answers.
+
+### Then
+
+- **Web, Pro F** needs R14 on `main`.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R14. Add practice mode to solo: an optional `practice: boolean` on the start body (combines with R13's `matchId`; Pro only, `forbidden` + `reason: 'pro_required'` for Free). The rules engine runs it with no round clock and no life loss, ending on all 11 or quit; guesses are validated as usual. `SoloSession` and `SoloSummary` gain `practice: boolean`; `round` stays null and `lives` 3. A practice run is never saved (no rows, no history, no stats) and never counts toward the daily cap. Drop idle practice runs after 30 minutes. Tests as listed. No migration, no `PROTOCOL_VERSION` bump. Ask me anything unclear before `/feature load`. When it's merged to `main` and pushed, give me everything listed in § R14 "Report in the Built note", plus anything that differs from the request.
