@@ -1,6 +1,6 @@
 'use client';
 
-import { type SubmitEvent, useId } from 'react';
+import { type SubmitEvent, useId, useRef } from 'react';
 import {
   type ArchiveFilterState,
   ArchiveFilters,
@@ -164,6 +164,13 @@ export function ArchiveView({
   playError = null,
 }: ArchiveViewProps) {
   const searchId = useId();
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // The empty state goes; focus the search
+  function clear() {
+    onClear();
+    searchRef.current?.focus();
+  }
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -202,6 +209,7 @@ export function ArchiveView({
             Search the archive
           </label>
           <input
+            ref={searchRef}
             id={searchId}
             type="search"
             value={search}
@@ -225,7 +233,7 @@ export function ArchiveView({
         <Results
           view={view}
           clearLabel={clearLabel}
-          onClear={onClear}
+          onClear={clear}
           onRetry={onRetry}
           onShowMore={onShowMore}
           onPlay={onPlay}

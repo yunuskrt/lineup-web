@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { FilterPanel } from '@/components/play/FilterPanel';
 import { FilterSkeleton } from '@/components/play/FilterSkeleton';
 import { ModeChoice } from '@/components/play/ModeChoice';
@@ -58,6 +59,7 @@ export function PlayScreen() {
     mode === 'solo' && !isPractice ? (allowance.data ?? null) : null;
   const soloLine = allowanceLine(soloAllowance);
   const isCapped = isSoloCapped(soloAllowance);
+  const startRef = useRef<HTMLButtonElement>(null);
   // The Start click unlocks sound for the game
   useSoundUnlock();
 
@@ -74,6 +76,12 @@ export function PlayScreen() {
   function changeMode(next: PlayMode) {
     setMode(next);
     syncUrl(filterParams ?? params, next, practice);
+  }
+
+  // Its button goes; Start enables after it
+  function playDuelInstead() {
+    flushSync(() => changeMode('duel'));
+    startRef.current?.focus();
   }
 
   function changeFilters(next: Filters) {
@@ -136,6 +144,7 @@ export function PlayScreen() {
           />
         ) : null}
         <PlayStart
+          ref={startRef}
           mode={mode}
           href={startParams ? withQuery(`/play/${mode}`, startParams) : null}
           isCapped={isCapped}
@@ -150,7 +159,7 @@ export function PlayScreen() {
               id={allowanceId}
               line={soloLine}
               isCapped={isCapped}
-              onPlayDuel={() => changeMode('duel')}
+              onPlayDuel={playDuelInstead}
             />
           ) : null}
           {mode === 'solo' && !isCapped ? (

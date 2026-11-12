@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -34,3 +34,12 @@ Keyboard and link details from the Pro browser review (2026-11-12, items 3, 4, 5
   - **Keyboard, in the browser:** each of 3, 4 and 5 leaves focus on the named control (check `document.activeElement`).
   - **Live, Free (switch on):** `/play/duel?room=create` shows See Pro as a link, and following it leaves the room (no waiting room left behind; a second create from another tab still works).
   - Snapshot `room-pro-required` at 320 and 1440.
+
+**Deviations recorded during implementation**
+
+- 3, 4: focus goes through `flushSync` then `focus()`. A `<dialog>` removed while open drops focus to body, and Start is disabled until the switch commits.
+- 4: `PlayStart` takes `ref` as a `RefObject` (React 19 prop), falling back to its own.
+- 5: the ref and the focus live in `ArchiveView`, which owns the input; `ArchiveScreen` is unchanged.
+- 17: no `leave()` on the link. Unmount runs `stopLobby` → `release()`, which disconnects the socket, and a refused create holds no room. Checked live: a second create shows the gate again and the queue joins.
+- 17: `DUEL_GATE_COPY.seePro` removed with the `DuelGame` branch; `isProRequired` stays (gate and tests).
+- 24: verified, no fix. Fresh visitor, switch off, auth slowed to 1.5s: Practise reads "Starting…" (`aria-disabled`, kept focusable) until `/play/solo?match=…&practice=1`.

@@ -12,10 +12,8 @@ import {
   canConfirmForfeit,
   duelCanvasView,
   duelGateAction,
-  isProRequired,
 } from '@/lib/duel-session';
 import { withMode, withQuery } from '@/lib/filters';
-import { PRO_PATH } from '@/lib/pro';
 import type { LobbyAction } from '@/types/duel-lobby';
 import type { PlayMode } from '@/types/play';
 
@@ -110,13 +108,8 @@ export function DuelGame() {
     }
   }
 
-  // See Pro; or a result away, on the profile
+  // A result away, on the profile
   async function handleGateSecondaryAction() {
-    if (isProRequired(state)) {
-      await leave();
-      router.push(PRO_PATH);
-      return;
-    }
     if (state.phase !== 'endedAway') {
       backToFilters();
       return;
