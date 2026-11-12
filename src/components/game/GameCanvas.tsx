@@ -178,15 +178,26 @@ function ActiveRail({
   onGuessSubmit,
 }: ActiveRailProps) {
   const isTheirTurn = view.mode === 'duel' && view.turn === 'opponent';
+  // The chip can't sit beside the ring under 414px
+  const isReconnecting =
+    view.mode === 'duel' && view.opponentConnection?.status === 'reconnecting';
 
   return (
     <>
       {view.mode === 'solo' && view.isPractice ? (
         <PracticeCard />
       ) : (
-        <div className="flex items-center gap-4 lg:flex-col lg:items-stretch lg:gap-8">
+        <div
+          className={`flex flex-wrap items-center gap-4 lg:flex-col lg:flex-nowrap lg:items-stretch lg:gap-8 ${
+            isReconnecting ? 'max-[413px]:justify-center' : ''
+          }`}
+        >
           <ClockBlock view={view} />
-          <div className="min-w-0 flex-1 lg:flex-none">
+          <div
+            className={`min-w-0 flex-1 lg:flex-none ${
+              isReconnecting ? 'max-[413px]:basis-full' : ''
+            }`}
+          >
             <RailLives view={view} />
           </div>
         </div>
