@@ -31,7 +31,6 @@ export function archiveWords(match: MatchIdentity): string[] {
     match.away.name,
     match.away.shortName,
     match.competition.name,
-    match.nickname ?? '',
     ...seasonWords(match.season),
     match.date.slice(0, 4),
   ].flatMap(words);

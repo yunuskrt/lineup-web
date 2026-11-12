@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -24,7 +24,7 @@ The cap gate's request, `/pro`, URL leftovers and nickname search, from the Pro 
   - The server stays authoritative: if the allowance says there are runs left, the start goes ahead, and a `daily_cap` refusal is still handled as today.
 - **7. Nickname search off.** The archive promises nickname search, but no match on ingest has a nickname, so "istanbul" finds nothing.
   - **Web:** the total line becomes "{total} matches. Search by club, competition or season." (`archiveTotalLine`), and the mock's search words drop the nickname (`archiveWords` in `src/lib/api/mock/archive.ts`). Rows still show a nickname when one exists.
-  - **Backend (R15, optional, any order):** the archive search stops matching the nickname, so a nickname never produces a hit the copy no longer promises. See `context/docs/backend-requests.md` § R15. The web part doesn't wait for it.
+  - **Backend (R15, optional, any order):** the archive search stops matching the nickname, so a nickname never produces a hit the copy no longer promises. See `context/docs/backend-requests.md` § R15. The web part doesn't wait for it. **Done** (2026-11-13, backend `cad41b7`).
 
 ## Notes
 
@@ -34,7 +34,7 @@ The cap gate's request, `/pro`, URL leftovers and nickname search, from the Pro 
 - **Constraints:** tokens only; `@/` imports; no `any`; comments of at most 50 characters; secrets stay server-side (the `/pro` check uses the public `NEXT_PUBLIC_API_URL`).
 - **Tests (pure):** the parameter-stripping helper; `archiveTotalLine`'s new copy; the mock search no longer matching a nickname ("mudbath" → 0); the cap-first decision ("a plain run, capped: no start", "picked or practice: start anyway"), extracted as a pure helper.
 - **Docs:**
-  - `context/docs/contract.md`: the search rule without the nickname, once R15 is in.
+  - `context/docs/contract.md`: the search rule without the nickname. Done with R15 (2026-11-13).
   - `context/design.md` § Page shape, `/archive` row: the new total line.
 - **Verification:**
   - `npm test`, `npm run lint`, `npm run build`.
@@ -42,3 +42,13 @@ The cap gate's request, `/pro`, URL leftovers and nickname search, from the Pro 
   - **Live, rooms:** Cancel in a waiting room lands on `/play` with no `room` parameter.
   - **Live, switch off:** `curl -I http://localhost:3000/pro` answers 404. Switch on: `/pro` answers 200 with the table, and "Pro isn't on sale yet."
   - `/archive`: the new total line; after R15, a nickname search finds nothing on any database.
+
+**Deviations recorded during implementation**
+
+- 14: the check is `isProSwitchOff()` in `src/lib/api/pro-switch.ts`, with the body read by a pure `isSwitchOffIn()` (tested). The build lists `/pro` with a 5-minute revalidate.
+- 14, found live: after a switch flip, the first `/pro` request can still get the cached answer (Next serves it once while it refetches), then 404 holds. `ProScreen`'s client check covers that one stale render.
+- 15: a refused join keeps `room`, so `/play` shows the code again (`theme.md` § Lobby, "Join refused": "the code kept in the box"). `keepsJoinCode(state)` in `duel-session.ts` decides; every other exit drops `room`.
+- 15: one helper, `withoutParams(params, names)` in `filters.ts`. `SoloGame`'s Play a duel drops `match`, `practice` and `mode` with it, replacing the `withPractice`/`withMode` chain.
+- 20: the allowance read uses `soloAllowanceQuery`, the same query `useSoloAllowance` runs (fresh, `staleTime: 0`), so the cap gate's line and the check share one request. A failed read lets the start go. The gate is fed a client-built `daily_cap` error (`dailyCapErrorOf`), so the gate, its actions and Retry stay as they are. The decision is `isCappedBeforeStart`.
+- 18: JSX needs `&apos;` for "isn't" (lint rule, as elsewhere in the repo).
+- Docs: `context/docs/pro-features.md` dropped "or nickname" from the archive line as well.

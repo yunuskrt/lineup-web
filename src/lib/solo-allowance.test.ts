@@ -3,6 +3,8 @@ import { soloAllowanceSchema } from '@/lib/api/schemas/solo';
 import {
   allowanceLine,
   capLine,
+  dailyCapErrorOf,
+  isCappedBeforeStart,
   isDailyCap,
   isSoloCapped,
   refetchAtReset,
@@ -110,5 +112,39 @@ describe('soloAllowanceSchema', () => {
       true,
     );
     expect(soloAllowanceSchema.safeParse(allowance(-1)).success).toBe(false);
+  });
+});
+
+describe('isCappedBeforeStart', () => {
+  const PLAIN = { matchId: null, practice: false };
+
+  it('stops a plain timed run at the cap', () => {
+    expect(isCappedBeforeStart(PLAIN, allowance(5))).toBe(true);
+    expect(isCappedBeforeStart(PLAIN, allowance(4))).toBe(false);
+    expect(isCappedBeforeStart(PLAIN, allowance(9, null))).toBe(false);
+    expect(isCappedBeforeStart(PLAIN, null)).toBe(false);
+  });
+
+  it('lets picked and practice runs ask the server', () => {
+    const capped = allowance(5);
+    expect(
+      isCappedBeforeStart({ matchId: 'm-1', practice: false }, capped),
+    ).toBe(false);
+    expect(isCappedBeforeStart({ matchId: null, practice: true }, capped)).toBe(
+      false,
+    );
+  });
+});
+
+describe('dailyCapErrorOf', () => {
+  it('reads as the server refusal it spares', () => {
+    const error = dailyCapErrorOf(allowance(5), RESETS_AT - 60_000);
+    expect(isDailyCap(error)).toBe(true);
+    expect(error.retryAfterMs).toBe(60_000);
+    expect(error.message).toMatch(/^You've played your 5 solo runs today\./);
+  });
+
+  it('never waits a negative time', () => {
+    expect(dailyCapErrorOf(allowance(5), RESETS_AT + 1).retryAfterMs).toBe(0);
   });
 });

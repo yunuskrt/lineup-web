@@ -12,8 +12,10 @@ import {
   canConfirmForfeit,
   duelCanvasView,
   duelGateAction,
+  keepsJoinCode,
 } from '@/lib/duel-session';
-import { withMode, withQuery } from '@/lib/filters';
+import { withMode, withoutParams, withQuery } from '@/lib/filters';
+import { ROOM_PARAM } from '@/lib/room-code';
 import type { LobbyAction } from '@/types/duel-lobby';
 import type { PlayMode } from '@/types/play';
 
@@ -56,9 +58,15 @@ export function DuelGame() {
     router.replace(withQuery('/play/duel', next));
   }
 
+  // The room stays behind, unless a join was refused
+  function leavingParams(mode: PlayMode): URLSearchParams {
+    const leftovers = keepsJoinCode(state) ? [] : [ROOM_PARAM];
+    return withMode(withoutParams(params, leftovers), mode);
+  }
+
   async function goTo(path: string, mode: PlayMode) {
     await leave();
-    router.push(withQuery(path, withMode(params, mode)));
+    router.push(withQuery(path, leavingParams(mode)));
   }
 
   function backToFilters() {
@@ -135,9 +143,7 @@ export function DuelGame() {
 
   if (state.phase === 'refused') {
     return (
-      <ProtocolRefused
-        backHref={withQuery('/play', withMode(params, 'duel'))}
-      />
+      <ProtocolRefused backHref={withQuery('/play', leavingParams('duel'))} />
     );
   }
 

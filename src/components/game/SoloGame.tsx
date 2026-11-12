@@ -8,9 +8,13 @@ import { usePlayerDirectory } from '@/hooks/use-player-directory';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoloRun } from '@/hooks/use-solo-run';
 import { sideSchema } from '@/lib/api/schemas/common';
-import { withMode, withQuery } from '@/lib/filters';
-import { ARCHIVE_PATH, withoutPickedMatch } from '@/lib/archive';
-import { withPractice } from '@/lib/practice';
+import { FILTER_PARAMS, withoutParams, withQuery } from '@/lib/filters';
+import {
+  ARCHIVE_PATH,
+  PICKED_MATCH_PARAM,
+  withoutPickedMatch,
+} from '@/lib/archive';
+import { PRACTICE_PARAM } from '@/lib/practice';
 import { capLine } from '@/lib/solo-allowance';
 import { soloCanvasView, soloGateAction, soloQuitCopy } from '@/lib/solo-run';
 
@@ -47,14 +51,10 @@ export function SoloGame() {
     router.push(ARCHIVE_PATH);
   }
 
-  // Duels are never capped; the filters go along
+  // Duels are never capped; only the filters go along
   function playDuel() {
-    router.push(
-      withQuery(
-        '/play/duel',
-        withMode(withPractice(withoutPickedMatch(params), false), 'duel'),
-      ),
-    );
+    const leftovers = [PICKED_MATCH_PARAM, PRACTICE_PARAM, FILTER_PARAMS.mode];
+    router.push(withQuery('/play/duel', withoutParams(params, leftovers)));
   }
 
   async function handleGuess(text: string) {

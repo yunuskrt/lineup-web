@@ -38,6 +38,7 @@ import {
   duelCanvasView,
   duelGateAction,
   isProRequired,
+  keepsJoinCode,
   duelSessionReducer,
   INITIAL_DUEL_SESSION,
   RECONNECT_WINDOW_MS,
@@ -2015,6 +2016,22 @@ describe('private rooms', () => {
       at: AT,
     });
     expect(duelGateAction(state)).toBe('widen');
+  });
+
+  it('keeps the code only after a refused join', () => {
+    expect(keepsJoinCode(play(PRIVATE, JOINING, refused('not_found')))).toBe(
+      true,
+    );
+    expect(keepsJoinCode(play({ type: 'started' }, PRIVATE, CREATED))).toBe(
+      false,
+    );
+    const hostRefused = play(PRIVATE, {
+      type: 'failed',
+      step: 'createRoom',
+      error: { code: 'forbidden', message: 'Refused.', retryAfterMs: null },
+      at: AT,
+    });
+    expect(keepsJoinCode(hostRefused)).toBe(false);
   });
 
   it('names Pro when a Free player tries to host', () => {

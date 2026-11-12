@@ -134,7 +134,7 @@ export function activeFiltersLabel(
 
 export function archiveTotalLine(total: number): string {
   const noun = total === 1 ? 'match' : 'matches';
-  return `${COUNT.format(total)} ${noun}. Search by club, competition, season or nickname.`;
+  return `${COUNT.format(total)} ${noun}. Search by club, competition or season.`;
 }
 
 type ArchiveInput = {

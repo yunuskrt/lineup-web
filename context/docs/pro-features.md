@@ -46,7 +46,7 @@ One backend environment variable decides whether the Free/Pro split exists.
 
 ### 2. Archive browse & search
 
-- `/archive`: every pool match, newest first, 20 at a time. Search by club, competition, season or nickname (normalized, every word must match), plus the `/play` filters.
+- `/archive`: every pool match, newest first, 20 at a time. Search by club, competition or season (normalized, every word must match; nicknames are shown, not searched, backend R15), plus the `/play` filters.
 - A row shows the date, the competition, the stage, both clubs, the score and the nickname. Never the XI.
 - While the split is on it needs Pro; while it's off it's public.
 
