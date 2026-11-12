@@ -23,6 +23,8 @@ export type StoredSession = {
   endReason: SoloEndReason | null;
   recentGuessTimes: number[];
   isFinalized: boolean;
+  // Never saved, never counted (R14)
+  practice: boolean;
 };
 
 export type MockIdentity = {
@@ -137,6 +139,7 @@ export function createSession(
   store: MockStore,
   userId: string,
   fixtureId: string,
+  practice = false,
 ): StoredSession {
   const session: StoredSession = {
     id: nextId(store, 'session'),
@@ -153,6 +156,7 @@ export function createSession(
     endReason: null,
     recentGuessTimes: [],
     isFinalized: false,
+    practice,
   };
 
   store.sessions.set(session.id, session);

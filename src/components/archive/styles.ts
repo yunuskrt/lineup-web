@@ -11,4 +11,7 @@ export const ARCHIVE_ROW_FOOT =
   'col-span-3 row-start-2 flex min-w-0 items-center gap-2 sm:contents';
 
 // Row height: smaller than the secondary button
-export const ARCHIVE_PLAY_BUTTON = `shrink-0 rounded-sm border border-line px-3 py-1 text-14 leading-5 font-semibold text-fg hover:bg-surface-card aria-disabled:text-fg-muted aria-disabled:hover:bg-transparent sm:col-start-6 sm:row-start-1 ${FOCUS_RING}`;
+export const ARCHIVE_PLAY_BUTTON = `shrink-0 rounded-sm border border-line px-3 py-1 text-14 leading-5 font-semibold text-fg hover:bg-surface-card aria-disabled:text-fg-muted aria-disabled:hover:bg-transparent ${FOCUS_RING}`;
+
+export const ARCHIVE_ROW_ACTIONS =
+  'flex shrink-0 gap-2 sm:col-start-6 sm:row-start-1';

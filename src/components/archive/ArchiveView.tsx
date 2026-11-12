@@ -35,9 +35,9 @@ type ArchiveViewProps = {
   onClear: () => void;
   onRetry: () => void;
   onShowMore: () => void;
-  onPlay: (match: MatchIdentity) => void;
-  // The row whose run is being started
-  startingId: string | null;
+  onPlay: (match: MatchIdentity, practice: boolean) => void;
+  // The row whose run is being started, and how
+  starting: { id: string; kind: 'play' | 'practice' } | null;
   // Making the guest for a run failed
   playError?: string | null;
 };
@@ -71,7 +71,7 @@ function Results({
   onRetry,
   onShowMore,
   onPlay,
-  startingId,
+  starting,
 }: Pick<
   ArchiveViewProps,
   | 'view'
@@ -80,7 +80,7 @@ function Results({
   | 'onRetry'
   | 'onShowMore'
   | 'onPlay'
-  | 'startingId'
+  | 'starting'
 >) {
   switch (view.status) {
     case 'loading':
@@ -129,8 +129,8 @@ function Results({
                 key={match.id}
                 match={match}
                 onPlay={onPlay}
-                isStarting={startingId === match.id}
-                isDisabled={startingId !== null && startingId !== match.id}
+                starting={starting?.id === match.id ? starting.kind : null}
+                isDisabled={starting !== null && starting.id !== match.id}
               />
             ))}
           </ul>
@@ -160,7 +160,7 @@ export function ArchiveView({
   onRetry,
   onShowMore,
   onPlay,
-  startingId,
+  starting,
   playError = null,
 }: ArchiveViewProps) {
   const searchId = useId();
@@ -229,7 +229,7 @@ export function ArchiveView({
           onRetry={onRetry}
           onShowMore={onShowMore}
           onPlay={onPlay}
-          startingId={startingId}
+          starting={starting}
         />
       </section>
     </div>

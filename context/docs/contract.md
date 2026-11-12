@@ -217,7 +217,7 @@ Better Auth (B10) mounts its own routes. Calls 1–6 may map onto them rather th
 | `SignInRequest` | `email` (valid email), `password` (8–128 chars) |
 | `SignUpRequest` | `email`, `password` (8–128), `handle` (trimmed, 3–24 chars) |
 | `UpgradeGuestRequest` | same as `SignUpRequest` |
-| `SoloStartRequest` | `Filters` plus optional `matchId` (backend R13). The filters stay required; with `matchId` the server ignores them and offers that exact match. Pro only while `PRO_ENABLED` is on |
+| `SoloStartRequest` | `Filters` plus optional `matchId` (backend R13) and optional `practice` (backend R14; they combine). The filters stay required; with `matchId` the server ignores them and offers that exact match. Pro only while `PRO_ENABLED` is on |
 | `SoloGuessRequest` | `sessionId` (id), `guess` (trimmed, 1–64 chars) |
 | `HistoryQuery` | `cursor` (id or `null`), `limit` (integer 1–50; web default 20) |
 
@@ -306,7 +306,8 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `match` | `MatchInPlay` | |
 | `lives` | 0–3 | |
 | `found` | `RevealedPlayer[]` | ≤ 11 |
-| `round` | `RoundTiming` or `null` | `null` once the run is over |
+| `round` | `RoundTiming` or `null` | `null` once the run is over, and always in practice |
+| `practice` | boolean, always sent | Backend R14: no clock and no lives; `lives` stays 3. The web hides the ring and the Lives card from this, never from the URL |
 
 **`SoloGuessResponse`**
 
@@ -327,14 +328,15 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `endReason` | `SoloEndReason` | |
 | `accuracy` | 0–1 | Correct guesses ÷ all guesses. Parsed, not shown since Gameplay Visuals C |
 | `bestStreak` | integer 0–11 | Parsed, not shown since Gameplay Visuals C |
-| `roundTimesMs` | integer ≥ 0, array | Time per round. Parsed, not shown since Gameplay Visuals C |
+| `roundTimesMs` | integer ≥ 0, array | Time per round; in practice the gaps between finds plus the stretch to the quit, uncapped. Parsed, not shown since Gameplay Visuals C |
+| `practice` | boolean, always sent | Backend R14. A practice run ends `perfect_clear` or `quit`, never `lives_out`; `livesRemaining` is 3 |
 
 **`NamedPlayer`** = `RevealedPlayer` + the fields below. Only in end-of-game lists: `SoloSummary.found` and, with `foundBy`, `DuelResult.found` (`DuelNamedPlayer`). The live `found` payloads stay `RevealedPlayer` / `DuelFoundPlayer`.
 
 | Field | Type | Rule |
 | --- | --- | --- |
 | `order` | integer 1–11 | When it was named; 1 is first, no gaps |
-| `elapsedMs` | integer 0–15000 | The server's receipt of the correct guess minus its round's start, capped at 15000 (a grace-window guess reads 15000). In a duel, the finder's own turn |
+| `elapsedMs` | integer ≥ 0 (a duel: 0–15000) | The server's receipt of the correct guess minus its round's start, capped at 15000 in a timed run (a grace-window guess reads 15000). In practice (R14) the real time since the previous find or the side pick, uncapped. `DuelNamedPlayer` keeps the 15000 cap: the finder's own turn |
 
 **`Profile`** = `{ user: User, stats: UserStats }`
 
@@ -367,7 +369,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `signIn` | `invalid_input` (bad form), `unauthorized` (wrong credentials) |
 | `signUp` | `invalid_input` (bad form, or **handle taken**) |
 | `upgradeGuest` | `invalid_input` (bad form, handle taken), `unauthorized` (no session), `forbidden` (already registered) |
-| `findMatch` | `unauthorized`, `forbidden` + `reason: 'pro_required'` (Free with `matchId`, "Picking a match needs Pro."; checked before the cap, backend R13), `not_found` (`matchId` not in the game: unknown, outside the pool or the showcase; "That match isn't in the game."), `forbidden` + `reason: 'daily_cap'` + `retryAfterMs` (to the next UTC midnight; the first check, so it wins over `empty_pool`, backend R11), `invalid_input`, `empty_pool` + `emptyBecause` |
+| `findMatch` | `unauthorized`, `forbidden` + `reason: 'pro_required'` (Free with `practice`: "Practice needs Pro.", also when `matchId` is sent, R14; Free with `matchId` alone: "Picking a match needs Pro.", R13; both checked before the cap), `not_found` (`matchId` not in the game: unknown, outside the pool or the showcase; "That match isn't in the game."), `forbidden` + `reason: 'daily_cap'` + `retryAfterMs` (to the next UTC midnight; the first check, so it wins over `empty_pool`, backend R11), `invalid_input`, `empty_pool` + `emptyBecause` |
 | `chooseSide` | `not_found`, `forbidden` (side already chosen), `forbidden` + `reason: 'daily_cap'` + `retryAfterMs` (checked and counted in one step, so two tabs can't both take the fifth run) |
 | `getAllowance` | `unauthorized` |
 | `guess` | `invalid_input`, `not_found`, `session_over` (run over, or round already ended), `rate_limited` + `retryAfterMs` |
@@ -386,6 +388,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
   - `already_found` and `not_in_xi` leave the round running. There's no penalty and no new round.
 - **Expiry:** when the countdown reaches 0, the web calls `syncSession`. The server applies any expiry: it takes a life and starts a new round, or ends the run.
 - **Grace window:** a guess received after `endsAt` plus the grace window (400 ms) returns `session_over`.
+- **Practice (R14):** no round clock and no life loss; guesses are checked as usual with the same rate limit. Never saved: no history, no stats, and `GET /solo/allowance` `used` is unchanged. One open run per user: starting practice ends a real run in play (saved as a quit), and starting any run drops an open practice run unsaved, so the web warns before practising over a run this tab left in play. A practice run is dropped 30 minutes after the side pick, the last accepted guess or its end (syncs and summary reads don't extend it); every call after is `not_found`, "That run no longer exists."
 - **Picked match (R13):** a run with `matchId` is today's run after the offer (side pick, rounds, summary) and counts in history and stats. Replays are allowed. A refused pick leaves any open run alone. Duels and rooms never take a `matchId`.
 - **Daily cap (R11):** a run counts when its side is picked. An offer left unpicked doesn't count, a quit run isn't given back, and duels never count. A run in play when the cap is reached plays on. The backend counts in memory plus saved runs, so a restart forgives an open run.
 

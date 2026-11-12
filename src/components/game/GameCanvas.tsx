@@ -11,6 +11,7 @@ import { GuessInput } from '@/components/game/GuessInput';
 import { LifeLostFlash } from '@/components/game/LifeLostFlash';
 import { DuelLivesCard, LivesCard } from '@/components/game/LivesCard';
 import { MatchHeader } from '@/components/game/MatchHeader';
+import { PracticeCard } from '@/components/game/PracticeCard';
 import { RunSummary } from '@/components/game/RunSummary';
 import { SidePickCard } from '@/components/game/SidePickCard';
 import { SoundToggle } from '@/components/game/SoundToggle';
@@ -180,12 +181,16 @@ function ActiveRail({
 
   return (
     <>
-      <div className="flex items-center gap-4 lg:flex-col lg:items-stretch lg:gap-8">
-        <ClockBlock view={view} />
-        <div className="min-w-0 flex-1 lg:flex-none">
-          <RailLives view={view} />
+      {view.mode === 'solo' && view.isPractice ? (
+        <PracticeCard />
+      ) : (
+        <div className="flex items-center gap-4 lg:flex-col lg:items-stretch lg:gap-8">
+          <ClockBlock view={view} />
+          <div className="min-w-0 flex-1 lg:flex-none">
+            <RailLives view={view} />
+          </div>
         </div>
-      </div>
+      )}
       {view.mode === 'duel' ? (
         <p className="sr-only" aria-live="polite">
           {turnAnnouncement(
@@ -368,6 +373,7 @@ export function GameCanvas({
                   end={soloEnd}
                   capLine={view.mode === 'solo' ? view.capLine : undefined}
                   isPicked={view.mode === 'solo' && view.isPicked}
+                  isPractice={view.mode === 'solo' && view.isPractice}
                   onPlayAgain={onPlayAgain}
                   onChangeFilters={onChangeFilters}
                   onPlayDuel={onPlayDuel}

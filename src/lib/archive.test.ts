@@ -226,9 +226,23 @@ describe('picked match', () => {
     expect(pickedMatchFrom(new URLSearchParams({ match: '  ' }))).toBeNull();
   });
 
+  it('asks for practice only when ticked', () => {
+    expect(soloStartRequestOf(ALL, { practice: true })).toEqual({
+      ...ALL,
+      practice: true,
+    });
+    expect(soloStartRequestOf(ALL, { matchId: 'm-1', practice: true })).toEqual(
+      { ...ALL, matchId: 'm-1', practice: true },
+    );
+    expect(soloStartRequestOf(ALL, { practice: false })).toEqual(ALL);
+    expect(pickedMatchPath('m-1', true)).toBe(
+      '/play/solo?match=m-1&practice=1',
+    );
+  });
+
   it('adds the match to the filters only when picked', () => {
-    expect(soloStartRequestOf(ALL, null)).toEqual(ALL);
-    expect(soloStartRequestOf(ALL, 'match-1')).toEqual({
+    expect(soloStartRequestOf(ALL)).toEqual(ALL);
+    expect(soloStartRequestOf(ALL, { matchId: 'match-1' })).toEqual({
       ...ALL,
       matchId: 'match-1',
     });
@@ -242,10 +256,11 @@ describe('picked match', () => {
     expect(params.has('match')).toBe(true);
   });
 
-  it('names the match in each Play button', () => {
+  it('names the match in each Play and Practise button', () => {
     const match = SAMPLE_HISTORY_MATCHES[0];
     expect(playMatchLabel(match)).toBe(
       `Play ${match.home.name} v ${match.away.name}, 3 May 2005`,
     );
+    expect(playMatchLabel(match, 'Practise')).toMatch(/^Practise /);
   });
 });

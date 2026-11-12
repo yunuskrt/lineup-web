@@ -256,3 +256,44 @@ describe('engine — naming order and time', () => {
     expect(named.map((item) => item.elapsedMs)).toEqual([1_000, 5_000]);
   });
 });
+
+describe('engine — practice', () => {
+  function practiceState() {
+    return createEngineState('solo', SQUAD, T0, true);
+  }
+
+  it('starts with no round to run out', () => {
+    const state = practiceState();
+    expect(state.round).toBeNull();
+    expect(state.practice).toBe(true);
+  });
+
+  it('never expires and never takes a life', () => {
+    const step = resolveRound(
+      practiceState(),
+      { kind: 'tick' },
+      T0 + 60 * ROUND_DURATION_MS,
+    );
+    expect(step.outcome.kind).toBe('ignored');
+    expect(step.state.lives.you).toBe(MAX_LIVES);
+  });
+
+  it('times each find from the last one, uncapped', () => {
+    let state = practiceState();
+    state = guess(state, SQUAD[0].name, T0 + 40_000).state;
+    state = guess(state, SQUAD[1].name, T0 + 140_000).state;
+    expect(state.found.map((item) => item.elapsedMs)).toEqual([
+      40_000, 100_000,
+    ]);
+    expect(state.round).toBeNull();
+  });
+
+  it('ends only when all eleven are named', () => {
+    let state = practiceState();
+    SQUAD.forEach((entry, index) => {
+      state = guess(state, entry.name, T0 + (index + 1) * 20_000).state;
+    });
+    expect(state.status).toBe('over');
+    expect(state.lives.you).toBe(MAX_LIVES);
+  });
+});

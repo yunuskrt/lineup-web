@@ -27,6 +27,19 @@ type OutcomeProps = {
   titleRef: RefObject<HTMLHeadingElement | null>;
 };
 
+// No lives in practice: the tag stands in
+function PracticeTag({ isPerfect }: { isPerfect: boolean }) {
+  return (
+    <span
+      className={`shrink-0 rounded-sm border px-2 py-0.5 text-14 leading-5 font-semibold ${
+        isPerfect ? 'border-on-accent' : 'border-line text-fg-muted'
+      }`}
+    >
+      Practice
+    </span>
+  );
+}
+
 function Outcome({ summary, titleId, titleRef }: OutcomeProps) {
   const isPerfect = summary.endReason === 'perfect_clear';
   const lives = summary.livesRemaining;
@@ -52,7 +65,9 @@ function Outcome({ summary, titleId, titleRef }: OutcomeProps) {
           You named {summary.found.length} of {SQUAD_SIZE}.
         </p>
       </div>
-      {isPerfect ? (
+      {summary.practice ? (
+        <PracticeTag isPerfect={isPerfect} />
+      ) : isPerfect ? (
         <p className="flex shrink-0 flex-col items-end">
           <span className="font-display text-48 leading-none font-semibold tabular-nums">
             {lives}
@@ -119,6 +134,7 @@ export function RunSummary({
   capLine,
   onPlayDuel,
   isPicked,
+  isPractice,
   onRevealMissed,
 }: RunSummaryProps) {
   const titleId = useId();
@@ -153,6 +169,7 @@ export function RunSummary({
         capLine={capLine}
         onPlayDuel={onPlayDuel}
         isPicked={isPicked}
+        isPractice={isPractice}
       />
     </section>
   );

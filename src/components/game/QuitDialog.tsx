@@ -8,6 +8,8 @@ export type QuitDialogCopy = {
   detail: string;
   confirmLabel: string;
   pendingLabel: string;
+  // The safe choice; Keep playing when unset
+  dismissLabel?: string;
 };
 
 export const SOLO_QUIT_COPY: QuitDialogCopy = {
@@ -75,7 +77,7 @@ export function QuitDialog({
           disabled={isQuitting}
           className={PRIMARY_BUTTON}
         >
-          Keep playing
+          {copy.dismissLabel ?? 'Keep playing'}
         </button>
         <button
           type="button"

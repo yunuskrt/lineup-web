@@ -69,6 +69,7 @@ export const MOCK_TAKEN_HANDLE = 'taken';
 
 const ARCHIVE_NEEDS_PRO = 'Browsing the match archive needs Pro.';
 const PICKING_NEEDS_PRO = 'Picking a match needs Pro.';
+const PRACTICE_NEEDS_PRO = 'Practice needs Pro.';
 const MATCH_NOT_IN_GAME = "That match isn't in the game.";
 
 // The pool only: never the showcase (R13)
@@ -147,6 +148,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
       lives: engine.lives.you,
       found: revealedPlayers(engine),
       round: engine.round,
+      practice: session.practice,
     };
   }
 
@@ -177,6 +179,14 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
 
     session.isFinalized = true;
     session.endReason = reason;
+
+    // Practice: the gaps between finds, never saved
+    if (session.practice) {
+      const gaps = session.engine.found.map((item) => item.elapsedMs);
+      const tail = reason === 'quit' ? [now() - session.engine.since] : [];
+      session.roundTimesMs = [...gaps, ...tail];
+      return;
+    }
 
     const identity = store.identity;
     if (!identity) return;
@@ -247,6 +257,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
     return [...store.sessions.values()].filter(
       (session) =>
         session.userId === userId &&
+        !session.practice &&
         session.roundStartedAt !== null &&
         session.roundStartedAt >= dayStart,
     ).length;
@@ -282,6 +293,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
       accuracy: accuracyOf(session),
       bestStreak: session.bestStreak,
       roundTimesMs: session.roundTimesMs,
+      practice: session.practice,
     };
   }
 
@@ -437,9 +449,10 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           return fail('unauthorized', 'Sign in or continue as a guest first.');
         }
 
-        // As R13: before the cap, so Free never sees it
-        if (request.matchId && identity.user.tier === 'free') {
-          return proRequired(PICKING_NEEDS_PRO);
+        // As R13 and R14: before the cap, practice first
+        if (identity.user.tier === 'free') {
+          if (request.practice) return proRequired(PRACTICE_NEEDS_PRO);
+          if (request.matchId) return proRequired(PICKING_NEEDS_PRO);
         }
 
         // First, as R11: it wins over empty_pool
@@ -453,7 +466,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           return fail('invalid_input', 'Those filters are not valid.');
         }
 
-        const { matchId, ...filters } = parsed.data;
+        const { matchId, practice = false, ...filters } = parsed.data;
         const selection = matchId
           ? pickedFixture(matchId)
           : selectFixture(filters, random);
@@ -463,7 +476,12 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
         }
 
         const { identity: match } = selection.fixture;
-        const session = createSession(store, identity.user.id, match.id);
+        const session = createSession(
+          store,
+          identity.user.id,
+          match.id,
+          practice,
+        );
         return ok({
           sessionId: session.id,
           match,
@@ -482,7 +500,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
 
         // Checked and counted in one step, as R11
         const at = now();
-        if (isCapped(session.userId, at)) {
+        if (!session.practice && isCapped(session.userId, at)) {
           return dailyCap(nextUtcMidnight(at) - at);
         }
 
@@ -491,6 +509,7 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           'solo',
           squadFor(fixtureOf(session), side),
           at,
+          session.practice,
         );
         session.roundStartedAt = at;
 

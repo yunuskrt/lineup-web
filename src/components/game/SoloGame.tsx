@@ -10,6 +10,7 @@ import { useSoloRun } from '@/hooks/use-solo-run';
 import { sideSchema } from '@/lib/api/schemas/common';
 import { withMode, withQuery } from '@/lib/filters';
 import { ARCHIVE_PATH, withoutPickedMatch } from '@/lib/archive';
+import { withPractice } from '@/lib/practice';
 import { capLine } from '@/lib/solo-allowance';
 import { soloCanvasView, soloGateAction } from '@/lib/solo-run';
 
@@ -49,7 +50,10 @@ export function SoloGame() {
   // Duels are never capped; the filters go along
   function playDuel() {
     router.push(
-      withQuery('/play/duel', withMode(withoutPickedMatch(params), 'duel')),
+      withQuery(
+        '/play/duel',
+        withMode(withPractice(withoutPickedMatch(params), false), 'duel'),
+      ),
     );
   }
 
@@ -119,7 +123,10 @@ export function SoloGame() {
         onGateSecondaryAction={leave}
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
-        onChangeFilters={state.pickedMatchId ? backToArchive : leave}
+        // Practice and timed runs leave for /play
+        onChangeFilters={
+          state.pickedMatchId && !state.isPracticeAsked ? backToArchive : leave
+        }
         onPlayDuel={playDuel}
         onRevealMissed={revealMissed}
       />

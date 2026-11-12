@@ -59,6 +59,16 @@ export function roundSecondsLabel(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
+const MINUTE_MS = 60_000;
+
+// Practice finds can take minutes (R14): 2:05
+export function findTimeLabel(ms: number): string {
+  if (ms < MINUTE_MS) return roundSecondsLabel(ms);
+  const seconds = Math.floor(ms / 1000);
+  const rest = String(seconds % 60).padStart(2, '0');
+  return `${Math.floor(seconds / 60)}:${rest}`;
+}
+
 // Hidden until the player asks to see them
 export function missedOnPitch(
   end: SoloEndView | null,

@@ -921,3 +921,100 @@ describe('mock picked match', () => {
     );
   });
 });
+
+describe('mock practice', () => {
+  const DAY = 86_400_000;
+  const T = Math.floor(T0 / DAY) * DAY + 10 * 3_600_000;
+  let clock: number;
+
+  function proClient(options: Parameters<typeof createMockApiClient>[0] = {}) {
+    return createMockApiClient({
+      now: () => clock,
+      random: () => 0,
+      tier: 'pro',
+      ...options,
+    });
+  }
+
+  beforeEach(() => {
+    clock = T;
+  });
+
+  async function startPractice(api: ApiClient) {
+    const offer = unwrap(
+      await api.solo.findMatch({ ...ALL_FILTERS, practice: true }),
+    );
+    const session = unwrap(await api.solo.chooseSide(offer.sessionId, 'home'));
+    return { sessionId: offer.sessionId, session };
+  }
+
+  it('runs with no clock: no round, no life lost however long', async () => {
+    const api = proClient();
+    await api.auth.continueAsGuest();
+    const { sessionId, session } = await startPractice(api);
+    expect(session.practice).toBe(true);
+    expect(session.round).toBeNull();
+    clock += 10 * 60_000;
+    const later = unwrap(await api.solo.syncSession(sessionId));
+    expect(later).toMatchObject({ lives: 3, status: 'active', round: null });
+  });
+
+  it('ends on all eleven with uncapped find times', async () => {
+    const api = proClient();
+    await api.auth.continueAsGuest();
+    const { sessionId } = await startPractice(api);
+    const squad = squadFor(requireFixture(CROWN_2003), 'home');
+    for (const entry of squad) {
+      clock += 40_000;
+      unwrap(await api.solo.guess({ sessionId, guess: entry.name }));
+    }
+    const summary = unwrap(await api.solo.getSummary(sessionId));
+    expect(summary).toMatchObject({
+      practice: true,
+      endReason: 'perfect_clear',
+      livesRemaining: 3,
+    });
+    expect(summary.found.every((p) => p.elapsedMs === 40_000)).toBe(true);
+    expect(soloSummarySchema.safeParse(summary).success).toBe(true);
+  });
+
+  it('saves nothing and never counts toward the cap', async () => {
+    const api = proClient({ tier: 'free', proEnabled: false });
+    await api.auth.continueAsGuest();
+    const { sessionId } = await startPractice(api);
+    clock += 90_000;
+    const summary = unwrap(await api.solo.quit(sessionId));
+    expect(summary.endReason).toBe('quit');
+    expect(summary.roundTimesMs).toEqual([90_000]);
+    expect(unwrap(await api.profile.getProfile()).stats.played).toBe(0);
+    expect(
+      unwrap(await api.profile.getHistory({ cursor: null, limit: 20 })).entries,
+    ).toEqual([]);
+    expect(unwrap(await api.solo.getAllowance()).used).toBe(0);
+  });
+
+  it('refuses Free with the practice message, before a pick', async () => {
+    const free = createMockApiClient({ now: () => clock });
+    await free.auth.continueAsGuest();
+    const both = { ...ALL_FILTERS, practice: true, matchId: CROWN_2003 };
+    expect(errorOf(await free.solo.findMatch(both))).toEqual({
+      code: 'forbidden',
+      message: 'Practice needs Pro.',
+      retryAfterMs: null,
+      reason: 'pro_required',
+    });
+  });
+
+  it('practises a picked match', async () => {
+    const api = proClient();
+    await api.auth.continueAsGuest();
+    const offer = unwrap(
+      await api.solo.findMatch({
+        ...ALL_FILTERS,
+        matchId: 'match-crown-2015',
+        practice: true,
+      }),
+    );
+    expect(offer.match.id).toBe('match-crown-2015');
+  });
+});

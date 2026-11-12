@@ -28,7 +28,7 @@ export function ArchiveStatePreview({ state }: ArchiveStatePreviewProps) {
       onRetry={() => {}}
       onShowMore={() => {}}
       onPlay={() => {}}
-      startingId={null}
+      starting={null}
     />
   );
 }

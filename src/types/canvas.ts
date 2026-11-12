@@ -76,6 +76,8 @@ export type SoloCanvasView = CanvasViewBase & {
   capLine?: string;
   // One match from the archive: Play it again
   isPicked?: boolean;
+  // The server says so: no ring, no lives (R14)
+  isPractice?: boolean;
 };
 
 export type DuelCanvasView = CanvasViewBase & {

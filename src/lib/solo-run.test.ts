@@ -4,6 +4,7 @@ import {
   canGuessSolo,
   INITIAL_SOLO_RUN,
   needsResync,
+  openRunUpdate,
   receiptRoundOf,
   SOLO_GATE_COPY,
   soloCanvasView,
@@ -64,6 +65,7 @@ function session(overrides: Partial<SoloSession> = {}): SoloSession {
   return {
     sessionId: 'session-1',
     status: 'active',
+    practice: false,
     match: {
       id: 'match-1',
       competition: {
@@ -121,6 +123,7 @@ function named<T extends object>(players: T[]) {
 
 function summary(overrides: Partial<SoloSummary> = {}): SoloSummary {
   return {
+    practice: false,
     match: {
       id: 'match-1',
       competition: {
@@ -243,9 +246,9 @@ describe('soloRunReducer phases', () => {
   });
 
   it('starts over when finding again', () => {
-    expect(run(...PLAYING, { type: 'finding', matchId: null })).toEqual(
-      INITIAL_SOLO_RUN,
-    );
+    expect(
+      run(...PLAYING, { type: 'finding', matchId: null, practice: false }),
+    ).toEqual(INITIAL_SOLO_RUN);
   });
 });
 
@@ -411,7 +414,11 @@ describe('soloRunReducer rate limit', () => {
   });
 
   it('starts a new run without the old lockout', () => {
-    const state = soloRunReducer(limited(), { type: 'finding', matchId: null });
+    const state = soloRunReducer(limited(), {
+      type: 'finding',
+      matchId: null,
+      practice: false,
+    });
     expect(state.cooldownUntil).toBeNull();
   });
 
@@ -688,8 +695,110 @@ describe('soloCanvasView', () => {
     });
   });
 
+  describe('practice', () => {
+    const PRACTISING: SoloRunEvent = {
+      type: 'finding',
+      matchId: null,
+      practice: true,
+    };
+    const PRACTICE_PLAYING: SoloRunEvent[] = [
+      { type: 'offerReceived', offer: OFFER },
+      {
+        type: 'sessionReceived',
+        session: session({ practice: true, round: null }),
+      },
+    ];
+
+    it('takes practice from the session, not from asking', () => {
+      expect(soloCanvasView(run(PRACTISING)).isPractice).toBe(false);
+      const state = run(PRACTISING, ...PRACTICE_PLAYING);
+      expect(soloCanvasView(state).isPractice).toBe(true);
+      expect(soloCanvasView(state).input).toBe('live');
+      expect(soloCanvasView(run(...PLAYING)).isPractice).toBe(false);
+    });
+
+    it('marks a practice summary as practice', () => {
+      const state = run(
+        PRACTISING,
+        ...PRACTICE_PLAYING,
+        received(summary({ practice: true, endReason: 'quit' })),
+      );
+      expect(soloCanvasView(state).isPractice).toBe(true);
+    });
+
+    it('locks practice for Free with its own words', () => {
+      const state = run(PRACTISING, {
+        type: 'failed',
+        step: 'find',
+        error: {
+          code: 'forbidden',
+          message: 'Practice needs Pro.',
+          retryAfterMs: null,
+          reason: 'pro_required',
+        },
+      });
+      expect(soloCanvasView(state).gate).toEqual({
+        title: 'Practice is part of Pro',
+        detail: 'A timed run from your filters is still free.',
+        actionLabel: 'Back to play',
+        seePro: true,
+      });
+      expect(soloGateAction(state)).toBe('leave');
+    });
+
+    it('says a practice run closed after the idle drop', () => {
+      const state = run(PRACTISING, ...PRACTICE_PLAYING, {
+        type: 'failed',
+        step: 'guess',
+        error: {
+          code: 'not_found',
+          message: 'That run no longer exists.',
+          retryAfterMs: null,
+        },
+      });
+      expect(soloCanvasView(state).gate).toEqual({
+        title: 'This practice run has closed',
+        detail: 'Practice runs close after 30 minutes without a guess.',
+        actionLabel: 'Back to play',
+      });
+      expect(soloGateAction(state)).toBe('leave');
+    });
+
+    it('marks only a timed run in play for the warning', () => {
+      expect(openRunUpdate(run(...PLAYING))).toBe('mark');
+      expect(openRunUpdate(run(PRACTISING, ...PRACTICE_PLAYING))).toBeNull();
+      expect(openRunUpdate(run(...PLAYING, OVER))).toBe('clear');
+      expect(openRunUpdate(run(PLAYING[0]))).toBeNull();
+    });
+
+    it('clears it when the run is gone, keeps it on a blip', () => {
+      const gone = run(...PLAYING, {
+        type: 'failed',
+        step: 'sync',
+        error: { code: 'not_found', message: 'Gone.', retryAfterMs: null },
+      });
+      expect(openRunUpdate(gone)).toBe('clear');
+      const blip = run(...PLAYING, {
+        type: 'failed',
+        step: 'sync',
+        error: { code: 'network', message: 'offline', retryAfterMs: null },
+      });
+      expect(openRunUpdate(blip)).toBeNull();
+    });
+
+    it('never asks to sync: the session has no round', () => {
+      const state = run(PRACTISING, ...PRACTICE_PLAYING);
+      expect(state.session?.round).toBeNull();
+      expect(soloCanvasView(state).clock.round).toBeNull();
+    });
+  });
+
   describe('a picked match', () => {
-    const PICKED: SoloRunEvent = { type: 'finding', matchId: 'match-1' };
+    const PICKED: SoloRunEvent = {
+      type: 'finding',
+      matchId: 'match-1',
+      practice: false,
+    };
 
     it('remembers the pick for the summary', () => {
       const state = run(PICKED, ...PLAYING, OVER);
@@ -699,7 +808,11 @@ describe('soloCanvasView', () => {
     });
 
     it('sets the pick afresh on every new run', () => {
-      const random: SoloRunEvent = { type: 'finding', matchId: null };
+      const random: SoloRunEvent = {
+        type: 'finding',
+        matchId: null,
+        practice: false,
+      };
       const again = run(PICKED, ...PLAYING, OVER, PICKED);
       expect(again.pickedMatchId).toBe('match-1');
       expect(again.phase).toBe('finding');
@@ -849,7 +962,11 @@ describe('the run summary', () => {
 
     it('starts the next run hidden', () => {
       const revealed = run(...PLAYING, OVER, received(pro), REVEAL);
-      const next = soloRunReducer(revealed, { type: 'finding', matchId: null });
+      const next = soloRunReducer(revealed, {
+        type: 'finding',
+        matchId: null,
+        practice: false,
+      });
       expect(next.isMissedRevealed).toBe(false);
     });
   });
@@ -935,7 +1052,11 @@ describe('the run summary', () => {
 
   it('starts over from finding on play again', () => {
     const over = run(...PLAYING, OVER, received(summary()));
-    const again = soloRunReducer(over, { type: 'finding', matchId: null });
+    const again = soloRunReducer(over, {
+      type: 'finding',
+      matchId: null,
+      practice: false,
+    });
     expect(again).toEqual(INITIAL_SOLO_RUN);
     expect(soloCanvasView(again).end).toBeNull();
   });

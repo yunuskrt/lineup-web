@@ -44,10 +44,18 @@ describe('soloSummarySchema', () => {
     accuracy: 0.5,
     bestStreak: 1,
     roundTimesMs: [2_100],
+    practice: false,
   };
 
   it('accepts named players with their order and time', () => {
     expect(soloSummarySchema.safeParse(SUMMARY).success).toBe(true);
+  });
+
+  // Backend R14 always sends it
+  it('needs the practice flag', () => {
+    const { practice, ...old } = SUMMARY;
+    expect(practice).toBe(false);
+    expect(soloSummarySchema.safeParse(old).success).toBe(false);
   });
 
   // Backend R4b always sends them
@@ -69,6 +77,13 @@ describe('soloStartRequestSchema', () => {
     expect(soloStartRequestSchema.parse(picked).matchId).toBe(
       SAMPLE_IDENTITY.id,
     );
+  });
+
+  it('takes practice, alone or with a match (R14)', () => {
+    const practice = { ...SAMPLE_OPEN_FILTERS, practice: true };
+    expect(soloStartRequestSchema.parse(practice).practice).toBe(true);
+    const both = { ...practice, matchId: SAMPLE_IDENTITY.id };
+    expect(soloStartRequestSchema.safeParse(both).success).toBe(true);
   });
 
   it('still needs the filters with a match id', () => {

@@ -32,7 +32,7 @@ One backend environment variable decides whether the Free/Pro split exists.
 | 1 | Exact match selection | Random match from filters | Pick any match from the archive | **Done**: R13, Pro E |
 | 2 | Archive browse & search | Locked page | Browse and search every match | **Done**: R12, Pro D |
 | 3 | Solo runs | 5 a day, reset at UTC midnight | Unlimited | **Done**: R11, Pro C |
-| 5 | Practice mode | Locked | No lives, no clock, not saved | Specced: R14, Pro F |
+| 5 | Practice mode | Locked | No lives, no clock, not saved | **Done**: R14, Pro F |
 | 7 | Private rooms | Join only | Host and join | **Done**: R10, Pro B |
 | — | Post-game review | Missed count only | Every player missed | **Done**: real since R9 and Pro A |
 
@@ -82,7 +82,9 @@ Six backend requests (`context/docs/backend-requests.md` § R9–R14) and six we
 | 3 | R11: daily cap, `GET /solo/allowance` (**done**, `35f1ce3`) | `pro-c-solo-cap.md` (**done**) | 1 |
 | 4 | R12: `GET /catalog/matches` (**done**, `6a1431e`) | `pro-d-archive.md` (**done**) | 1 |
 | 5 | R13: `matchId` on solo start (**done**, `7533e97`) | `pro-e-exact-match.md` (**done**) | 4 |
-| 6 | R14: practice | `pro-f-practice.md` | 1, 5 |
+| 6 | R14: practice (**done**, `c8c2e51`) | `pro-f-practice.md` (**done**) | 1, 5 |
+
+**Every Pro feature is built** (2026-11-12): #1, #2, #3, #5 and #7, behind the one `PRO_ENABLED` switch. What's left is the runbook's final check with the switch on and off, then payments (`GetProButton` is the hook point).
 
 - **The backend may run ahead:** R9 to R14 depend only on the requests above them, so its session can do them back to back while the web follows.
 - **Mobile** follows later on the same contract.

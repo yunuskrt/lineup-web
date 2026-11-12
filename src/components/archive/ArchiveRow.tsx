@@ -1,6 +1,7 @@
 import {
   ARCHIVE_PLAY_BUTTON,
   ARCHIVE_ROW,
+  ARCHIVE_ROW_ACTIONS,
   ARCHIVE_ROW_FOOT,
 } from '@/components/archive/styles';
 import { ClubCrest } from '@/components/game/ClubCrest';
@@ -9,11 +10,17 @@ import { archiveDateLabel, playMatchLabel } from '@/lib/archive';
 import { matchEvent } from '@/lib/summary';
 import type { MatchIdentity } from '@/types/match';
 
+const ROW_ACTIONS = [
+  { kind: 'play', verb: 'Play' },
+  { kind: 'practice', verb: 'Practise' },
+] as const;
+
 type ArchiveRowProps = {
   match: MatchIdentity;
-  onPlay: (match: MatchIdentity) => void;
+  // `practice` starts it with no clock (R14)
+  onPlay: (match: MatchIdentity, practice: boolean) => void;
   // A guest is being made for this row's run
-  isStarting?: boolean;
+  starting?: 'play' | 'practice' | null;
   // Another row is starting
   isDisabled?: boolean;
 };
@@ -22,7 +29,7 @@ type ArchiveRowProps = {
 export function ArchiveRow({
   match,
   onPlay,
-  isStarting = false,
+  starting = null,
   isDisabled = false,
 }: ArchiveRowProps) {
   const date = archiveDateLabel(match.date);
@@ -84,22 +91,34 @@ export function ArchiveRow({
           {match.nickname ? (
             <span
               title={match.nickname}
-              className="min-w-0 truncate sm:max-w-full"
+              className="min-w-0 truncate max-sm:hidden sm:max-w-full"
             >
               {match.nickname}
             </span>
           ) : null}
         </span>
-        <button
-          type="button"
-          aria-label={playMatchLabel(match)}
-          // Not `disabled`: that would drop keyboard focus
-          aria-disabled={isStarting || isDisabled || undefined}
-          onClick={isStarting || isDisabled ? undefined : () => onPlay(match)}
-          className={ARCHIVE_PLAY_BUTTON}
-        >
-          {isStarting ? 'Starting…' : 'Play'}
-        </button>
+        <div className={ARCHIVE_ROW_ACTIONS}>
+          {ROW_ACTIONS.map(({ kind, verb }) => {
+            const isWaiting = isDisabled || starting !== null;
+            return (
+              <button
+                key={kind}
+                type="button"
+                aria-label={playMatchLabel(match, verb)}
+                // Not `disabled`: that would drop keyboard focus
+                aria-disabled={isWaiting || undefined}
+                onClick={
+                  isWaiting
+                    ? undefined
+                    : () => onPlay(match, kind === 'practice')
+                }
+                className={ARCHIVE_PLAY_BUTTON}
+              >
+                {starting === kind ? 'Starting…' : verb}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </li>
   );

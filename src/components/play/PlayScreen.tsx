@@ -7,9 +7,11 @@ import { FilterPanel } from '@/components/play/FilterPanel';
 import { FilterSkeleton } from '@/components/play/FilterSkeleton';
 import { ModeChoice } from '@/components/play/ModeChoice';
 import { PlayStart } from '@/components/play/PlayStart';
+import { PracticeToggle } from '@/components/play/PracticeToggle';
 import { RoomControls } from '@/components/play/RoomControls';
 import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
 import { useFilterOptions } from '@/hooks/use-filter-options';
+import { useProAccess } from '@/hooks/use-pro';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoundUnlock } from '@/hooks/use-sound';
 import { ARCHIVE_PATH } from '@/lib/archive';
@@ -23,6 +25,12 @@ import {
   withMode,
   withQuery,
 } from '@/lib/filters';
+import {
+  hasOpenRun,
+  isPracticeFrom,
+  PRACTICE_OVER_RUN_COPY,
+  withPractice,
+} from '@/lib/practice';
 import { joinCodeFrom } from '@/lib/room-code';
 import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
 import { SECONDARY_BUTTON, TEXT_LINK } from '@/styles/classes';
@@ -41,7 +49,13 @@ export function PlayScreen() {
   // The server's count; nothing while unlimited
   const allowance = useSoloAllowance();
   const allowanceId = useId();
-  const soloAllowance = mode === 'solo' ? (allowance.data ?? null) : null;
+  // Practice is Pro (R14); the server still checks
+  const practiceAccess = useProAccess();
+  const [practice, setPractice] = useState(() => isPracticeFrom(params));
+  const isPractice = mode === 'solo' && practice && practiceAccess === 'open';
+  // Practice never counts toward the cap
+  const soloAllowance =
+    mode === 'solo' && !isPractice ? (allowance.data ?? null) : null;
   const soloLine = allowanceLine(soloAllowance);
   const isCapped = isSoloCapped(soloAllowance);
   // The Start click unlocks sound for the game
@@ -52,16 +66,28 @@ export function PlayScreen() {
   const filterParams =
     filters && options.data ? filtersToParams(filters, options.data) : null;
 
+  // The URL keeps filters, mode and practice
+  function syncUrl(base: URLSearchParams, nextMode: PlayMode, on: boolean) {
+    replaceQuery(withPractice(withMode(base, nextMode), on));
+  }
+
   function changeMode(next: PlayMode) {
     setMode(next);
-    replaceQuery(withMode(filterParams ?? params, next));
+    syncUrl(filterParams ?? params, next, practice);
   }
 
   function changeFilters(next: Filters) {
     if (!options.data) return;
     setEdited(next);
-    replaceQuery(withMode(filtersToParams(next, options.data), mode));
+    syncUrl(filtersToParams(next, options.data), mode, practice);
   }
+
+  function changePractice(on: boolean) {
+    setPractice(on);
+    syncUrl(filterParams ?? params, mode, on);
+  }
+
+  const startParams = filterParams && withPractice(filterParams, isPractice);
 
   return (
     <div className="flex flex-col gap-12">
@@ -102,11 +128,22 @@ export function PlayScreen() {
         ) : (
           <FilterSkeleton />
         )}
+        {mode === 'solo' ? (
+          <PracticeToggle
+            access={practiceAccess}
+            isOn={practice}
+            onChange={changePractice}
+          />
+        ) : null}
         <PlayStart
           mode={mode}
-          href={filterParams ? withQuery(`/play/${mode}`, filterParams) : null}
+          href={startParams ? withQuery(`/play/${mode}`, startParams) : null}
           isCapped={isCapped}
           describedBy={soloLine ? allowanceId : undefined}
+          label={isPractice ? 'Start practice' : undefined}
+          warningFor={() =>
+            isPractice && hasOpenRun() ? PRACTICE_OVER_RUN_COPY : null
+          }
         >
           {soloLine ? (
             <SoloAllowanceNote

@@ -16,6 +16,7 @@ import {
   matchIdentitySchema,
 } from '@/lib/api/schemas/match';
 import {
+  NAMED_ELAPSED_MAX_MS,
   namedPlayerSchema,
   revealedPlayerSchema,
 } from '@/lib/api/schemas/player';
@@ -95,6 +96,7 @@ export const duelFoundPlayerSchema = revealedPlayerSchema.extend({
 });
 
 export const duelNamedPlayerSchema = namedPlayerSchema.extend({
+  elapsedMs: z.number().int().min(0).max(NAMED_ELAPSED_MAX_MS),
   foundBy: duelActorSchema,
 });
 
