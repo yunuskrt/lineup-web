@@ -84,3 +84,4 @@ Not Started
 - Fix Landing C: R7 overview live, dev and ingest checks, pool excluded.
 - Fix Landing D: demo without the clock, centred input, eight reveals.
 - Fix Landing E: archive tiles, rule marks, mode buttons, entrances.
+- Pro A: tier and switch, /config, ProLock, /pro page, plan line.

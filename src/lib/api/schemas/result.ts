@@ -22,12 +22,17 @@ export const emptyPoolReasonSchema = z.enum([
   'combination',
 ]);
 
+// Why a `forbidden` was refused (backend R9)
+export const errorReasonSchema = z.enum(['pro_required', 'daily_cap']);
+
 export const apiErrorSchema = z.object({
   code: apiErrorCodeSchema,
   message: z.string().min(1),
   retryAfterMs: z.number().int().nonnegative().nullable(),
   // Set only with `empty_pool`
   emptyBecause: emptyPoolReasonSchema.optional(),
+  // Set only with `forbidden`
+  reason: errorReasonSchema.optional(),
 });
 
 export function apiResultSchema<T extends z.ZodType>(dataSchema: T) {

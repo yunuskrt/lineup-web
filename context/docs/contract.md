@@ -37,6 +37,7 @@ A plain-text transcription of what `lineup-web` sends and expects today, taken f
 | `message` | string | Non-empty, safe to show the player. No stack traces, SQL or provider text. |
 | `retryAfterMs` | integer ≥ 0, or `null` | Set with `rate_limited`; `null` otherwise. |
 | `emptyBecause` | `EmptyPoolReason`, optional | Present **only** with `empty_pool`. |
+| `reason` | `ErrorReason`, optional | Present **only** with `forbidden` (backend R9): `pro_required` (the feature needs Pro) or `daily_cap` (Free's 5 solo runs are used). Older refusals carry none. |
 
 ### Error codes (`ApiErrorCode`)
 
@@ -174,7 +175,7 @@ The client draws its countdown from these. It **never decides** an expiry; at 0 
 | `id` | id | |
 | `handle` | string | Non-empty |
 | `isGuest` | boolean | |
-| `tier` | `Tier` | **Resolved by the server.** The client never asserts it. |
+| `tier` | `Tier` | **Resolved by the server.** The client never asserts it. It is the **effective** tier (backend R9): the stored tier while `PRO_ENABLED=true`, and `pro` for everyone while the switch is off. Read fresh on every request, so a tier change shows on the next fetch. |
 
 `Session` = `{ user: User }`.
 
@@ -195,6 +196,7 @@ Paths are suggestions. Every response body is the envelope from §2, wrapping th
 | 7 | `catalog.getFilterOptions` | `GET /catalog/filter-options` | — | `FilterOptions` |
 | 8 | `catalog.getPlayerDirectory` | `GET /catalog/players` | — | `PlayerDirectory` |
 | 8a | `catalog.getOverview` | `GET /catalog/overview` | — | `CatalogOverview` (backend R7) |
+| 8b | `config.getConfig` | `GET /config` | — | `AppConfig` (backend R9). Public, no session; `Cache-Control: public, max-age=300` |
 | 9 | `solo.findMatch` | `POST /solo/sessions` | `Filters` | `SoloMatchOffer` |
 | 10 | `solo.chooseSide` | `POST /solo/sessions/:sessionId/side` | `{ side: Side }` | `SoloSession` |
 | 11 | `solo.guess` | `POST /solo/sessions/:sessionId/guesses` | `SoloGuessRequest` | `SoloGuessResponse` |
@@ -219,6 +221,8 @@ Better Auth (B10) mounts its own routes. Calls 1–6 may map onto them rather th
 The web only checks password **length**. The backend owns the password policy.
 
 ### Response types
+
+**`AppConfig`** (backend R9) = `{ proEnabled: boolean }`, the backend's `PRO_ENABLED`. The web reads it only to decide whether any Pro wording, lock or `/pro` page exists; it never grants anything.
 
 **`FilterOptions`**
 

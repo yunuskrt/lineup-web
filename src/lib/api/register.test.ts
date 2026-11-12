@@ -106,4 +106,20 @@ describe('registerApiClient', () => {
 
     expect(result.success).toBe(true);
   });
+
+  it('passes the mock switch and tier to the mock', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_MODE', 'mock');
+    vi.stubEnv('NEXT_PUBLIC_API_URL', '');
+    vi.stubEnv('NEXT_PUBLIC_MOCK_PRO_ENABLED', 'false');
+    vi.stubEnv('NEXT_PUBLIC_MOCK_TIER', '');
+
+    const registry = await freshRegistry();
+    registry.registerApiClient();
+    const api = registry.getApiClient();
+    const config = await api.config.getConfig();
+    const session = await api.auth.continueAsGuest();
+
+    expect(config).toEqual({ success: true, data: { proEnabled: false } });
+    expect(session.success && session.data.user.tier).toBe('pro');
+  });
 });

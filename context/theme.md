@@ -277,6 +277,16 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Connection lost     | Reconnect failed             | Result screen, marked as a forfeit                                              |
 | Rate limited        | Guess spam trips the limiter | Input locks briefly with a reason. Not silent — silent lockouts read as a crash |
 
+### Pro lock
+
+While the backend's `PRO_ENABLED` is on, a Pro feature a Free player can't use is **shown locked, never hidden** (`ProLock`). With the switch off, no lock, no price and no word "Pro" appear anywhere.
+
+| State   | Trigger                              | Treatment                                                                                                   |
+| ------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Pending | The switch or the session is loading | The control drawn locked, no caption, so no lock flashes in or out                                          |
+| Locked  | Switch on, Free (or no session yet)  | The control in `line` border and `fg-muted` text, never hovering; a 12px `fg-muted` caption and **See Pro** |
+| Open    | Switch off, or Pro                   | The real control, as if no lock existed                                                                     |
+
 ### Landing demo
 
 The showcase on `/` plays one solo turn on a loop. It is presentation, not a game: the reveals and the wrong guess come from the response. **It has no countdown ring** (user, 2026-11-10): the game's ring is untouched.

@@ -30,6 +30,12 @@ type Row = {
 
 const ROWS: Row[] = [
   {
+    name: 'config.getConfig',
+    call: (c) => c.config.getConfig(),
+    method: 'GET',
+    path: '/config',
+  },
+  {
     name: 'auth.getSession',
     call: (c) => c.auth.getSession(),
     method: 'GET',
@@ -163,7 +169,7 @@ describe('createHttpApiClient', () => {
   });
 
   it('covers every REST call in the contract', () => {
-    expect(ROWS).toHaveLength(17);
+    expect(ROWS).toHaveLength(18);
   });
 
   it.each(ROWS)('$name → $method $path', async (row) => {

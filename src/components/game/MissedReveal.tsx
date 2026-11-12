@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect, useId, useRef } from 'react';
-import { FOCUS_RING, SECONDARY_BUTTON } from '@/styles/classes';
+import { useEffect, useRef } from 'react';
+import { ProLock } from '@/components/pro/ProLock';
+import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { SoloSummary } from '@/types/solo';
 
 const LABEL = 'Reveal the full XI';
-
-// Never hovers: it does nothing on a free run
-const LOCKED_BUTTON = `w-full rounded-sm border border-line px-4 py-2 text-14 font-semibold text-fg-muted ${FOCUS_RING}`;
 
 type MissedRevealProps = {
   summary: SoloSummary;
@@ -20,7 +18,6 @@ export function MissedReveal({
   isRevealed,
   onReveal,
 }: MissedRevealProps) {
-  const captionId = useId();
   const lineRef = useRef<HTMLParagraphElement>(null);
 
   // The button is gone; keep focus in the rail
@@ -33,19 +30,11 @@ export function MissedReveal({
   // The server sends the list to Pro only
   if (summary.missed === null) {
     return (
-      <div className="flex flex-col gap-1.5">
-        <button
-          type="button"
-          aria-disabled="true"
-          aria-describedby={captionId}
-          className={LOCKED_BUTTON}
-        >
-          {LABEL}
-        </button>
-        <p id={captionId} className="text-12 leading-4 text-fg-muted">
-          Pro shows every player you missed.
-        </p>
-      </div>
+      <ProLock
+        label={LABEL}
+        caption="Pro shows every player you missed."
+        isFullWidth
+      />
     );
   }
 

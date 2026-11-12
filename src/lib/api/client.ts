@@ -11,6 +11,7 @@ import type {
   FilterOptions,
   PlayerDirectory,
 } from '@/types/catalog';
+import type { AppConfig } from '@/types/config';
 import type { Filters } from '@/types/filters';
 import type { Side } from '@/types/match';
 import type { HistoryPage, HistoryQuery, Profile } from '@/types/profile';
@@ -56,7 +57,13 @@ export interface ProfileApi {
   getHistory(query: HistoryQuery): Promise<ApiResult<HistoryPage>>;
 }
 
+export interface ConfigApi {
+  // Public: whether the Free/Pro split is on
+  getConfig(): Promise<ApiResult<AppConfig>>;
+}
+
 export interface ApiClient {
+  config: ConfigApi;
   auth: AuthApi;
   catalog: CatalogApi;
   solo: SoloApi;
