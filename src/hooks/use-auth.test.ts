@@ -8,7 +8,11 @@ import {
 } from '@/hooks/use-auth';
 import { getApiClient, setApiClient, type ApiClient } from '@/lib/api/client';
 import { ApiRequestError } from '@/lib/api/unwrap';
-import { HISTORY_QUERY_KEY, PROFILE_QUERY_KEY } from '@/lib/query-keys';
+import {
+  HISTORY_QUERY_KEY,
+  PROFILE_QUERY_KEY,
+  SOLO_ALLOWANCE_QUERY_KEY,
+} from '@/lib/query-keys';
 import type { Session } from '@/types/auth';
 
 function sessionOf(id: string, isGuest: boolean): Session {
@@ -79,6 +83,9 @@ describe('clearSession', () => {
     queryClient.setQueryData(SESSION_QUERY_KEY, ACCOUNT);
     queryClient.setQueryData([...PROFILE_QUERY_KEY, 'user-1'], { any: 1 });
     queryClient.setQueryData([...HISTORY_QUERY_KEY, 'user-1'], { any: 1 });
+    queryClient.setQueryData([...SOLO_ALLOWANCE_QUERY_KEY, 'user-1'], {
+      any: 1,
+    });
 
     clearSession(queryClient);
 
@@ -88,6 +95,9 @@ describe('clearSession', () => {
     ).toBeUndefined();
     expect(
       queryClient.getQueryData([...HISTORY_QUERY_KEY, 'user-1']),
+    ).toBeUndefined();
+    expect(
+      queryClient.getQueryData([...SOLO_ALLOWANCE_QUERY_KEY, 'user-1']),
     ).toBeUndefined();
   });
 });

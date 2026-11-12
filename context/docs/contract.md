@@ -203,6 +203,7 @@ Paths are suggestions. Every response body is the envelope from §2, wrapping th
 | 12 | `solo.syncSession` | `GET /solo/sessions/:sessionId` | — | `SoloSession` |
 | 13 | `solo.quit` | `POST /solo/sessions/:sessionId/quit` | — | `SoloSummary` |
 | 14 | `solo.getSummary` | `GET /solo/sessions/:sessionId/summary` | — | `SoloSummary` |
+| 14a | `solo.getAllowance` | `GET /solo/allowance` | — | `SoloAllowance` (backend R11). Any session, guests too; `unauthorized` without one |
 | 15 | `profile.getProfile` | `GET /profile` | — | `Profile` |
 | 16 | `profile.getHistory` | `GET /profile/history?cursor=&limit=` | `HistoryQuery` | `HistoryPage` |
 
@@ -223,6 +224,8 @@ The web only checks password **length**. The backend owns the password policy.
 ### Response types
 
 **`AppConfig`** (backend R9) = `{ proEnabled: boolean }`, the backend's `PRO_ENABLED`. The web reads it only to decide whether any Pro wording, lock or `/pro` page exists; it never grants anything.
+
+**`SoloAllowance`** (backend R11) = `{ limit: number | null, used: number, resetsAt: number }`. `limit` is 5 for an effective-Free user and `null` when unlimited (Pro, or `PRO_ENABLED` off). `used` is today's solo runs whose side was picked, a run still in play included, for every tier. `resetsAt` is the next UTC midnight in epoch ms. The web shows "N of 5 solo runs left today" from it and never counts on its own.
 
 **`FilterOptions`**
 
@@ -358,8 +361,9 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `signIn` | `invalid_input` (bad form), `unauthorized` (wrong credentials) |
 | `signUp` | `invalid_input` (bad form, or **handle taken**) |
 | `upgradeGuest` | `invalid_input` (bad form, handle taken), `unauthorized` (no session), `forbidden` (already registered) |
-| `findMatch` | `unauthorized`, `invalid_input`, `empty_pool` + `emptyBecause` |
-| `chooseSide` | `not_found`, `forbidden` (side already chosen) |
+| `findMatch` | `unauthorized`, `forbidden` + `reason: 'daily_cap'` + `retryAfterMs` (to the next UTC midnight; the first check, so it wins over `empty_pool`, backend R11), `invalid_input`, `empty_pool` + `emptyBecause` |
+| `chooseSide` | `not_found`, `forbidden` (side already chosen), `forbidden` + `reason: 'daily_cap'` + `retryAfterMs` (checked and counted in one step, so two tabs can't both take the fifth run) |
+| `getAllowance` | `unauthorized` |
 | `guess` | `invalid_input`, `not_found`, `session_over` (run over, or round already ended), `rate_limited` + `retryAfterMs` |
 | `syncSession`, `quit` | `not_found`, `invalid_input` (no side chosen yet) |
 | `getSummary` | `not_found`, `invalid_input`, `forbidden` (run still in progress) |
@@ -375,6 +379,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
   - `already_found` and `not_in_xi` leave the round running. There's no penalty and no new round.
 - **Expiry:** when the countdown reaches 0, the web calls `syncSession`. The server applies any expiry: it takes a life and starts a new round, or ends the run.
 - **Grace window:** a guess received after `endsAt` plus the grace window (400 ms) returns `session_over`.
+- **Daily cap (R11):** a run counts when its side is picked. An offer left unpicked doesn't count, a quit run isn't given back, and duels never count. A run in play when the cap is reached plays on. The backend counts in memory plus saved runs, so a restart forgives an open run.
 
 ---
 
@@ -525,3 +530,4 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 | Coin-flip reveal | 2 s from `coinFlip` to `matchReady` |
 | Socket heartbeat | ping every 10 s, 5 s timeout |
 | Gateway token | 5 minutes |
+| Solo daily runs (Free, `PRO_ENABLED` on) | 5, reset at UTC midnight |

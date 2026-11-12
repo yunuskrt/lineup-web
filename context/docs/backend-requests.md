@@ -12,7 +12,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R8 | Three more reveals in the landing showcase | Web fix Landing D | 2026-11-10 | **Done** (2026-11-10, backend R8 `aca22bf`) |
 | R9 | The Pro tier and the `PRO_ENABLED` switch | Web feature Pro A | 2026-11-10 | **Done** (2026-11-12, backend R9 `fcf2079`) |
 | R10 | Pro-only room hosting | Web feature Pro B | 2026-11-10 | **Done** (2026-11-12, backend R10 `d7d53ca`) |
-| R11 | The solo daily cap | Web feature Pro C | 2026-11-10 | Asked |
+| R11 | The solo daily cap | Web feature Pro C | 2026-11-10 | **Done** (2026-11-12, backend R11 `35f1ce3`) |
 | R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | Asked |
 | R13 | Exact match selection | Web feature Pro E | 2026-11-10 | Asked |
 | R14 | Practice mode | Web feature Pro F | 2026-11-10 | Asked |
@@ -697,6 +697,18 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 - An offer with no side pick doesn't count; a quit run does.
 - Two concurrent side picks at 4 used: exactly one succeeds.
 - `GET /solo/allowance` for Free, Pro and the switch off.
+
+### Built
+
+- **The cap** (2026-11-12): backend `35f1ce3`, on `main` and pushed.
+  - **Counted in memory plus saved runs:** open in-memory runs whose side was picked, plus today's saved `game_sessions`. Nothing is written at side pick, so a run lost to a server restart isn't counted.
+  - **The refusal, on both `POST /solo/sessions` and the side pick:** `{ success: false, error: { code: 'forbidden', message: "You've played your 5 solo runs today. Duels are unlimited.", retryAfterMs: <ms to the next UTC midnight>, reason: 'daily_cap' } }`.
+  - **The start refuses before anything else,** so it wins over `empty_pool`. A run in play keeps going.
+  - **The side pick counts and claims in one step:** two tabs can't both take the fifth run.
+  - **`retryAfterMs` now also comes with `daily_cap`,** not only `rate_limited`. The web's `ApiError` already allows it.
+  - **`GET /solo/allowance`:** any session, guests included; 401 without one. `{ limit: number | null, used: number, resetsAt: epoch ms }`; `limit` is 5 for Free and `null` when unlimited; `used` counts for every tier.
+  - No migration, no `PROTOCOL_VERSION` bump.
+- **Differences from this request:** none for the web. The in-memory choice means a restart forgives an open run.
 
 ### Report in the Built note
 

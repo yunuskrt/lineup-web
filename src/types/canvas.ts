@@ -40,6 +40,8 @@ export type CanvasGateView = {
   actionLabel?: string;
   // A quieter way out, as a text link
   secondaryActionLabel?: string;
+  // A See Pro link beside the secondary one
+  seePro?: boolean;
   // Replaces `detail` with a ticking countdown
   countdown?: CanvasGateCountdown;
   // The solo side pick, drawn as a match card
@@ -70,6 +72,8 @@ export type SoloCanvasView = CanvasViewBase & {
   lives: Lives;
   // Set once the run is over
   end: SoloEndView | null;
+  // Set while today's solo runs are used up (R11)
+  capLine?: string;
 };
 
 export type DuelCanvasView = CanvasViewBase & {

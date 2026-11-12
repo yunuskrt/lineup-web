@@ -10,6 +10,7 @@ import {
 import { appConfigSchema } from '@/lib/api/schemas/config';
 import { historyPageSchema, profileSchema } from '@/lib/api/schemas/profile';
 import {
+  soloAllowanceSchema,
   soloGuessResponseSchema,
   soloMatchOfferSchema,
   soloSessionSchema,
@@ -80,6 +81,8 @@ export function createHttpApiClient(baseUrl: string): ApiClient {
         request('POST', soloPath(sessionId, '/quit'), soloSummarySchema),
       getSummary: (sessionId) =>
         request('GET', soloPath(sessionId, '/summary'), soloSummarySchema),
+      getAllowance: () =>
+        request('GET', '/solo/allowance', soloAllowanceSchema),
     },
     profile: {
       getProfile: () => request('GET', '/profile', profileSchema),

@@ -17,6 +17,7 @@ import type {
 } from '@/types/match';
 import type { RevealedPlayer } from '@/types/player';
 import type { HistoryEntry, UserStats } from '@/types/profile';
+import type { SoloAllowance } from '@/types/solo';
 import type { User } from '@/types/user';
 
 export const SAMPLE_IDENTITY: MatchIdentity = {
@@ -494,4 +495,15 @@ export function sampleHistory(now: number): HistoryEntry[] {
     foundCount: seed.found,
     livesRemaining: seed.lives,
   }));
+}
+
+const SAMPLE_DAY_MS = 86_400_000;
+
+// Free at the switch on; `used` runs picked today
+export function sampleAllowance(used: number, now: number): SoloAllowance {
+  return {
+    limit: 5,
+    used,
+    resetsAt: (Math.floor(now / SAMPLE_DAY_MS) + 1) * SAMPLE_DAY_MS,
+  };
 }

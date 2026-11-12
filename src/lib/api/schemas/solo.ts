@@ -52,6 +52,15 @@ export const soloGuessResponseSchema = z.object({
   session: soloSessionSchema,
 });
 
+// Backend R11: the server counts, the web shows
+export const soloAllowanceSchema = z.object({
+  // Null when unlimited
+  limit: z.number().int().positive().nullable(),
+  used: z.number().int().nonnegative(),
+  // The next UTC midnight, epoch ms
+  resetsAt: z.number().int().nonnegative(),
+});
+
 export const soloSummarySchema = z.object({
   match: matchIdentitySchema,
   // Sorted by order

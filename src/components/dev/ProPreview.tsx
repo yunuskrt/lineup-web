@@ -1,8 +1,12 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
+import { PlayStart } from '@/components/play/PlayStart';
+import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
 import { ProLock, type ProLockSize } from '@/components/pro/ProLock';
 import { type ProPlan, ProView } from '@/components/pro/ProView';
+import { sampleAllowance } from '@/lib/dev/samples';
+import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
 import { SECONDARY_BUTTON, DEV_PREVIEW_BUTTON } from '@/styles/classes';
 
 const SIZES: ProLockSize[] = ['default', 'large'];
@@ -14,6 +18,31 @@ function Specimen({ label, children }: { label: string; children: ReactNode }) {
       {children}
       <figcaption className="text-12 text-fg-muted">{label}</figcaption>
     </figure>
+  );
+}
+
+const ALLOWANCE_SAMPLES = [
+  { used: 2, label: 'Free, 3 left' },
+  { used: 5, label: 'Free, 0 left: Start disabled' },
+];
+
+// The real /play pieces on a fixed count
+function SoloStartSample({ used }: { used: number }) {
+  const id = useId();
+  const [now] = useState(() => Date.now());
+  const allowance = sampleAllowance(used, now);
+  const line = allowanceLine(allowance) ?? '';
+  const isCapped = isSoloCapped(allowance);
+
+  return (
+    <PlayStart mode="solo" href="#" isCapped={isCapped} describedBy={id}>
+      <SoloAllowanceNote
+        id={id}
+        line={line}
+        isCapped={isCapped}
+        onPlayDuel={() => {}}
+      />
+    </PlayStart>
   );
 }
 
@@ -58,6 +87,16 @@ export function ProPreview() {
               />
             </Specimen>
           </div>
+        </div>
+      </section>
+      <section className="flex flex-col gap-6">
+        <h2 className="text-20 font-semibold">Solo runs left (/play)</h2>
+        <div className="flex flex-wrap items-start gap-12">
+          {ALLOWANCE_SAMPLES.map(({ used, label }) => (
+            <Specimen key={used} label={label}>
+              <SoloStartSample used={used} />
+            </Specimen>
+          ))}
         </div>
       </section>
       <section className="flex flex-col gap-6">

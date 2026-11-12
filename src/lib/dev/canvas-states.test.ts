@@ -45,6 +45,7 @@ const SUMMARY_STATES = [
   'perfect-clear',
   'quit',
   'quit-empty',
+  'run-over-capped',
 ] as const;
 
 // What each `next` swap is there to demonstrate
@@ -323,6 +324,28 @@ describe('solo summary snapshots', () => {
     expect(summaryOf('quit').summary.endReason).toBe('quit');
     expect(summaryOf('quit-empty').summary.endReason).toBe('quit');
     expect(summaryOf('quit-empty').summary.found).toEqual([]);
+  });
+
+  it('carry the cap line on the capped summary only', () => {
+    const capped = SUMMARY_STATES.filter(
+      (name) => summaryOf(name).view.capLine !== undefined,
+    );
+    expect(capped).toEqual(['run-over-capped']);
+    expect(summaryOf('run-over-capped').view.capLine).toMatch(
+      /^You've played your 5 solo runs today\. More at \d\d:\d\d\.$/,
+    );
+  });
+
+  it('gate the daily cap with a duel, the filters and Pro', () => {
+    const { view } = CANVAS_STATES.solo['solo-daily-cap'].build(NOW).frame;
+    expect(view.gate).toMatchObject({
+      title: 'No solo runs left today',
+      actionLabel: 'Play a duel',
+      secondaryActionLabel: 'Back to play',
+      seePro: true,
+    });
+    expect(view.gate?.detail).toMatch(/^You've played your 5 solo runs/);
+    expect(view.input).toBe('locked');
   });
 
   it('load the summary with the run already over', () => {

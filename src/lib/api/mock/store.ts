@@ -18,6 +18,7 @@ export type StoredSession = {
   currentStreak: number;
   bestStreak: number;
   roundTimesMs: number[];
+  // Set at the side pick; the daily cap counts it
   roundStartedAt: number | null;
   endReason: SoloEndReason | null;
   recentGuessTimes: number[];

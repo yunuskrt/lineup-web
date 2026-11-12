@@ -636,6 +636,56 @@ describe('soloCanvasView', () => {
     expect(soloGateAction(state)).toBe('retry');
   });
 
+  describe('the daily cap', () => {
+    const CAP: ApiError = {
+      code: 'forbidden',
+      message: "You've played your 5 solo runs today. Duels are unlimited.",
+      retryAfterMs: 3_600_000,
+      reason: 'daily_cap',
+    };
+    const CAP_LINE = "You've played your 5 solo runs today. More at 01:00.";
+
+    it.each(['find', 'choose'] as const)(
+      'offers a duel, the filters and Pro when %s is capped',
+      (step) => {
+        const state = run(...(step === 'choose' ? [PLAYING[0]] : []), {
+          type: 'failed',
+          step,
+          error: CAP,
+        });
+        expect(soloCanvasView(state, CAP_LINE).gate).toEqual({
+          title: 'No solo runs left today',
+          detail: CAP_LINE,
+          actionLabel: 'Play a duel',
+          secondaryActionLabel: 'Back to play',
+          seePro: true,
+        });
+        expect(soloGateAction(state)).toBe('playDuel');
+      },
+    );
+
+    it("falls back to the server's message before the allowance", () => {
+      const state = run({ type: 'failed', step: 'find', error: CAP });
+      expect(soloCanvasView(state).gate?.detail).toBe(CAP.message);
+    });
+
+    it('keeps other forbidden refusals on the old gate', () => {
+      const state = run({
+        type: 'failed',
+        step: 'find',
+        error: { ...CAP, reason: undefined, message: 'No.' },
+      });
+      expect(soloCanvasView(state).gate?.title).toBe("Couldn't find a match");
+      expect(soloGateAction(state)).toBe('retry');
+    });
+
+    it('carries the cap line to the summary only when given', () => {
+      const over = run(...PLAYING, OVER, received(summary()));
+      expect(soloCanvasView(over, CAP_LINE).capLine).toBe(CAP_LINE);
+      expect(soloCanvasView(over).capLine).toBeUndefined();
+    });
+  });
+
   it('sends a lost run back to the filters', () => {
     const state = run(...PLAYING, {
       type: 'failed',

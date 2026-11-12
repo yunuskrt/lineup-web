@@ -20,6 +20,14 @@ describe('resultActionsLayout', () => {
     });
   });
 
+  it('trades Play again for Play a duel at the solo cap', () => {
+    expect(resultActionsLayout(false, 'open', true)).toEqual({
+      primary: 'playDuel',
+      secondary: 'backToPlay',
+    });
+    expect(resultActionsLayout(false, 'open', false).primary).toBe('playAgain');
+  });
+
   it.each(['locked', 'pending'] as const)(
     'leads with Back to play and locks New room when %s',
     (access) => {

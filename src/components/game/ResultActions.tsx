@@ -10,12 +10,16 @@ export type ResultActionsProps = {
   isPrivate?: boolean;
   // Hosting is Pro (R10); open when unset
   hostAccess?: ProAccess;
+  // Solo at its daily cap: Play a duel instead
+  capLine?: string;
+  onPlayDuel?: () => void;
 };
 
 const PRIMARY_LABELS: Record<ResultPrimary, string> = {
   playAgain: 'Play again',
   newRoom: 'New room',
   backToPlay: 'Back to play',
+  playDuel: 'Play a duel',
 };
 
 export function ResultActions({
@@ -23,14 +27,31 @@ export function ResultActions({
   onChangeFilters,
   isPrivate = false,
   hostAccess = 'open',
+  capLine,
+  onPlayDuel = () => {},
 }: ResultActionsProps) {
-  const { primary, secondary } = resultActionsLayout(isPrivate, hostAccess);
+  const { primary, secondary } = resultActionsLayout(
+    isPrivate,
+    hostAccess,
+    capLine !== undefined,
+  );
+  const onPrimary =
+    primary === 'backToPlay'
+      ? onChangeFilters
+      : primary === 'playDuel'
+        ? onPlayDuel
+        : onPlayAgain;
 
   return (
     <div className="flex flex-col items-center gap-3 lg:mt-auto">
+      {capLine ? (
+        <p className="text-center text-14 leading-5 text-balance text-fg-muted">
+          {capLine}
+        </p>
+      ) : null}
       <button
         type="button"
-        onClick={primary === 'backToPlay' ? onChangeFilters : onPlayAgain}
+        onClick={onPrimary}
         className={`w-full ${PRIMARY_BUTTON_LARGE}`}
       >
         {PRIMARY_LABELS[primary]}

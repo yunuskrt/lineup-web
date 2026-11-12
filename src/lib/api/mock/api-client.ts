@@ -22,13 +22,16 @@ import {
   type MockStore,
   type StoredSession,
 } from '@/lib/api/mock/store';
+import { nextUtcMidnight, utcDayStart } from '@/lib/api/mock/clock';
 import {
   ACK,
+  dailyCap,
   emptyPool,
   fail,
   isGuessable,
   matchInPlayFor,
   ok,
+  SOLO_DAILY_RUNS,
   toGuessResult,
 } from '@/lib/api/mock/shared';
 import type { MockFixture } from '@/lib/api/mock/types';
@@ -219,6 +222,26 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
     return rateLimit.windowMs - (at - oldest);
   }
 
+  // Side picks since UTC midnight, runs in play too
+  function runsUsedToday(userId: string, at: number): number {
+    const dayStart = utcDayStart(at);
+    return [...store.sessions.values()].filter(
+      (session) =>
+        session.userId === userId &&
+        session.roundStartedAt !== null &&
+        session.roundStartedAt >= dayStart,
+    ).length;
+  }
+
+  function soloLimit(): number | null {
+    return store.identity?.user.tier === 'free' ? SOLO_DAILY_RUNS : null;
+  }
+
+  function isCapped(userId: string, at: number): boolean {
+    const limit = soloLimit();
+    return limit !== null && runsUsedToday(userId, at) >= limit;
+  }
+
   function summaryOf(session: StoredSession): SoloSummary {
     const engine = session.engine;
     if (!engine) throw new Error('Session has no engine state');
@@ -378,6 +401,12 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           return fail('unauthorized', 'Sign in or continue as a guest first.');
         }
 
+        // First, as R11: it wins over empty_pool
+        const at = now();
+        if (isCapped(identity.user.id, at)) {
+          return dailyCap(nextUtcMidnight(at) - at);
+        }
+
         const parsed = filtersSchema.safeParse(filters);
         if (!parsed.success) {
           return fail('invalid_input', 'Those filters are not valid.');
@@ -406,7 +435,12 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           return fail('forbidden', 'A side has already been chosen.');
         }
 
+        // Checked and counted in one step, as R11
         const at = now();
+        if (isCapped(session.userId, at)) {
+          return dailyCap(nextUtcMidnight(at) - at);
+        }
+
         session.side = side;
         session.engine = createEngineState(
           'solo',
@@ -521,6 +555,20 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
         }
 
         return ok(summaryOf(session));
+      },
+
+      async getAllowance() {
+        const identity = requireIdentity();
+        if (!identity) {
+          return fail('unauthorized', 'Sign in or continue as a guest first.');
+        }
+
+        const at = now();
+        return ok({
+          limit: soloLimit(),
+          used: runsUsedToday(identity.user.id, at),
+          resetsAt: nextUtcMidnight(at),
+        });
       },
     },
 
