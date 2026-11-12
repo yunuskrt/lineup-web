@@ -9,7 +9,11 @@ import { getApiClient } from '@/lib/api';
 import { isSessionLost } from '@/lib/api/session-loss';
 import { apiErrorOf, unwrap } from '@/lib/api/unwrap';
 import { signUpTarget } from '@/lib/auth';
-import { HISTORY_QUERY_KEY, PROFILE_QUERY_KEY } from '@/lib/query-keys';
+import {
+  HISTORY_QUERY_KEY,
+  PROFILE_QUERY_KEY,
+  SOLO_ALLOWANCE_QUERY_KEY,
+} from '@/lib/query-keys';
 import type { ApiError } from '@/types/api';
 import type { Session, SignInRequest, SignUpRequest } from '@/types/auth';
 
@@ -97,6 +101,7 @@ export function clearSession(queryClient: QueryClient): void {
   queryClient.setQueryData(SESSION_QUERY_KEY, null);
   queryClient.removeQueries({ queryKey: PROFILE_QUERY_KEY });
   queryClient.removeQueries({ queryKey: HISTORY_QUERY_KEY });
+  queryClient.removeQueries({ queryKey: SOLO_ALLOWANCE_QUERY_KEY });
 }
 
 // Calls outside TanStack still apply its 401 rule

@@ -5,9 +5,11 @@ import { useState } from 'react';
 import { GameCanvas } from '@/components/game/GameCanvas';
 import { QuitDialog } from '@/components/game/QuitDialog';
 import { usePlayerDirectory } from '@/hooks/use-player-directory';
+import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoloRun } from '@/hooks/use-solo-run';
 import { sideSchema } from '@/lib/api/schemas/common';
-import { withQuery } from '@/lib/filters';
+import { withMode, withQuery } from '@/lib/filters';
+import { capLine } from '@/lib/solo-allowance';
 import { soloCanvasView, soloGateAction } from '@/lib/solo-run';
 
 export function SoloGame() {
@@ -25,6 +27,8 @@ export function SoloGame() {
     revealMissed,
   } = useSoloRun(params);
   const directory = usePlayerDirectory(state.offer?.sessionId ?? null);
+  const allowance = useSoloAllowance();
+  const cap = capLine(allowance.data ?? null);
   const [guess, setGuess] = useState('');
   const [isQuitOpen, setIsQuitOpen] = useState(false);
   // Mid-play only; a gate or summary has its own exit
@@ -35,6 +39,11 @@ export function SoloGame() {
 
   function leave() {
     router.push(withQuery('/play', params));
+  }
+
+  // Duels are never capped; the filters go along
+  function playDuel() {
+    router.push(withQuery('/play/duel', withMode(params, 'duel')));
   }
 
   async function handleGuess(text: string) {
@@ -63,6 +72,9 @@ export function SoloGame() {
       case 'leave':
         leave();
         return;
+      case 'playDuel':
+        playDuel();
+        return;
       case 'retry':
         if (state.failure?.step === 'quit') void confirmQuit();
         else retry();
@@ -88,7 +100,7 @@ export function SoloGame() {
   return (
     <>
       <GameCanvas
-        view={soloCanvasView(state)}
+        view={soloCanvasView(state, cap)}
         guess={guess}
         directory={directory}
         onGuessChange={setGuess}
@@ -98,6 +110,7 @@ export function SoloGame() {
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
         onChangeFilters={leave}
+        onPlayDuel={playDuel}
         onRevealMissed={revealMissed}
       />
       <QuitDialog

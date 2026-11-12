@@ -31,6 +31,21 @@ export function proRequired<T>(message: string): ApiResult<T> {
   };
 }
 
+export const SOLO_DAILY_RUNS = 5;
+
+// R11's refusal, waiting out the UTC day
+export function dailyCap<T>(retryAfterMs: number): ApiResult<T> {
+  return {
+    success: false,
+    error: {
+      code: 'forbidden',
+      message: `You've played your ${SOLO_DAILY_RUNS} solo runs today. Duels are unlimited.`,
+      retryAfterMs,
+      reason: 'daily_cap',
+    },
+  };
+}
+
 export function matchInPlayFor(fixture: MockFixture, side: Side): MatchInPlay {
   return { ...fixture.identity, side, formation: fixture[side].formation };
 }

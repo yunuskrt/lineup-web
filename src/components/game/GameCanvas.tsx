@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { LOBBY_GATE_SIZE, LobbyPanel } from '@/components/duel/LobbyPanel';
 import { CanvasGate, type GateSize } from '@/components/game/CanvasGate';
@@ -23,6 +24,7 @@ import {
   waitingLine,
 } from '@/lib/duel-status';
 import { LOADING_FORMATION } from '@/lib/formation';
+import { PRO_PATH } from '@/lib/pro';
 import { serverClock } from '@/lib/server-clock';
 import {
   suggest,
@@ -128,13 +130,20 @@ function GateAction({
         >
           {gate.actionLabel}
         </button>
-        <button
-          type="button"
-          className={`text-14 ${TEXT_LINK}`}
-          onClick={onGateSecondaryAction}
-        >
-          {gate.secondaryActionLabel}
-        </button>
+        <div className="flex items-center gap-6">
+          <button
+            type="button"
+            className={`text-14 ${TEXT_LINK}`}
+            onClick={onGateSecondaryAction}
+          >
+            {gate.secondaryActionLabel}
+          </button>
+          {gate.seePro ? (
+            <Link href={PRO_PATH} className={`text-14 ${TEXT_LINK}`}>
+              See Pro
+            </Link>
+          ) : null}
+        </div>
       </div>
     );
   }
@@ -231,6 +240,8 @@ type GameCanvasProps = {
   onQuit?: () => void;
   onPlayAgain?: () => void;
   onChangeFilters?: () => void;
+  // Solo at its daily cap: Play a duel instead
+  onPlayDuel?: () => void;
   onRevealMissed?: () => void;
   onLobbyAction?: (action: LobbyAction) => void;
 };
@@ -246,6 +257,7 @@ export function GameCanvas({
   onQuit,
   onPlayAgain = () => {},
   onChangeFilters = () => {},
+  onPlayDuel = () => {},
   onRevealMissed = () => {},
   onLobbyAction = () => {},
 }: GameCanvasProps) {
@@ -352,8 +364,10 @@ export function GameCanvas({
               {soloEnd ? (
                 <RunSummary
                   end={soloEnd}
+                  capLine={view.mode === 'solo' ? view.capLine : undefined}
                   onPlayAgain={onPlayAgain}
                   onChangeFilters={onChangeFilters}
+                  onPlayDuel={onPlayDuel}
                   onRevealMissed={onRevealMissed}
                 />
               ) : result ? (

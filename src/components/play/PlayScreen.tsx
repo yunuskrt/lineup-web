@@ -1,13 +1,15 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { FilterPanel } from '@/components/play/FilterPanel';
 import { FilterSkeleton } from '@/components/play/FilterSkeleton';
 import { ModeChoice } from '@/components/play/ModeChoice';
 import { PlayStart } from '@/components/play/PlayStart';
 import { RoomControls } from '@/components/play/RoomControls';
+import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
 import { useFilterOptions } from '@/hooks/use-filter-options';
+import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoundUnlock } from '@/hooks/use-sound';
 import { authErrorMessageOf } from '@/lib/auth';
 import {
@@ -19,6 +21,7 @@ import {
   withQuery,
 } from '@/lib/filters';
 import { joinCodeFrom } from '@/lib/room-code';
+import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { Filters } from '@/types/filters';
 import type { PlayMode } from '@/types/play';
@@ -41,6 +44,12 @@ export function PlayScreen() {
   );
   const [edited, setEdited] = useState<Filters | null>(null);
   const options = useFilterOptions();
+  // The server's count; nothing while unlimited
+  const allowance = useSoloAllowance();
+  const allowanceId = useId();
+  const soloAllowance = mode === 'solo' ? (allowance.data ?? null) : null;
+  const soloLine = allowanceLine(soloAllowance);
+  const isCapped = isSoloCapped(soloAllowance);
   // The Start click unlocks sound for the game
   useSoundUnlock();
 
@@ -102,7 +111,18 @@ export function PlayScreen() {
         <PlayStart
           mode={mode}
           href={filterParams ? withQuery(`/play/${mode}`, filterParams) : null}
-        />
+          isCapped={isCapped}
+          describedBy={soloLine ? allowanceId : undefined}
+        >
+          {soloLine ? (
+            <SoloAllowanceNote
+              id={allowanceId}
+              line={soloLine}
+              isCapped={isCapped}
+              onPlayDuel={() => changeMode('duel')}
+            />
+          ) : null}
+        </PlayStart>
         {mode === 'duel' ? (
           <RoomControls
             filterParams={filterParams}

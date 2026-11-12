@@ -716,3 +716,128 @@ describe('mock api client', () => {
     expect(JSON.stringify(overview)).not.toContain('memorability');
   });
 });
+
+describe('mock solo daily cap', () => {
+  const DAY_MS = 86_400_000;
+  // 10:00 UTC, so the next midnight is 14h away
+  const MORNING = Math.floor(T0 / DAY_MS) * DAY_MS + 10 * 3_600_000;
+  const MIDNIGHT = Math.floor(T0 / DAY_MS) * DAY_MS + DAY_MS;
+  let clock: number;
+  let api: ApiClient;
+
+  function client(options: Parameters<typeof createMockApiClient>[0] = {}) {
+    return createMockApiClient({
+      now: () => clock,
+      random: () => 0,
+      ...options,
+    });
+  }
+
+  beforeEach(async () => {
+    clock = MORNING;
+    api = client();
+    await api.auth.continueAsGuest();
+  });
+
+  async function playRuns(count: number) {
+    for (let i = 0; i < count; i += 1) {
+      const offer = unwrap(await api.solo.findMatch(ALL_FILTERS));
+      unwrap(await api.solo.chooseSide(offer.sessionId, 'home'));
+      unwrap(await api.solo.quit(offer.sessionId));
+    }
+  }
+
+  it('refuses the sixth start with the time to UTC midnight', async () => {
+    await playRuns(5);
+    const error = errorOf(await api.solo.findMatch(ALL_FILTERS));
+    expect(error).toEqual({
+      code: 'forbidden',
+      message: "You've played your 5 solo runs today. Duels are unlimited.",
+      retryAfterMs: MIDNIGHT - MORNING,
+      reason: 'daily_cap',
+    });
+  });
+
+  it('counts the allowance from side picks, a run in play too', async () => {
+    expect(unwrap(await api.solo.getAllowance())).toEqual({
+      limit: 5,
+      used: 0,
+      resetsAt: MIDNIGHT,
+    });
+    await playRuns(2);
+    const offer = unwrap(await api.solo.findMatch(ALL_FILTERS));
+    unwrap(await api.solo.chooseSide(offer.sessionId, 'home'));
+    expect(unwrap(await api.solo.getAllowance()).used).toBe(3);
+  });
+
+  it('never counts an offer taken and left', async () => {
+    for (let i = 0; i < 7; i += 1) {
+      unwrap(await api.solo.findMatch(ALL_FILTERS));
+    }
+    expect(unwrap(await api.solo.getAllowance()).used).toBe(0);
+  });
+
+  it('refuses a side pick past the cap, so two tabs share five', async () => {
+    await playRuns(4);
+    const first = unwrap(await api.solo.findMatch(ALL_FILTERS));
+    const second = unwrap(await api.solo.findMatch(ALL_FILTERS));
+    unwrap(await api.solo.chooseSide(first.sessionId, 'home'));
+    const refused = errorOf(
+      await api.solo.chooseSide(second.sessionId, 'away'),
+    );
+    expect(refused.reason).toBe('daily_cap');
+    expect(unwrap(await api.solo.getAllowance()).used).toBe(5);
+  });
+
+  it('lets the run in play finish after the cap is reached', async () => {
+    await playRuns(4);
+    const offer = unwrap(await api.solo.findMatch(ALL_FILTERS));
+    unwrap(await api.solo.chooseSide(offer.sessionId, 'home'));
+    const guess = await api.solo.guess({
+      sessionId: offer.sessionId,
+      guess: 'Moss',
+    });
+    expect(guess.success).toBe(true);
+  });
+
+  it('wins over an empty pool', async () => {
+    await playRuns(5);
+    const error = errorOf(
+      await api.solo.findMatch({
+        ...ALL_FILTERS,
+        era: { from: 2000, to: 2000 },
+      }),
+    );
+    expect(error.reason).toBe('daily_cap');
+  });
+
+  it('resets at UTC midnight', async () => {
+    await playRuns(5);
+    clock = MIDNIGHT;
+    expect(unwrap(await api.solo.getAllowance())).toEqual({
+      limit: 5,
+      used: 0,
+      resetsAt: MIDNIGHT + DAY_MS,
+    });
+    expect((await api.solo.findMatch(ALL_FILTERS)).success).toBe(true);
+  });
+
+  it.each([
+    ['Pro', { tier: 'pro' as const }],
+    ['the switch off', { proEnabled: false }],
+  ])('never refuses %s, and reports no limit', async (_, options) => {
+    api = client(options);
+    await api.auth.continueAsGuest();
+    await playRuns(6);
+    expect(unwrap(await api.solo.getAllowance())).toEqual({
+      limit: null,
+      used: 6,
+      resetsAt: MIDNIGHT,
+    });
+  });
+
+  it('needs a session for the allowance', async () => {
+    await api.auth.signOut();
+    expect(errorOf(await api.solo.getAllowance()).code).toBe('unauthorized');
+  });
+});

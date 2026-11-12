@@ -52,4 +52,5 @@ export type SoloRunEvent =
   | { type: 'failed'; step: SoloRunStep; error: ApiError }
   | { type: 'retried' };
 
-export type SoloGateAction = 'choose' | 'widen' | 'leave' | 'retry';
+export type SoloGateAction =
+  'choose' | 'widen' | 'leave' | 'retry' | 'playDuel';

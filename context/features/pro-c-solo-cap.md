@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -71,6 +71,20 @@ Defaults stand unless changed at load:
   - **1, 16:** the server counts and refuses; the web shows its numbers.
   - **15:** duels are untouched, and free duels are never capped.
 - **Constraints:** tokens only; `@/` imports; no `any`; comments of at most 50 characters.
+- **Deviations recorded during implementation:**
+  - **`allowanceLine(allowance, timeZone?)` takes no `now`:** the query refetches at `resetsAt` (`refetchInterval` in `useSoloAllowance`, timed by the pure `refetchAtReset`), so a count never outlives its day. Beside it in `src/lib/solo-allowance.ts`: `capLine`, `isSoloCapped`, `runsLeft`, `isDailyCap`, `resetTimeOf`.
+  - **The reset time is a 24-hour clock** (`en-GB`) in the player's own zone, as the spec's "01:00".
+  - **No new failure step:** a `daily_cap` refusal stays a `find` or `choose` failure, and `reason` picks a new gate action, `playDuel`.
+  - **The gate** is titled "No solo runs left today". Play a duel is the primary; Back to play and See Pro are two links in one row (new `CanvasGateView.seePro`). Its detail is the allowance's cap line once loaded, else the server's message.
+  - **Play a duel goes straight to `/play/duel`** with the same filters from the gate and the summary, as the duel's "no opponent" offers solo directly. On `/play` it switches the mode, as specced.
+  - **The summary at the cap** shows the cap line above Play a duel, and its link becomes Back to play, not Change filters: `/play`'s Start is disabled at 0. `resultActionsLayout` gains a third parameter, `isSoloCapped`.
+  - **The cap line reaches the canvas** through `soloCanvasView(state, capLine)`, as `SoloCanvasView.capLine`.
+  - **The allowance is refreshed** after every side pick (counted or refused), after a quit or summary, and after a refused start.
+  - **The mock counts side picks** by `roundStartedAt`, which is set only at the side pick.
+  - **The `/play` snapshots** live on `/dev/pro` (3 left, 0 left), not a `?state=` on `/play`.
+  - **The disabled Start** keeps the large button's existing disabled style (70% opacity).
+  - **Checked live** (2026-11-12, 3000 against 8080, dev database, `PRO_ENABLED=true`): a fresh guest saw nothing on `/play` before a session; five runs (pick, quit) counted down 4, 3, 2, 1 left; the fifth summary showed the cap line, Play a duel and Back to play; `/play` then had Start disabled with "More at 03:00" (Istanbul), and `GET /solo/allowance` answered `used: 5`. Play a duel switched to Duel; `/play/solo` by URL showed the gate; its Play a duel entered the duel queue and See Pro opened `/pro`. 375 wide: no sideways scroll.
+  - **Checked live with `PRO_ENABLED=false`:** a fresh guest played six runs in a row; every summary offered Play again, `/play` never showed a line, a disabled Start or the word "Pro", and `GET /solo/allowance` answered `limit: null, used: 6`. Build passes.
 - **Verification:**
   - `npm test`, `npm run lint`, `npm run build`.
   - **Mock, switch on, Free:** five runs (pick a side, quit), watching the line count down; the sixth Start is disabled, and Play a duel switches to Duel; `/play/solo` by URL shows the gate.

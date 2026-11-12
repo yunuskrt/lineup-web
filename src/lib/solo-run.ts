@@ -2,6 +2,7 @@ import type { GuessInputStatus } from '@/components/game/GuessInput';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { authErrorMessage } from '@/lib/auth';
 import { guessFeedback } from '@/lib/feedback';
+import { isDailyCap } from '@/lib/solo-allowance';
 import {
   cooldownUntil,
   emptyPoolGate,
@@ -32,6 +33,9 @@ export const SOLO_GATE_COPY = {
   },
   backToFilters: 'Back to filters',
   tryAgain: 'Try again',
+  dailyCap: 'No solo runs left today',
+  playDuel: 'Play a duel',
+  backToPlay: 'Back to play',
 } as const;
 
 const FAILED_TITLES: Record<SoloRunStep, string> = {
@@ -239,6 +243,7 @@ export function soloGateAction(state: SoloRunState): SoloGateAction | null {
     case 'failed': {
       const error = state.failure?.error;
       if (!error) return 'retry';
+      if (isDailyCap(error)) return 'playDuel';
       if (widenReasonOf(error)) return 'widen';
       return LEAVING_ERRORS.has(error.code) ? 'leave' : 'retry';
     }
@@ -247,10 +252,28 @@ export function soloGateAction(state: SoloRunState): SoloGateAction | null {
   }
 }
 
-function failedGate(state: SoloRunState): CanvasGateView | null {
+// Never a dead end: a duel, the filters, or Pro
+export function dailyCapGate(
+  error: ApiError,
+  capLine: string | null,
+): CanvasGateView {
+  return {
+    title: SOLO_GATE_COPY.dailyCap,
+    detail: capLine ?? error.message,
+    actionLabel: SOLO_GATE_COPY.playDuel,
+    secondaryActionLabel: SOLO_GATE_COPY.backToPlay,
+    seePro: true,
+  };
+}
+
+function failedGate(
+  state: SoloRunState,
+  capLine: string | null,
+): CanvasGateView | null {
   const { failure } = state;
   if (!failure) return null;
 
+  if (isDailyCap(failure.error)) return dailyCapGate(failure.error, capLine);
   if (failure.error.code === 'empty_pool') return emptyPoolGate(failure.error);
 
   return {
@@ -263,7 +286,10 @@ function failedGate(state: SoloRunState): CanvasGateView | null {
   };
 }
 
-function gateOf(state: SoloRunState): CanvasGateView | null {
+function gateOf(
+  state: SoloRunState,
+  capLine: string | null,
+): CanvasGateView | null {
   switch (state.phase) {
     case 'choosing':
       if (!state.offer) return null;
@@ -272,7 +298,7 @@ function gateOf(state: SoloRunState): CanvasGateView | null {
         sidePick: { match: state.offer.match, isChoosing: state.isChoosing },
       };
     case 'failed':
-      return failedGate(state);
+      return failedGate(state, capLine);
     default:
       return null;
   }
@@ -291,7 +317,11 @@ function endOf(state: SoloRunState): SoloEndView | null {
     : { status: 'loading' };
 }
 
-export function soloCanvasView(state: SoloRunState): SoloCanvasView {
+// `capLine` is the server's allowance, at 0 left
+export function soloCanvasView(
+  state: SoloRunState,
+  capLine: string | null = null,
+): SoloCanvasView {
   const { session, summary } = state;
   return {
     mode: 'solo',
@@ -305,7 +335,8 @@ export function soloCanvasView(state: SoloRunState): SoloCanvasView {
     pulse: state.pulse,
     shakeKey: state.shakeKey,
     lifeLostKey: state.lifeLostKey,
-    gate: gateOf(state),
+    gate: gateOf(state, capLine),
     end: endOf(state),
+    capLine: capLine ?? undefined,
   };
 }

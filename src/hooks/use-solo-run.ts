@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useReducer, useRef } from 'react';
 import { failureOf, useEnsureSession } from '@/hooks/use-auth';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
+import { refreshSoloAllowance } from '@/hooks/use-solo-allowance';
 import { getApiClient } from '@/lib/api';
 import { unwrap } from '@/lib/api/unwrap';
 import { guessFeedback } from '@/lib/feedback';
@@ -16,6 +17,7 @@ import {
   soloRunReducer,
   SYNC_RETRY_MS,
 } from '@/lib/solo-run';
+import { isDailyCap } from '@/lib/solo-allowance';
 import { widenReasonOf } from '@/lib/system-states';
 import type { GuessFeedback } from '@/types/feedback';
 import type { RoundTiming } from '@/types/game';
@@ -52,11 +54,9 @@ export function useSoloRun(params: URLSearchParams) {
       const offer = unwrap(await getApiClient().solo.findMatch(filters));
       dispatch({ type: 'offerReceived', offer });
     } catch (error) {
-      dispatch({
-        type: 'failed',
-        step: 'find',
-        error: failureOf(queryClient, error),
-      });
+      const apiError = failureOf(queryClient, error);
+      if (isDailyCap(apiError)) refreshSoloAllowance(queryClient);
+      dispatch({ type: 'failed', step: 'find', error: apiError });
     } finally {
       isFinding.current = false;
     }
@@ -140,6 +140,7 @@ export function useSoloRun(params: URLSearchParams) {
     void (async () => {
       try {
         const summary = unwrap(await getApiClient().solo.getSummary(sessionId));
+        refreshSoloAllowance(queryClient);
         dispatch({ type: 'summaryReceived', sessionId, summary });
       } catch (error) {
         dispatch({
@@ -172,6 +173,8 @@ export function useSoloRun(params: URLSearchParams) {
       });
     } finally {
       isChoosing.current = false;
+      // Counted or refused: the server's number moved
+      refreshSoloAllowance(queryClient);
     }
   }
 
@@ -205,6 +208,7 @@ export function useSoloRun(params: URLSearchParams) {
     dispatch({ type: 'quitting' });
     try {
       const summary = unwrap(await getApiClient().solo.quit(sessionId));
+      refreshSoloAllowance(queryClient);
       dispatch({ type: 'summaryReceived', sessionId, summary });
     } catch (error) {
       dispatch({

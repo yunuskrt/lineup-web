@@ -8,12 +8,14 @@ import {
   SAMPLE_OPEN_FILTERS,
   SAMPLE_OPPONENT,
   SAMPLE_YOU,
+  sampleAllowance,
   samplePlayer,
 } from '@/lib/dev/samples';
 import { duelCanvasView, INITIAL_DUEL_SESSION } from '@/lib/duel-session';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
-import { SOLO_GATE_COPY } from '@/lib/solo-run';
+import { capLine } from '@/lib/solo-allowance';
+import { dailyCapGate, SOLO_GATE_COPY } from '@/lib/solo-run';
 import { emptyPoolGate, reconnectingGate } from '@/lib/system-states';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import type { ApiError, EmptyPoolReason } from '@/types/api';
@@ -198,20 +200,29 @@ function inOrder<T extends RevealedPlayer>(
 // Named out of slot order, as a real run is
 const PERFECT_CLEAR_ORDER = [9, 10, 6, 0, 2, 7, 4, 1, 8, 5, 3];
 
+// Today's five solo runs, all played
+function sampleCapLine(now: number): string {
+  return capLine(sampleAllowance(SAMPLE_DAILY_RUNS, now)) ?? '';
+}
+
 function summaryState(
   description: string,
   summary: SoloSummary,
   isMissedRevealed = false,
+  isCapped = false,
 ): CanvasState<SoloCanvasView> {
   return {
     description,
-    build: () => ({
+    build: (now) => ({
       frame: {
-        view: endedView(summary.found, summary.livesRemaining, {
-          status: 'ready',
-          summary,
-          isMissedRevealed,
-        }),
+        view: {
+          ...endedView(summary.found, summary.livesRemaining, {
+            status: 'ready',
+            summary,
+            isMissedRevealed,
+          }),
+          capLine: isCapped ? sampleCapLine(now) : undefined,
+        },
         guess: '',
       },
     }),
@@ -412,6 +423,16 @@ function emptyPoolError(reason: EmptyPoolReason): ApiError {
   };
 }
 
+const SAMPLE_DAILY_RUNS = 5;
+
+// R11's refusal, as the backend words it
+const DAILY_CAP_ERROR: ApiError = {
+  code: 'forbidden',
+  message: `You've played your ${SAMPLE_DAILY_RUNS} solo runs today. Duels are unlimited.`,
+  retryAfterMs: 3_600_000,
+  reason: 'daily_cap',
+};
+
 const COOLDOWN_MS = 3_000;
 
 const RATE_LIMITED: SharedState = {
@@ -586,6 +607,27 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
     'Quit before naming anyone: the empty named list.',
     QUIT_EMPTY_SUMMARY,
   ),
+  'run-over-capped': summaryState(
+    "As run-over, today's fifth run: Play a duel, no Play again.",
+    RUN_OVER_SUMMARY,
+    false,
+    true,
+  ),
+  'solo-daily-cap': {
+    description: 'Free with no solo runs left: Play a duel or See Pro.',
+    build: (now) => ({
+      frame: {
+        view: toSolo(
+          {
+            ...loadingFields(),
+            gate: dailyCapGate(DAILY_CAP_ERROR, sampleCapLine(now)),
+          },
+          MAX_LIVES,
+        ),
+        guess: '',
+      },
+    }),
+  },
   'empty-pool-competition': soloEmptyPool(
     'competition',
     'No match in those competitions: include every one.',

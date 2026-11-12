@@ -132,6 +132,12 @@ const ROWS: Row[] = [
     path: '/solo/sessions/s-1/summary',
   },
   {
+    name: 'solo.getAllowance',
+    call: (c) => c.solo.getAllowance(),
+    method: 'GET',
+    path: '/solo/allowance',
+  },
+  {
     name: 'profile.getProfile',
     call: (c) => c.profile.getProfile(),
     method: 'GET',
@@ -169,7 +175,7 @@ describe('createHttpApiClient', () => {
   });
 
   it('covers every REST call in the contract', () => {
-    expect(ROWS).toHaveLength(18);
+    expect(ROWS).toHaveLength(19);
   });
 
   it.each(ROWS)('$name → $method $path', async (row) => {

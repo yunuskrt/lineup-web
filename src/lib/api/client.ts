@@ -16,6 +16,7 @@ import type { Filters } from '@/types/filters';
 import type { Side } from '@/types/match';
 import type { HistoryPage, HistoryQuery, Profile } from '@/types/profile';
 import type {
+  SoloAllowance,
   SoloGuessRequest,
   SoloGuessResponse,
   SoloMatchOffer,
@@ -50,6 +51,8 @@ export interface SoloApi {
   syncSession(sessionId: string): Promise<ApiResult<SoloSession>>;
   quit(sessionId: string): Promise<ApiResult<SoloSummary>>;
   getSummary(sessionId: string): Promise<ApiResult<SoloSummary>>;
+  // Today's runs; the web never counts its own
+  getAllowance(): Promise<ApiResult<SoloAllowance>>;
 }
 
 export interface ProfileApi {
