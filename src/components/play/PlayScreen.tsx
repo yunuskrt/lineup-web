@@ -17,6 +17,7 @@ import {
   filtersFromParams,
   filtersToParams,
   playModeFrom,
+  replaceQuery,
   withMode,
   withQuery,
 } from '@/lib/filters';
@@ -25,15 +26,6 @@ import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { Filters } from '@/types/filters';
 import type { PlayMode } from '@/types/play';
-
-// Keeps filters in the URL without a server round trip
-function replaceQuery(params: URLSearchParams) {
-  window.history.replaceState(
-    null,
-    '',
-    withQuery(window.location.pathname, params),
-  );
-}
 
 export function PlayScreen() {
   // Page props go stale after replaceState; this won't

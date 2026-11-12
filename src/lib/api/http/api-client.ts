@@ -3,6 +3,7 @@ import type { ApiClient } from '@/lib/api/client';
 import { createTransport } from '@/lib/api/http/transport';
 import { gatewayTokenSchema, sessionSchema } from '@/lib/api/schemas/auth';
 import {
+  archivePageSchema,
   catalogOverviewSchema,
   filterOptionsSchema,
   playerDirectorySchema,
@@ -58,6 +59,8 @@ export function createHttpApiClient(baseUrl: string): ApiClient {
         }),
       getOverview: () =>
         request('GET', '/catalog/overview', catalogOverviewSchema),
+      getArchive: (query) =>
+        request('GET', '/catalog/matches', archivePageSchema, { query }),
     },
     solo: {
       findMatch: (filters) =>

@@ -29,7 +29,10 @@ The game routes want FotMob's posture with lichess's restraint.
 | `/play/solo`, `/play/duel`  | **Canvas** — the squad grid is the composition. `/play/duel` also hosts private rooms (`?room=create`, `?room=<code>`) | **None** — quit and sound chips only | **None**           |
 | `/profile`                  | **Stat-led** — the numbers are the narrative                 | Wordmark left, CTA right             | Single inline line |
 | `/pro`                      | **Statement and table** — "Lineup Pro", one line, the Free vs Pro table, then Get Pro (or "You have Pro."). Exists only while `PRO_ENABLED` is on; not found otherwise | Wordmark left, CTA right             | Single inline line |
+| `/archive`                  | **Index** — the page is the list: a total line, one search box, filters folded behind a Filters button, then results rows (date, the home side right-aligned to a fixed score column, the away side, the competition and nickname). Pro while `PRO_ENABLED` is on, with a `ProLock` for Free; open to everyone while off | Wordmark left, Archive, CTA right    | Single inline line |
 | `/leaderboard` _(post-MVP)_ | **Index** — the page is the list                             | Wordmark left, CTA right             | Single inline line |
+
+Every site nav carries an **Archive** link beside the account link, for every tier: the page itself shows any lock.
 
 ### Game routes carry no chrome
 

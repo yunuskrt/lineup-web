@@ -4,17 +4,19 @@ import Image from 'next/image';
 import { useImageFallback } from '@/hooks/use-image-fallback';
 import type { ClubRef } from '@/types/match';
 
-export type CrestSize = 'header' | 'card';
+export type CrestSize = 'row' | 'header' | 'card';
 
 // Largest rendered size; CSS sets the box
-const CREST_PX: Record<CrestSize, number> = { header: 40, card: 80 };
+const CREST_PX: Record<CrestSize, number> = { row: 32, header: 40, card: 80 };
 
 const BOX: Record<CrestSize, string> = {
+  row: 'size-8',
   header: 'size-8 sm:size-10',
   card: 'size-16 sm:size-20',
 };
 
 const FALLBACK_TEXT: Record<CrestSize, string> = {
+  row: 'text-12',
   header: 'text-12',
   card: 'text-16',
 };

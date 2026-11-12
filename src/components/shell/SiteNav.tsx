@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { NavAccount } from '@/components/shell/NavAccount';
+import { NavArchive } from '@/components/shell/NavArchive';
 import { NavCta } from '@/components/shell/NavCta';
 import { FOCUS_RING, SITE_CONTAINER } from '@/styles/classes';
 
@@ -8,7 +9,7 @@ export function SiteNav() {
     <header className="border-b border-line">
       <nav
         aria-label="Primary"
-        className={`${SITE_CONTAINER} flex h-16 items-center justify-between`}
+        className={`${SITE_CONTAINER} flex h-16 items-center justify-between gap-4`}
       >
         <Link
           href="/"
@@ -16,7 +17,8 @@ export function SiteNav() {
         >
           Lineup
         </Link>
-        <div className="flex min-w-0 items-center gap-5">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+          <NavArchive />
           <NavAccount />
           <NavCta />
         </div>

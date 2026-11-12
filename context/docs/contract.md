@@ -196,6 +196,7 @@ Paths are suggestions. Every response body is the envelope from §2, wrapping th
 | 7 | `catalog.getFilterOptions` | `GET /catalog/filter-options` | — | `FilterOptions` |
 | 8 | `catalog.getPlayerDirectory` | `GET /catalog/players` | — | `PlayerDirectory` |
 | 8a | `catalog.getOverview` | `GET /catalog/overview` | — | `CatalogOverview` (backend R7) |
+| 8c | `catalog.getArchive` | `GET /catalog/matches?q=&competitionId=&clubId=&from=&to=&cursor=&limit=` | `ArchiveQuery` | `ArchivePage` (backend R12). Pro while `PRO_ENABLED` is on (Free `forbidden` + `pro_required`, no session `unauthorized`); public while off |
 | 8b | `config.getConfig` | `GET /config` | — | `AppConfig` (backend R9). Public, no session; `Cache-Control: public, max-age=300` |
 | 9 | `solo.findMatch` | `POST /solo/sessions` | `Filters` | `SoloMatchOffer` |
 | 10 | `solo.chooseSide` | `POST /solo/sessions/:sessionId/side` | `{ side: Side }` | `SoloSession` |
@@ -259,6 +260,10 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 - Any session, guests included; no session gets `unauthorized`. The `catalog` rate limit, 60 a minute.
 - Strong `ETag` and `Cache-Control: private, no-cache`; `If-None-Match` with the current tag gets 304 with no body. Brotli or gzip.
 - **The web revalidates it, and nothing else** (Guess Suggestions B): this call alone is sent with `cache: 'no-cache'`, every other call with `no-store`. The browser keeps the 200 and its `ETag`, sends `If-None-Match` itself, and hands a 304 back as the cached body. One check per new match; the web has no ETag code of its own.
+
+**`ArchiveQuery`** (backend R12): every field optional. `q` trimmed, 1–64 characters; `competitionId`; `clubId` (either side); `from` and `to` (season starts 2000–2025, `from ≤ to`, either alone); `cursor` (the previous `nextCursor`); `limit` 1–50, default 20.
+
+**`ArchivePage`** (backend R12) = `{ entries: MatchIdentity[], nextCursor: string | null, total: number }`. `total` counts every match the query matches, across pages. Newest first by date, then id. Entries are plain `MatchIdentity`: no lineups, players, sides, formations or memorability. The pool is exactly what solo serves, never the showcase; the server's index lives 5 minutes. **Search:** normalized like guesses, and every word must match the **start** of a word among both clubs' names, short names and aliases, the competition, the nickname, the season (`2004-05` also answers to 2004 and 2005) and the match's year. A `q` of punctuation only filters nothing.
 
 **`CatalogOverview`** (backend R7, `d5cdcb6`; transcribed ahead of it by web Landing A, checked by Landing C). What the landing page shows. Public, like `filter-options`, with the `catalog` rate limit; the server rebuilds it at most every 5 minutes.
 
@@ -370,6 +375,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `getProfile`, `getHistory` | `unauthorized`; `getHistory` also `invalid_input` |
 | `getPlayerDirectory` | `unauthorized` (session lost), `rate_limited`. Any failure means no suggestions; the game is unaffected |
 | `getOverview` | `rate_limited`. Any failure leaves the landing page's data sections out |
+| `getArchive` | `unauthorized` (no session, switch on), `forbidden` + `reason: 'pro_required'` ("Browsing the match archive needs Pro."), `invalid_input` (a bad query; a cursor the server didn't issue: "That page link is no longer valid.", so the web pages again from the start), `rate_limited` |
 | Any | `server_error` |
 
 ### Solo behaviour the web relies on

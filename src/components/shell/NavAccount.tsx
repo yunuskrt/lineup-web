@@ -3,9 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/hooks/use-auth';
-import { FOCUS_RING } from '@/styles/classes';
-
-const NAV_LINK = `rounded-sm text-14 font-medium text-fg-muted hover:text-fg ${FOCUS_RING}`;
+import { NAV_LINK } from '@/styles/classes';
 
 export function NavAccount() {
   const pathname = usePathname();

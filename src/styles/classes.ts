@@ -33,6 +33,8 @@ export const TEXT_INPUT = `w-full rounded-sm border border-line bg-surface-card 
 
 export const TEXT_LINK = `rounded-sm font-medium text-fg underline decoration-line underline-offset-4 hover:decoration-fg ${FOCUS_RING}`;
 
+export const NAV_LINK = `rounded-sm text-14 font-medium text-fg-muted hover:text-fg aria-[current=page]:text-fg ${FOCUS_RING}`;
+
 export const QUIT_CHIP = `rounded-sm border border-line px-3 py-1 text-12 font-medium uppercase text-fg-muted hover:text-fg ${FOCUS_RING}`;
 
 // Quit's height from sm; 24px stacked on phones

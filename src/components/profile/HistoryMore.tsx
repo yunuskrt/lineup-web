@@ -8,23 +8,30 @@ type HistoryMoreProps = {
   more: HistoryMoreState;
   count: number;
   onShowMore: () => void;
+  // What is listed, plural
+  noun?: string;
 };
 
 const BUTTON = `w-full sm:w-auto aria-disabled:text-fg-muted aria-disabled:hover:bg-transparent ${SECONDARY_BUTTON}`;
 
-export function HistoryMore({ more, count, onShowMore }: HistoryMoreProps) {
+export function HistoryMore({
+  more,
+  count,
+  onShowMore,
+  noun = 'games',
+}: HistoryMoreProps) {
   const hasAppended = useChangedSinceMount(count);
   const isLoading = more === 'loading';
 
   return (
     <div className="flex flex-col items-center gap-3">
       <p role="status" className="sr-only">
-        {hasAppended ? `Showing ${count} games` : ''}
+        {hasAppended ? `Showing ${count} ${noun}` : ''}
       </p>
       {more === 'failed' ? (
         <>
           <p role="alert" className="text-14 leading-5 text-danger">
-            Couldn&apos;t load more games.
+            Couldn&apos;t load more {noun}.
           </p>
           <button type="button" onClick={onShowMore} className={BUTTON}>
             Try again

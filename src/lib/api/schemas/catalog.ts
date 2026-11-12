@@ -10,6 +10,7 @@ import {
 import {
   clubRefSchema,
   competitionRefSchema,
+  matchIdentitySchema,
   matchInPlaySchema,
 } from '@/lib/api/schemas/match';
 import { revealedPlayerSchema } from '@/lib/api/schemas/player';
@@ -97,6 +98,34 @@ export const showcaseSchema = z
       ),
     { error: 'Every revealed slot is in the XI', path: ['demo', 'reveals'] },
   );
+
+export const ARCHIVE_SEARCH_MAX = 64;
+export const ARCHIVE_PAGE_SIZE = 20;
+export const ARCHIVE_PAGE_MAX = 50;
+
+// Backend R12: every field is optional
+export const archiveQuerySchema = z
+  .object({
+    q: z.string().trim().min(1).max(ARCHIVE_SEARCH_MAX).optional(),
+    competitionId: idSchema.optional(),
+    clubId: idSchema.optional(),
+    from: seasonStartSchema.optional(),
+    to: seasonStartSchema.optional(),
+    cursor: z.string().min(1).optional(),
+    limit: z.number().int().min(1).max(ARCHIVE_PAGE_MAX).optional(),
+  })
+  .refine(
+    ({ from, to }) => from === undefined || to === undefined || from <= to,
+    { error: 'Era start must not be after its end', path: ['to'] },
+  );
+
+// Identities only: no squad, no memorability
+export const archivePageSchema = z.object({
+  entries: z.array(matchIdentitySchema),
+  nextCursor: z.string().min(1).nullable(),
+  // Every match the query matches, on all pages
+  total: z.number().int().nonnegative(),
+});
 
 export const catalogOverviewSchema = z.object({
   counts: overviewCountsSchema,
