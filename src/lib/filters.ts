@@ -323,3 +323,12 @@ export function withQuery(path: string, params: URLSearchParams): string {
   const query = params.toString();
   return query ? `${path}?${query}` : path;
 }
+
+// Filters into the URL, no server round trip
+export function replaceQuery(params: URLSearchParams): void {
+  window.history.replaceState(
+    null,
+    '',
+    withQuery(window.location.pathname, params),
+  );
+}

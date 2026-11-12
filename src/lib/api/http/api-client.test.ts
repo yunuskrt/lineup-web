@@ -93,6 +93,13 @@ const ROWS: Row[] = [
     path: '/catalog/overview',
   },
   {
+    name: 'catalog.getArchive',
+    call: (c) =>
+      c.catalog.getArchive({ q: 'milan 2005', clubId: 'club-a', limit: 20 }),
+    method: 'GET',
+    path: '/catalog/matches?q=milan+2005&clubId=club-a&limit=20',
+  },
+  {
     name: 'solo.findMatch',
     call: (c) => c.solo.findMatch(FILTERS),
     method: 'POST',
@@ -175,7 +182,7 @@ describe('createHttpApiClient', () => {
   });
 
   it('covers every REST call in the contract', () => {
-    expect(ROWS).toHaveLength(19);
+    expect(ROWS).toHaveLength(20);
   });
 
   it.each(ROWS)('$name → $method $path', async (row) => {

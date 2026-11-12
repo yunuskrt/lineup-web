@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { overviewFrom } from '@/lib/api/mock/overview';
 import {
+  archivePageSchema,
+  archiveQuerySchema,
   catalogOverviewSchema,
   competitionOptionSchema,
   directoryPlayerSchema,
   playerDirectorySchema,
   TOP_CLUBS_MAX,
 } from '@/lib/api/schemas/catalog';
+import { SAMPLE_IDENTITY } from '@/lib/dev/samples';
 import type { CatalogOverview, Showcase } from '@/types/catalog';
 
 const OPTION = {
@@ -156,5 +159,43 @@ describe('catalogOverviewSchema', () => {
     expect(
       overviewParses(withShowcase({ demo: { ...demo, miss: null } })),
     ).toBe(true);
+  });
+});
+
+describe('archiveQuerySchema', () => {
+  it('takes every field as optional', () => {
+    expect(archiveQuerySchema.safeParse({}).success).toBe(true);
+  });
+
+  it('trims the search and bounds it at 64', () => {
+    expect(archiveQuerySchema.parse({ q: '  milan ' }).q).toBe('milan');
+    expect(archiveQuerySchema.safeParse({ q: '   ' }).success).toBe(false);
+    expect(archiveQuerySchema.safeParse({ q: 'a'.repeat(65) }).success).toBe(
+      false,
+    );
+  });
+
+  it('bounds the page size and the era', () => {
+    expect(archiveQuerySchema.safeParse({ limit: 50 }).success).toBe(true);
+    expect(archiveQuerySchema.safeParse({ limit: 51 }).success).toBe(false);
+    expect(archiveQuerySchema.safeParse({ from: 1999 }).success).toBe(false);
+    expect(archiveQuerySchema.safeParse({ from: 2010 }).success).toBe(true);
+    expect(archiveQuerySchema.safeParse({ from: 2012, to: 2010 }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe('archivePageSchema', () => {
+  it('reads R12 pages, the last with no cursor', () => {
+    const entries = [SAMPLE_IDENTITY];
+    expect(
+      archivePageSchema.safeParse({ entries, nextCursor: null, total: 1 })
+        .success,
+    ).toBe(true);
+    expect(
+      archivePageSchema.safeParse({ entries, nextCursor: '', total: 0 })
+        .success,
+    ).toBe(false);
   });
 });

@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -76,6 +76,21 @@ Defaults stand unless changed at load:
   - **20:** no memorability anywhere, not even in the order.
   - **16:** the server refuses Free; the lock is presentation.
 - **Constraints:** tokens only; `@/` imports; no `any`; comments of at most 50 characters; skeletons match the rows exactly.
+- **Deviations recorded during implementation:**
+  - **Filters are folded** behind a Filters button (Hide filters when open), with the active ones named beside it ("Champions League, Barcelona"). On an index the list leads; the full `/play` panel is tall.
+  - **One club at a time:** picking a second club replaces the first (`withOneClub`), since R12 takes one `clubId`; two picked clubs would otherwise filter by neither.
+  - **Rows read as a results table:** the home side is right-aligned to a fixed score column, so scores line up down the list. Phones drop the crests so names get the width; the date, the event ("Champions League quarter-final", from the new shared `matchEvent`) and the nickname sit on the second line. Dates are short ("14 Apr 2026").
+  - **The era is always sent** as `from`/`to` (the full range when on Any); results are the same and the query stays simple.
+  - **Pending shows only the heading and the skeleton,** with no search box, so no control flashes before a lock.
+  - **The empty state's button** reads Clear search when there is a search, else Clear filters (back to Any).
+  - **While a new search loads,** the last results stay, dimmed, with `aria-busy` (`keepPreviousData`); the total line is a polite live region.
+  - **Shared pieces:** `replaceQuery` moved from `PlayScreen` to `src/lib/filters.ts`; `HistoryMore` takes a `noun` ("matches"); `NAV_LINK` moved to `src/styles/classes.ts` with an `aria-current` style; `ClubCrest` gains a `row` size (32px).
+  - **Mock search mirrors R12:** word-prefix, season years and the match year (`src/lib/api/mock/archive.ts`). The cursor is the last id shown; an unknown one is refused with "That page link is no longer valid."
+  - **Extra snapshots:** `pending` and `refreshing`, beside the six specced.
+  - **Scores confirmed:** live entries carry the match `score`; R12's "no scores" meant memorability.
+  - **The mock checks ran as unit tests, not in a browser:** the 3000 server stays in real mode, so the mock's search, filters, paging, refusal and switch-off rules are covered in `src/lib/api/mock/archive.test.ts` and `api-client.test.ts`, and the same screens were checked live against the backend instead.
+  - **Checked live** (2026-11-12, 3000 against 8080, ingest database, `PRO_ENABLED=true`): signed out and as Free guest `guest-78xpzx9y`, the locked page and no `/catalog/matches` request. After the tier script made that guest Pro: "1,924 matches", 20 rows; "atletico" 123 with `?q=atletico`; "milan 2005" (Enter) 22, and Show more reached the end with no repeats; Champions League + Liverpool FC gave 37 and kept both in the URL; "2005" on top gave 5 and survived a reload (box, filters, summary); "zzqx" showed the empty state, and Clear search restored 37; picking Barcelona replaced Liverpool. 390 wide: no sideways scroll.
+  - **Checked live with `PRO_ENABLED=false`** (ingest): a signed-out visitor got "1,924 matches" and 20 rows with no guest made and no word "Pro"; "barc" found 162 (Barcelona); `/pro` was not found. Build passes.
 - **Verification:**
   - `npm test`, `npm run lint`, `npm run build`.
   - **Mock, Pro:** search "milan", a nickname, and a word with a diacritic; each filter; Show more; the URL keeps `q` and the filters across a reload.

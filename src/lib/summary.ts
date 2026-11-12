@@ -35,12 +35,15 @@ export function matchDateLabel(isoDate: string): string {
   return MATCH_DATE.format(Date.UTC(year, month - 1, day));
 }
 
-export function matchContext(identity: MatchIdentity): string {
-  const { competition, stage, date } = identity;
-  const event = stage
+// "Crown League final", or the competition alone
+export function matchEvent({ competition, stage }: MatchIdentity): string {
+  return stage
     ? `${competition.name} ${stage.charAt(0).toLowerCase()}${stage.slice(1)}`
     : competition.name;
-  return `${event}, ${matchDateLabel(date)}`;
+}
+
+export function matchContext(identity: MatchIdentity): string {
+  return `${matchEvent(identity)}, ${matchDateLabel(identity.date)}`;
 }
 
 export function matchSubtitle(identity: MatchIdentity): string {

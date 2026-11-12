@@ -7,6 +7,8 @@ import type {
   UpgradeGuestRequest,
 } from '@/types/auth';
 import type {
+  ArchivePage,
+  ArchiveQuery,
   CatalogOverview,
   FilterOptions,
   PlayerDirectory,
@@ -41,6 +43,8 @@ export interface CatalogApi {
   getPlayerDirectory(): Promise<ApiResult<PlayerDirectory>>;
   // Public: the landing page, before any session
   getOverview(): Promise<ApiResult<CatalogOverview>>;
+  // Pro while the switch is on; public while off
+  getArchive(query: ArchiveQuery): Promise<ApiResult<ArchivePage>>;
 }
 
 export interface SoloApi {

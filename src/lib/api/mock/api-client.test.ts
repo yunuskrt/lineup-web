@@ -841,3 +841,32 @@ describe('mock solo daily cap', () => {
     expect(errorOf(await api.solo.getAllowance()).code).toBe('unauthorized');
   });
 });
+
+describe('mock archive access', () => {
+  const NOW = 1_700_000_000_000;
+
+  it('serves Pro, refuses Free and asks for a session', async () => {
+    const free = createMockApiClient({ now: () => NOW });
+    expect(errorOf(await free.catalog.getArchive({})).code).toBe(
+      'unauthorized',
+    );
+    await free.auth.continueAsGuest();
+    expect(errorOf(await free.catalog.getArchive({}))).toEqual({
+      code: 'forbidden',
+      message: 'Browsing the match archive needs Pro.',
+      retryAfterMs: null,
+      reason: 'pro_required',
+    });
+
+    const pro = createMockApiClient({ now: () => NOW, tier: 'pro' });
+    await pro.auth.continueAsGuest();
+    const page = unwrap(await pro.catalog.getArchive({ q: 'north' }));
+    expect(page.total).toBe(3);
+  });
+
+  it('is public with the switch off, no session needed', async () => {
+    const off = createMockApiClient({ now: () => NOW, proEnabled: false });
+    const page = unwrap(await off.catalog.getArchive({}));
+    expect(page.total).toBe(PLAYABLE_FIXTURES.length);
+  });
+});

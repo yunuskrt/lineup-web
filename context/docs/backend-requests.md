@@ -13,7 +13,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R9 | The Pro tier and the `PRO_ENABLED` switch | Web feature Pro A | 2026-11-10 | **Done** (2026-11-12, backend R9 `fcf2079`) |
 | R10 | Pro-only room hosting | Web feature Pro B | 2026-11-10 | **Done** (2026-11-12, backend R10 `d7d53ca`) |
 | R11 | The solo daily cap | Web feature Pro C | 2026-11-10 | **Done** (2026-11-12, backend R11 `35f1ce3`) |
-| R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | Asked |
+| R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | **Done** (2026-11-12, backend R12 `6a1431e`) |
 | R13 | Exact match selection | Web feature Pro E | 2026-11-10 | Asked |
 | R14 | Practice mode | Web feature Pro F | 2026-11-10 | Asked |
 
@@ -762,6 +762,19 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 - `q`: diacritics ("atletico" finds Atlético), Turkish letters, several words, a nickname.
 - Order, cursor paging with no repeats or gaps, `total`.
 - The showcase match never appears; nothing outside the pool appears.
+
+### Built
+
+- **The archive** (2026-11-12): backend `6a1431e`, on `main` and pushed.
+  - **`GET /catalog/matches`**, every param optional: `q` (trimmed, 1–64), `competitionId`, `clubId` (either side), `from` and `to` (season starts 2000–2025, `from ≤ to`, either alone is fine), `cursor` (pass `nextCursor` back), `limit` (1–50, default 20). Rate limit `catalog`.
+  - **Response `ArchivePage`:** `{ entries: MatchIdentity[], nextCursor: string | null, total: number }`. `total` counts every match the query matches, across all pages. Newest first by date, then by id. Entries are plain `MatchIdentity`: no lineups, players, sides, formations or memorability scores.
+  - **Access:** with `PRO_ENABLED=true`, Pro gets 200; Free gets 403 `{ code: 'forbidden', message: 'Browsing the match archive needs Pro.', retryAfterMs: null, reason: 'pro_required' }`; no session gets 401. With the switch off it's public and needs no session.
+  - **Search, in memory:** normalized like guesses (diacritics, Turkish letters, case), and **every word must match the start of a word** in the match. The words come from both clubs' names, short names and aliases, the competition, the nickname, the season (2004-05 also matches 2004 and 2005) and the match's year. "atletico" finds Atlético, "milan 2005" works, "barc" finds Barcelona, and "ter" doesn't find Inter. A `q` of only punctuation filters nothing.
+  - **Errors:** a bad query is 400 `invalid_input`; a cursor the server didn't issue is 400 `invalid_input`, "That page link is no longer valid."
+  - **The pool:** exactly the matches solo can serve, never the landing showcase, so every entry is one R13 accepts. The server keeps its index for 5 minutes, so new data shows within that.
+  - **On ingest:** 1,924 matches; searches answer well under a millisecond after the first request. No match has a nickname yet, so "istanbul" returns nothing there.
+  - No migration, no `PROTOCOL_VERSION` bump.
+- **Differences from this request:** search matches the **start** of each word, not any substring, and also covers the match's year. Neither changes the contract.
 
 ### Report in the Built note
 

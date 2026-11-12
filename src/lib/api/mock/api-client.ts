@@ -22,6 +22,7 @@ import {
   type MockStore,
   type StoredSession,
 } from '@/lib/api/mock/store';
+import { archivePageOf } from '@/lib/api/mock/archive';
 import { nextUtcMidnight, utcDayStart } from '@/lib/api/mock/clock';
 import {
   ACK,
@@ -31,6 +32,7 @@ import {
   isGuessable,
   matchInPlayFor,
   ok,
+  proRequired,
   SOLO_DAILY_RUNS,
   toGuessResult,
 } from '@/lib/api/mock/shared';
@@ -57,6 +59,8 @@ const DEFAULT_RATE_LIMIT: MockRateLimit = { max: 12, windowMs: 3_000 };
 // Deterministic rejections so auth errors show
 export const MOCK_REJECTED_PASSWORD = 'wrong-password';
 export const MOCK_TAKEN_HANDLE = 'taken';
+
+const ARCHIVE_NEEDS_PRO = 'Browsing the match archive needs Pro.';
 
 // The backend's token lifetime
 const GATEWAY_TOKEN_TTL_MS = 5 * 60_000;
@@ -391,6 +395,23 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
 
       async getOverview() {
         return ok(overviewFrom());
+      },
+
+      // As R12: public with the switch off
+      async getArchive(query) {
+        if (proEnabled) {
+          const identity = requireIdentity();
+          if (!identity) {
+            return fail(
+              'unauthorized',
+              'Sign in or continue as a guest first.',
+            );
+          }
+          if (identity.user.tier === 'free') {
+            return proRequired(ARCHIVE_NEEDS_PRO);
+          }
+        }
+        return archivePageOf(query);
       },
     },
 

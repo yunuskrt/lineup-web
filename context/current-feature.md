@@ -87,3 +87,4 @@ Not Started
 - Pro A: tier and switch, /config, ProLock, /pro page, plan line.
 - Pro B: Pro-only room hosting, locked Create and New room, Pro gate.
 - Pro C: solo daily cap, runs-left line, cap gate, Play a duel at summary.
+- Pro D: /archive page, word-prefix search, folded filters, Archive nav.
