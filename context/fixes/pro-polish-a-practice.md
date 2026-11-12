@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -45,3 +45,11 @@ Five practice details from the Pro browser review (2026-11-12, items 1, 2, 11, 1
   - `npm test`, `npm run lint`, `npm run build`.
   - Snapshots `practice` and `practice-summary` at 320, 390 and 1440. A new `practice-side-pick` snapshot shows the Practice card behind the side pick.
   - **Live, Pro:** start practice; the side pick shows the Practice card; Quit shows the practice dialog; a practice run started from an archive row ends on Back to the archive.
+
+**Deviations recorded during implementation**
+
+- 1: `PRACTICE_QUIT_COPY` lives in `src/lib/practice.ts` beside `PRACTICE_OVER_RUN_COPY`, not in `QuitDialog.tsx`, so a test can import it without JSX; `soloQuitCopy(state)` in `solo-run.ts` picks it from `session.practice`.
+- 2: the ask also stands down when the start is refused for Pro (`pro_required`), so Free never sees the Practice card behind "Practice is part of Pro".
+- 2, trade-off: until the session answers, the rail draws the request; a session without `practice` puts the ring and lives back.
+- 11: below `sm` the tag is 12px, inline after "You named…"; from `sm` it stays at the right, 14px.
+- 11, added: below 360px the outcome title is 24px (32px from 360px). At 320, "Perfect clear" wrapped to two lines and spilled past the 96px card in every perfect clear, practice or not.

@@ -20,11 +20,19 @@ export function withPractice(
 // R14 ends a run in play when practice starts
 export const PRACTICE_OVER_RUN_COPY: QuitDialogCopy = {
   title: 'Practise now?',
-  detail:
-    'You left a run in play. Starting practice ends it, and it counts as a quit.',
+  detail: 'You left a run in play. Starting practice ends it.',
   confirmLabel: 'Practise',
   pendingLabel: 'Starting…',
   dismissLabel: 'Cancel',
+};
+
+// No clock to keep running, nothing saved
+export const PRACTICE_QUIT_COPY: QuitDialogCopy = {
+  title: 'End this practice run?',
+  detail: "You'll see the summary. Practice runs aren't saved.",
+  confirmLabel: 'End practice',
+  pendingLabel: 'Ending…',
+  dismissLabel: 'Keep practising',
 };
 
 const OPEN_RUN_KEY = 'lineup:open-run';

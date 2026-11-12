@@ -1,7 +1,9 @@
 import type { GuessInputStatus } from '@/components/game/GuessInput';
+import type { QuitDialogCopy } from '@/components/game/QuitDialog';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { authErrorMessage } from '@/lib/auth';
 import { guessFeedback } from '@/lib/feedback';
+import { PRACTICE_QUIT_COPY } from '@/lib/practice';
 import { isDailyCap } from '@/lib/solo-allowance';
 import {
   cooldownUntil,
@@ -384,6 +386,21 @@ function gateOf(
   }
 }
 
+// The ask stands in until the session answers
+function isPracticeShown(state: SoloRunState): boolean {
+  const { session, summary } = state;
+  if (summary) return summary.practice;
+  if (session) return session.practice;
+  return state.isPracticeAsked && !isPickRefused(state);
+}
+
+// The server's flag decides the dialog's words
+export function soloQuitCopy({
+  session,
+}: SoloRunState): QuitDialogCopy | undefined {
+  return session?.practice ? PRACTICE_QUIT_COPY : undefined;
+}
+
 // A failed fetch keeps the skeleton under its gate
 function endOf(state: SoloRunState): SoloEndView | null {
   const isEnding = state.phase === 'over' || state.failure?.step === 'summary';
@@ -419,6 +436,6 @@ export function soloCanvasView(
     end: endOf(state),
     capLine: capLine ?? undefined,
     isPicked: state.pickedMatchId !== null,
-    isPractice: summary?.practice ?? session?.practice ?? false,
+    isPractice: isPracticeShown(state),
   };
 }

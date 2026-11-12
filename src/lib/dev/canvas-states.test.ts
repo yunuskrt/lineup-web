@@ -355,6 +355,7 @@ describe('solo summary snapshots', () => {
       .map(([name]) => name);
     expect(practice).toEqual([
       'practice',
+      'practice-side-pick',
       'practice-summary',
       'practice-closed',
     ]);

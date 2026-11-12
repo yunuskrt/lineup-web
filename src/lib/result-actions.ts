@@ -37,7 +37,10 @@ export function resultActionsLayout({
   isPractice = false,
 }: ResultContext = {}): ResultActionsLayout {
   if (isSoloCapped) return { primary: 'playDuel', secondary: 'backToPlay' };
-  if (isPractice) return { primary: 'practiseAgain', secondary: 'backToPlay' };
+  if (isPractice) {
+    const secondary = isPicked ? 'backToArchive' : 'backToPlay';
+    return { primary: 'practiseAgain', secondary };
+  }
   if (isPicked) return { primary: 'playItAgain', secondary: 'backToArchive' };
   if (!isPrivate) return { primary: 'playAgain', secondary: 'changeFilters' };
   if (hostAccess === 'open') {
