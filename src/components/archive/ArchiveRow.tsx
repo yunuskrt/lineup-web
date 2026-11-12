@@ -1,12 +1,30 @@
-import { ARCHIVE_ROW } from '@/components/archive/styles';
+import {
+  ARCHIVE_PLAY_BUTTON,
+  ARCHIVE_ROW,
+  ARCHIVE_ROW_FOOT,
+} from '@/components/archive/styles';
 import { ClubCrest } from '@/components/game/ClubCrest';
 import { CompetitionLogo } from '@/components/game/CompetitionLogo';
-import { archiveDateLabel } from '@/lib/archive';
+import { archiveDateLabel, playMatchLabel } from '@/lib/archive';
 import { matchEvent } from '@/lib/summary';
 import type { MatchIdentity } from '@/types/match';
 
-// Read-only until Pro E; phones drop the crests
-export function ArchiveRow({ match }: { match: MatchIdentity }) {
+type ArchiveRowProps = {
+  match: MatchIdentity;
+  onPlay: (match: MatchIdentity) => void;
+  // A guest is being made for this row's run
+  isStarting?: boolean;
+  // Another row is starting
+  isDisabled?: boolean;
+};
+
+// Phones drop the crests so names get the width
+export function ArchiveRow({
+  match,
+  onPlay,
+  isStarting = false,
+  isDisabled = false,
+}: ArchiveRowProps) {
   const date = archiveDateLabel(match.date);
   const event = matchEvent(match);
 
@@ -48,26 +66,41 @@ export function ArchiveRow({ match }: { match: MatchIdentity }) {
           {match.away.name}
         </span>
       </span>
-      <span className="col-span-3 row-start-2 flex min-w-0 items-center gap-2 text-12 leading-4 text-fg-muted sm:col-span-1 sm:col-start-5 sm:row-start-1 sm:flex-col sm:items-start sm:gap-0.5">
-        <span className="shrink-0 tabular-nums sm:hidden">{date}</span>
-        <span className="flex min-w-0 items-center gap-1.5 sm:max-w-full">
-          <CompetitionLogo competition={match.competition} className="size-4" />
-          <span
-            title={event}
-            className="truncate sm:text-14 sm:leading-5 sm:text-fg"
-          >
-            {event}
+      <div className={ARCHIVE_ROW_FOOT}>
+        <span className="flex min-w-0 flex-1 items-center gap-2 text-12 leading-4 text-fg-muted sm:col-start-5 sm:row-start-1 sm:flex-col sm:items-start sm:gap-0.5">
+          <span className="shrink-0 tabular-nums sm:hidden">{date}</span>
+          <span className="flex min-w-0 items-center gap-1.5 sm:max-w-full">
+            <CompetitionLogo
+              competition={match.competition}
+              className="size-4"
+            />
+            <span
+              title={event}
+              className="truncate sm:text-14 sm:leading-5 sm:text-fg"
+            >
+              {event}
+            </span>
           </span>
+          {match.nickname ? (
+            <span
+              title={match.nickname}
+              className="min-w-0 truncate sm:max-w-full"
+            >
+              {match.nickname}
+            </span>
+          ) : null}
         </span>
-        {match.nickname ? (
-          <span
-            title={match.nickname}
-            className="min-w-0 truncate sm:max-w-full"
-          >
-            {match.nickname}
-          </span>
-        ) : null}
-      </span>
+        <button
+          type="button"
+          aria-label={playMatchLabel(match)}
+          // Not `disabled`: that would drop keyboard focus
+          aria-disabled={isStarting || isDisabled || undefined}
+          onClick={isStarting || isDisabled ? undefined : () => onPlay(match)}
+          className={ARCHIVE_PLAY_BUTTON}
+        >
+          {isStarting ? 'Starting…' : 'Play'}
+        </button>
+      </div>
     </li>
   );
 }

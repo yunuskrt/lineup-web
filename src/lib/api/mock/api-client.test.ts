@@ -870,3 +870,54 @@ describe('mock archive access', () => {
     expect(page.total).toBe(PLAYABLE_FIXTURES.length);
   });
 });
+
+describe('mock picked match', () => {
+  const NOW = 1_700_000_000_000;
+  const PICK = { ...ALL_FILTERS, matchId: 'match-crown-2015' };
+
+  it('offers exactly the picked match, whatever the filters', async () => {
+    const pro = createMockApiClient({ now: () => NOW, tier: 'pro' });
+    await pro.auth.continueAsGuest();
+    const narrow = { ...PICK, competitionIds: ['comp-nations-cup'] };
+    const offer = unwrap(await pro.solo.findMatch(narrow));
+    expect(offer.match.id).toBe('match-crown-2015');
+    expect(soloMatchOfferSchema.safeParse(offer).success).toBe(true);
+    const session = unwrap(await pro.solo.chooseSide(offer.sessionId, 'away'));
+    expect(session.match.id).toBe('match-crown-2015');
+  });
+
+  it('refuses Free before the daily cap', async () => {
+    const free = createMockApiClient({ now: () => NOW });
+    await free.auth.continueAsGuest();
+    for (let i = 0; i < 5; i += 1) {
+      const offer = unwrap(await free.solo.findMatch(ALL_FILTERS));
+      unwrap(await free.solo.chooseSide(offer.sessionId, 'home'));
+    }
+    expect(errorOf(await free.solo.findMatch(PICK))).toEqual({
+      code: 'forbidden',
+      message: 'Picking a match needs Pro.',
+      retryAfterMs: null,
+      reason: 'pro_required',
+    });
+  });
+
+  it('answers not_found for an unknown id and the showcase', async () => {
+    const pro = createMockApiClient({ now: () => NOW, tier: 'pro' });
+    await pro.auth.continueAsGuest();
+    for (const matchId of ['match-nope', MOCK_SHOWCASE.fixtureId]) {
+      expect(errorOf(await pro.solo.findMatch({ ...PICK, matchId }))).toEqual({
+        code: 'not_found',
+        message: "That match isn't in the game.",
+        retryAfterMs: null,
+      });
+    }
+  });
+
+  it('lets anyone pick with the switch off', async () => {
+    const off = createMockApiClient({ now: () => NOW, proEnabled: false });
+    await off.auth.continueAsGuest();
+    expect(unwrap(await off.solo.findMatch(PICK)).match.id).toBe(
+      'match-crown-2015',
+    );
+  });
+});

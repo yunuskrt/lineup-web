@@ -1,16 +1,19 @@
 import { ARCHIVE_SEARCH_MAX } from '@/lib/api/schemas/catalog';
 import { authErrorMessageOf } from '@/lib/auth';
-import { filtersFromParams, filtersToParams } from '@/lib/filters';
+import { filtersFromParams, filtersToParams, withQuery } from '@/lib/filters';
 import { filterSummary } from '@/lib/lobby';
 import type { ArchiveStatus, ArchiveView } from '@/types/archive';
 import type { ArchivePage, ArchiveQuery, FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
+import type { MatchIdentity } from '@/types/match';
 import type { ProAccess } from '@/types/pro';
 import type { HistoryMoreState } from '@/types/profile-screen';
+import type { SoloStartRequest } from '@/types/solo';
 
 export const ARCHIVE_PATH = '/archive';
 export const ARCHIVE_SEARCH_PARAM = 'q';
 export const ARCHIVE_SEARCH_DELAY_MS = 300;
+export const PICKED_MATCH_PARAM = 'match';
 
 // Short months keep the date column narrow
 const ARCHIVE_DATE = new Intl.DateTimeFormat('en-GB', {
@@ -33,6 +36,38 @@ export function archiveSearchText(text: string): string {
 
 export function archiveSearchFrom(params: URLSearchParams): string {
   return archiveSearchText(params.get(ARCHIVE_SEARCH_PARAM) ?? '');
+}
+
+// A run on one match from the archive (R13)
+export function pickedMatchPath(matchId: string): string {
+  return withQuery(
+    '/play/solo',
+    new URLSearchParams({ [PICKED_MATCH_PARAM]: matchId }),
+  );
+}
+
+// Back to /play: the filters stay, the pick goes
+export function withoutPickedMatch(params: URLSearchParams): URLSearchParams {
+  const next = new URLSearchParams(params);
+  next.delete(PICKED_MATCH_PARAM);
+  return next;
+}
+
+export function pickedMatchFrom(params: URLSearchParams): string | null {
+  return params.get(PICKED_MATCH_PARAM)?.trim() || null;
+}
+
+// The filters ride along; the server ignores them
+export function soloStartRequestOf(
+  filters: Filters,
+  matchId: string | null,
+): SoloStartRequest {
+  return matchId ? { ...filters, matchId } : filters;
+}
+
+// Every row has a Play; the name says which
+export function playMatchLabel(match: MatchIdentity): string {
+  return `Play ${match.home.name} v ${match.away.name}, ${archiveDateLabel(match.date)}`;
 }
 
 // R12 takes one competition and one club at most

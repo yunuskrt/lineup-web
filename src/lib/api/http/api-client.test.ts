@@ -107,6 +107,13 @@ const ROWS: Row[] = [
     body: FILTERS,
   },
   {
+    name: 'solo.findMatch (picked)',
+    call: (c) => c.solo.findMatch({ ...FILTERS, matchId: 'm-1' }),
+    method: 'POST',
+    path: '/solo/sessions',
+    body: { ...FILTERS, matchId: 'm-1' },
+  },
+  {
     name: 'solo.chooseSide',
     call: (c) => c.solo.chooseSide('s-1', 'away'),
     method: 'POST',
@@ -182,7 +189,7 @@ describe('createHttpApiClient', () => {
   });
 
   it('covers every REST call in the contract', () => {
-    expect(ROWS).toHaveLength(20);
+    expect(ROWS).toHaveLength(21);
   });
 
   it.each(ROWS)('$name → $method $path', async (row) => {

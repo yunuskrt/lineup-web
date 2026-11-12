@@ -16,6 +16,7 @@ import { archiveTotalLine } from '@/lib/archive';
 import { SECONDARY_BUTTON, TEXT_INPUT } from '@/styles/classes';
 import type { ArchiveView as ArchiveViewModel } from '@/types/archive';
 import type { Filters } from '@/types/filters';
+import type { MatchIdentity } from '@/types/match';
 
 const LOCKED_LINE =
   'Every match in the game, searchable. Pick one and play it.';
@@ -34,6 +35,11 @@ type ArchiveViewProps = {
   onClear: () => void;
   onRetry: () => void;
   onShowMore: () => void;
+  onPlay: (match: MatchIdentity) => void;
+  // The row whose run is being started
+  startingId: string | null;
+  // Making the guest for a run failed
+  playError?: string | null;
 };
 
 function Header({ view }: { view: ArchiveViewModel }) {
@@ -64,9 +70,17 @@ function Results({
   onClear,
   onRetry,
   onShowMore,
+  onPlay,
+  startingId,
 }: Pick<
   ArchiveViewProps,
-  'view' | 'clearLabel' | 'onClear' | 'onRetry' | 'onShowMore'
+  | 'view'
+  | 'clearLabel'
+  | 'onClear'
+  | 'onRetry'
+  | 'onShowMore'
+  | 'onPlay'
+  | 'startingId'
 >) {
   switch (view.status) {
     case 'loading':
@@ -111,7 +125,13 @@ function Results({
             }`}
           >
             {view.entries.map((match) => (
-              <ArchiveRow key={match.id} match={match} />
+              <ArchiveRow
+                key={match.id}
+                match={match}
+                onPlay={onPlay}
+                isStarting={startingId === match.id}
+                isDisabled={startingId !== null && startingId !== match.id}
+              />
             ))}
           </ul>
           <HistoryMore
@@ -139,6 +159,9 @@ export function ArchiveView({
   onClear,
   onRetry,
   onShowMore,
+  onPlay,
+  startingId,
+  playError = null,
 }: ArchiveViewProps) {
   const searchId = useId();
 
@@ -193,13 +216,20 @@ export function ArchiveView({
         </form>
         <ArchiveFilters state={filterState} onChange={onFiltersChange} />
       </div>
-      <section aria-label="Results">
+      <section aria-label="Results" className="flex flex-col gap-4">
+        {playError ? (
+          <p role="alert" className="text-14 leading-5 text-danger">
+            {playError}
+          </p>
+        ) : null}
         <Results
           view={view}
           clearLabel={clearLabel}
           onClear={onClear}
           onRetry={onRetry}
           onShowMore={onShowMore}
+          onPlay={onPlay}
+          startingId={startingId}
         />
       </section>
     </div>

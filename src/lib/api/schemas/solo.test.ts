@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   soloMatchOfferSchema,
+  soloStartRequestSchema,
   soloSummarySchema,
 } from '@/lib/api/schemas/solo';
-import { SAMPLE_IDENTITY } from '@/lib/dev/samples';
+import { SAMPLE_IDENTITY, SAMPLE_OPEN_FILTERS } from '@/lib/dev/samples';
 
 const OFFER = {
   sessionId: 'session-1',
@@ -53,5 +54,26 @@ describe('soloSummarySchema', () => {
   it('rejects a summary whose players lack an order', () => {
     const old = { ...SUMMARY, found: [PLAYER] };
     expect(soloSummarySchema.safeParse(old).success).toBe(false);
+  });
+});
+
+describe('soloStartRequestSchema', () => {
+  it('takes the filters alone, as before R13', () => {
+    expect(soloStartRequestSchema.safeParse(SAMPLE_OPEN_FILTERS).success).toBe(
+      true,
+    );
+  });
+
+  it('takes a match id beside the filters', () => {
+    const picked = { ...SAMPLE_OPEN_FILTERS, matchId: SAMPLE_IDENTITY.id };
+    expect(soloStartRequestSchema.parse(picked).matchId).toBe(
+      SAMPLE_IDENTITY.id,
+    );
+  });
+
+  it('still needs the filters with a match id', () => {
+    expect(
+      soloStartRequestSchema.safeParse({ matchId: SAMPLE_IDENTITY.id }).success,
+    ).toBe(false);
   });
 });

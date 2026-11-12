@@ -9,7 +9,12 @@ import {
   archiveSearchFrom,
   archiveTotalLine,
   archiveView,
+  pickedMatchFrom,
+  pickedMatchPath,
+  playMatchLabel,
+  soloStartRequestOf,
   withOneClub,
+  withoutPickedMatch,
 } from '@/lib/archive';
 import {
   SAMPLE_FILTER_OPTIONS as OPTIONS,
@@ -208,5 +213,39 @@ describe('archiveView', () => {
       isPlaceholderData: true,
     });
     expect(view.isRefreshing).toBe(true);
+  });
+});
+
+describe('picked match', () => {
+  it('links a row to its own run and reads it back', () => {
+    const path = pickedMatchPath('match-1');
+    expect(path).toBe('/play/solo?match=match-1');
+    const params = new URLSearchParams(path.split('?')[1]);
+    expect(pickedMatchFrom(params)).toBe('match-1');
+    expect(pickedMatchFrom(new URLSearchParams())).toBeNull();
+    expect(pickedMatchFrom(new URLSearchParams({ match: '  ' }))).toBeNull();
+  });
+
+  it('adds the match to the filters only when picked', () => {
+    expect(soloStartRequestOf(ALL, null)).toEqual(ALL);
+    expect(soloStartRequestOf(ALL, 'match-1')).toEqual({
+      ...ALL,
+      matchId: 'match-1',
+    });
+  });
+
+  it('drops the pick on the way back, keeping the filters', () => {
+    const params = new URLSearchParams({ match: 'match-1', club: 'c-1' });
+    const next = withoutPickedMatch(params);
+    expect(next.has('match')).toBe(false);
+    expect(next.get('club')).toBe('c-1');
+    expect(params.has('match')).toBe(true);
+  });
+
+  it('names the match in each Play button', () => {
+    const match = SAMPLE_HISTORY_MATCHES[0];
+    expect(playMatchLabel(match)).toBe(
+      `Play ${match.home.name} v ${match.away.name}, 3 May 2005`,
+    );
   });
 });

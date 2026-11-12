@@ -118,6 +118,7 @@ export function RunSummary({
   onChangeFilters,
   capLine,
   onPlayDuel,
+  isPicked,
   onRevealMissed,
 }: RunSummaryProps) {
   const titleId = useId();
@@ -151,6 +152,7 @@ export function RunSummary({
         onChangeFilters={onChangeFilters}
         capLine={capLine}
         onPlayDuel={onPlayDuel}
+        isPicked={isPicked}
       />
     </section>
   );

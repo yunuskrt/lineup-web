@@ -63,10 +63,8 @@ export function createHttpApiClient(baseUrl: string): ApiClient {
         request('GET', '/catalog/matches', archivePageSchema, { query }),
     },
     solo: {
-      findMatch: (filters) =>
-        request('POST', '/solo/sessions', soloMatchOfferSchema, {
-          body: filters,
-        }),
+      findMatch: (body) =>
+        request('POST', '/solo/sessions', soloMatchOfferSchema, { body }),
       chooseSide: (sessionId, side) =>
         request('POST', soloPath(sessionId, '/side'), soloSessionSchema, {
           body: { side },

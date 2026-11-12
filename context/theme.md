@@ -249,6 +249,7 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Run over                  | Lives at 0         | Summary: named vs missed, time per round, accuracy, streak                           |
 | Missed revealed (Pro)     | Reveal the full XI | Missed slots fill one by one in the dimmed missed style; the button becomes "Showing the N you missed." Free sees the button locked, with "Pro shows every player you missed." |
 | Daily cap reached         | Free, 5 runs today, switch on | On `/play`, Start is disabled; "You've played your 5 solo runs today. More at 01:00." (the reset in local time) sits under it with Play a duel and See Pro. With runs left, a 14px `fg-muted` "3 of 5 solo runs left today" instead. A refused run gates the canvas with the same line: Play a duel, Back to play, See Pro. The summary of the fifth run swaps Play again for Play a duel. Unlimited shows nothing. Never a dead end |
+| Picked match              | A run from the archive (`?match=`) | The side pick shows that match; the run is today's. Its summary leads with **Play it again** (the same match, a new run) and **Back to the archive**. A match no longer in the game gates the canvas: "That match isn't in the game any more", Back to the archive. Free with a picked link: "Picking a match is part of Pro", "A random match from your filters is still free.", Back to play and See Pro |
 | Quit confirm              | Quit tapped        | Modal. Mid-run quits are common — make it one tap to cancel, never a double confirm  |
 
 ### Lobby & matchmaking

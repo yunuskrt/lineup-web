@@ -198,7 +198,7 @@ Paths are suggestions. Every response body is the envelope from §2, wrapping th
 | 8a | `catalog.getOverview` | `GET /catalog/overview` | — | `CatalogOverview` (backend R7) |
 | 8c | `catalog.getArchive` | `GET /catalog/matches?q=&competitionId=&clubId=&from=&to=&cursor=&limit=` | `ArchiveQuery` | `ArchivePage` (backend R12). Pro while `PRO_ENABLED` is on (Free `forbidden` + `pro_required`, no session `unauthorized`); public while off |
 | 8b | `config.getConfig` | `GET /config` | — | `AppConfig` (backend R9). Public, no session; `Cache-Control: public, max-age=300` |
-| 9 | `solo.findMatch` | `POST /solo/sessions` | `Filters` | `SoloMatchOffer` |
+| 9 | `solo.findMatch` | `POST /solo/sessions` | `SoloStartRequest` | `SoloMatchOffer` |
 | 10 | `solo.chooseSide` | `POST /solo/sessions/:sessionId/side` | `{ side: Side }` | `SoloSession` |
 | 11 | `solo.guess` | `POST /solo/sessions/:sessionId/guesses` | `SoloGuessRequest` | `SoloGuessResponse` |
 | 12 | `solo.syncSession` | `GET /solo/sessions/:sessionId` | — | `SoloSession` |
@@ -217,6 +217,7 @@ Better Auth (B10) mounts its own routes. Calls 1–6 may map onto them rather th
 | `SignInRequest` | `email` (valid email), `password` (8–128 chars) |
 | `SignUpRequest` | `email`, `password` (8–128), `handle` (trimmed, 3–24 chars) |
 | `UpgradeGuestRequest` | same as `SignUpRequest` |
+| `SoloStartRequest` | `Filters` plus optional `matchId` (backend R13). The filters stay required; with `matchId` the server ignores them and offers that exact match. Pro only while `PRO_ENABLED` is on |
 | `SoloGuessRequest` | `sessionId` (id), `guess` (trimmed, 1–64 chars) |
 | `HistoryQuery` | `cursor` (id or `null`), `limit` (integer 1–50; web default 20) |
 
@@ -366,7 +367,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
 | `signIn` | `invalid_input` (bad form), `unauthorized` (wrong credentials) |
 | `signUp` | `invalid_input` (bad form, or **handle taken**) |
 | `upgradeGuest` | `invalid_input` (bad form, handle taken), `unauthorized` (no session), `forbidden` (already registered) |
-| `findMatch` | `unauthorized`, `forbidden` + `reason: 'daily_cap'` + `retryAfterMs` (to the next UTC midnight; the first check, so it wins over `empty_pool`, backend R11), `invalid_input`, `empty_pool` + `emptyBecause` |
+| `findMatch` | `unauthorized`, `forbidden` + `reason: 'pro_required'` (Free with `matchId`, "Picking a match needs Pro."; checked before the cap, backend R13), `not_found` (`matchId` not in the game: unknown, outside the pool or the showcase; "That match isn't in the game."), `forbidden` + `reason: 'daily_cap'` + `retryAfterMs` (to the next UTC midnight; the first check, so it wins over `empty_pool`, backend R11), `invalid_input`, `empty_pool` + `emptyBecause` |
 | `chooseSide` | `not_found`, `forbidden` (side already chosen), `forbidden` + `reason: 'daily_cap'` + `retryAfterMs` (checked and counted in one step, so two tabs can't both take the fifth run) |
 | `getAllowance` | `unauthorized` |
 | `guess` | `invalid_input`, `not_found`, `session_over` (run over, or round already ended), `rate_limited` + `retryAfterMs` |
@@ -385,6 +386,7 @@ The `Filters` request is unchanged. The web sends at most one competition id; th
   - `already_found` and `not_in_xi` leave the round running. There's no penalty and no new round.
 - **Expiry:** when the countdown reaches 0, the web calls `syncSession`. The server applies any expiry: it takes a life and starts a new round, or ends the run.
 - **Grace window:** a guess received after `endsAt` plus the grace window (400 ms) returns `session_over`.
+- **Picked match (R13):** a run with `matchId` is today's run after the offer (side pick, rounds, summary) and counts in history and stats. Replays are allowed. A refused pick leaves any open run alone. Duels and rooms never take a `matchId`.
 - **Daily cap (R11):** a run counts when its side is picked. An offer left unpicked doesn't count, a quit run isn't given back, and duels never count. A run in play when the cap is reached plays on. The backend counts in memory plus saved runs, so a restart forgives an open run.
 
 ---

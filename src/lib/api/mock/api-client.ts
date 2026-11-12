@@ -11,7 +11,11 @@ import {
   type EngineState,
 } from '@/lib/api/mock/engine';
 import { overviewFrom } from '@/lib/api/mock/overview';
-import { filterOptionsFrom, selectFixture } from '@/lib/api/mock/pool';
+import {
+  filterOptionsFrom,
+  PLAYABLE_FIXTURES,
+  selectFixture,
+} from '@/lib/api/mock/pool';
 import {
   createIdentity,
   createSession,
@@ -42,9 +46,12 @@ import {
   signUpRequestSchema,
   upgradeGuestRequestSchema,
 } from '@/lib/api/schemas/auth';
-import { filtersSchema, SQUAD_SIZE } from '@/lib/api/schemas/common';
+import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { historyQuerySchema } from '@/lib/api/schemas/profile';
-import { soloGuessRequestSchema } from '@/lib/api/schemas/solo';
+import {
+  soloGuessRequestSchema,
+  soloStartRequestSchema,
+} from '@/lib/api/schemas/solo';
 import type { Session } from '@/types/auth';
 import type { SoloEndReason } from '@/types/game';
 import type { HistoryEntry, HistoryPage } from '@/types/profile';
@@ -61,6 +68,14 @@ export const MOCK_REJECTED_PASSWORD = 'wrong-password';
 export const MOCK_TAKEN_HANDLE = 'taken';
 
 const ARCHIVE_NEEDS_PRO = 'Browsing the match archive needs Pro.';
+const PICKING_NEEDS_PRO = 'Picking a match needs Pro.';
+const MATCH_NOT_IN_GAME = "That match isn't in the game.";
+
+// The pool only: never the showcase (R13)
+function pickedFixture(matchId: string): { fixture: MockFixture } | null {
+  const fixture = PLAYABLE_FIXTURES.find((f) => f.identity.id === matchId);
+  return fixture ? { fixture } : null;
+}
 
 // The backend's token lifetime
 const GATEWAY_TOKEN_TTL_MS = 5 * 60_000;
@@ -416,10 +431,15 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
     },
 
     solo: {
-      async findMatch(filters) {
+      async findMatch(request) {
         const identity = requireIdentity();
         if (!identity) {
           return fail('unauthorized', 'Sign in or continue as a guest first.');
+        }
+
+        // As R13: before the cap, so Free never sees it
+        if (request.matchId && identity.user.tier === 'free') {
+          return proRequired(PICKING_NEEDS_PRO);
         }
 
         // First, as R11: it wins over empty_pool
@@ -428,12 +448,16 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
           return dailyCap(nextUtcMidnight(at) - at);
         }
 
-        const parsed = filtersSchema.safeParse(filters);
+        const parsed = soloStartRequestSchema.safeParse(request);
         if (!parsed.success) {
           return fail('invalid_input', 'Those filters are not valid.');
         }
 
-        const selection = selectFixture(parsed.data, random);
+        const { matchId, ...filters } = parsed.data;
+        const selection = matchId
+          ? pickedFixture(matchId)
+          : selectFixture(filters, random);
+        if (!selection) return fail('not_found', MATCH_NOT_IN_GAME);
         if ('emptyBecause' in selection) {
           return emptyPool(selection.emptyBecause);
         }
