@@ -34,7 +34,7 @@ One backend environment variable decides whether the Free/Pro split exists.
 | 3 | Solo runs | 5 a day, reset at UTC midnight | Unlimited | Specced: R11, Pro C |
 | 5 | Practice mode | Locked | No lives, no clock, not saved | Specced: R14, Pro F |
 | 7 | Private rooms | Join only | Host and join | Rooms built; gate specced: R10, Pro B |
-| — | Post-game review | Missed count only | Every player missed | Built; becomes real with R9, Pro A |
+| — | Post-game review | Missed count only | Every player missed | **Done**: real since R9 and Pro A |
 
 ## The features, decided
 
@@ -77,7 +77,7 @@ Six backend requests (`context/docs/backend-requests.md` § R9–R14) and six we
 
 | Step | Backend | Web | Needs |
 | --- | --- | --- | --- |
-| 1 | R9: the tier, the switch, `GET /config`, `reason` | `pro-a-switch.md`: config, `ProLock`, `/pro`, mock switch | — |
+| 1 | R9: the tier, the switch, `GET /config`, `reason` (**done**, `fcf2079`) | `pro-a-switch.md`: config, `ProLock`, `/pro`, mock switch (**done**) | — |
 | 2 | R10: `room:create` gate | `pro-b-room-hosting.md` | 1 |
 | 3 | R11: daily cap, `GET /solo/allowance` | `pro-c-solo-cap.md` | 1 |
 | 4 | R12: `GET /catalog/matches` | `pro-d-archive.md` | 1 |

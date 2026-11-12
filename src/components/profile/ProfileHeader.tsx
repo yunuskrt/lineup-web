@@ -1,3 +1,4 @@
+import { ProfilePlan } from '@/components/profile/ProfilePlan';
 import { PROFILE_HEADING, PROFILE_TAG } from '@/components/profile/styles';
 import type { User } from '@/types/user';
 
@@ -8,6 +9,7 @@ export function ProfileHeader({ user }: { user: User }) {
         {user.handle}
       </h1>
       {user.isGuest ? <span className={PROFILE_TAG}>Guest</span> : null}
+      <ProfilePlan tier={user.tier} />
     </header>
   );
 }

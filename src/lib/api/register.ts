@@ -1,5 +1,10 @@
 import { setApiClient } from '@/lib/api/client';
-import { API_MODE, apiUrl, MOCK_TIER } from '@/lib/api/config';
+import {
+  API_MODE,
+  apiUrl,
+  MOCK_PRO_ENABLED,
+  MOCK_TIER,
+} from '@/lib/api/config';
 import { setDuelClient } from '@/lib/api/duel-client';
 import { createHttpApiClient } from '@/lib/api/http/api-client';
 import { createMockApiClient } from '@/lib/api/mock/api-client';
@@ -47,6 +52,7 @@ export function registerApiClient(): void {
       store,
       rateLimit: scenario === 'rateLimited' ? SCENARIO_RATE_LIMIT : undefined,
       tier: MOCK_TIER,
+      proEnabled: MOCK_PRO_ENABLED,
     }),
   );
   setDuelClient(createMockDuelClient({ store, scenario }));

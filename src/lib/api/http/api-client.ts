@@ -7,6 +7,7 @@ import {
   filterOptionsSchema,
   playerDirectorySchema,
 } from '@/lib/api/schemas/catalog';
+import { appConfigSchema } from '@/lib/api/schemas/config';
 import { historyPageSchema, profileSchema } from '@/lib/api/schemas/profile';
 import {
   soloGuessResponseSchema,
@@ -29,6 +30,9 @@ export function createHttpApiClient(baseUrl: string): ApiClient {
   const request = createTransport(baseUrl);
 
   return {
+    config: {
+      getConfig: () => request('GET', '/config', appConfigSchema),
+    },
     auth: {
       getSession: () =>
         request('GET', '/auth/session', sessionSchema.nullable()),

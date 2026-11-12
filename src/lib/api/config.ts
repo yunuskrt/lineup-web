@@ -11,6 +11,10 @@ export const API_MODE: ApiMode =
 export const MOCK_TIER: Tier =
   process.env.NEXT_PUBLIC_MOCK_TIER === 'pro' ? 'pro' : 'free';
 
+// Mock only: mirrors the backend's PRO_ENABLED
+export const MOCK_PRO_ENABLED =
+  process.env.NEXT_PUBLIC_MOCK_PRO_ENABLED !== 'false';
+
 const API_URL_VAR = 'NEXT_PUBLIC_API_URL';
 
 // Zod runs this even after the URL check fails

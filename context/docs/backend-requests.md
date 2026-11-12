@@ -10,7 +10,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R6 | Private rooms: create a room, join it with a code | Web features Private Rooms A and B | 2026-11-08 | **Done** (2026-11-08): rooms (backend R6a), history `isPrivate` (backend R6b) |
 | R7 | A catalog overview for the landing page, with a showcase match | Web fixes Landing A, B and C | 2026-11-09 | **Done** (2026-11-09, backend R7 `d5cdcb6`): 5-minute server cache |
 | R8 | Three more reveals in the landing showcase | Web fix Landing D | 2026-11-10 | **Done** (2026-11-10, backend R8 `aca22bf`) |
-| R9 | The Pro tier and the `PRO_ENABLED` switch | Web feature Pro A | 2026-11-10 | Asked |
+| R9 | The Pro tier and the `PRO_ENABLED` switch | Web feature Pro A | 2026-11-10 | **Done** (2026-11-12, backend R9 `fcf2079`) |
 | R10 | Pro-only room hosting | Web feature Pro B | 2026-11-10 | Asked |
 | R11 | The solo daily cap | Web feature Pro C | 2026-11-10 | Asked |
 | R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | Asked |
@@ -584,6 +584,19 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 - `GET /config` with both values, with no session.
 - An error envelope with `reason` parses; one without still does.
 - The script sets a tier by email and by guest handle, and refuses an unknown user.
+
+### Built
+
+- **The tier and the switch** (2026-11-12): backend `fcf2079`, on `main` and pushed.
+  - **Migration** `20261111235103_user_tier`: `users.tier`, enum `free`/`pro`, default `free`. Applied to dev and ingest.
+  - **`User.tier` is the effective tier:** the stored tier while `PRO_ENABLED=true`; `pro` for every user and guest while it's `false` (the default when unset). It's on every `User` the backend returns: `/auth/session`, sign-in, sign-up, guest, upgrade and `/profile`.
+  - **Read fresh:** from the user row on every request, so a tier change applies without signing in again. A guest keeps its tier when upgrading.
+  - **`GET /config`:** public, no session. It returns `{ success: true, data: { proEnabled: boolean } }`, uses the `catalog` rate limit, and sends `Cache-Control: public, max-age=300`.
+  - **`ApiError.reason`:** optional, `'pro_required' | 'daily_cap'`, only ever with `code: 'forbidden'`, on REST and in socket acks. Nothing sends it yet; R10–R14 will.
+  - **The script:** `npm run user:tier -- <email or handle> pro` in `lineup-backend`. A guest is found by its `guest-…` handle.
+  - **No `PROTOCOL_VERSION` bump** (additive).
+- **Differences from this request:** none in the contract.
+  - **Not changed:** Better Auth's own `GET /api/auth/get-session` shows the stored tier, not the effective one. The web reads `/auth/session` (`src/lib/api/http/api-client.ts`), so nothing changes on the web side.
 
 ### Report in the Built note
 

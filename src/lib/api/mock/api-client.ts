@@ -82,16 +82,24 @@ export type MockApiOptions = {
   store?: MockStore;
   // Guesses allowed per window, per session
   rateLimit?: MockRateLimit;
-  // The tier new mock users get; free by default
+  // The stored tier of new mock users; free by default
   tier?: Tier;
+  // The backend's PRO_ENABLED; the split is on by default
+  proEnabled?: boolean;
 };
+
+// As the backend: with the split off, all are Pro
+function effectiveTier(stored: Tier, proEnabled: boolean): Tier {
+  return proEnabled ? stored : 'pro';
+}
 
 export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
   const now = options.now ?? (() => Date.now());
   const random = options.random ?? Math.random;
   const store: MockStore = options.store ?? createStore();
   const rateLimit = options.rateLimit ?? DEFAULT_RATE_LIMIT;
-  const tier = options.tier ?? 'free';
+  const proEnabled = options.proEnabled ?? true;
+  const tier = effectiveTier(options.tier ?? 'free', proEnabled);
 
   function requireIdentity() {
     return store.identity;
@@ -236,6 +244,11 @@ export function createMockApiClient(options: MockApiOptions = {}): ApiClient {
   }
 
   return {
+    config: {
+      async getConfig() {
+        return ok({ proEnabled });
+      },
+    },
     auth: {
       async getSession() {
         return ok(store.identity ? { user: store.identity.user } : null);

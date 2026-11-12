@@ -186,6 +186,32 @@ describe('mock api client', () => {
     expect(signedUp.user.tier).toBe('pro');
   });
 
+  it('answers the config with the switch, on by default', async () => {
+    expect(unwrap(await api.config.getConfig())).toEqual({ proEnabled: true });
+    const off = createMockApiClient({ now: () => clock, proEnabled: false });
+    expect(unwrap(await off.config.getConfig())).toEqual({
+      proEnabled: false,
+    });
+  });
+
+  it('makes every user Pro while the switch is off', async () => {
+    api = createMockApiClient({
+      now: () => clock,
+      random: () => draw,
+      tier: 'free',
+      proEnabled: false,
+    });
+    expect(unwrap(await api.auth.continueAsGuest()).user.tier).toBe('pro');
+    const { sessionId } = await startRun();
+    const summary = unwrap(await api.solo.quit(sessionId));
+    expect(summary.missed).toHaveLength(11);
+  });
+
+  it('keeps the stored tier while the switch is on', async () => {
+    api = createMockApiClient({ now: () => clock, proEnabled: true });
+    expect(unwrap(await api.auth.continueAsGuest()).user.tier).toBe('free');
+  });
+
   it('sends a Pro run its missed players', async () => {
     api = createMockApiClient({
       now: () => clock,

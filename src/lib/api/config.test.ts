@@ -101,3 +101,28 @@ describe('MOCK_TIER', () => {
     expect(MOCK_TIER).toBe('free');
   });
 });
+
+describe('MOCK_PRO_ENABLED', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it('defaults to on, the split the backend develops with', async () => {
+    vi.stubEnv('NEXT_PUBLIC_MOCK_PRO_ENABLED', '');
+    const { MOCK_PRO_ENABLED } = await import('@/lib/api/config');
+    expect(MOCK_PRO_ENABLED).toBe(true);
+  });
+
+  it('turns off only on false', async () => {
+    vi.stubEnv('NEXT_PUBLIC_MOCK_PRO_ENABLED', 'false');
+    const { MOCK_PRO_ENABLED } = await import('@/lib/api/config');
+    expect(MOCK_PRO_ENABLED).toBe(false);
+  });
+
+  it('stays on for any other value', async () => {
+    vi.stubEnv('NEXT_PUBLIC_MOCK_PRO_ENABLED', 'true');
+    const { MOCK_PRO_ENABLED } = await import('@/lib/api/config');
+    expect(MOCK_PRO_ENABLED).toBe(true);
+  });
+});

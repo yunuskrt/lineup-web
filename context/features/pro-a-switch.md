@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -94,6 +94,21 @@ Defaults stand unless changed at load:
   - **16:** the tier and the switch come from the backend; the web only reads them. The mock variables are dev-only and never read in real mode.
   - **15:** nothing here touches a duel.
 - **Constraints:** tokens only, no new hex; `@/` imports; no `any`; single-line comments of at most 50 characters.
+- **Deviations recorded during implementation:**
+  - **The plan line is a sentence** ("You're on the Free plan. See Pro" / "You're on Pro."), not "Free plan · See Pro": a middle-dot meta string is a templated tell (`frontend-design`). It sits on its own line under the handle, in `ProfilePlan`.
+  - **The `/pro` table says what Pro gives** ("Any match", "Every match", "No clock, no lives") instead of a bare ✓; a missing Free value is "—" with "Not included" for screen readers. The Pro column header is the page's only amber.
+  - **`ProLock` takes `isFullWidth`** besides `size`, so the reveal keeps its rail-wide button and inline controls (B) shrink to their label.
+  - **`useProAccess()` is `'pending'` while the session loads,** not only the config, so a Pro player never sees a lock flash in.
+  - **`/pro` renders nothing until `/config` answers,** then the not-found page if the switch is off; a failed `/config` shows the message and Try again.
+  - **The mock resolves the effective tier when it creates a user** (`effectiveTier` in `src/lib/api/mock/api-client.ts`): the mock's switch never changes at runtime, so storing the effective tier is the same thing.
+  - **`ApiClient` gains a `config` group** (`ConfigApi.getConfig()`), not a `catalog` call: the switch is not catalog data.
+  - **Checked live** (2026-11-12, 3000 against 8080 on the dev database):
+    - `PRO_ENABLED=true`, fresh guest `guest-38aulr2z`: the summary's reveal locked with "Pro shows every player you missed. See Pro"; See Pro → `/pro` with the table and the disabled Get Pro; the profile reads "You're on the Free plan. See Pro".
+    - After `npm run user:tier -- guest-38aulr2z pro` and a reload: the reveal works ("Showing the 11 you missed."), `/pro` says "You have Pro.", and the profile "You're on Pro.".
+    - `PRO_ENABLED=false`, a fresh guest: `/pro` is Next's 404 (`notFound()` works from the client component), the reveal works, and "Pro" appears nowhere on the summary, the profile or `/play`.
+    - With the backend down, `/pro` shows "Couldn't load this page" and Try again.
+    - `/dev/pro` at 320, 390, 768 and 1440: no sideways scroll. **The table's phone padding is 12px** (16px from `sm`), so rows wrap less at 320.
+    - **Not checked in the mock:** the web stayed in real mode; the mock's switch and tier are covered by unit tests.
 - **Verification:**
   - `npm test`, `npm run lint`, `npm run build`.
   - **Mock, switch on (default):** a fresh guest sees the locked reveal with See Pro; `/pro` shows the table and the disabled Get Pro; the profile shows "Free plan · See Pro". With `NEXT_PUBLIC_MOCK_TIER=pro`, the reveal works, `/pro` says "You have Pro.", and the profile says "Pro".
