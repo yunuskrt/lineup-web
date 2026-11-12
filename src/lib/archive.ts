@@ -2,6 +2,7 @@ import { ARCHIVE_SEARCH_MAX } from '@/lib/api/schemas/catalog';
 import { authErrorMessageOf } from '@/lib/auth';
 import { filtersFromParams, filtersToParams, withQuery } from '@/lib/filters';
 import { filterSummary } from '@/lib/lobby';
+import { withPractice } from '@/lib/practice';
 import type { ArchiveStatus, ArchiveView } from '@/types/archive';
 import type { ArchivePage, ArchiveQuery, FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
@@ -38,12 +39,10 @@ export function archiveSearchFrom(params: URLSearchParams): string {
   return archiveSearchText(params.get(ARCHIVE_SEARCH_PARAM) ?? '');
 }
 
-// A run on one match from the archive (R13)
-export function pickedMatchPath(matchId: string): string {
-  return withQuery(
-    '/play/solo',
-    new URLSearchParams({ [PICKED_MATCH_PARAM]: matchId }),
-  );
+// A run on one match from the archive (R13, R14)
+export function pickedMatchPath(matchId: string, practice = false): string {
+  const params = new URLSearchParams({ [PICKED_MATCH_PARAM]: matchId });
+  return withQuery('/play/solo', withPractice(params, practice));
 }
 
 // Back to /play: the filters stay, the pick goes
@@ -57,17 +56,26 @@ export function pickedMatchFrom(params: URLSearchParams): string | null {
   return params.get(PICKED_MATCH_PARAM)?.trim() || null;
 }
 
-// The filters ride along; the server ignores them
+type StartOptions = { matchId?: string | null; practice?: boolean };
+
+// The filters ride along; a picked match wins
 export function soloStartRequestOf(
   filters: Filters,
-  matchId: string | null,
+  { matchId = null, practice = false }: StartOptions = {},
 ): SoloStartRequest {
-  return matchId ? { ...filters, matchId } : filters;
+  return {
+    ...filters,
+    ...(matchId ? { matchId } : {}),
+    ...(practice ? { practice: true } : {}),
+  };
 }
 
-// Every row has a Play; the name says which
-export function playMatchLabel(match: MatchIdentity): string {
-  return `Play ${match.home.name} v ${match.away.name}, ${archiveDateLabel(match.date)}`;
+// Same two buttons per row; names say which
+export function playMatchLabel(
+  match: MatchIdentity,
+  verb: 'Play' | 'Practise' = 'Play',
+): string {
+  return `${verb} ${match.home.name} v ${match.away.name}, ${archiveDateLabel(match.date)}`;
 }
 
 // R12 takes one competition and one club at most

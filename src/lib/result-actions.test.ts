@@ -29,6 +29,16 @@ describe('resultActionsLayout', () => {
     });
   });
 
+  it('offers practice again, even on a picked match', () => {
+    expect(resultActionsLayout({ isPractice: true })).toEqual({
+      primary: 'practiseAgain',
+      secondary: 'backToPlay',
+    });
+    expect(
+      resultActionsLayout({ isPractice: true, isPicked: true }).primary,
+    ).toBe('practiseAgain');
+  });
+
   it('replays a picked match and leads back to the archive', () => {
     expect(resultActionsLayout({ isPicked: true })).toEqual({
       primary: 'playItAgain',

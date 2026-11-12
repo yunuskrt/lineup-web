@@ -15,7 +15,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R11 | The solo daily cap | Web feature Pro C | 2026-11-10 | **Done** (2026-11-12, backend R11 `35f1ce3`) |
 | R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | **Done** (2026-11-12, backend R12 `6a1431e`) |
 | R13 | Exact match selection | Web feature Pro E | 2026-11-10 | **Done** (2026-11-12, backend R13 `7533e97`) |
-| R14 | Practice mode | Web feature Pro F | 2026-11-10 | Asked |
+| R14 | Practice mode | Web feature Pro F | 2026-11-10 | **Done** (2026-11-12, backend R14 `c8c2e51`) |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -872,6 +872,22 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 - Free with `practice` is refused; with the switch off anyone can practise.
 - `practice` with `matchId` plays that match.
 - The idle drop.
+
+### Built
+
+- **Practice mode** (2026-11-12): backend `c8c2e51`, on `main` and pushed.
+  - **Start:** `SoloStartRequest` gains `practice?: boolean`, beside `matchId?` (they combine). The side pick and every other call are unchanged.
+  - **Pro only:** with `PRO_ENABLED=true`, Free sending `practice: true` gets 403 `{ code: 'forbidden', message: 'Practice needs Pro.', retryAfterMs: null, reason: 'pro_required' }`. It's the message when `matchId` is sent too, and it comes before `daily_cap`. With the switch off, anyone can practise.
+  - **`SoloSession.practice` and `SoloSummary.practice`** (booleans) are always sent.
+  - **In play:** `round` is always `null` and `lives` stays 3. With no countdown there's nothing to sync on a timer.
+  - **Endings:** all 11 (`perfect_clear`) or quit, never `lives_out`; `livesRemaining` is 3. `missed` follows the tier as today.
+  - **`NamedPlayer.elapsedMs` is relaxed** to an integer ≥ 0, with no 15 000 maximum: in practice it's the real time since the previous find (or the side pick). `roundTimesMs` holds the gaps between finds plus the stretch to the quit, uncapped. `DuelNamedPlayer` keeps its 15 000 maximum.
+  - **Guesses** are checked as usual, with the same rate limit.
+  - **Never saved:** no history entry, no stats, and `GET /solo/allowance` `used` doesn't change.
+  - **One open run per user:** starting practice ends a real run in play, saved as a quit. Starting any run drops an open practice run without saving it. The web should warn before practising with a real run in progress.
+  - **Idle drop:** a practice run is dropped 30 minutes after the side pick, the last accepted guess or its end. Syncs and summary reads don't extend it. After that every call on it is 404 `not_found`, "That run no longer exists."; the web treats it as the run being gone.
+  - No migration, no `PROTOCOL_VERSION` bump.
+- **Differences from this request:** the relaxed `NamedPlayer.elapsedMs` (a contract change the web must make), the one-open-run rule with its warning, and the idle clock also counting from the run's end.
 
 ### Report in the Built note
 

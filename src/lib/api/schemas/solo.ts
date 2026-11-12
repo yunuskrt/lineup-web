@@ -28,6 +28,8 @@ export const soloSessionStatusSchema = z.enum(['active', 'over']);
 // Backend R13: `matchId` overrides the filters
 export const soloStartRequestSchema = filtersSchema.extend({
   matchId: idSchema.optional(),
+  // No clock, no lives, not saved (R14, Pro)
+  practice: z.boolean().optional(),
 });
 
 export const soloMatchOfferSchema = z.object({
@@ -45,7 +47,9 @@ export const soloSessionSchema = z.object({
   match: matchInPlaySchema,
   lives: livesSchema,
   found: z.array(revealedPlayerSchema).max(SQUAD_SIZE),
+  // Always null in practice
   round: roundTimingSchema.nullable(),
+  practice: z.boolean(),
 });
 
 export const soloGuessRequestSchema = z.object({
@@ -79,4 +83,5 @@ export const soloSummarySchema = z.object({
   accuracy: ratioSchema,
   bestStreak: squadCountSchema,
   roundTimesMs: z.array(z.number().int().nonnegative()),
+  practice: z.boolean(),
 });

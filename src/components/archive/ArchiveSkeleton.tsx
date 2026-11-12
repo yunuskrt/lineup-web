@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import {
   ARCHIVE_LIST,
   ARCHIVE_ROW,
+  ARCHIVE_ROW_ACTIONS,
   ARCHIVE_ROW_FOOT,
 } from '@/components/archive/styles';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
@@ -43,9 +44,10 @@ export function ArchiveSkeletonRows() {
             <span
               className={`h-4 min-w-0 flex-1 sm:col-start-5 sm:row-start-1 sm:h-5 sm:w-full sm:max-w-56 ${BLOCK}`}
             />
-            <span
-              className={`h-7.5 w-13 shrink-0 sm:col-start-6 sm:row-start-1 ${BLOCK}`}
-            />
+            <div className={ARCHIVE_ROW_ACTIONS}>
+              <span className={`h-7.5 w-13 ${BLOCK}`} />
+              <span className={`h-7.5 w-21 ${BLOCK}`} />
+            </div>
           </div>
         </div>
       ))}

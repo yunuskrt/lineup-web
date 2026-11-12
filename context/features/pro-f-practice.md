@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -74,6 +74,23 @@ Defaults stand unless changed at load:
   - **9:** lives still exist only in timed runs; practice has none to lose.
   - **15:** solo only.
 - **Constraints:** tokens only; `@/` imports; no `any`; comments of at most 50 characters; reduced motion unchanged.
+- **Deviations recorded during implementation:**
+  - **The find time is uncapped for solo:** `namedPlayerSchema.elapsedMs` loses its 15 000 maximum (R14), and `duelNamedPlayerSchema` sets the cap again on its own field.
+  - **No "time per round" line existed to rename:** `roundTimesMs` isn't shown since Gameplay Visuals C. Instead the named list reads finds past a minute as minutes (`findTimeLabel`: 1:14, 12:34), for every mode; under a minute nothing changes.
+  - **The practice rail** is one card in place of the ring and the Lives card: "Practice" and "No clock and no lives. Name all eleven, or quit when you like. This run isn't saved."
+  - **The practice summary** keeps its title ("Run ended", "Perfect clear") and shows a "Practice" tag where the lives were.
+  - **The archive button is "Practise"** (the verb, as "Practise again"), named for screen readers like Play. Phones drop the nickname from a row's second line so the competition keeps its room beside the two buttons.
+  - **The locked toggle** is a `ProLock` labelled "Practice", captioned "Practice is part of Pro: no clock, no lives, not saved." (pending: no caption).
+  - **The warning over a run in play** (R14 asked for it): this tab remembers an unfinished timed run in `sessionStorage` (`lineup:open-run`), set while one is in play and cleared at its end, when the run is gone, or once practice starts (the pure `openRunUpdate` decides mark or clear). Start practice on `/play` and Practise on the archive then ask "Practise now?" with Cancel (focused) and Practise. `QuitDialogCopy` gains `dismissLabel`. Without storage there's no warning, never a crash.
+  - **Two practice gates:** Free gets "Practice is part of Pro" with "A timed run from your filters is still free.", Back to play and See Pro (also when a match was picked, as R14's message wins). After R14's idle drop: "This practice run has closed", "Practice runs close after 30 minutes without a guess.", Back to play.
+  - **Back to play keeps practice ticked** on `/play`; a duel always drops it.
+  - **Sounds needed no change:** the clock cues key off the round (always null in practice) and the whistle off a lives drop that never comes; tests lock it in.
+  - **The run asks, the session decides:** `finding` carries the request (`isPracticeAsked`, for the gate copy); `SoloCanvasView.isPractice` comes only from the session or the summary.
+  - **The mock** gains a clockless engine path (`practice`, `since`): no expiry, uncapped find times, perfect clear on 11, nothing saved, no cap count, and Free refused first. It doesn't model R14's one-open-run rule or the idle drop.
+  - **Snapshots:** the locked, open and pending Practice toggles live on `/dev/pro` (beside C's `/play` specimens), not a `?state=` on `/play`. Two more canvas snapshots join `practice` and `practice-summary`: `solo-practice-locked` and `practice-closed`, both built through the run's own reducer.
+  - **The mock checks ran as unit tests, not in a browser,** as in D and E; the same screens were checked live.
+  - **Checked live** (2026-11-12, 3000 against 8080, ingest database, `PRO_ENABLED=true`): Free guest `guest-5zqtktpo` saw Practice locked on `/play?practice=1` (Start stayed "Start solo run") and the practice gate on `/play/solo?practice=1`. After the tier script made it Pro: the tick set `?practice=1` and Start read "Start practice" with no cap line; the run showed the Practice card with no ring or lives, stayed live after 17 seconds, and its summary showed the tag, Practise again and Back to play; history and `GET /solo/allowance` `used` were unchanged. A timed run left in play brought up the warning; Cancel stayed on `/play`, Practise started practice, and the left run appeared in history as a quit. Practise on AC Milan 3–3 Liverpool FC opened that match in practice.
+  - **Checked live with `PRO_ENABLED=false`** (ingest): a signed-out visitor saw the Practice checkbox open with no word "Pro" on `/play`, ticked it, got a guest and a practice run with the Practice card, quit, and the summary offered Practise again and Back to play; the guest's history stayed empty.
 - **Verification:**
   - `npm test`, `npm run lint`, `npm run build`.
   - **Mock, Pro:** tick Practice → Start practice → no ring and no lives, guesses resolve, wait well past 15s with no life lost, name all 11 → the Practice summary → the profile history is unchanged.

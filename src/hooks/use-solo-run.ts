@@ -9,11 +9,13 @@ import { unwrap } from '@/lib/api/unwrap';
 import { guessFeedback } from '@/lib/feedback';
 import { filtersFromParams, widenFilters, withFilters } from '@/lib/filters';
 import { prepareGuess } from '@/lib/guess';
+import { clearOpenRun, isPracticeFrom, markOpenRun } from '@/lib/practice';
 import { serverClock } from '@/lib/server-clock';
 import {
   canGuessSolo,
   INITIAL_SOLO_RUN,
   needsResync,
+  openRunUpdate,
   receiptRoundOf,
   soloRunReducer,
   SYNC_RETRY_MS,
@@ -47,18 +49,21 @@ export function useSoloRun(params: URLSearchParams) {
   async function find(from: URLSearchParams = params) {
     if (isFinding.current) return;
     isFinding.current = true;
-    // A picked match plays again on Play it again
+    // A picked match or practice plays again as asked
     const matchId = pickedMatchFrom(from);
-    dispatch({ type: 'finding', matchId });
+    const practice = isPracticeFrom(from);
+    dispatch({ type: 'finding', matchId, practice });
     try {
       await ensureSession();
       const options = await queryClient.query(filterOptionsQuery);
       const filters = filtersFromParams(from, options);
       const offer = unwrap(
         await getApiClient().solo.findMatch(
-          soloStartRequestOf(filters, matchId),
+          soloStartRequestOf(filters, { matchId, practice }),
         ),
       );
+      // R14 ended any timed run this tab left open
+      if (practice) clearOpenRun();
       dispatch({ type: 'offerReceived', offer });
     } catch (error) {
       const apiError = failureOf(queryClient, error);
@@ -81,6 +86,14 @@ export function useSoloRun(params: URLSearchParams) {
       });
     }
   }
+
+  // A timed run in play, for practice's warning
+  const openRun = openRunUpdate(state);
+
+  useEffect(() => {
+    if (openRun === 'mark' && sessionId) markOpenRun(sessionId);
+    else if (openRun === 'clear') clearOpenRun();
+  }, [openRun, sessionId]);
 
   const startRun = useEffectEvent(() => void find());
 

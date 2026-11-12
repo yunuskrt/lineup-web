@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { activeRing } from '@/lib/canvas';
 import {
   SAMPLE_IDENTITY,
   SAMPLE_MATCH,
@@ -91,6 +92,7 @@ function result(outcome: DuelResult['outcome']): DuelResult {
 
 function summary(endReason: SoloEndReason): SoloSummary {
   return {
+    practice: false,
     match: SAMPLE_IDENTITY,
     found: named(found(4)),
     missedCount: 7,
@@ -191,6 +193,31 @@ describe('soundCuesFor: verdicts and lives', () => {
 
   it('ignores an opponent appearing', () => {
     expect(soundCuesFor(duel({ opponent: null }), duel())).toEqual([]);
+  });
+});
+
+describe('practice sounds', () => {
+  const practice = (overrides: Partial<SoloCanvasView> = {}) =>
+    solo({
+      isPractice: true,
+      clock: { round: null, isFrozen: false },
+      ...overrides,
+    });
+
+  it('keeps the guess cues', () => {
+    expect(
+      soundCuesFor(
+        practice({ found: found(2) }),
+        practice({ found: found(3) }),
+      ),
+    ).toEqual(['correctNew']);
+    expect(soundCuesFor(practice(), practice({ shakeKey: 1 }))).toEqual([
+      'notInXi',
+    ]);
+  });
+
+  it('has no clock to tick or beep', () => {
+    expect(activeRing(practice().clock, 'you').mode).toBe('waiting');
   });
 });
 

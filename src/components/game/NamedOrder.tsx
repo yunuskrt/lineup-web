@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { namedOrder, roundSecondsLabel } from '@/lib/summary';
+import { findTimeLabel, namedOrder } from '@/lib/summary';
 import { DUEL_ACTOR_BG, DUEL_ACTOR_TEXT } from '@/styles/classes';
 import type { DuelNamedPlayer } from '@/types/duel';
 import type { NamedPlayer } from '@/types/player';
@@ -52,7 +52,7 @@ function Row({ player, finder, isFastest }: RowProps) {
           isFastest ? 'font-semibold text-fg' : 'text-fg-muted'
         }`}
       >
-        {roundSecondsLabel(player.elapsedMs)}
+        {findTimeLabel(player.elapsedMs)}
         {isFastest ? <span className="sr-only">, fastest</span> : null}
       </span>
     </li>

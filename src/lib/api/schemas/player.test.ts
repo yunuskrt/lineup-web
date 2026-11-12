@@ -38,10 +38,15 @@ describe('namedPlayerSchema', () => {
     expect(parses({ elapsedMs: 15_000 })).toBe(true);
   });
 
-  it('rejects a negative, fractional or uncapped time', () => {
+  it('rejects a negative or fractional time', () => {
     expect(parses({ elapsedMs: -1 })).toBe(false);
     expect(parses({ elapsedMs: 2_100.5 })).toBe(false);
-    expect(parses({ elapsedMs: 15_001 })).toBe(false);
+  });
+
+  // Practice has no clock (backend R14)
+  it('takes a solo time past one round', () => {
+    expect(parses({ elapsedMs: 15_001 })).toBe(true);
+    expect(parses({ elapsedMs: 754_300 })).toBe(true);
   });
 
   it('rejects a player without order or time', () => {
@@ -77,5 +82,13 @@ describe('duelNamedPlayerSchema', () => {
     expect(
       duelNamedPlayerSchema.safeParse({ ...named, foundBy: undefined }).success,
     ).toBe(false);
+  });
+
+  it('keeps the one-round cap on a duel time', () => {
+    const named = { ...NAMED, foundBy: 'you' };
+    const time = (elapsedMs: number) =>
+      duelNamedPlayerSchema.safeParse({ ...named, elapsedMs }).success;
+    expect(time(15_000)).toBe(true);
+    expect(time(15_001)).toBe(false);
   });
 });

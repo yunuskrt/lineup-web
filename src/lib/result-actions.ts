@@ -1,7 +1,12 @@
 import type { ProAccess } from '@/types/pro';
 
 export type ResultPrimary =
-  'playAgain' | 'playItAgain' | 'newRoom' | 'backToPlay' | 'playDuel';
+  | 'playAgain'
+  | 'playItAgain'
+  | 'practiseAgain'
+  | 'newRoom'
+  | 'backToPlay'
+  | 'playDuel';
 export type ResultSecondary =
   'changeFilters' | 'backToPlay' | 'backToArchive' | 'lockedNewRoom';
 
@@ -19,6 +24,8 @@ export type ResultContext = {
   isSoloCapped?: boolean;
   // One match from the archive (R13)
   isPicked?: boolean;
+  // No clock, not saved: the same again (R14)
+  isPractice?: boolean;
 };
 
 // A Free room player can't host the next room
@@ -27,8 +34,10 @@ export function resultActionsLayout({
   hostAccess = 'open',
   isSoloCapped = false,
   isPicked = false,
+  isPractice = false,
 }: ResultContext = {}): ResultActionsLayout {
   if (isSoloCapped) return { primary: 'playDuel', secondary: 'backToPlay' };
+  if (isPractice) return { primary: 'practiseAgain', secondary: 'backToPlay' };
   if (isPicked) return { primary: 'playItAgain', secondary: 'backToArchive' };
   if (!isPrivate) return { primary: 'playAgain', secondary: 'changeFilters' };
   if (hostAccess === 'open') {

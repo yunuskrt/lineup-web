@@ -18,7 +18,7 @@ export type EngineActor = 'you' | 'opponent';
 export type EngineFound = {
   playerId: string;
   foundBy: EngineActor;
-  // Receipt minus the round's start, capped
+  // Capped round time; practice: since last find
   elapsedMs: number;
 };
 
@@ -37,6 +37,10 @@ export type EngineState = {
   turn: EngineActor;
   round: RoundTiming | null;
   status: 'active' | 'over';
+  // No clock and no lives to lose (R14)
+  practice: boolean;
+  // The side pick or the last find, for practice
+  since: number;
 };
 
 export type EngineInput =
@@ -58,6 +62,7 @@ export function createEngineState(
   mode: EngineMode,
   squad: MockSquad,
   now: number,
+  practice = false,
 ): EngineState {
   return {
     mode,
@@ -65,8 +70,10 @@ export function createEngineState(
     found: [],
     lives: { you: STARTING_LIVES, opponent: STARTING_LIVES },
     turn: 'you',
-    round: startRound(now),
+    round: practice ? null : startRound(now),
     status: 'active',
+    practice,
+    since: now,
   };
 }
 
@@ -125,7 +132,15 @@ function isComplete(found: readonly EngineFound[]): boolean {
 function handOver(state: EngineState, now: number): EngineState {
   // Solo: the same player starts the next round
   const turn = state.mode === 'duel' ? other(state.turn) : state.turn;
-  return { ...state, turn, round: startRound(now) };
+  if (state.practice) return { ...state, turn, since: now };
+  return { ...state, turn, round: startRound(now), since: now };
+}
+
+// Practice: real time since the last find
+function elapsedSince(state: EngineState, now: number): number {
+  if (state.practice) return Math.max(now - state.since, 0);
+  const startedAt = state.round?.startedAt ?? now;
+  return Math.min(Math.max(now - startedAt, 0), ROUND_DURATION_MS);
 }
 
 function applyGuess(
@@ -150,8 +165,7 @@ function applyGuess(
     };
   }
 
-  const startedAt = state.round?.startedAt ?? now;
-  const elapsedMs = Math.min(Math.max(now - startedAt, 0), ROUND_DURATION_MS);
+  const elapsedMs = elapsedSince(state, now);
   const found = [
     ...state.found,
     { playerId: entry.playerId, foundBy: actor, elapsedMs },
@@ -193,9 +207,17 @@ export function resolveRound(
   input: EngineInput,
   now: number,
 ): EngineStep {
-  if (state.status === 'over' || state.round === null) {
-    return { state, outcome: { kind: 'ignored' } };
+  if (state.status === 'over') return { state, outcome: { kind: 'ignored' } };
+
+  // Practice: no round to expire, guesses only
+  if (state.practice) {
+    if (input.kind === 'tick' || input.actor !== state.turn) {
+      return { state, outcome: { kind: 'ignored' } };
+    }
+    return applyGuess(state, input.actor, input.guess, now);
   }
+
+  if (state.round === null) return { state, outcome: { kind: 'ignored' } };
 
   if (hasExpired(state.round, now)) {
     return applyExpiry(state, now);

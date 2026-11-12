@@ -47,6 +47,7 @@ const SUMMARY_STATES = [
   'quit-empty',
   'run-over-capped',
   'run-over-picked',
+  'practice-summary',
 ] as const;
 
 // What each `next` swap is there to demonstrate
@@ -308,7 +309,11 @@ describe('solo summary snapshots', () => {
     const withList = SUMMARY_STATES.filter(
       (name) => summaryOf(name).summary.missed !== null,
     );
-    expect(withList).toEqual(['run-over-pro', 'run-over-pro-revealed']);
+    expect(withList).toEqual([
+      'run-over-pro',
+      'run-over-pro-revealed',
+      'practice-summary',
+    ]);
   });
 
   it('hide the missed XI until the revealed snapshot', () => {
@@ -342,6 +347,30 @@ describe('solo summary snapshots', () => {
       (name) => summaryOf(name).view.isPicked === true,
     );
     expect(picked).toEqual(['run-over-picked']);
+  });
+
+  it('mark only the practice snapshots as practice', () => {
+    const practice = viewsOf('solo')
+      .filter(([, view]) => view.mode === 'solo' && view.isPractice)
+      .map(([name]) => name);
+    expect(practice).toEqual([
+      'practice',
+      'practice-summary',
+      'practice-closed',
+    ]);
+  });
+
+  it('gate practice for Free and after the idle drop', () => {
+    const locked = CANVAS_STATES.solo['solo-practice-locked'].build(NOW).frame;
+    expect(locked.view.gate).toMatchObject({
+      title: 'Practice is part of Pro',
+      seePro: true,
+    });
+    const closed = CANVAS_STATES.solo['practice-closed'].build(NOW).frame;
+    expect(closed.view.gate).toMatchObject({
+      title: 'This practice run has closed',
+      actionLabel: 'Back to play',
+    });
   });
 
   it('gate a refused pick with the archive or Pro', () => {

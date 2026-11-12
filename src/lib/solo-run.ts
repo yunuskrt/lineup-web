@@ -41,6 +41,10 @@ export const SOLO_GATE_COPY = {
   backToArchive: 'Back to the archive',
   pickingLocked: 'Picking a match is part of Pro',
   randomStillFree: 'A random match from your filters is still free.',
+  practiceLocked: 'Practice is part of Pro',
+  timedStillFree: 'A timed run from your filters is still free.',
+  practiceClosed: 'This practice run has closed',
+  practiceIdle: 'Practice runs close after 30 minutes without a guess.',
 } as const;
 
 const FAILED_TITLES: Record<SoloRunStep, string> = {
@@ -77,6 +81,7 @@ export const INITIAL_SOLO_RUN: SoloRunState = {
   cooldownUntil: null,
   failure: null,
   pickedMatchId: null,
+  isPracticeAsked: false,
   toast: null,
   shakeKey: 0,
   lifeLostKey: 0,
@@ -142,7 +147,11 @@ export function soloRunReducer(
 ): SoloRunState {
   switch (event.type) {
     case 'finding':
-      return { ...INITIAL_SOLO_RUN, pickedMatchId: event.matchId };
+      return {
+        ...INITIAL_SOLO_RUN,
+        pickedMatchId: event.matchId,
+        isPracticeAsked: event.practice,
+      };
     case 'offerReceived':
       return { ...state, phase: 'choosing', offer: event.offer, failure: null };
     case 'sideChosen':
@@ -214,6 +223,16 @@ export function soloRunReducer(
   }
 }
 
+// Practice warns before ending a timed run
+export function openRunUpdate(state: SoloRunState): 'mark' | 'clear' | null {
+  if (state.phase === 'playing' && state.session?.practice === false) {
+    return 'mark';
+  }
+  const isGone =
+    state.phase === 'over' || state.failure?.error.code === 'not_found';
+  return isGone ? 'clear' : null;
+}
+
 // Only a correct new name starts a round on receipt
 export function receiptRoundOf(
   response: SoloGuessResponse,
@@ -278,6 +297,11 @@ function isPickRefused({ failure }: SoloRunState): boolean {
   );
 }
 
+// The idle drop (R14): every call is not_found
+function isPracticeClosed({ failure, session }: SoloRunState): boolean {
+  return session?.practice === true && failure?.error.code === 'not_found';
+}
+
 // Never a dead end: a duel, the filters, or Pro
 export function dailyCapGate(
   error: ApiError,
@@ -301,11 +325,26 @@ function failedGate(
 
   if (isDailyCap(failure.error)) return dailyCapGate(failure.error, capLine);
   if (isPickRefused(state)) {
+    // R14's message wins when both were asked for
+    return state.isPracticeAsked
+      ? {
+          title: SOLO_GATE_COPY.practiceLocked,
+          detail: SOLO_GATE_COPY.timedStillFree,
+          actionLabel: SOLO_GATE_COPY.backToPlay,
+          seePro: true,
+        }
+      : {
+          title: SOLO_GATE_COPY.pickingLocked,
+          detail: SOLO_GATE_COPY.randomStillFree,
+          actionLabel: SOLO_GATE_COPY.backToPlay,
+          seePro: true,
+        };
+  }
+  if (isPracticeClosed(state)) {
     return {
-      title: SOLO_GATE_COPY.pickingLocked,
-      detail: SOLO_GATE_COPY.randomStillFree,
+      title: SOLO_GATE_COPY.practiceClosed,
+      detail: SOLO_GATE_COPY.practiceIdle,
       actionLabel: SOLO_GATE_COPY.backToPlay,
-      seePro: true,
     };
   }
   if (isPickedMatchGone(state)) {
@@ -380,5 +419,6 @@ export function soloCanvasView(
     end: endOf(state),
     capLine: capLine ?? undefined,
     isPicked: state.pickedMatchId !== null,
+    isPractice: summary?.practice ?? session?.practice ?? false,
   };
 }

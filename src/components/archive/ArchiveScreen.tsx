@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useEffectEvent, useState, useTransition } from 'react';
 import { ArchiveView } from '@/components/archive/ArchiveView';
+import { QuitDialog } from '@/components/game/QuitDialog';
 import { useArchive } from '@/hooks/use-archive';
 import { useEnsureSession } from '@/hooks/use-auth';
 import { useFilterOptions } from '@/hooks/use-filter-options';
@@ -19,6 +20,7 @@ import {
 } from '@/lib/archive';
 import { authErrorMessageOf } from '@/lib/auth';
 import { filtersFromParams, replaceQuery } from '@/lib/filters';
+import { hasOpenRun, PRACTICE_OVER_RUN_COPY } from '@/lib/practice';
 import { isStaleCursor } from '@/lib/profile';
 import type { Filters } from '@/types/filters';
 import type { MatchIdentity } from '@/types/match';
@@ -35,7 +37,12 @@ export function ArchiveScreen() {
   const router = useRouter();
   const ensureSession = useEnsureSession();
   const [isNavigating, startNavigation] = useTransition();
-  const [pickedId, setPickedId] = useState<string | null>(null);
+  const [picked, setPicked] = useState<{
+    id: string;
+    kind: 'play' | 'practice';
+  } | null>(null);
+  // A practice start held by the open-run warning
+  const [warnedMatch, setWarnedMatch] = useState<MatchIdentity | null>(null);
   const isStarting = ensureSession.isPending || isNavigating;
 
   const filters =
@@ -113,37 +120,54 @@ export function ArchiveScreen() {
   }
 
   // A guest is made first, as Start does
-  async function play(match: MatchIdentity) {
-    setPickedId(match.id);
+  async function start(match: MatchIdentity, practice: boolean) {
+    setPicked({ id: match.id, kind: practice ? 'practice' : 'play' });
     try {
       await ensureSession.mutateAsync();
-      startNavigation(() => router.push(pickedMatchPath(match.id)));
+      startNavigation(() => router.push(pickedMatchPath(match.id, practice)));
     } catch {
-      setPickedId(null);
+      setPicked(null);
+      setWarnedMatch(null);
     }
   }
 
+  function play(match: MatchIdentity, practice: boolean) {
+    if (practice && hasOpenRun()) setWarnedMatch(match);
+    else void start(match, practice);
+  }
+
   return (
-    <ArchiveView
-      view={view}
-      search={search}
-      filterState={
-        filters && options.data ? { options: options.data, filters } : null
-      }
-      clearLabel={q ? 'Clear search' : 'Clear filters'}
-      onSearchChange={setSearch}
-      onSearchSubmit={() => apply(archiveSearchText(search))}
-      onFiltersChange={changeFilters}
-      onClear={clear}
-      onRetry={retry}
-      onShowMore={showMore}
-      onPlay={(match) => void play(match)}
-      startingId={isStarting ? pickedId : null}
-      playError={
-        ensureSession.error && !isStarting
-          ? authErrorMessageOf(ensureSession.error)
-          : null
-      }
-    />
+    <>
+      <ArchiveView
+        view={view}
+        search={search}
+        filterState={
+          filters && options.data ? { options: options.data, filters } : null
+        }
+        clearLabel={q ? 'Clear search' : 'Clear filters'}
+        onSearchChange={setSearch}
+        onSearchSubmit={() => apply(archiveSearchText(search))}
+        onFiltersChange={changeFilters}
+        onClear={clear}
+        onRetry={retry}
+        onShowMore={showMore}
+        onPlay={play}
+        starting={isStarting ? picked : null}
+        playError={
+          ensureSession.error && !isStarting
+            ? authErrorMessageOf(ensureSession.error)
+            : null
+        }
+      />
+      {warnedMatch ? (
+        <QuitDialog
+          isOpen
+          isQuitting={isStarting}
+          copy={PRACTICE_OVER_RUN_COPY}
+          onDismiss={() => setWarnedMatch(null)}
+          onConfirm={() => void start(warnedMatch, true)}
+        />
+      ) : null}
+    </>
   );
 }

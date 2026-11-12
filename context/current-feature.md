@@ -89,3 +89,4 @@ Not Started
 - Pro C: solo daily cap, runs-left line, cap gate, Play a duel at summary.
 - Pro D: /archive page, word-prefix search, folded filters, Archive nav.
 - Pro E: Play on archive rows, ?match= runs, pick gates, Play it again.
+- Pro F: practice toggle, Practice card, Practise again, open-run warning.

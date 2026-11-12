@@ -2,6 +2,7 @@
 
 import { type ReactNode, useId, useState } from 'react';
 import { PlayStart } from '@/components/play/PlayStart';
+import { PracticeToggle } from '@/components/play/PracticeToggle';
 import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
 import { ProLock, type ProLockSize } from '@/components/pro/ProLock';
 import { type ProPlan, ProView } from '@/components/pro/ProView';
@@ -46,6 +47,11 @@ function SoloStartSample({ used }: { used: number }) {
   );
 }
 
+function PracticeSample() {
+  const [isOn, setIsOn] = useState(true);
+  return <PracticeToggle access="open" isOn={isOn} onChange={setIsOn} />;
+}
+
 export function ProPreview() {
   const [plan, setPlan] = useState<ProPlan>('free');
 
@@ -87,6 +93,20 @@ export function ProPreview() {
               />
             </Specimen>
           </div>
+        </div>
+      </section>
+      <section className="flex flex-col gap-6">
+        <h2 className="text-20 font-semibold">Practice (/play)</h2>
+        <div className="flex flex-wrap items-start gap-12">
+          <Specimen label="Open">
+            <PracticeSample />
+          </Specimen>
+          <Specimen label="Locked: Free, switch on">
+            <PracticeToggle access="locked" isOn={false} onChange={() => {}} />
+          </Specimen>
+          <Specimen label="Pending">
+            <PracticeToggle access="pending" isOn={false} onChange={() => {}} />
+          </Specimen>
         </div>
       </section>
       <section className="flex flex-col gap-6">

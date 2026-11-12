@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { type ReactNode, useTransition } from 'react';
+import { type ReactNode, useState, useTransition } from 'react';
+import { QuitDialog, type QuitDialogCopy } from '@/components/game/QuitDialog';
 import { useEnsureSession } from '@/hooks/use-auth';
 import { authErrorMessageOf } from '@/lib/auth';
 import { PRIMARY_BUTTON_LARGE } from '@/styles/classes';
@@ -15,6 +16,10 @@ type PlayStartProps = {
   describedBy?: string;
   // Under the button, such as the runs-left line
   children?: ReactNode;
+  // Replaces the mode's label, as Start practice
+  label?: string;
+  // Asked at the click: a reason to confirm first
+  warningFor?: () => QuitDialogCopy | null;
 };
 
 const START_LABELS: Record<PlayMode, string> = {
@@ -28,20 +33,30 @@ export function PlayStart({
   isCapped = false,
   describedBy,
   children,
+  label,
+  warningFor,
 }: PlayStartProps) {
   const router = useRouter();
   const ensureSession = useEnsureSession();
   const [isNavigating, startNavigation] = useTransition();
+  const [warning, setWarning] = useState<QuitDialogCopy | null>(null);
   const isStarting = ensureSession.isPending || isNavigating;
 
-  async function handleClick() {
+  async function start() {
     if (!href || isCapped) return;
     try {
       await ensureSession.mutateAsync();
       startNavigation(() => router.push(href));
     } catch {
+      setWarning(null);
       // Shown through ensureSession.error
     }
+  }
+
+  function handleClick() {
+    const next = warningFor?.() ?? null;
+    if (next) setWarning(next);
+    else void start();
   }
 
   return (
@@ -53,13 +68,22 @@ export function PlayStart({
         onClick={handleClick}
         className={PRIMARY_BUTTON_LARGE}
       >
-        {isStarting ? 'Starting…' : START_LABELS[mode]}
+        {isStarting ? 'Starting…' : (label ?? START_LABELS[mode])}
       </button>
       {children}
       {ensureSession.error && !isStarting ? (
         <p role="alert" className="text-14 text-danger">
           {authErrorMessageOf(ensureSession.error)}
         </p>
+      ) : null}
+      {warning ? (
+        <QuitDialog
+          isOpen
+          isQuitting={isStarting}
+          copy={warning}
+          onDismiss={() => setWarning(null)}
+          onConfirm={() => void start()}
+        />
       ) : null}
     </div>
   );

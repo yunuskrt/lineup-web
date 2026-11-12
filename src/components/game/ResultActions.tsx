@@ -19,6 +19,8 @@ export type ResultActionsProps = {
   onPlayDuel?: () => void;
   // One match from the archive: Play it again
   isPicked?: boolean;
+  // Practise again; Back to play (R14)
+  isPractice?: boolean;
 };
 
 const PRIMARY_LABELS: Record<ResultPrimary, string> = {
@@ -27,6 +29,7 @@ const PRIMARY_LABELS: Record<ResultPrimary, string> = {
   backToPlay: 'Back to play',
   playDuel: 'Play a duel',
   playItAgain: 'Play it again',
+  practiseAgain: 'Practise again',
 };
 
 const SECONDARY_LABELS: Record<
@@ -46,12 +49,14 @@ export function ResultActions({
   capLine,
   onPlayDuel = () => {},
   isPicked = false,
+  isPractice = false,
 }: ResultActionsProps) {
   const { primary, secondary } = resultActionsLayout({
     isPrivate,
     hostAccess,
     isSoloCapped: capLine !== undefined,
     isPicked,
+    isPractice,
   });
   const onPrimary =
     primary === 'backToPlay'

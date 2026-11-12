@@ -30,6 +30,8 @@ export type SoloRunState = {
   failure: SoloRunFailure | null;
   // Set when the run plays an archive match
   pickedMatchId: string | null;
+  // Asked for; the session says if it is (R14)
+  isPracticeAsked: boolean;
   toast: ToastMessage | null;
   pulse?: GridPulse;
   shakeKey: number;
@@ -37,7 +39,7 @@ export type SoloRunState = {
 };
 
 export type SoloRunEvent =
-  | { type: 'finding'; matchId: string | null }
+  | { type: 'finding'; matchId: string | null; practice: boolean }
   | { type: 'offerReceived'; offer: SoloMatchOffer }
   | { type: 'sideChosen' }
   | { type: 'sessionReceived'; session: SoloSession }

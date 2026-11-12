@@ -47,7 +47,8 @@ import type { Lives, RoundTiming } from '@/types/game';
 import type { MatchIdentity } from '@/types/match';
 import type { FoundPlayer, NamedPlayer, RevealedPlayer } from '@/types/player';
 import type { ProAccess } from '@/types/pro';
-import type { SoloSummary } from '@/types/solo';
+import type { SoloSession, SoloSummary } from '@/types/solo';
+import type { SoloRunEvent } from '@/types/solo-run';
 
 export const SNAPSHOT_EVENT_DELAY_MS = 600;
 
@@ -216,12 +217,19 @@ type SummaryOptions = {
   isCapped?: boolean;
   // One match from the archive (R13)
   isPicked?: boolean;
+  // No clock, not saved (R14)
+  isPractice?: boolean;
 };
 
 function summaryState(
   description: string,
   summary: SoloSummary,
-  { isMissedRevealed = false, isCapped = false, isPicked }: SummaryOptions = {},
+  {
+    isMissedRevealed = false,
+    isCapped = false,
+    isPicked,
+    isPractice,
+  }: SummaryOptions = {},
 ): CanvasState<SoloCanvasView> {
   return {
     description,
@@ -235,6 +243,7 @@ function summaryState(
           }),
           capLine: isCapped ? sampleCapLine(now) : undefined,
           isPicked,
+          isPractice,
         },
         guess: '',
       },
@@ -253,6 +262,7 @@ const RUN_OVER_SUMMARY: SoloSummary = {
   accuracy: 0.4,
   bestStreak: 2,
   roundTimesMs: [3_200, 15_000, 6_100, 15_000, 2_400, 8_800, 15_000],
+  practice: false,
 };
 
 // Pro gets the list; the pitch waits for Reveal
@@ -274,6 +284,7 @@ const PERFECT_CLEAR_SUMMARY: SoloSummary = {
     2_100, 4_300, 3_800, 6_900, 15_000, 5_200, 2_700, 9_400, 3_300, 7_600,
     4_100, 11_200,
   ],
+  practice: false,
 };
 
 const QUIT_SUMMARY: SoloSummary = {
@@ -286,6 +297,23 @@ const QUIT_SUMMARY: SoloSummary = {
   accuracy: 0.6,
   bestStreak: 3,
   roundTimesMs: [4_800, 3_100, 15_000, 7_200, 2_900, 5_600, 8_300, 5_200],
+  practice: false,
+};
+
+// Practice: real gaps between finds, no lives
+const PRACTICE_ELAPSED_MS = [12_400, 74_300, 8_900, 131_600, 21_000, 46_200];
+
+const PRACTICE_SUMMARY: SoloSummary = {
+  ...QUIT_SUMMARY,
+  found: playersAt(QUIT_FOUND_SLOTS).map((player, index) => ({
+    ...player,
+    order: index + 1,
+    elapsedMs: PRACTICE_ELAPSED_MS[index],
+  })),
+  missed: playersBesides(QUIT_FOUND_SLOTS),
+  livesRemaining: 3,
+  roundTimesMs: [...PRACTICE_ELAPSED_MS, 38_000],
+  practice: true,
 };
 
 // Quit before naming anyone: the empty line
@@ -299,6 +327,7 @@ const QUIT_EMPTY_SUMMARY: SoloSummary = {
   accuracy: 0,
   bestStreak: 0,
   roundTimesMs: [6_400],
+  practice: false,
 };
 
 function toDuel(
@@ -450,10 +479,12 @@ const DAILY_CAP_ERROR: ApiError = {
 function pickRefused(
   description: string,
   error: ApiError,
+  practice = false,
 ): CanvasState<SoloCanvasView> {
   const finding = soloRunReducer(INITIAL_SOLO_RUN, {
     type: 'finding',
     matchId: SAMPLE_IDENTITY.id,
+    practice,
   });
   const state = soloRunReducer(finding, {
     type: 'failed',
@@ -462,6 +493,37 @@ function pickRefused(
   });
   return {
     description,
+    build: () => ({ frame: { view: soloCanvasView(state), guess: '' } }),
+  };
+}
+
+// A practice run past R14's 30-minute idle drop
+function practiceClosed(): CanvasState<SoloCanvasView> {
+  const session: SoloSession = {
+    sessionId: 'sample-practice',
+    status: 'active',
+    match: SAMPLE_MATCH,
+    lives: MAX_LIVES,
+    found: SOLO_FOUND,
+    round: null,
+    practice: true,
+  };
+  const events: SoloRunEvent[] = [
+    { type: 'finding', matchId: null, practice: true },
+    { type: 'sessionReceived', session },
+    {
+      type: 'failed',
+      step: 'guess',
+      error: {
+        code: 'not_found',
+        message: 'That run no longer exists.',
+        retryAfterMs: null,
+      },
+    },
+  ];
+  const state = events.reduce(soloRunReducer, INITIAL_SOLO_RUN);
+  return {
+    description: 'Practice after 30 idle minutes: the run has closed.',
     build: () => ({ frame: { view: soloCanvasView(state), guess: '' } }),
   };
 }
@@ -667,6 +729,34 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
       reason: 'pro_required',
     },
   ),
+  'solo-practice-locked': pickRefused(
+    'Free asked for practice by link: Back to play, See Pro.',
+    {
+      code: 'forbidden',
+      message: 'Practice needs Pro.',
+      retryAfterMs: null,
+      reason: 'pro_required',
+    },
+    true,
+  ),
+  practice: {
+    description: 'Practice mid-run: no ring, no lives, the Practice card.',
+    build: () => ({
+      frame: {
+        view: {
+          ...toSolo(fields(null, SOLO_FOUND), MAX_LIVES),
+          isPractice: true,
+        },
+        guess: '',
+      },
+    }),
+  },
+  'practice-summary': summaryState(
+    'A quit practice run: the tag, minutes per find, Practise again.',
+    PRACTICE_SUMMARY,
+    { isPractice: true },
+  ),
+  'practice-closed': practiceClosed(),
   'solo-daily-cap': {
     description: 'Free with no solo runs left: Play a duel or See Pro.',
     build: (now) => ({

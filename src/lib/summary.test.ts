@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  findTimeLabel,
   accuracyLabel,
   matchContext,
   matchDateLabel,
@@ -170,6 +171,7 @@ describe('missedOnPitch', () => {
     },
   ];
   const summary = (missed: RevealedPlayer[] | null): SoloSummary => ({
+    practice: false,
     match: IDENTITY,
     found: [],
     missedCount: 11,
@@ -211,5 +213,18 @@ describe('missedOnPitch', () => {
   it('shows nothing while the summary loads, or mid-run', () => {
     expect(missedOnPitch({ status: 'loading' })).toBeUndefined();
     expect(missedOnPitch(null)).toBeUndefined();
+  });
+});
+
+describe('findTimeLabel', () => {
+  it('keeps seconds under a minute, as a round shows', () => {
+    expect(findTimeLabel(3_200)).toBe('3.2s');
+    expect(findTimeLabel(59_900)).toBe('59.9s');
+  });
+
+  it('turns practice finds past a minute into minutes', () => {
+    expect(findTimeLabel(60_000)).toBe('1:00');
+    expect(findTimeLabel(74_300)).toBe('1:14');
+    expect(findTimeLabel(754_300)).toBe('12:34');
   });
 });
