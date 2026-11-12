@@ -16,6 +16,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | **Done** (2026-11-12, backend R12 `6a1431e`) |
 | R13 | Exact match selection | Web feature Pro E | 2026-11-10 | **Done** (2026-11-12, backend R13 `7533e97`) |
 | R14 | Practice mode | Web feature Pro F | 2026-11-10 | **Done** (2026-11-12, backend R14 `c8c2e51`) |
+| R15 | Archive search without nicknames | Web fix Pro Polish D | 2026-11-13 | Asked |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -900,3 +901,37 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 ### Prompt for the backend session
 
 > Read `../lineup-web/context/docs/backend-requests.md` § R14. Add practice mode to solo: an optional `practice: boolean` on the start body (combines with R13's `matchId`; Pro only, `forbidden` + `reason: 'pro_required'` for Free). The rules engine runs it with no round clock and no life loss, ending on all 11 or quit; guesses are validated as usual. `SoloSession` and `SoloSummary` gain `practice: boolean`; `round` stays null and `lives` 3. A practice run is never saved (no rows, no history, no stats) and never counts toward the daily cap. Drop idle practice runs after 30 minutes. Tests as listed. No migration, no `PROTOCOL_VERSION` bump. Ask me anything unclear before `/feature load`. When it's merged to `main` and pushed, give me everything listed in § R14 "Report in the Built note", plus anything that differs from the request.
+
+---
+
+## R15. Archive search without nicknames
+
+**Why:** the archive promised nickname search, but no ingest match has a nickname, so a search like "istanbul" finds nothing (Pro browser review, 2026-11-12, item 7). The user decided to turn nickname search off (2026-11-13). The web drops "nickname" from its copy and its mock in fix Pro Polish D (`context/fixes/pro-polish-d-cap-and-leftovers.md`). Needs R12.
+
+### The change (no migration)
+
+- **`GET /catalog/matches`:** `q` no longer matches the match's `nickname`. Every other search word stays: both clubs' names, short names and aliases, the competition, the season (`2004-05` also answers to 2004 and 2005) and the match's year. Word-prefix matching and normalization are unchanged.
+- **The response is unchanged:** `MatchIdentity.nickname` is still sent, and the web still shows it on a row when it exists.
+- **Nothing else changes:** filters, order, paging, `total`, access (Pro while `PRO_ENABLED` is on, public while off) and the 5-minute index stay as R12 built them.
+
+### Contract and versions
+
+- A behaviour change only; no field changes. No `PROTOCOL_VERSION` bump.
+
+### Tests
+
+- A match whose nickname is "Miracle of Istanbul" is **not** found by "istanbul" or "miracle".
+- The same match is still found by its clubs, its competition and its season.
+- The existing R12 search tests still pass, minus the nickname case.
+
+### Report in the Built note
+
+- The commit, and any other place that searched nicknames and changed too.
+
+### Then
+
+- **Web, Pro Polish D** doesn't wait for R15. Once R15 is in, `context/docs/contract.md` drops the nickname from the search rule.
+
+### Prompt for the backend session
+
+> Read `../lineup-web/context/docs/backend-requests.md` § R15. In `GET /catalog/matches`, stop matching `q` against the match nickname; every other search word (club names, short names, aliases, competition, season, match year) and the word-prefix rule stay as R12 built them, and `nickname` is still sent in each `MatchIdentity`. Tests as listed. No migration, no `PROTOCOL_VERSION` bump. When it's merged to `main` and pushed, give me everything listed in § R15 "Report in the Built note", plus anything that differs from the request.
