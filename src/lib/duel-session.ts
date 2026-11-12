@@ -61,7 +61,6 @@ export const DUEL_GATE_COPY = {
   roomClosed: 'Your room closed',
   hostingNeedsPro: 'Hosting a room needs Pro',
   anyoneCanJoin: 'Anyone can join a room with its code.',
-  seePro: 'See Pro',
 } as const;
 
 const AWAY_OUTCOMES: Record<DuelOutcome, string> = {
@@ -726,7 +725,7 @@ function roomFailedGate(state: DuelSessionState): CanvasGateView | null {
       title: DUEL_GATE_COPY.hostingNeedsPro,
       detail: DUEL_GATE_COPY.anyoneCanJoin,
       actionLabel: DUEL_GATE_COPY.backToPlay,
-      secondaryActionLabel: DUEL_GATE_COPY.seePro,
+      seePro: true,
     };
   }
   return {

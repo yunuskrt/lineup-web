@@ -1,7 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { type ReactNode, useState, useTransition } from 'react';
+import {
+  type ReactNode,
+  type RefObject,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
+import { flushSync } from 'react-dom';
 import { QuitDialog, type QuitDialogCopy } from '@/components/game/QuitDialog';
 import { useEnsureSession } from '@/hooks/use-auth';
 import { authErrorMessageOf } from '@/lib/auth';
@@ -20,6 +27,8 @@ type PlayStartProps = {
   label?: string;
   // Asked at the click: a reason to confirm first
   warningFor?: () => QuitDialogCopy | null;
+  // The Start button, for focus from the screen
+  ref?: RefObject<HTMLButtonElement | null>;
 };
 
 const START_LABELS: Record<PlayMode, string> = {
@@ -35,12 +44,15 @@ export function PlayStart({
   children,
   label,
   warningFor,
+  ref,
 }: PlayStartProps) {
   const router = useRouter();
   const ensureSession = useEnsureSession();
   const [isNavigating, startNavigation] = useTransition();
   const [warning, setWarning] = useState<QuitDialogCopy | null>(null);
   const isStarting = ensureSession.isPending || isNavigating;
+  const ownRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = ref ?? ownRef;
 
   async function start() {
     if (!href || isCapped) return;
@@ -53,6 +65,12 @@ export function PlayStart({
     }
   }
 
+  // Removing the open dialog drops focus to body
+  function dismissWarning() {
+    flushSync(() => setWarning(null));
+    buttonRef.current?.focus();
+  }
+
   function handleClick() {
     const next = warningFor?.() ?? null;
     if (next) setWarning(next);
@@ -62,6 +80,7 @@ export function PlayStart({
   return (
     <div className="flex flex-col items-start gap-3">
       <button
+        ref={buttonRef}
         type="button"
         disabled={!href || isStarting || isCapped}
         aria-describedby={describedBy}
@@ -81,7 +100,7 @@ export function PlayStart({
           isOpen
           isQuitting={isStarting}
           copy={warning}
-          onDismiss={() => setWarning(null)}
+          onDismiss={dismissWarning}
           onConfirm={() => void start()}
         />
       ) : null}

@@ -705,7 +705,8 @@ describe('room snapshots', () => {
   it('show the Pro gate for a Free host', () => {
     const { view } = CANVAS_STATES.duel['room-pro-required'].build(NOW).frame;
     expect(view.gate?.title).toBe(DUEL_GATE_COPY.hostingNeedsPro);
-    expect(view.gate?.secondaryActionLabel).toBe(DUEL_GATE_COPY.seePro);
+    expect(view.gate?.seePro).toBe(true);
+    expect(view.gate?.secondaryActionLabel).toBeUndefined();
   });
 
   it('lock New room only in the Free result', () => {

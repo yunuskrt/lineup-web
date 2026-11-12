@@ -2034,7 +2034,8 @@ describe('private rooms', () => {
     expect(gate?.title).toBe(DUEL_GATE_COPY.hostingNeedsPro);
     expect(gate?.detail).toBe(DUEL_GATE_COPY.anyoneCanJoin);
     expect(gate?.actionLabel).toBe(DUEL_GATE_COPY.backToPlay);
-    expect(gate?.secondaryActionLabel).toBe(DUEL_GATE_COPY.seePro);
+    expect(gate?.seePro).toBe(true);
+    expect(gate?.secondaryActionLabel).toBeUndefined();
     expect(duelGateAction(state)).toBe('leave');
   });
 

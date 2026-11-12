@@ -91,3 +91,4 @@ Not Started
 - Pro E: Play on archive rows, ?match= runs, pick gates, Play it again.
 - Pro F: practice toggle, Practice card, Practise again, open-run warning.
 - Pro Polish A: practice quit copy, card at side pick, archive back link.
+- Pro Polish B: focus after dialog, cap and clear, room gate See Pro link.
