@@ -11,6 +11,7 @@ import type { GridPulse, ToastMessage } from '@/types/feedback';
 import type { Lives, RoundTiming } from '@/types/game';
 import type { MatchIdentity, MatchInPlay } from '@/types/match';
 import type { FoundPlayer } from '@/types/player';
+import type { ProAccess } from '@/types/pro';
 import type { SoloSummary } from '@/types/solo';
 
 export type CanvasMode = 'solo' | 'duel';
@@ -89,6 +90,8 @@ export type DuelCanvasView = CanvasViewBase & {
   endReason?: DuelEndReason;
   // A private room's game: New room, not Play again
   isPrivate?: boolean;
+  // Hosting is Pro (R10); open when unset
+  hostAccess?: ProAccess;
 };
 
 export type DuelEndReason = 'connectionLost';

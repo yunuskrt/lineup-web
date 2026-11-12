@@ -7,12 +7,15 @@ import { ProtocolRefused } from '@/components/game/ProtocolRefused';
 import { DUEL_FORFEIT_COPY, QuitDialog } from '@/components/game/QuitDialog';
 import { useDuel } from '@/hooks/use-duel';
 import { usePlayerDirectory } from '@/hooks/use-player-directory';
+import { useProAccess } from '@/hooks/use-pro';
 import {
   canConfirmForfeit,
   duelCanvasView,
   duelGateAction,
+  isProRequired,
 } from '@/lib/duel-session';
 import { withMode, withQuery } from '@/lib/filters';
+import { PRO_PATH } from '@/lib/pro';
 import type { LobbyAction } from '@/types/duel-lobby';
 import type { PlayMode } from '@/types/play';
 
@@ -34,6 +37,8 @@ export function DuelGame() {
     widen,
   } = useDuel(params);
   const directory = usePlayerDirectory(state.session?.sessionId ?? null);
+  // Whether New room is offered after a room game
+  const hostAccess = useProAccess();
   const [guess, setGuess] = useState('');
   const [clearKey, setClearKey] = useState(state.clearKey);
   const [isForfeitOpen, setIsForfeitOpen] = useState(false);
@@ -105,8 +110,13 @@ export function DuelGame() {
     }
   }
 
-  // Ended away, the result lives on the profile
+  // See Pro; or a result away, on the profile
   async function handleGateSecondaryAction() {
+    if (isProRequired(state)) {
+      await leave();
+      router.push(PRO_PATH);
+      return;
+    }
     if (state.phase !== 'endedAway') {
       backToFilters();
       return;
@@ -141,7 +151,7 @@ export function DuelGame() {
   return (
     <>
       <GameCanvas
-        view={duelCanvasView(state, you)}
+        view={{ ...duelCanvasView(state, you), hostAccess }}
         guess={guess}
         directory={directory}
         onGuessChange={setGuess}

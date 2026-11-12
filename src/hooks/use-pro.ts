@@ -2,7 +2,8 @@ import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useSession } from '@/hooks/use-auth';
 import { getApiClient } from '@/lib/api';
 import { unwrap } from '@/lib/api/unwrap';
-import { proAccess, type ProAccess } from '@/lib/pro';
+import { proAccess } from '@/lib/pro';
+import type { ProAccess } from '@/types/pro';
 
 export const APP_CONFIG_QUERY_KEY = ['app-config'] as const;
 

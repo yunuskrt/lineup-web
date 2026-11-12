@@ -31,6 +31,7 @@ import {
   resolveCanvasState,
 } from '@/lib/dev/canvas-states';
 import { SAMPLE_OPPONENT } from '@/lib/dev/samples';
+import { DUEL_GATE_COPY } from '@/lib/duel-session';
 import type { CanvasMode, CanvasView } from '@/types/canvas';
 
 const NOW = 1_700_000_000_000;
@@ -624,5 +625,21 @@ describe('room snapshots', () => {
       throw new Error('not a waiting room');
     }
     expect(view.lobby.expiresAt).toBeGreaterThan(NOW);
+  });
+
+  it('show the Pro gate for a Free host', () => {
+    const { view } = CANVAS_STATES.duel['room-pro-required'].build(NOW).frame;
+    expect(view.gate?.title).toBe(DUEL_GATE_COPY.hostingNeedsPro);
+    expect(view.gate?.secondaryActionLabel).toBe(DUEL_GATE_COPY.seePro);
+  });
+
+  it('lock New room only in the Free result', () => {
+    const free = CANVAS_STATES.duel['room-result-free'].build(NOW).frame.view;
+    const open = CANVAS_STATES.duel['room-result'].build(NOW).frame.view;
+    if (free.mode !== 'duel' || open.mode !== 'duel') {
+      throw new Error('not a duel');
+    }
+    expect(free.hostAccess).toBe('locked');
+    expect(open.hostAccess).toBeUndefined();
   });
 });

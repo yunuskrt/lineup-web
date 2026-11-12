@@ -11,6 +11,7 @@ import {
   DISCONNECT_AFTER_MS,
   createMockDuelClient,
   FRIEND_JOIN_MS,
+  HOSTING_NEEDS_PRO,
   OPPONENT_FILTER_MS,
   OPPONENT_FILTERS,
   QUEUE_WAIT_MS,
@@ -816,14 +817,20 @@ describe('mock duel client rooms', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
     store = createStore();
+    // Hosting is Pro (R10); joining is for anyone
     store.identity = createIdentity({
       id: 'guest-1',
       handle: 'guest-1abc2def',
       isGuest: true,
       emailVerified: false,
-      tier: 'free',
+      tier: 'pro',
     });
   });
+
+  function makeFree() {
+    if (!store.identity) throw new Error('Expected an identity');
+    store.identity.user = { ...store.identity.user, tier: 'free' };
+  }
 
   afterEach(() => {
     vi.useRealTimers();
@@ -833,6 +840,31 @@ describe('mock duel client rooms', () => {
     if (result.success) throw new Error('Expected a refusal');
     return result.error;
   }
+
+  it('refuses a Free host first, with pro_required', async () => {
+    makeFree();
+    const client = createMockDuelClient(scripted({ store }));
+    const log = record(client);
+
+    const error = errorOf(await client.createRoom(FILTERS));
+    expect(error).toEqual({
+      code: 'forbidden',
+      message: HOSTING_NEEDS_PRO,
+      retryAfterMs: null,
+      reason: 'pro_required',
+    });
+    expect(names(log)).toEqual([]);
+  });
+
+  it('lets a Free player join a room', async () => {
+    makeFree();
+    const client = createMockDuelClient(scripted({ store }));
+    const log = record(client);
+
+    expect((await client.joinRoom('K7QM2X')).success).toBe(true);
+    await vi.advanceTimersByTimeAsync(ROOM_JOIN_MS);
+    expect(names(log)).toContain('paired');
+  });
 
   it('creates a room with a code, then the friend joins', async () => {
     const client = createMockDuelClient(scripted({ store }));

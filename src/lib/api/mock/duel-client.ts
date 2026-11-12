@@ -25,6 +25,7 @@ import {
   fail,
   isGuessable,
   matchInPlayFor,
+  proRequired,
   toGuessResult,
 } from '@/lib/api/mock/shared';
 import type { MockFixture } from '@/lib/api/mock/types';
@@ -77,6 +78,10 @@ export const OPPONENT_FILTERS: Filters = {
 };
 
 const BUSY_MESSAGE = "You're already in a room, the queue or a duel.";
+
+// Backend R10's words
+export const HOSTING_NEEDS_PRO =
+  'Hosting a room needs Pro. Anyone can join one.';
 
 // The server's copy when another tab takes over
 const CONNECTED_ELSEWHERE_ERROR: ApiError = {
@@ -539,6 +544,10 @@ export function createMockDuelClient(
     },
 
     async createRoom(filters: Filters) {
+      // R10: the tier is the first check
+      if (store.identity?.user.tier === 'free') {
+        return proRequired(HOSTING_NEEDS_PRO);
+      }
       if (phase !== 'idle') return fail('forbidden', BUSY_MESSAGE);
 
       const parsed = filtersSchema.safeParse(filters);
