@@ -37,6 +37,7 @@ import {
   DUEL_GATE_COPY,
   duelCanvasView,
   duelGateAction,
+  isProRequired,
   duelSessionReducer,
   INITIAL_DUEL_SESSION,
   RECONNECT_WINDOW_MS,
@@ -2016,6 +2017,45 @@ describe('private rooms', () => {
     expect(duelGateAction(state)).toBe('widen');
   });
 
+  it('names Pro when a Free player tries to host', () => {
+    const state = play(PRIVATE, {
+      type: 'failed',
+      step: 'createRoom',
+      error: {
+        code: 'forbidden',
+        message: 'Hosting a room needs Pro. Anyone can join one.',
+        retryAfterMs: null,
+        reason: 'pro_required',
+      },
+      at: AT,
+    });
+    const gate = viewOf(state).gate;
+    expect(isProRequired(state)).toBe(true);
+    expect(gate?.title).toBe(DUEL_GATE_COPY.hostingNeedsPro);
+    expect(gate?.detail).toBe(DUEL_GATE_COPY.anyoneCanJoin);
+    expect(gate?.actionLabel).toBe(DUEL_GATE_COPY.backToPlay);
+    expect(gate?.secondaryActionLabel).toBe(DUEL_GATE_COPY.seePro);
+    expect(duelGateAction(state)).toBe('leave');
+  });
+
+  it('keeps the server words for a create refused without a reason', () => {
+    const state = play(PRIVATE, {
+      type: 'failed',
+      step: 'createRoom',
+      error: {
+        code: 'forbidden',
+        message: 'You already have a room open.',
+        retryAfterMs: null,
+      },
+      at: AT,
+    });
+    const gate = viewOf(state).gate;
+    expect(isProRequired(state)).toBe(false);
+    expect(gate?.title).toBe("Couldn't create the room");
+    expect(gate?.detail).toBe('You already have a room open.');
+    expect(gate?.secondaryActionLabel).toBeUndefined();
+  });
+
   it('says the room closed when the connection drops while waiting', () => {
     const state = play(PRIVATE, CREATED, { type: 'connectionRestored' });
     const view = viewOf(state);
@@ -2158,4 +2198,3 @@ describe('private rooms', () => {
     },
   );
 });
-

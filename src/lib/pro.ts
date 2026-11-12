@@ -1,8 +1,6 @@
 import type { AppConfig } from '@/types/config';
+import type { ProAccess } from '@/types/pro';
 import type { User } from '@/types/user';
-
-// Presentation only: the server enforces every gate
-export type ProAccess = 'pending' | 'open' | 'locked';
 
 export const PRO_PATH = '/pro';
 

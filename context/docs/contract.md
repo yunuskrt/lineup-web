@@ -396,7 +396,7 @@ Every command is acked with the §2 envelope, `data` empty. **Outcomes arrive as
 | `connect()` | handshake | `{ token, protocolVersion }` | `protocol_refused`, `unauthorized`, `server_error` (in `connect_error` `data`, not an ack) |
 | `enterQueue()` | `queue:enter` | — | `forbidden` (already queued, or already in a duel) |
 | `leaveQueue()` | `queue:leave` | — | `forbidden` (not queued) |
-| `createRoom(filters)` | `room:create` | `Filters` | `forbidden` (queued, already hosting, or in a duel), `invalid_input`, `empty_pool` + `emptyBecause` (nothing stored) |
+| `createRoom(filters)` | `room:create` | `Filters` | `forbidden` + `reason: 'pro_required'` (a Free player while `PRO_ENABLED` is on; the first check, backend R10), `forbidden` (queued, already hosting, or in a duel), `invalid_input`, `empty_pool` + `emptyBecause` (nothing stored) |
 | `joinRoom(code)` | `room:join` | `{ code }` (6 characters, any case; the server uppercases) | `not_found` (no open room: wrong, expired, left, or **already full**), `forbidden` (your own room, or you're queued, hosting or in a duel), `invalid_input` |
 | `leaveRoom()` | `room:leave` | — | `forbidden` (not hosting an open room) |
 | `submitFilters(filters)` | `filters:submit` | `Filters` | `forbidden` (filters not open, or already submitted), `invalid_input`, `empty_pool` + `emptyBecause` (not stored, so a wider set may be sent) |

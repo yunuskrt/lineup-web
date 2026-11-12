@@ -11,6 +11,46 @@ const LOCKED_CONTROL: Record<ProLockSize, string> = {
   large: `rounded-sm border border-line px-8 py-2.75 text-16 font-semibold text-fg-muted ${FOCUS_RING}`,
 };
 
+type ProLockButtonProps = {
+  label: string;
+  size?: ProLockSize;
+  captionId?: string;
+};
+
+export function ProLockButton({
+  label,
+  size = 'default',
+  captionId,
+}: ProLockButtonProps) {
+  return (
+    <button
+      type="button"
+      aria-disabled="true"
+      aria-describedby={captionId}
+      className={LOCKED_CONTROL[size]}
+    >
+      {label}
+    </button>
+  );
+}
+
+export function ProLockCaption({
+  id,
+  caption,
+}: {
+  id: string;
+  caption: string;
+}) {
+  return (
+    <p id={id} className="text-12 leading-4 text-fg-muted">
+      {caption}{' '}
+      <Link href={PRO_PATH} className={TEXT_LINK}>
+        See Pro
+      </Link>
+    </p>
+  );
+}
+
 type ProLockProps = {
   label: string;
   caption: string;
@@ -33,22 +73,12 @@ export function ProLock({
     <div
       className={`flex flex-col gap-1.5 ${isFullWidth ? 'items-stretch' : 'items-start'}`}
     >
-      <button
-        type="button"
-        aria-disabled="true"
-        aria-describedby={isPending ? undefined : captionId}
-        className={LOCKED_CONTROL[size]}
-      >
-        {label}
-      </button>
-      {isPending ? null : (
-        <p id={captionId} className="text-12 leading-4 text-fg-muted">
-          {caption}{' '}
-          <Link href={PRO_PATH} className={TEXT_LINK}>
-            See Pro
-          </Link>
-        </p>
-      )}
+      <ProLockButton
+        label={label}
+        size={size}
+        captionId={isPending ? undefined : captionId}
+      />
+      {isPending ? null : <ProLockCaption id={captionId} caption={caption} />}
     </div>
   );
 }

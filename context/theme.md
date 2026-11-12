@@ -265,6 +265,7 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Room filters            | A friend joins      | The coin-flip card, named for the room: "Playing your room" or "Playing {creator}'s room". No coin-flip wording |
 | Joining                 | A code is sent      | "Joining room K7QM2X…" over the gated canvas, the ambient pulse, Cancel. Never a spinner on an empty panel        |
 | Join refused            | Wrong, full or own  | Say which, and Back to play with the code kept in the box. Never "something went wrong"                          |
+| Hosting locked          | Free, split on      | Create room drawn locked (`ProLock`), "Pro hosts rooms. Anyone can join." and See Pro under the row; the code box and Join stay live. A refused create says "Hosting a room needs Pro", with Back to play and See Pro. After a room game, Back to play leads and New room is locked |
 | Room expired            | 10 minutes, no one  | "No one joined", Create a new room. Never a dead end                                                             |
 
 ### System

@@ -59,6 +59,9 @@ export const DUEL_GATE_COPY = {
   newRoom: 'New room',
   backToPlay: 'Back to play',
   roomClosed: 'Your room closed',
+  hostingNeedsPro: 'Hosting a room needs Pro',
+  anyoneCanJoin: 'Anyone can join a room with its code.',
+  seePro: 'See Pro',
 } as const;
 
 const AWAY_OUTCOMES: Record<DuelOutcome, string> = {
@@ -693,6 +696,16 @@ function isRoomRefusal(state: DuelSessionState): boolean {
   return failure.step === 'createRoom' && code === 'forbidden';
 }
 
+// R10: a Free host; the gate offers Pro
+export function isProRequired(state: DuelSessionState): boolean {
+  const { failure } = state;
+  return (
+    failure?.step === 'createRoom' &&
+    failure.error.code === 'forbidden' &&
+    failure.error.reason === 'pro_required'
+  );
+}
+
 function joinRefusalDetail(error: ApiError): string {
   return JOIN_REFUSALS[error.code] ?? error.message;
 }
@@ -708,6 +721,14 @@ function roomFailedGate(state: DuelSessionState): CanvasGateView | null {
     };
   }
   if (!isRoomRefusal(state)) return null;
+  if (isProRequired(state)) {
+    return {
+      title: DUEL_GATE_COPY.hostingNeedsPro,
+      detail: DUEL_GATE_COPY.anyoneCanJoin,
+      actionLabel: DUEL_GATE_COPY.backToPlay,
+      secondaryActionLabel: DUEL_GATE_COPY.seePro,
+    };
+  }
   return {
     title: FAILED_TITLES[failure.step],
     detail:

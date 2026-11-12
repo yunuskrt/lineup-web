@@ -2,7 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { type SubmitEvent, useId, useState, useTransition } from 'react';
+import { ProLockButton, ProLockCaption } from '@/components/pro/ProLock';
 import { useEnsureSession } from '@/hooks/use-auth';
+import { useProAccess } from '@/hooks/use-pro';
 import { authErrorMessageOf } from '@/lib/auth';
 import { withQuery } from '@/lib/filters';
 import {
@@ -26,12 +28,15 @@ type Pending = 'create' | 'join';
 export function RoomControls({ filterParams, initialCode }: RoomControlsProps) {
   const router = useRouter();
   const ensureSession = useEnsureSession();
+  // Hosting is Pro (R10); joining is for anyone
+  const hostAccess = useProAccess();
   const [isNavigating, startNavigation] = useTransition();
   const [code, setCode] = useState(() => roomCodeInput(initialCode));
   const [pending, setPending] = useState<Pending | null>(null);
   const headingId = useId();
   const inputId = useId();
   const hintId = useId();
+  const lockId = useId();
   const isBusy = ensureSession.isPending || isNavigating;
   const isValid = isRoomCode(code);
   const showsHint = hasLookAlike(code);
@@ -67,14 +72,21 @@ export function RoomControls({ filterParams, initialCode }: RoomControlsProps) {
         Play a friend
       </h3>
       <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-        <button
-          type="button"
-          onClick={create}
-          disabled={!filterParams || isBusy}
-          className={SECONDARY_BUTTON}
-        >
-          {pending === 'create' && isBusy ? 'Creating…' : 'Create room'}
-        </button>
+        {hostAccess === 'open' ? (
+          <button
+            type="button"
+            onClick={create}
+            disabled={!filterParams || isBusy}
+            className={SECONDARY_BUTTON}
+          >
+            {pending === 'create' && isBusy ? 'Creating…' : 'Create room'}
+          </button>
+        ) : (
+          <ProLockButton
+            label="Create room"
+            captionId={hostAccess === 'locked' ? lockId : undefined}
+          />
+        )}
         <span aria-hidden="true" className="text-14 text-fg-muted">
           or
         </span>
@@ -105,6 +117,13 @@ export function RoomControls({ filterParams, initialCode }: RoomControlsProps) {
           </button>
         </form>
       </div>
+      {/* Under the whole row, so or stays by the button */}
+      {hostAccess === 'locked' ? (
+        <ProLockCaption
+          id={lockId}
+          caption="Pro hosts rooms. Anyone can join."
+        />
+      ) : null}
       {showsHint ? (
         <p id={hintId} className="text-14 text-fg-muted">
           {ROOM_CODE_HINT}

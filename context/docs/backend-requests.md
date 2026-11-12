@@ -11,7 +11,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R7 | A catalog overview for the landing page, with a showcase match | Web fixes Landing A, B and C | 2026-11-09 | **Done** (2026-11-09, backend R7 `d5cdcb6`): 5-minute server cache |
 | R8 | Three more reveals in the landing showcase | Web fix Landing D | 2026-11-10 | **Done** (2026-11-10, backend R8 `aca22bf`) |
 | R9 | The Pro tier and the `PRO_ENABLED` switch | Web feature Pro A | 2026-11-10 | **Done** (2026-11-12, backend R9 `fcf2079`) |
-| R10 | Pro-only room hosting | Web feature Pro B | 2026-11-10 | Asked |
+| R10 | Pro-only room hosting | Web feature Pro B | 2026-11-10 | **Done** (2026-11-12, backend R10 `d7d53ca`) |
 | R11 | The solo daily cap | Web feature Pro C | 2026-11-10 | Asked |
 | R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | Asked |
 | R13 | Exact match selection | Web feature Pro E | 2026-11-10 | Asked |
@@ -631,6 +631,18 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 - With the switch on, a Free `room:create` gets the refusal with its reason, and nothing is stored. A Pro one opens a room.
 - With the switch off, a stored-`free` user opens a room.
 - **Two-client harness:** a Pro creator and a Free joiner play a room game to `finished`.
+
+### Built
+
+- **The gate** (2026-11-12): backend `d7d53ca`, on `main` and pushed.
+  - **`room:create` refuses Free while `PRO_ENABLED=true`.** The ack is `{ success: false, error: { code: 'forbidden', message: 'Hosting a room needs Pro. Anyone can join one.', retryAfterMs: null, reason: 'pro_required' } }`. Nothing is stored and no `roomCreated` follows.
+  - **It's the first check on `room:create`,** so it wins over the other refusals ("You already have a room open.", queued, in a duel) and over `empty_pool`.
+  - **The tier is read from the database at each `room:create`:** a tier set with `npm run user:tier -- <handle> pro` applies on the next attempt, with no reconnect or new sign-in.
+  - **`room:join` is unchanged:** a Free player can join a Pro player's room, and the duel is identical for both.
+  - **An open room stays open** if its host drops to Free while it waits.
+  - **With `PRO_ENABLED=false`** everyone can host, as before.
+  - No contract shape change (`reason` exists since R9), no migration, no `PROTOCOL_VERSION` bump.
+- **Differences from this request:** the tier check runs first on `room:create`; the request placed it right after payload validation. For the web the outcome is the same: a Free player's create always answers `pro_required`.
 
 ### Report in the Built note
 

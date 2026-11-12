@@ -38,6 +38,7 @@ import type { DuelSessionState } from '@/types/duel-session';
 import type { Lives, RoundTiming } from '@/types/game';
 import type { MatchIdentity } from '@/types/match';
 import type { FoundPlayer, NamedPlayer, RevealedPlayer } from '@/types/player';
+import type { ProAccess } from '@/types/pro';
 import type { SoloSummary } from '@/types/solo';
 
 export const SNAPSHOT_EVENT_DELAY_MS = 600;
@@ -686,29 +687,37 @@ const SAMPLE_ROOM_CODE = 'K7QM2X';
 // Close to the server's 10 minutes, still running
 const ROOM_LEFT_MS = 9 * 60_000 + 41_000;
 
-function roomRefusal(code: ApiError['code'], message: string): ApiError {
-  return { code, message, retryAfterMs: null };
+function roomRefusal(
+  code: ApiError['code'],
+  message: string,
+  reason?: ApiError['reason'],
+): ApiError {
+  return { code, message, retryAfterMs: null, reason };
 }
 
 // Through the real view, so the copy can't drift
 function roomState(
   description: string,
   patch: (now: number) => Partial<DuelSessionState>,
+  hostAccess?: ProAccess,
 ): CanvasState<DuelCanvasView> {
   return {
     description,
     build: (now) => ({
       frame: {
-        view: duelCanvasView(
-          {
-            ...INITIAL_DUEL_SESSION,
-            filters: SAMPLE_FILTERS,
-            options: SAMPLE_FILTER_OPTIONS,
-            isPrivate: true,
-            ...patch(now),
-          },
-          { ...SAMPLE_YOU, lives: MAX_LIVES },
-        ),
+        view: {
+          ...duelCanvasView(
+            {
+              ...INITIAL_DUEL_SESSION,
+              filters: SAMPLE_FILTERS,
+              options: SAMPLE_FILTER_OPTIONS,
+              isPrivate: true,
+              ...patch(now),
+            },
+            { ...SAMPLE_YOU, lives: MAX_LIVES },
+          ),
+          hostAccess,
+        },
         guess: '',
       },
     }),
@@ -769,12 +778,34 @@ export const ROOM_STATES = {
       ),
     ),
   ),
+  'room-pro-required': roomState(
+    'A Free player tried to host: hosting needs Pro.',
+    () => ({
+      phase: 'failed',
+      failure: {
+        step: 'createRoom',
+        error: roomRefusal(
+          'forbidden',
+          'Hosting a room needs Pro. Anyone can join one.',
+          'pro_required',
+        ),
+      },
+    }),
+  ),
   'room-result': roomState(
     'A room game ended: New room and Back to play.',
     () => ({
       phase: 'finished',
       result: resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 }),
     }),
+  ),
+  'room-result-free': roomState(
+    'A Free player after a room game: Back to play, New room locked.',
+    () => ({
+      phase: 'finished',
+      result: resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 }),
+    }),
+    'locked',
   ),
 } satisfies Record<string, CanvasState<DuelCanvasView>>;
 

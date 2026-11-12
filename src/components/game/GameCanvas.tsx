@@ -365,6 +365,9 @@ export function GameCanvas({
                   onPlayAgain={onPlayAgain}
                   onChangeFilters={onChangeFilters}
                   isPrivate={view.mode === 'duel' && view.isPrivate}
+                  hostAccess={
+                    view.mode === 'duel' ? view.hostAccess : undefined
+                  }
                 />
               ) : (
                 <ActiveRail

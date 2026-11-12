@@ -18,6 +18,19 @@ export function fail<T>(
   return { success: false, error: { code, message, retryAfterMs } };
 }
 
+// A Pro-only action, refused as the backend does
+export function proRequired<T>(message: string): ApiResult<T> {
+  return {
+    success: false,
+    error: {
+      code: 'forbidden',
+      message,
+      retryAfterMs: null,
+      reason: 'pro_required',
+    },
+  };
+}
+
 export function matchInPlayFor(fixture: MockFixture, side: Side): MatchInPlay {
   return { ...fixture.identity, side, formation: fixture[side].formation };
 }
