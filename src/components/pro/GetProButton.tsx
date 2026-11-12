@@ -16,7 +16,7 @@ export function GetProButton() {
         Get Pro
       </button>
       <p id={noteId} className="text-14 leading-5 text-fg-muted">
-        Checkout comes with payments.
+        Pro isn&apos;t on sale yet.
       </p>
     </div>
   );

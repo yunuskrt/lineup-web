@@ -695,6 +695,11 @@ function isRoomRefusal(state: DuelSessionState): boolean {
   return failure.step === 'createRoom' && code === 'forbidden';
 }
 
+// A refused join: /play shows the code again
+export function keepsJoinCode(state: DuelSessionState): boolean {
+  return state.failure?.step === 'joinRoom';
+}
+
 // R10: a Free host; the gate offers Pro
 export function isProRequired(state: DuelSessionState): boolean {
   const { failure } = state;

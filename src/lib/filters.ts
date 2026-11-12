@@ -311,6 +311,16 @@ export function withMode(
   return next;
 }
 
+// Another screen's leftovers, dropped on the way
+export function withoutParams(
+  params: URLSearchParams,
+  names: readonly string[],
+): URLSearchParams {
+  const next = new URLSearchParams(params);
+  for (const name of names) next.delete(name);
+  return next;
+}
+
 export function seasonLabel(start: number): string {
   return `${start}–${String((start + 1) % 100).padStart(2, '0')}`;
 }

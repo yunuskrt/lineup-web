@@ -63,9 +63,10 @@ describe('the mock archive', () => {
     expect(page({ q: 'gate' }).total).toBe(0);
   });
 
-  it('matches nicknames, seasons and the year', () => {
-    expect(ids({ q: 'mudbath' })).toEqual(['match-crown-2003']);
-    expect(ids({ q: 'rain final' })).toEqual(['match-federation-2012-final']);
+  it('matches seasons and the year, never a nickname', () => {
+    // Backend R15: nicknames are shown, not searched
+    expect(page({ q: 'mudbath' }).total).toBe(0);
+    expect(page({ q: 'rain' }).total).toBe(0);
     // 2004-05 answers to 2004 and to 2005
     expect(ids({ q: '2004' })).toEqual(['match-continental-2005-final']);
     expect(ids({ q: '2003' })).toEqual(['match-crown-2003']);
@@ -117,11 +118,12 @@ describe('the mock archive', () => {
 });
 
 describe('archiveWords', () => {
-  it('splits clubs, competition, nickname, season and year', () => {
+  it('splits clubs, competition, season and year', () => {
     const words = archiveWords(requireFixture('match-crown-2003').identity);
     expect(words).toEqual(
-      expect.arrayContaining(['northgate', 'crown', 'mudbath', '2002', '2003']),
+      expect.arrayContaining(['northgate', 'crown', '2002', '2003']),
     );
+    expect(words).not.toContain('mudbath');
   });
 
   it('never matches inside a word', () => {

@@ -55,3 +55,26 @@ export function refetchAtReset(
 export function isDailyCap(error: ApiError): boolean {
   return error.code === 'forbidden' && error.reason === 'daily_cap';
 }
+
+type StartAsked = { matchId: string | null; practice: boolean };
+
+// Picked or practice: R13/R14's refusal comes first
+export function isCappedBeforeStart(
+  { matchId, practice }: StartAsked,
+  allowance: SoloAllowance | null,
+): boolean {
+  return matchId === null && !practice && isSoloCapped(allowance);
+}
+
+// The refusal the server would give, unasked
+export function dailyCapErrorOf(
+  allowance: SoloAllowance,
+  now: number,
+): ApiError {
+  return {
+    code: 'forbidden',
+    message: capLine(allowance) ?? 'No solo runs left today.',
+    retryAfterMs: Math.max(0, allowance.resetsAt - now),
+    reason: 'daily_cap',
+  };
+}

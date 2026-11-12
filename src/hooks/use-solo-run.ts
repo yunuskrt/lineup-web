@@ -2,7 +2,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useReducer, useRef } from 'react';
 import { failureOf, useEnsureSession } from '@/hooks/use-auth';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
-import { refreshSoloAllowance } from '@/hooks/use-solo-allowance';
+import {
+  refreshSoloAllowance,
+  soloAllowanceQuery,
+} from '@/hooks/use-solo-allowance';
 import { getApiClient } from '@/lib/api';
 import { pickedMatchFrom, soloStartRequestOf } from '@/lib/archive';
 import { unwrap } from '@/lib/api/unwrap';
@@ -20,7 +23,11 @@ import {
   soloRunReducer,
   SYNC_RETRY_MS,
 } from '@/lib/solo-run';
-import { isDailyCap } from '@/lib/solo-allowance';
+import {
+  dailyCapErrorOf,
+  isCappedBeforeStart,
+  isDailyCap,
+} from '@/lib/solo-allowance';
 import { widenReasonOf } from '@/lib/system-states';
 import type { GuessFeedback } from '@/types/feedback';
 import type { RoundTiming } from '@/types/game';
@@ -46,6 +53,18 @@ export function useSoloRun(params: URLSearchParams) {
   const isPlaying = state.phase === 'playing';
   const isAwaitingSummary = state.phase === 'over' && state.summary === null;
 
+  // A failed read never blocks: the start decides
+  async function allowanceOf(userId: string) {
+    try {
+      return await queryClient.fetchQuery({
+        ...soloAllowanceQuery(userId),
+        staleTime: 0,
+      });
+    } catch {
+      return null;
+    }
+  }
+
   async function find(from: URLSearchParams = params) {
     if (isFinding.current) return;
     isFinding.current = true;
@@ -54,7 +73,15 @@ export function useSoloRun(params: URLSearchParams) {
     const practice = isPracticeFrom(from);
     dispatch({ type: 'finding', matchId, practice });
     try {
-      await ensureSession();
+      const session = await ensureSession();
+      // Spares a start the server would refuse
+      const isPlain = matchId === null && !practice;
+      const allowance = isPlain ? await allowanceOf(session.user.id) : null;
+      if (allowance && isCappedBeforeStart({ matchId, practice }, allowance)) {
+        const error = dailyCapErrorOf(allowance, Date.now());
+        dispatch({ type: 'failed', step: 'find', error });
+        return;
+      }
       const options = await queryClient.query(filterOptionsQuery);
       const filters = filtersFromParams(from, options);
       const offer = unwrap(

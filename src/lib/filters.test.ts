@@ -20,6 +20,7 @@ import {
   widenFilters,
   withFilters,
   withMode,
+  withoutParams,
   withQuery,
 } from '@/lib/filters';
 import type { FilterOptions } from '@/types/catalog';
@@ -574,5 +575,21 @@ describe('withFilters', () => {
     const params = new URLSearchParams('competition=comp-a');
     withFilters(params, DEFAULTS, OPTIONS);
     expect(params.toString()).toBe('competition=comp-a');
+  });
+});
+
+describe('withoutParams', () => {
+  it('drops the named leftovers and keeps the filters', () => {
+    const params = new URLSearchParams('room=create&mode=duel&club=c-1');
+    expect(withoutParams(params, ['room']).toString()).toBe(
+      'mode=duel&club=c-1',
+    );
+    expect(withoutParams(params, ['room', 'mode']).toString()).toBe('club=c-1');
+    expect(params.has('room')).toBe(true);
+  });
+
+  it('ignores a name that is not there', () => {
+    const params = new URLSearchParams('club=c-1');
+    expect(withoutParams(params, ['match']).toString()).toBe('club=c-1');
   });
 });

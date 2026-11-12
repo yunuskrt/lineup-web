@@ -107,7 +107,7 @@ describe('activeFiltersLabel', () => {
 describe('archive labels', () => {
   it('counts the matches, singular too', () => {
     expect(archiveTotalLine(1924)).toBe(
-      '1,924 matches. Search by club, competition, season or nickname.',
+      '1,924 matches. Search by club, competition or season.',
     );
     expect(archiveTotalLine(1)).toMatch(/^1 match\./);
   });

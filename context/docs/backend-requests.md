@@ -16,7 +16,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | **Done** (2026-11-12, backend R12 `6a1431e`) |
 | R13 | Exact match selection | Web feature Pro E | 2026-11-10 | **Done** (2026-11-12, backend R13 `7533e97`) |
 | R14 | Practice mode | Web feature Pro F | 2026-11-10 | **Done** (2026-11-12, backend R14 `c8c2e51`) |
-| R15 | Archive search without nicknames | Web fix Pro Polish D | 2026-11-13 | Asked |
+| R15 | Archive search without nicknames | Web fix Pro Polish D | 2026-11-13 | **Done** (2026-11-13, backend R15 `cad41b7`) |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
 
@@ -923,6 +923,16 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 - A match whose nickname is "Miracle of Istanbul" is **not** found by "istanbul" or "miracle".
 - The same match is still found by its clubs, its competition and its season.
 - The existing R12 search tests still pass, minus the nickname case.
+
+### Built
+
+- **Archive search without nicknames** (2026-11-13): backend `cad41b7`, on `main` and pushed.
+  - **`GET /catalog/matches`:** `q` no longer matches the nickname. It still matches both clubs' names, short names and aliases, the competition, the season (`2004-05` also as 2004 and 2005) and the match's year. Normalization and word-start matching are unchanged.
+  - **The response is unchanged:** `MatchIdentity.nickname` is still sent; the web keeps showing it on a row when set.
+  - **A nickname word can still find matches** when the same word is in a club or competition name ("northgate" finds a club called Northgate).
+  - **Nothing else changed:** filters, order, paging, `total`, access and the 5-minute index.
+  - **No other place searched nicknames.** No migration, no `PROTOCOL_VERSION` bump.
+- **Differences from this request:** none.
 
 ### Report in the Built note
 
