@@ -31,8 +31,9 @@ const SHAKE: Variants = {
 
 type Drop = { from: number; to: number };
 
+// Under 360px the band can't hold tiles: bare shirts
 const TILE =
-  'flex size-9 items-center justify-center rounded-sm border lg:size-11';
+  'flex size-9 items-center justify-center rounded-sm border max-[359px]:size-auto max-[359px]:border-0 lg:size-11';
 
 type LivesProps = {
   lives: LivesCount;
@@ -55,7 +56,7 @@ export function Lives({ lives, owner = 'you', isTiled = false }: LivesProps) {
     <div
       role="img"
       aria-label={`${lives} of ${MAX_LIVES} lives left`}
-      className={`flex items-center ${isTiled ? 'gap-2' : 'gap-1'}`}
+      className={`flex items-center ${isTiled ? 'gap-2 max-[359px]:gap-1' : 'gap-1'}`}
     >
       {PIPS.map((index) => {
         const isFilled = index < lives;

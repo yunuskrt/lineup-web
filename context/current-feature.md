@@ -92,3 +92,4 @@ Not Started
 - Pro F: practice toggle, Practice card, Practise again, open-run warning.
 - Pro Polish A: practice quit copy, card at side pick, archive back link.
 - Pro Polish B: focus after dialog, cap and clear, room gate See Pro link.
+- Pro Polish C: archive rows by width, bare shirts at 320, nav icon.

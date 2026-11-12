@@ -25,7 +25,7 @@ type ArchiveRowProps = {
   isDisabled?: boolean;
 };
 
-// Phones drop the crests so names get the width
+// Phones drop the crests; one line from xl
 export function ArchiveRow({
   match,
   onPlay,
@@ -39,11 +39,11 @@ export function ArchiveRow({
     <li className={ARCHIVE_ROW}>
       <time
         dateTime={match.date}
-        className="hidden text-14 leading-5 text-fg-muted tabular-nums sm:col-start-1 sm:row-start-1 sm:block"
+        className="hidden text-14 leading-5 text-fg-muted tabular-nums xl:col-start-1 xl:row-start-1 xl:block"
       >
         {date}
       </time>
-      <span className="col-start-1 row-start-1 flex min-w-0 items-center justify-end gap-2 sm:col-start-2">
+      <span className="col-start-1 row-start-1 flex min-w-0 items-center justify-end gap-2 xl:col-start-2">
         <span
           title={match.home.name}
           className="truncate text-14 leading-5 font-medium sm:text-16 sm:leading-6"
@@ -54,7 +54,7 @@ export function ArchiveRow({
           <ClubCrest club={match.home} size="row" />
         </span>
       </span>
-      <span className="col-start-2 row-start-1 flex items-baseline justify-center gap-1 font-display text-16 leading-6 font-semibold tabular-nums sm:col-start-3">
+      <span className="col-start-2 row-start-1 flex items-baseline justify-center gap-1 font-display text-16 leading-6 font-semibold tabular-nums xl:col-start-3">
         <span>{match.score.home}</span>
         <span aria-hidden="true" className="text-fg-dim">
           –
@@ -62,7 +62,7 @@ export function ArchiveRow({
         <span className="sr-only">to</span>
         <span>{match.score.away}</span>
       </span>
-      <span className="col-start-3 row-start-1 flex min-w-0 items-center gap-2 sm:col-start-4">
+      <span className="col-start-3 row-start-1 flex min-w-0 items-center gap-2 xl:col-start-4">
         <span className="hidden sm:flex">
           <ClubCrest club={match.away} size="row" />
         </span>
@@ -74,16 +74,16 @@ export function ArchiveRow({
         </span>
       </span>
       <div className={ARCHIVE_ROW_FOOT}>
-        <span className="flex min-w-0 flex-1 items-center gap-2 text-12 leading-4 text-fg-muted sm:col-start-5 sm:row-start-1 sm:flex-col sm:items-start sm:gap-0.5">
-          <span className="shrink-0 tabular-nums sm:hidden">{date}</span>
-          <span className="flex min-w-0 items-center gap-1.5 sm:max-w-full">
+        <span className="flex min-w-0 items-center gap-2 text-12 leading-4 text-fg-muted sm:flex-1 xl:col-start-5 xl:row-start-1 xl:flex-col xl:items-start xl:gap-0.5">
+          <span className="shrink-0 tabular-nums xl:hidden">{date}</span>
+          <span className="flex min-w-0 flex-1 items-center gap-1.5 sm:flex-initial xl:max-w-full">
             <CompetitionLogo
               competition={match.competition}
               className="size-4"
             />
             <span
               title={event}
-              className="truncate sm:text-14 sm:leading-5 sm:text-fg"
+              className="truncate xl:text-14 xl:leading-5 xl:text-fg"
             >
               {event}
             </span>
@@ -91,7 +91,7 @@ export function ArchiveRow({
           {match.nickname ? (
             <span
               title={match.nickname}
-              className="min-w-0 truncate max-sm:hidden sm:max-w-full"
+              className="min-w-0 truncate max-sm:hidden xl:max-w-full"
             >
               {match.nickname}
             </span>

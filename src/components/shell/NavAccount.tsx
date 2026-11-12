@@ -13,7 +13,7 @@ export function NavAccount() {
     return (
       <div
         aria-hidden="true"
-        className="h-5 w-16 rounded-sm bg-skeleton-fill"
+        className="size-6 rounded-sm bg-skeleton-fill sm:h-5 sm:w-16"
       />
     );
   }
@@ -21,12 +21,22 @@ export function NavAccount() {
   const user = session.data?.user;
   if (user) {
     return (
+      // Phones: an icon, the handle kept as its name
       <Link
         href="/profile"
         title={user.handle}
-        className={`block max-w-32 truncate sm:max-w-48 ${NAV_LINK}`}
+        className={`block max-sm:p-0.5 sm:max-w-48 sm:truncate ${NAV_LINK}`}
       >
-        {user.handle}
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+          className="size-5 fill-none stroke-current stroke-[1.75] sm:hidden"
+        >
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" strokeLinecap="round" />
+        </svg>
+        <span className="max-sm:sr-only">{user.handle}</span>
       </Link>
     );
   }

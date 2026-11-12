@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -32,3 +32,12 @@ Three layout problems from the Pro browser review (2026-11-12, items 6, 8 and 21
   - `/archive?state=open`, `long` and `loading` at 320, 390, 768 and 1440: the event readable, no sideways scroll, and the skeleton rows the same height as the loaded ones.
   - Every `/play/solo?state=…` and `/play/duel?state=…` snapshot at 320: `document.documentElement.scrollWidth <= innerWidth`.
   - `/profile` and `/archive` at 320 signed in: the icon shows, and a screen reader reads the handle.
+
+**Deviations recorded during implementation**
+
+- 6: from the one-line width, the club and event columns share the room by weight (`1fr`, `1fr`, `1.75fr`), not caps. A capped track grows before any `fr` track, which is why the clubs got 13px at 768.
+- 6: the one-line row starts at `xl` (1280), not `sm`. At 640 six columns left 22px for each club, and at 1024 the events still cut. From `sm` to `xl` the row has two lines (the fixture with crests; the date, event and nickname beside the actions, 80px).
+- 6: phones as specced, 104px (`h-26`). Skeleton rows match at every width (104, 80, 64).
+- 8: below 360px the Lives tiles drop their box and shrink their gap: bare shirts (68px) fit the card's 76px at 320. The ring keeps its size.
+- 8, added: `opponent-reconnecting` overflowed at 320 to 413px on `main` too (the 122px chip). While the opponent reconnects, below 414px the band wraps: the ring centred, the Lives card full width under it.
+- 21: below `sm` the handle stays in the link as `sr-only` text beside the icon, so it is the accessible name without an `aria-label`; `title` unchanged. The pending skeleton is 24px below `sm`.
