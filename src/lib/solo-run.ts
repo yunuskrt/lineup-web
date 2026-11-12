@@ -36,6 +36,11 @@ export const SOLO_GATE_COPY = {
   dailyCap: 'No solo runs left today',
   playDuel: 'Play a duel',
   backToPlay: 'Back to play',
+  matchGone: "That match isn't in the game any more",
+  pickAnother: 'Pick another one from the archive.',
+  backToArchive: 'Back to the archive',
+  pickingLocked: 'Picking a match is part of Pro',
+  randomStillFree: 'A random match from your filters is still free.',
 } as const;
 
 const FAILED_TITLES: Record<SoloRunStep, string> = {
@@ -71,6 +76,7 @@ export const INITIAL_SOLO_RUN: SoloRunState = {
   isQuitting: false,
   cooldownUntil: null,
   failure: null,
+  pickedMatchId: null,
   toast: null,
   shakeKey: 0,
   lifeLostKey: 0,
@@ -136,7 +142,7 @@ export function soloRunReducer(
 ): SoloRunState {
   switch (event.type) {
     case 'finding':
-      return INITIAL_SOLO_RUN;
+      return { ...INITIAL_SOLO_RUN, pickedMatchId: event.matchId };
     case 'offerReceived':
       return { ...state, phase: 'choosing', offer: event.offer, failure: null };
     case 'sideChosen':
@@ -244,12 +250,32 @@ export function soloGateAction(state: SoloRunState): SoloGateAction | null {
       const error = state.failure?.error;
       if (!error) return 'retry';
       if (isDailyCap(error)) return 'playDuel';
+      if (isPickRefused(state)) return 'leave';
+      if (isPickedMatchGone(state)) return 'backToArchive';
       if (widenReasonOf(error)) return 'widen';
       return LEAVING_ERRORS.has(error.code) ? 'leave' : 'retry';
     }
     default:
       return null;
   }
+}
+
+// The picked match left the pool, or a bad link
+function isPickedMatchGone({ failure, pickedMatchId }: SoloRunState): boolean {
+  return (
+    pickedMatchId !== null &&
+    failure?.step === 'find' &&
+    failure.error.code === 'not_found'
+  );
+}
+
+// Free tried to pick (R13); random runs work
+function isPickRefused({ failure }: SoloRunState): boolean {
+  return (
+    failure?.step === 'find' &&
+    failure.error.code === 'forbidden' &&
+    failure.error.reason === 'pro_required'
+  );
 }
 
 // Never a dead end: a duel, the filters, or Pro
@@ -274,6 +300,21 @@ function failedGate(
   if (!failure) return null;
 
   if (isDailyCap(failure.error)) return dailyCapGate(failure.error, capLine);
+  if (isPickRefused(state)) {
+    return {
+      title: SOLO_GATE_COPY.pickingLocked,
+      detail: SOLO_GATE_COPY.randomStillFree,
+      actionLabel: SOLO_GATE_COPY.backToPlay,
+      seePro: true,
+    };
+  }
+  if (isPickedMatchGone(state)) {
+    return {
+      title: SOLO_GATE_COPY.matchGone,
+      detail: SOLO_GATE_COPY.pickAnother,
+      actionLabel: SOLO_GATE_COPY.backToArchive,
+    };
+  }
   if (failure.error.code === 'empty_pool') return emptyPoolGate(failure.error);
 
   return {
@@ -338,5 +379,6 @@ export function soloCanvasView(
     gate: gateOf(state, capLine),
     end: endOf(state),
     capLine: capLine ?? undefined,
+    isPicked: state.pickedMatchId !== null,
   };
 }

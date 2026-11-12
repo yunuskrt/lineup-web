@@ -4,6 +4,7 @@ import { failureOf, useEnsureSession } from '@/hooks/use-auth';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
 import { refreshSoloAllowance } from '@/hooks/use-solo-allowance';
 import { getApiClient } from '@/lib/api';
+import { pickedMatchFrom, soloStartRequestOf } from '@/lib/archive';
 import { unwrap } from '@/lib/api/unwrap';
 import { guessFeedback } from '@/lib/feedback';
 import { filtersFromParams, widenFilters, withFilters } from '@/lib/filters';
@@ -46,12 +47,18 @@ export function useSoloRun(params: URLSearchParams) {
   async function find(from: URLSearchParams = params) {
     if (isFinding.current) return;
     isFinding.current = true;
-    dispatch({ type: 'finding' });
+    // A picked match plays again on Play it again
+    const matchId = pickedMatchFrom(from);
+    dispatch({ type: 'finding', matchId });
     try {
       await ensureSession();
       const options = await queryClient.query(filterOptionsQuery);
       const filters = filtersFromParams(from, options);
-      const offer = unwrap(await getApiClient().solo.findMatch(filters));
+      const offer = unwrap(
+        await getApiClient().solo.findMatch(
+          soloStartRequestOf(filters, matchId),
+        ),
+      );
       dispatch({ type: 'offerReceived', offer });
     } catch (error) {
       const apiError = failureOf(queryClient, error);

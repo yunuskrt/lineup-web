@@ -29,7 +29,7 @@ One backend environment variable decides whether the Free/Pro split exists.
 
 | # | Feature | Free | Pro | Today |
 | --- | --- | --- | --- | --- |
-| 1 | Exact match selection | Random match from filters | Pick any match from the archive | Specced: R13, Pro E |
+| 1 | Exact match selection | Random match from filters | Pick any match from the archive | **Done**: R13, Pro E |
 | 2 | Archive browse & search | Locked page | Browse and search every match | **Done**: R12, Pro D |
 | 3 | Solo runs | 5 a day, reset at UTC midnight | Unlimited | **Done**: R11, Pro C |
 | 5 | Practice mode | Locked | No lives, no clock, not saved | Specced: R14, Pro F |
@@ -81,7 +81,7 @@ Six backend requests (`context/docs/backend-requests.md` § R9–R14) and six we
 | 2 | R10: `room:create` gate (**done**, `d7d53ca`) | `pro-b-room-hosting.md` (**done**) | 1 |
 | 3 | R11: daily cap, `GET /solo/allowance` (**done**, `35f1ce3`) | `pro-c-solo-cap.md` (**done**) | 1 |
 | 4 | R12: `GET /catalog/matches` (**done**, `6a1431e`) | `pro-d-archive.md` (**done**) | 1 |
-| 5 | R13: `matchId` on solo start | `pro-e-exact-match.md` | 4 |
+| 5 | R13: `matchId` on solo start (**done**, `7533e97`) | `pro-e-exact-match.md` (**done**) | 4 |
 | 6 | R14: practice | `pro-f-practice.md` | 1, 5 |
 
 - **The backend may run ahead:** R9 to R14 depend only on the requests above them, so its session can do them back to back while the web follows.

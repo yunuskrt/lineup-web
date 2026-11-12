@@ -74,6 +74,8 @@ export type SoloCanvasView = CanvasViewBase & {
   end: SoloEndView | null;
   // Set while today's solo runs are used up (R11)
   capLine?: string;
+  // One match from the archive: Play it again
+  isPicked?: boolean;
 };
 
 export type DuelCanvasView = CanvasViewBase & {

@@ -14,7 +14,6 @@ import type {
   PlayerDirectory,
 } from '@/types/catalog';
 import type { AppConfig } from '@/types/config';
-import type { Filters } from '@/types/filters';
 import type { Side } from '@/types/match';
 import type { HistoryPage, HistoryQuery, Profile } from '@/types/profile';
 import type {
@@ -23,6 +22,7 @@ import type {
   SoloGuessResponse,
   SoloMatchOffer,
   SoloSession,
+  SoloStartRequest,
   SoloSummary,
 } from '@/types/solo';
 
@@ -48,7 +48,8 @@ export interface CatalogApi {
 }
 
 export interface SoloApi {
-  findMatch(filters: Filters): Promise<ApiResult<SoloMatchOffer>>;
+  // Filters always; `matchId` picks one (Pro)
+  findMatch(request: SoloStartRequest): Promise<ApiResult<SoloMatchOffer>>;
   chooseSide(sessionId: string, side: Side): Promise<ApiResult<SoloSession>>;
   guess(request: SoloGuessRequest): Promise<ApiResult<SoloGuessResponse>>;
   // Re-read server state when the countdown hits 0

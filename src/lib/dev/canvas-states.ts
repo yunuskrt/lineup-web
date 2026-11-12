@@ -15,7 +15,13 @@ import { duelCanvasView, INITIAL_DUEL_SESSION } from '@/lib/duel-session';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
 import { capLine } from '@/lib/solo-allowance';
-import { dailyCapGate, SOLO_GATE_COPY } from '@/lib/solo-run';
+import {
+  dailyCapGate,
+  INITIAL_SOLO_RUN,
+  SOLO_GATE_COPY,
+  soloCanvasView,
+  soloRunReducer,
+} from '@/lib/solo-run';
 import { emptyPoolGate, reconnectingGate } from '@/lib/system-states';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import type { ApiError, EmptyPoolReason } from '@/types/api';
@@ -205,11 +211,17 @@ function sampleCapLine(now: number): string {
   return capLine(sampleAllowance(SAMPLE_DAILY_RUNS, now)) ?? '';
 }
 
+type SummaryOptions = {
+  isMissedRevealed?: boolean;
+  isCapped?: boolean;
+  // One match from the archive (R13)
+  isPicked?: boolean;
+};
+
 function summaryState(
   description: string,
   summary: SoloSummary,
-  isMissedRevealed = false,
-  isCapped = false,
+  { isMissedRevealed = false, isCapped = false, isPicked }: SummaryOptions = {},
 ): CanvasState<SoloCanvasView> {
   return {
     description,
@@ -222,6 +234,7 @@ function summaryState(
             isMissedRevealed,
           }),
           capLine: isCapped ? sampleCapLine(now) : undefined,
+          isPicked,
         },
         guess: '',
       },
@@ -433,6 +446,26 @@ const DAILY_CAP_ERROR: ApiError = {
   reason: 'daily_cap',
 };
 
+// The run's own reducer: the real gate
+function pickRefused(
+  description: string,
+  error: ApiError,
+): CanvasState<SoloCanvasView> {
+  const finding = soloRunReducer(INITIAL_SOLO_RUN, {
+    type: 'finding',
+    matchId: SAMPLE_IDENTITY.id,
+  });
+  const state = soloRunReducer(finding, {
+    type: 'failed',
+    step: 'find',
+    error,
+  });
+  return {
+    description,
+    build: () => ({ frame: { view: soloCanvasView(state), guess: '' } }),
+  };
+}
+
 const COOLDOWN_MS = 3_000;
 
 const RATE_LIMITED: SharedState = {
@@ -596,7 +629,7 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
   'run-over-pro-revealed': summaryState(
     'As run-over-pro, already revealed: the 7 on the pitch.',
     RUN_OVER_PRO_SUMMARY,
-    true,
+    { isMissedRevealed: true },
   ),
   'perfect-clear': summaryState(
     'All 11 named with 2 lives left: the turf takeover.',
@@ -610,8 +643,29 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
   'run-over-capped': summaryState(
     "As run-over, today's fifth run: Play a duel, no Play again.",
     RUN_OVER_SUMMARY,
-    false,
-    true,
+    { isCapped: true },
+  ),
+  'run-over-picked': summaryState(
+    'As run-over, a match from the archive: Play it again.',
+    RUN_OVER_SUMMARY,
+    { isPicked: true },
+  ),
+  'solo-match-not-found': pickRefused(
+    'A picked match left the pool: back to the archive.',
+    {
+      code: 'not_found',
+      message: "That match isn't in the game.",
+      retryAfterMs: null,
+    },
+  ),
+  'solo-match-locked': pickRefused(
+    'Free followed a picked-match link: Back to play, See Pro.',
+    {
+      code: 'forbidden',
+      message: 'Picking a match needs Pro.',
+      retryAfterMs: null,
+      reason: 'pro_required',
+    },
   ),
   'solo-daily-cap': {
     description: 'Free with no solo runs left: Play a duel or See Pro.',

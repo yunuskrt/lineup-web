@@ -1,9 +1,10 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useEffectEvent, useState, useTransition } from 'react';
 import { ArchiveView } from '@/components/archive/ArchiveView';
 import { useArchive } from '@/hooks/use-archive';
+import { useEnsureSession } from '@/hooks/use-auth';
 import { useFilterOptions } from '@/hooks/use-filter-options';
 import { useProAccess } from '@/hooks/use-pro';
 import {
@@ -13,11 +14,14 @@ import {
   archiveSearchFrom,
   archiveSearchText,
   archiveView,
+  pickedMatchPath,
   withOneClub,
 } from '@/lib/archive';
+import { authErrorMessageOf } from '@/lib/auth';
 import { filtersFromParams, replaceQuery } from '@/lib/filters';
 import { isStaleCursor } from '@/lib/profile';
 import type { Filters } from '@/types/filters';
+import type { MatchIdentity } from '@/types/match';
 
 export function ArchiveScreen() {
   // Read once; the page keeps the URL in step after
@@ -28,6 +32,11 @@ export function ArchiveScreen() {
   const [search, setSearch] = useState(() => archiveSearchFrom(params));
   const [q, setQ] = useState(search);
   const [edited, setEdited] = useState<Filters | null>(null);
+  const router = useRouter();
+  const ensureSession = useEnsureSession();
+  const [isNavigating, startNavigation] = useTransition();
+  const [pickedId, setPickedId] = useState<string | null>(null);
+  const isStarting = ensureSession.isPending || isNavigating;
 
   const filters =
     edited ?? (options.data ? filtersFromParams(params, options.data) : null);
@@ -103,6 +112,17 @@ export function ArchiveScreen() {
     void archive.fetchNextPage();
   }
 
+  // A guest is made first, as Start does
+  async function play(match: MatchIdentity) {
+    setPickedId(match.id);
+    try {
+      await ensureSession.mutateAsync();
+      startNavigation(() => router.push(pickedMatchPath(match.id)));
+    } catch {
+      setPickedId(null);
+    }
+  }
+
   return (
     <ArchiveView
       view={view}
@@ -117,6 +137,13 @@ export function ArchiveScreen() {
       onClear={clear}
       onRetry={retry}
       onShowMore={showMore}
+      onPlay={(match) => void play(match)}
+      startingId={isStarting ? pickedId : null}
+      playError={
+        ensureSession.error && !isStarting
+          ? authErrorMessageOf(ensureSession.error)
+          : null
+      }
     />
   );
 }

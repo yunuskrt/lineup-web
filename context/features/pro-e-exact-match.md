@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -67,6 +67,19 @@ Defaults stand unless changed at load:
   - **15:** solo only.
   - **16:** the server refuses Free.
 - **Constraints:** tokens only; `@/` imports; no `any`; comments of at most 50 characters.
+- **Deviations recorded during implementation:**
+  - **The Play button** sits in its own column from `sm`, and at the end of the second line on phones. Its accessible name names the match ("Play AC Milan v Liverpool FC, 25 May 2005"). While a guest is being made, that row reads "Starting…" and the other Play buttons wait; a failure shows the error above the list instead of failing silently.
+  - **The Pro gate** reads "Picking a match is part of Pro" with "A random match from your filters is still free."; **Back to play** is the primary (it drops `?match=`) and See Pro is a link. `CanvasGateView.seePro` now also shows without a secondary link.
+  - **The not-found gate** adds "Pick another one from the archive." under its title.
+  - **The run remembers its pick:** the `finding` event carries `matchId` into `SoloRunState.pickedMatchId`, so the gates and the summary know the run was picked. Play it again reuses `?match=`; leaving for `/play` or a duel drops it.
+  - **`resultActionsLayout` takes an options object** (`isPrivate`, `hostAccess`, `isSoloCapped`, `isPicked`): a fourth flag made the positional call unreadable.
+  - **Back to the archive goes to plain `/archive`:** the archive's earlier search and filters aren't restored.
+  - **The `/play` line is hidden at the daily cap,** where Play a duel and See Pro already lead on; otherwise it shows, locked or not.
+  - **Two small fixes found here:** gate titles now balance (no word alone on the last line), and nav links never wrap (since Pro D's Archive link, "Sign in" wrapped at 320).
+  - **The mock** refuses a Free pick before the daily cap, as R13 does, and answers `not_found` for an unknown id or the showcase.
+  - **The mock checks ran as unit tests, not in a browser:** the 3000 server stays in real mode, so the mock's exact fixture, Pro refusal (before the cap), `not_found` and switch-off rules are covered in `src/lib/api/mock/api-client.test.ts`, and the same screens were checked live against the backend.
+  - **Checked live** (2026-11-12, 3000 against 8080, ingest database, `PRO_ENABLED=true`): Free guest `guest-weicsaf3` saw the `/play` line, the Pro gate on a `?match=` link (Back to play went to `/play` with the pick dropped) and the archive locked with no Play. After the tier script made it Pro: Play on AC Milan 3–3 Liverpool FC sent the filters plus `matchId`, the side pick showed that match, a run named Maldini, the summary led with Play it again and Back to the archive, Play it again offered the same match, a uuid not in the game showed the not-found gate and Back to the archive opened `/archive`, and the run appears in the profile history ("MIL 3–3 LIV, Champions League final, 25 May 2005"). Snapshots clean at 320, 390 and 1440.
+  - **Checked live with `PRO_ENABLED=false`** (ingest): a signed-out visitor searched "milan 2005", pressed Play on AC Milan 3–3 Liverpool FC, got a guest and that match on the side pick, played a run, and its summary offered Play it again and Back to the archive; "Pro" appeared nowhere.
 - **Verification:**
   - `npm test`, `npm run lint`, `npm run build`.
   - **Mock, Pro:** Play on a row → that exact match on the side pick → a run → Play it again gives the same match.

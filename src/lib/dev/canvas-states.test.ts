@@ -46,6 +46,7 @@ const SUMMARY_STATES = [
   'quit',
   'quit-empty',
   'run-over-capped',
+  'run-over-picked',
 ] as const;
 
 // What each `next` swap is there to demonstrate
@@ -334,6 +335,27 @@ describe('solo summary snapshots', () => {
     expect(summaryOf('run-over-capped').view.capLine).toMatch(
       /^You've played your 5 solo runs today\. More at \d\d:\d\d\.$/,
     );
+  });
+
+  it('mark only the picked summary as a picked run', () => {
+    const picked = SUMMARY_STATES.filter(
+      (name) => summaryOf(name).view.isPicked === true,
+    );
+    expect(picked).toEqual(['run-over-picked']);
+  });
+
+  it('gate a refused pick with the archive or Pro', () => {
+    const gone = CANVAS_STATES.solo['solo-match-not-found'].build(NOW).frame;
+    expect(gone.view.gate).toMatchObject({
+      title: "That match isn't in the game any more",
+      actionLabel: 'Back to the archive',
+    });
+    const locked = CANVAS_STATES.solo['solo-match-locked'].build(NOW).frame;
+    expect(locked.view.gate).toMatchObject({
+      title: 'Picking a match is part of Pro',
+      actionLabel: 'Back to play',
+      seePro: true,
+    });
   });
 
   it('gate the daily cap with a duel, the filters and Pro', () => {

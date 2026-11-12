@@ -28,6 +28,8 @@ export type SoloRunState = {
   // Server retry time after a rate-limited guess
   cooldownUntil: number | null;
   failure: SoloRunFailure | null;
+  // Set when the run plays an archive match
+  pickedMatchId: string | null;
   toast: ToastMessage | null;
   pulse?: GridPulse;
   shakeKey: number;
@@ -35,7 +37,7 @@ export type SoloRunState = {
 };
 
 export type SoloRunEvent =
-  | { type: 'finding' }
+  | { type: 'finding'; matchId: string | null }
   | { type: 'offerReceived'; offer: SoloMatchOffer }
   | { type: 'sideChosen' }
   | { type: 'sessionReceived'; session: SoloSession }
@@ -53,4 +55,4 @@ export type SoloRunEvent =
   | { type: 'retried' };
 
 export type SoloGateAction =
-  'choose' | 'widen' | 'leave' | 'retry' | 'playDuel';
+  'choose' | 'widen' | 'leave' | 'retry' | 'playDuel' | 'backToArchive';

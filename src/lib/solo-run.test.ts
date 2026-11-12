@@ -243,7 +243,9 @@ describe('soloRunReducer phases', () => {
   });
 
   it('starts over when finding again', () => {
-    expect(run(...PLAYING, { type: 'finding' })).toEqual(INITIAL_SOLO_RUN);
+    expect(run(...PLAYING, { type: 'finding', matchId: null })).toEqual(
+      INITIAL_SOLO_RUN,
+    );
   });
 });
 
@@ -409,7 +411,7 @@ describe('soloRunReducer rate limit', () => {
   });
 
   it('starts a new run without the old lockout', () => {
-    const state = soloRunReducer(limited(), { type: 'finding' });
+    const state = soloRunReducer(limited(), { type: 'finding', matchId: null });
     expect(state.cooldownUntil).toBeNull();
   });
 
@@ -686,6 +688,76 @@ describe('soloCanvasView', () => {
     });
   });
 
+  describe('a picked match', () => {
+    const PICKED: SoloRunEvent = { type: 'finding', matchId: 'match-1' };
+
+    it('remembers the pick for the summary', () => {
+      const state = run(PICKED, ...PLAYING, OVER);
+      expect(state.pickedMatchId).toBe('match-1');
+      expect(soloCanvasView(state).isPicked).toBe(true);
+      expect(soloCanvasView(run(...PLAYING)).isPicked).toBe(false);
+    });
+
+    it('sets the pick afresh on every new run', () => {
+      const random: SoloRunEvent = { type: 'finding', matchId: null };
+      const again = run(PICKED, ...PLAYING, OVER, PICKED);
+      expect(again.pickedMatchId).toBe('match-1');
+      expect(again.phase).toBe('finding');
+      expect(again.session).toBeNull();
+      expect(run(PICKED, ...PLAYING, OVER, random).pickedMatchId).toBeNull();
+    });
+
+    it('sends a match that left the game back to the archive', () => {
+      const state = run(PICKED, {
+        type: 'failed',
+        step: 'find',
+        error: {
+          code: 'not_found',
+          message: "That match isn't in the game.",
+          retryAfterMs: null,
+        },
+      });
+      expect(soloCanvasView(state).gate).toEqual({
+        title: "That match isn't in the game any more",
+        detail: 'Pick another one from the archive.',
+        actionLabel: 'Back to the archive',
+      });
+      expect(soloGateAction(state)).toBe('backToArchive');
+    });
+
+    it('locks a pick for Free with Back to play and See Pro', () => {
+      const state = run(PICKED, {
+        type: 'failed',
+        step: 'find',
+        error: {
+          code: 'forbidden',
+          message: 'Picking a match needs Pro.',
+          retryAfterMs: null,
+          reason: 'pro_required',
+        },
+      });
+      expect(soloCanvasView(state).gate).toEqual({
+        title: 'Picking a match is part of Pro',
+        detail: 'A random match from your filters is still free.',
+        actionLabel: 'Back to play',
+        seePro: true,
+      });
+      expect(soloGateAction(state)).toBe('leave');
+    });
+
+    it("keeps a random run's not_found on the old gate", () => {
+      const state = run({
+        type: 'failed',
+        step: 'find',
+        error: { code: 'not_found', message: 'Gone.', retryAfterMs: null },
+      });
+      expect(soloCanvasView(state).gate?.actionLabel).toBe(
+        SOLO_GATE_COPY.backToFilters,
+      );
+      expect(soloGateAction(state)).toBe('leave');
+    });
+  });
+
   it('sends a lost run back to the filters', () => {
     const state = run(...PLAYING, {
       type: 'failed',
@@ -777,7 +849,7 @@ describe('the run summary', () => {
 
     it('starts the next run hidden', () => {
       const revealed = run(...PLAYING, OVER, received(pro), REVEAL);
-      const next = soloRunReducer(revealed, { type: 'finding' });
+      const next = soloRunReducer(revealed, { type: 'finding', matchId: null });
       expect(next.isMissedRevealed).toBe(false);
     });
   });
@@ -863,7 +935,7 @@ describe('the run summary', () => {
 
   it('starts over from finding on play again', () => {
     const over = run(...PLAYING, OVER, received(summary()));
-    const again = soloRunReducer(over, { type: 'finding' });
+    const again = soloRunReducer(over, { type: 'finding', matchId: null });
     expect(again).toEqual(INITIAL_SOLO_RUN);
     expect(soloCanvasView(again).end).toBeNull();
   });

@@ -1,5 +1,9 @@
 import { ProLock } from '@/components/pro/ProLock';
-import { type ResultPrimary, resultActionsLayout } from '@/lib/result-actions';
+import {
+  type ResultPrimary,
+  type ResultSecondary,
+  resultActionsLayout,
+} from '@/lib/result-actions';
 import { PRIMARY_BUTTON_LARGE, TEXT_LINK } from '@/styles/classes';
 import type { ProAccess } from '@/types/pro';
 
@@ -13,6 +17,8 @@ export type ResultActionsProps = {
   // Solo at its daily cap: Play a duel instead
   capLine?: string;
   onPlayDuel?: () => void;
+  // One match from the archive: Play it again
+  isPicked?: boolean;
 };
 
 const PRIMARY_LABELS: Record<ResultPrimary, string> = {
@@ -20,6 +26,16 @@ const PRIMARY_LABELS: Record<ResultPrimary, string> = {
   newRoom: 'New room',
   backToPlay: 'Back to play',
   playDuel: 'Play a duel',
+  playItAgain: 'Play it again',
+};
+
+const SECONDARY_LABELS: Record<
+  Exclude<ResultSecondary, 'lockedNewRoom'>,
+  string
+> = {
+  changeFilters: 'Change filters',
+  backToPlay: 'Back to play',
+  backToArchive: 'Back to the archive',
 };
 
 export function ResultActions({
@@ -29,12 +45,14 @@ export function ResultActions({
   hostAccess = 'open',
   capLine,
   onPlayDuel = () => {},
+  isPicked = false,
 }: ResultActionsProps) {
-  const { primary, secondary } = resultActionsLayout(
+  const { primary, secondary } = resultActionsLayout({
     isPrivate,
     hostAccess,
-    capLine !== undefined,
-  );
+    isSoloCapped: capLine !== undefined,
+    isPicked,
+  });
   const onPrimary =
     primary === 'backToPlay'
       ? onChangeFilters
@@ -71,7 +89,7 @@ export function ResultActions({
           onClick={onChangeFilters}
           className={`text-14 leading-5 ${TEXT_LINK}`}
         >
-          {secondary === 'backToPlay' ? 'Back to play' : 'Change filters'}
+          {SECONDARY_LABELS[secondary]}
         </button>
       )}
     </div>

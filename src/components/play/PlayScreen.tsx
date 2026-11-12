@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useId, useState } from 'react';
 import { FilterPanel } from '@/components/play/FilterPanel';
@@ -11,6 +12,7 @@ import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
 import { useFilterOptions } from '@/hooks/use-filter-options';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoundUnlock } from '@/hooks/use-sound';
+import { ARCHIVE_PATH } from '@/lib/archive';
 import { authErrorMessageOf } from '@/lib/auth';
 import {
   FILTER_PARAMS,
@@ -23,7 +25,7 @@ import {
 } from '@/lib/filters';
 import { joinCodeFrom } from '@/lib/room-code';
 import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
-import { SECONDARY_BUTTON } from '@/styles/classes';
+import { SECONDARY_BUTTON, TEXT_LINK } from '@/styles/classes';
 import type { Filters } from '@/types/filters';
 import type { PlayMode } from '@/types/play';
 
@@ -113,6 +115,14 @@ export function PlayScreen() {
               isCapped={isCapped}
               onPlayDuel={() => changeMode('duel')}
             />
+          ) : null}
+          {mode === 'solo' && !isCapped ? (
+            <p className="text-14 text-fg-muted">
+              Or pick the exact match from{' '}
+              <Link href={ARCHIVE_PATH} className={TEXT_LINK}>
+                the archive
+              </Link>
+            </p>
           ) : null}
         </PlayStart>
         {mode === 'duel' ? (

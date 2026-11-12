@@ -9,6 +9,7 @@ import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoloRun } from '@/hooks/use-solo-run';
 import { sideSchema } from '@/lib/api/schemas/common';
 import { withMode, withQuery } from '@/lib/filters';
+import { ARCHIVE_PATH, withoutPickedMatch } from '@/lib/archive';
 import { capLine } from '@/lib/solo-allowance';
 import { soloCanvasView, soloGateAction } from '@/lib/solo-run';
 
@@ -38,12 +39,18 @@ export function SoloGame() {
     state.summary === null;
 
   function leave() {
-    router.push(withQuery('/play', params));
+    router.push(withQuery('/play', withoutPickedMatch(params)));
+  }
+
+  function backToArchive() {
+    router.push(ARCHIVE_PATH);
   }
 
   // Duels are never capped; the filters go along
   function playDuel() {
-    router.push(withQuery('/play/duel', withMode(params, 'duel')));
+    router.push(
+      withQuery('/play/duel', withMode(withoutPickedMatch(params), 'duel')),
+    );
   }
 
   async function handleGuess(text: string) {
@@ -74,6 +81,9 @@ export function SoloGame() {
         return;
       case 'playDuel':
         playDuel();
+        return;
+      case 'backToArchive':
+        backToArchive();
         return;
       case 'retry':
         if (state.failure?.step === 'quit') void confirmQuit();
@@ -109,7 +119,7 @@ export function SoloGame() {
         onGateSecondaryAction={leave}
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
-        onChangeFilters={leave}
+        onChangeFilters={state.pickedMatchId ? backToArchive : leave}
         onPlayDuel={playDuel}
         onRevealMissed={revealMissed}
       />

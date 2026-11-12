@@ -59,7 +59,10 @@ function GatePanel({
         tabIndex={-1}
         className={`flex w-full flex-col gap-2 rounded-lg border border-line bg-surface-raised p-4 outline-none ${PANEL_SIZES[size]}`}
       >
-        <p aria-hidden="true" className="text-16 font-semibold text-fg">
+        <p
+          aria-hidden="true"
+          className="text-16 font-semibold text-balance text-fg"
+        >
           {title}
         </p>
         {detail ? <p className="text-14 text-fg-muted">{detail}</p> : null}

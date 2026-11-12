@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  filtersSchema,
   guessTextSchema,
   idSchema,
   ratioSchema,
@@ -23,6 +24,11 @@ import {
 } from '@/lib/api/schemas/player';
 
 export const soloSessionStatusSchema = z.enum(['active', 'over']);
+
+// Backend R13: `matchId` overrides the filters
+export const soloStartRequestSchema = filtersSchema.extend({
+  matchId: idSchema.optional(),
+});
 
 export const soloMatchOfferSchema = z.object({
   sessionId: idSchema,

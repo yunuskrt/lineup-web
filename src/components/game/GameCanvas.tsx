@@ -120,7 +120,7 @@ function GateAction({
   onGateAction,
   onGateSecondaryAction,
 }: GateActionProps) {
-  if (gate.secondaryActionLabel) {
+  if (gate.secondaryActionLabel || gate.seePro) {
     return (
       <div className="flex flex-col items-center gap-3">
         <button
@@ -131,13 +131,15 @@ function GateAction({
           {gate.actionLabel}
         </button>
         <div className="flex items-center gap-6">
-          <button
-            type="button"
-            className={`text-14 ${TEXT_LINK}`}
-            onClick={onGateSecondaryAction}
-          >
-            {gate.secondaryActionLabel}
-          </button>
+          {gate.secondaryActionLabel ? (
+            <button
+              type="button"
+              className={`text-14 ${TEXT_LINK}`}
+              onClick={onGateSecondaryAction}
+            >
+              {gate.secondaryActionLabel}
+            </button>
+          ) : null}
           {gate.seePro ? (
             <Link href={PRO_PATH} className={`text-14 ${TEXT_LINK}`}>
               See Pro
@@ -365,6 +367,7 @@ export function GameCanvas({
                 <RunSummary
                   end={soloEnd}
                   capLine={view.mode === 'solo' ? view.capLine : undefined}
+                  isPicked={view.mode === 'solo' && view.isPicked}
                   onPlayAgain={onPlayAgain}
                   onChangeFilters={onChangeFilters}
                   onPlayDuel={onPlayDuel}

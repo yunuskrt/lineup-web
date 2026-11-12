@@ -14,7 +14,7 @@ Contract changes the web client needs. The backend owns the contract (`coding-st
 | R10 | Pro-only room hosting | Web feature Pro B | 2026-11-10 | **Done** (2026-11-12, backend R10 `d7d53ca`) |
 | R11 | The solo daily cap | Web feature Pro C | 2026-11-10 | **Done** (2026-11-12, backend R11 `35f1ce3`) |
 | R12 | Archive browse and search | Web feature Pro D | 2026-11-10 | **Done** (2026-11-12, backend R12 `6a1431e`) |
-| R13 | Exact match selection | Web feature Pro E | 2026-11-10 | Asked |
+| R13 | Exact match selection | Web feature Pro E | 2026-11-10 | **Done** (2026-11-12, backend R13 `7533e97`) |
 | R14 | Practice mode | Web feature Pro F | 2026-11-10 | Asked |
 
 If the backend has already used a number for something else, take the next free one and rename it here.
@@ -815,6 +815,18 @@ Everything after `matchReady` is unchanged: turns, reveals, lives, reconnect win
 - An unknown id, a match outside the pool and the showcase match are `not_found`.
 - With the switch off, any user can pick a match.
 - The run counts in stats and history.
+
+### Built
+
+- **Exact match selection** (2026-11-12): backend `7533e97`, on `main` and pushed.
+  - **Body `SoloStartRequest`:** `{ competitionIds, clubIds, era, matchId? }`. The filters stay required; with `matchId` they're ignored. A body without `matchId` behaves exactly as before.
+  - **Pro only:** with `PRO_ENABLED=true`, Free sending `matchId` gets 403 `{ code: 'forbidden', message: 'Picking a match needs Pro.', retryAfterMs: null, reason: 'pro_required' }`. It's checked **before the daily cap**, so Free with `matchId` never sees `daily_cap`. With the switch off, anyone can pick.
+  - **In the game only:** any match `GET /catalog/matches` lists is accepted. An unknown id, a non-uuid, the landing showcase or any match outside the pool gets 404 `{ code: 'not_found', message: "That match isn't in the game." }`.
+  - **Everything after is today's run:** the same `SoloMatchOffer`, the side pick, the rounds and the summary. It counts in history and stats like any run. Replays are allowed.
+  - **A refused pick keeps a run in play:** the open run is ended only once the picked match is accepted.
+  - **Duels never take a `matchId`:** the queue and rooms drop it.
+  - No migration, no `PROTOCOL_VERSION` bump.
+- **Differences from this request:** none for the web. The order (Pro check before the cap) and the kept open run are additions.
 
 ### Report in the Built note
 

@@ -6,6 +6,7 @@ import type {
   soloMatchOfferSchema,
   soloSessionSchema,
   soloSessionStatusSchema,
+  soloStartRequestSchema,
   soloSummarySchema,
 } from '@/lib/api/schemas/solo';
 
@@ -16,3 +17,4 @@ export type SoloGuessRequest = z.infer<typeof soloGuessRequestSchema>;
 export type SoloGuessResponse = z.infer<typeof soloGuessResponseSchema>;
 export type SoloSummary = z.infer<typeof soloSummarySchema>;
 export type SoloAllowance = z.infer<typeof soloAllowanceSchema>;
+export type SoloStartRequest = z.infer<typeof soloStartRequestSchema>;
