@@ -19,7 +19,7 @@ export type ResultActionsProps = {
   onPlayDuel?: () => void;
   // One match from the archive: Play it again
   isPicked?: boolean;
-  // Practise again; Back to play (R14)
+  // Practise again, then play or the archive
   isPractice?: boolean;
 };
 

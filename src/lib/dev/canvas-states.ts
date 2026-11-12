@@ -565,6 +565,7 @@ function loadingFields(): CanvasViewBase {
 function sidePickState(
   description: string,
   match: MatchIdentity,
+  isPractice?: boolean,
 ): CanvasState<SoloCanvasView> {
   const gate: CanvasGateView = {
     ...SOLO_GATE_COPY.choose,
@@ -574,7 +575,10 @@ function sidePickState(
     description,
     build: () => ({
       frame: {
-        view: toSolo({ ...loadingFields(), gate }, MAX_LIVES),
+        view: {
+          ...toSolo({ ...loadingFields(), gate }, MAX_LIVES),
+          isPractice,
+        },
         guess: '',
       },
     }),
@@ -751,6 +755,11 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
       },
     }),
   },
+  'practice-side-pick': sidePickState(
+    'Practice asked for: the Practice card behind the side pick.',
+    SAMPLE_IDENTITY,
+    true,
+  ),
   'practice-summary': summaryState(
     'A quit practice run: the tag, minutes per find, Practise again.',
     PRACTICE_SUMMARY,

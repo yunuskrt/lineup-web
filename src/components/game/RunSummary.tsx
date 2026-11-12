@@ -27,11 +27,16 @@ type OutcomeProps = {
   titleRef: RefObject<HTMLHeadingElement | null>;
 };
 
+type PracticeTagProps = {
+  isPerfect: boolean;
+  className: string;
+};
+
 // No lives in practice: the tag stands in
-function PracticeTag({ isPerfect }: { isPerfect: boolean }) {
+function PracticeTag({ isPerfect, className }: PracticeTagProps) {
   return (
     <span
-      className={`shrink-0 rounded-sm border px-2 py-0.5 text-14 leading-5 font-semibold ${
+      className={`shrink-0 rounded-sm border px-2 font-semibold ${className} ${
         isPerfect ? 'border-on-accent' : 'border-line text-fg-muted'
       }`}
     >
@@ -57,16 +62,33 @@ function Outcome({ summary, titleId, titleRef }: OutcomeProps) {
           ref={titleRef}
           id={titleId}
           tabIndex={-1}
-          className="font-display text-32 leading-10 font-semibold outline-none"
+          // "Perfect clear" fits one line from 360px
+          className="font-display text-24 leading-8 font-semibold outline-none min-[360px]:text-32 min-[360px]:leading-10"
         >
           {summaryTitle(summary.endReason)}
         </h2>
-        <p className={`text-14 leading-5 ${isPerfect ? '' : 'text-fg-muted'}`}>
-          You named {summary.found.length} of {SQUAD_SIZE}.
+        <p
+          className={`flex items-center gap-2 text-14 leading-5 ${
+            isPerfect ? '' : 'text-fg-muted'
+          }`}
+        >
+          <span>
+            You named {summary.found.length} of {SQUAD_SIZE}.
+          </span>
+          {/* Below sm the title needs the full width */}
+          {summary.practice ? (
+            <PracticeTag
+              isPerfect={isPerfect}
+              className="text-12 leading-4 sm:hidden"
+            />
+          ) : null}
         </p>
       </div>
       {summary.practice ? (
-        <PracticeTag isPerfect={isPerfect} />
+        <PracticeTag
+          isPerfect={isPerfect}
+          className="hidden py-0.5 text-14 leading-5 sm:inline"
+        />
       ) : isPerfect ? (
         <p className="flex shrink-0 flex-col items-end">
           <span className="font-display text-48 leading-none font-semibold tabular-nums">

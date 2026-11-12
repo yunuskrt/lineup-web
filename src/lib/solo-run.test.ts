@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
+import { PRACTICE_QUIT_COPY } from '@/lib/practice';
 import {
   canGuessSolo,
   INITIAL_SOLO_RUN,
@@ -9,6 +10,7 @@ import {
   SOLO_GATE_COPY,
   soloCanvasView,
   soloGateAction,
+  soloQuitCopy,
   soloRunReducer,
 } from '@/lib/solo-run';
 import type { ApiError, EmptyPoolReason } from '@/types/api';
@@ -709,12 +711,27 @@ describe('soloCanvasView', () => {
       },
     ];
 
-    it('takes practice from the session, not from asking', () => {
-      expect(soloCanvasView(run(PRACTISING)).isPractice).toBe(false);
+    it('draws the ask until the session answers', () => {
+      expect(soloCanvasView(run(PRACTISING)).isPractice).toBe(true);
+      const offered = run(PRACTISING, { type: 'offerReceived', offer: OFFER });
+      expect(soloCanvasView(offered).isPractice).toBe(true);
       const state = run(PRACTISING, ...PRACTICE_PLAYING);
       expect(soloCanvasView(state).isPractice).toBe(true);
       expect(soloCanvasView(state).input).toBe('live');
       expect(soloCanvasView(run(...PLAYING)).isPractice).toBe(false);
+    });
+
+    it('puts the ring back when the session says no', () => {
+      const state = run(PRACTISING, ...PLAYING);
+      expect(soloCanvasView(state).isPractice).toBe(false);
+    });
+
+    it('takes the quit words from the session', () => {
+      expect(soloQuitCopy(run(PRACTISING, ...PRACTICE_PLAYING))).toBe(
+        PRACTICE_QUIT_COPY,
+      );
+      expect(soloQuitCopy(run(PRACTISING))).toBeUndefined();
+      expect(soloQuitCopy(run(PRACTISING, ...PLAYING))).toBeUndefined();
     });
 
     it('marks a practice summary as practice', () => {
@@ -744,6 +761,7 @@ describe('soloCanvasView', () => {
         seePro: true,
       });
       expect(soloGateAction(state)).toBe('leave');
+      expect(soloCanvasView(state).isPractice).toBe(false);
     });
 
     it('says a practice run closed after the idle drop', () => {

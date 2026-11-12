@@ -34,9 +34,10 @@ describe('resultActionsLayout', () => {
       primary: 'practiseAgain',
       secondary: 'backToPlay',
     });
-    expect(
-      resultActionsLayout({ isPractice: true, isPicked: true }).primary,
-    ).toBe('practiseAgain');
+    expect(resultActionsLayout({ isPractice: true, isPicked: true })).toEqual({
+      primary: 'practiseAgain',
+      secondary: 'backToArchive',
+    });
   });
 
   it('replays a picked match and leads back to the archive', () => {

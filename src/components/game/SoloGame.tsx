@@ -12,7 +12,7 @@ import { withMode, withQuery } from '@/lib/filters';
 import { ARCHIVE_PATH, withoutPickedMatch } from '@/lib/archive';
 import { withPractice } from '@/lib/practice';
 import { capLine } from '@/lib/solo-allowance';
-import { soloCanvasView, soloGateAction } from '@/lib/solo-run';
+import { soloCanvasView, soloGateAction, soloQuitCopy } from '@/lib/solo-run';
 
 export function SoloGame() {
   const router = useRouter();
@@ -123,10 +123,8 @@ export function SoloGame() {
         onGateSecondaryAction={leave}
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
-        // Practice and timed runs leave for /play
-        onChangeFilters={
-          state.pickedMatchId && !state.isPracticeAsked ? backToArchive : leave
-        }
+        // A picked run, practice or not, goes back
+        onChangeFilters={state.pickedMatchId ? backToArchive : leave}
         onPlayDuel={playDuel}
         onRevealMissed={revealMissed}
       />
@@ -134,6 +132,7 @@ export function SoloGame() {
         // Closes in the render the run ends in
         isOpen={isQuitOpen && canConfirmQuit}
         isQuitting={state.isQuitting}
+        copy={soloQuitCopy(state)}
         onDismiss={() => setIsQuitOpen(false)}
         onConfirm={confirmQuit}
       />
