@@ -315,17 +315,16 @@ cp $WEB/.claude/agents/refactor-scanner.md .claude/agents/
 cp $WEB/.claude/agents/README.md           .claude/agents/
 ```
 
-**Don't copy** the `frontend-design` skill, the `ui-reviewer` agent, `settings.json`, `settings.local.json` or `.mcp.json`. They only cover the browser and Playwright.
+**Don't copy** the `ui-reviewer` agent, `settings.json`, `settings.local.json` or `.mcp.json`. They only cover the browser and Playwright.
 
-### Five edits
+### Four edits
 
 | File | Change |
 | --- | --- |
-| `skills/feature/actions/start.md` | Delete step 5, the one that loads `frontend-design`. |
 | `skills/todo/actions/spec.md` | **Naming:** `phase-<NN>-<kebab-title>.md` becomes `phase-b<NN>-<kebab-title>.md` (e.g. `phase-b01-repo-scaffold.md`, split: `phase-b13a-…`). |
 | `skills/todo/actions/spec.md` | **Verification line:** "what to click in the browser" becomes "call it with an HTTP client, or drive the socket harness". |
 | `skills/todo/SKILL.md` | In `description:`, "LegacyRun" becomes "Lineup". |
-| `skills/README.md`, `agents/code-scanner.md` | Remove the `frontend-design` line. In the scanner, "Next.js application" becomes "NestJS service", and add Prisma, auth guard and socket handshake checks. |
+| `agents/code-scanner.md` | "Next.js application" becomes "NestJS service", and add Prisma, auth guard and socket handshake checks. |
 
 ---
 
@@ -452,6 +451,6 @@ lineup-backend/
 - [ ] `CLAUDE.md` written
 - [ ] `coding-standards-backend.md` written
 - [ ] `contract.md` copied as `context/api-contract.md`
-- [ ] `.claude` copied, with the five edits
+- [ ] `.claude` copied, with the four edits
 - [ ] Prettier matched, setup committed
 - [ ] `/todo current` reports B01
