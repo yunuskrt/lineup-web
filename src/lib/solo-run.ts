@@ -331,13 +331,14 @@ function failedGate(
     return state.isPracticeAsked
       ? {
           title: SOLO_GATE_COPY.practiceLocked,
-          detail: SOLO_GATE_COPY.timedStillFree,
+          // At the cap nothing is still free today
+          detail: capLine ?? SOLO_GATE_COPY.timedStillFree,
           actionLabel: SOLO_GATE_COPY.backToPlay,
           seePro: true,
         }
       : {
           title: SOLO_GATE_COPY.pickingLocked,
-          detail: SOLO_GATE_COPY.randomStillFree,
+          detail: capLine ?? SOLO_GATE_COPY.randomStillFree,
           actionLabel: SOLO_GATE_COPY.backToPlay,
           seePro: true,
         };

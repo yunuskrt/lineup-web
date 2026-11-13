@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 import { HistoryMore } from '@/components/profile/HistoryMore';
 import { HistoryRow } from '@/components/profile/HistoryRow';
 import { PROFILE_PANEL, SECTION_HEADING } from '@/components/profile/styles';
@@ -35,6 +35,7 @@ function EmptyHistory() {
 export function HistoryList({ history, more, onShowMore }: HistoryListProps) {
   const headingId = useId();
   const today = useToday();
+  const listRef = useRef<HTMLOListElement>(null);
 
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-4">
@@ -46,6 +47,7 @@ export function HistoryList({ history, more, onShowMore }: HistoryListProps) {
       ) : (
         <>
           <ol
+            ref={listRef}
             aria-labelledby={headingId}
             className={`${PROFILE_PANEL} divide-y divide-line`}
           >
@@ -57,6 +59,7 @@ export function HistoryList({ history, more, onShowMore }: HistoryListProps) {
             more={more}
             count={history.length}
             onShowMore={onShowMore}
+            listRef={listRef}
           />
         </>
       )}

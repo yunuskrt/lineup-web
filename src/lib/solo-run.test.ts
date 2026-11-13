@@ -764,6 +764,26 @@ describe('soloCanvasView', () => {
       expect(soloCanvasView(state).isPractice).toBe(false);
     });
 
+    it('says no timed run is free at the cap', () => {
+      const capLine = "You've played your 5 solo runs today. More at 01:00.";
+      const state = run(PRACTISING, {
+        type: 'failed',
+        step: 'find',
+        error: {
+          code: 'forbidden',
+          message: 'Practice needs Pro.',
+          retryAfterMs: null,
+          reason: 'pro_required',
+        },
+      });
+      expect(soloCanvasView(state, capLine).gate).toEqual({
+        title: 'Practice is part of Pro',
+        detail: capLine,
+        actionLabel: 'Back to play',
+        seePro: true,
+      });
+    });
+
     it('says a practice run closed after the idle drop', () => {
       const state = run(PRACTISING, ...PRACTICE_PLAYING, {
         type: 'failed',
@@ -874,6 +894,26 @@ describe('soloCanvasView', () => {
         seePro: true,
       });
       expect(soloGateAction(state)).toBe('leave');
+    });
+
+    it('says no random run is free at the cap', () => {
+      const capLine = "You've played your 5 solo runs today. More at 01:00.";
+      const state = run(PICKED, {
+        type: 'failed',
+        step: 'find',
+        error: {
+          code: 'forbidden',
+          message: 'Picking a match needs Pro.',
+          retryAfterMs: null,
+          reason: 'pro_required',
+        },
+      });
+      expect(soloCanvasView(state, capLine).gate).toEqual({
+        title: 'Picking a match is part of Pro',
+        detail: capLine,
+        actionLabel: 'Back to play',
+        seePro: true,
+      });
     });
 
     it("keeps a random run's not_found on the old gate", () => {

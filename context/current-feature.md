@@ -94,3 +94,4 @@ Not Started
 - Pro Polish B: focus after dialog, cap and clear, room gate See Pro link.
 - Pro Polish C: archive rows by width, bare shirts at 320, nav icon.
 - Pro Polish D: /pro 404, cap check first, URL leftovers, no nickname hits.
+- Pro Polish E: last Show more keeps focus, cap line on pick gates.
