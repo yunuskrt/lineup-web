@@ -62,7 +62,8 @@ export function HistoryRow({ entry, today }: HistoryRowProps) {
   const subtitle = matchSubtitle(entry.match);
 
   return (
-    <li className={HISTORY_ROW}>
+    // Focusable only from script: the last Show more
+    <li tabIndex={-1} className={HISTORY_ROW}>
       <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2 sm:contents">
         <span
           className={`sm:col-start-1 sm:row-start-1 sm:justify-self-start ${PROFILE_TAG}`}

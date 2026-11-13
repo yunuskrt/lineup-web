@@ -82,6 +82,7 @@ function Results({
   | 'onPlay'
   | 'starting'
 >) {
+  const listRef = useRef<HTMLUListElement>(null);
   switch (view.status) {
     case 'loading':
       return (
@@ -118,6 +119,7 @@ function Results({
       return (
         <div className="flex flex-col gap-6">
           <ul
+            ref={listRef}
             aria-label="Matches, newest first"
             aria-busy={view.isRefreshing}
             className={`${ARCHIVE_LIST} divide-y divide-line ${
@@ -138,6 +140,7 @@ function Results({
             more={view.more}
             count={view.entries.length}
             onShowMore={onShowMore}
+            listRef={listRef}
             noun="matches"
           />
         </div>

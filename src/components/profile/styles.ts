@@ -24,4 +24,4 @@ export const RECORD_BAR = 'flex h-2 gap-0.5 overflow-hidden rounded-sm bg-line';
 
 // Two lines on phones, one from sm; lg adds pips
 export const HISTORY_ROW =
-  'grid h-18 grid-cols-[minmax(0,1fr)_auto] content-center items-center gap-x-3 gap-y-1 px-4 sm:h-14 sm:grid-cols-[3rem_6.5rem_7rem_minmax(0,1fr)_4.5rem_6rem] sm:gap-y-0 lg:grid-cols-[3rem_6.5rem_7rem_minmax(0,1fr)_4.5rem_4.5rem_6rem]';
+  'grid h-18 grid-cols-[minmax(0,1fr)_auto] content-center items-center gap-x-3 gap-y-1 px-4 sm:h-14 sm:grid-cols-[3rem_6.5rem_7rem_minmax(0,1fr)_4.5rem_6rem] sm:gap-y-0 lg:grid-cols-[3rem_6.5rem_7rem_minmax(0,1fr)_4.5rem_4.5rem_6rem] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand';
