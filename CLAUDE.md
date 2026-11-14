@@ -28,7 +28,6 @@ Read the following to get the full context of the project:
 - @context/current-feature.md
 - @context/monetization.md
 - @context/theme.md
-- @context/design.md
 - @AGENTS.md
 
 `project-overview.md` is the shared spec and must stay identical in all three repos. When it changes, it changes everywhere.
@@ -65,9 +64,5 @@ Ports are fixed so the web app and backend can run side by side.
 
 - **Do not add 'co-authored by Claude'** statement to any commit messages
 - History entries in `current-feature.md` file not exceed 75 characters
-- For the first MVP, only dark-mode
-- Design the theme such that the color palette to be changeable afterwards easily, and light theme also may easily be applied
 - Do not edit todo.md file unless you told so via prompt or skill
-- Animations via Motion (web) / Reanimated (mobile), custom css will not be used unless necessary
 - No game logic in any client — the backend is authoritative, always
-- Never hardcode a colour; resolve it from tokens

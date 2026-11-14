@@ -93,13 +93,11 @@ Because `type Props = {}` would otherwise be rejected by `@typescript-eslint/no-
 
 - Tailwind CSS v4 is the primary styling solution.
 - Do not create `tailwind.config.ts` or `tailwind.config.js`.
-- Configure Tailwind v4 through CSS and `@theme` in `src/app/globals.css`, fed from this repo's own tokens file, transcribed from `theme.md`.
+- Configure Tailwind v4 through CSS and `@theme` in `src/app/globals.css`.
 - Use shadcn/ui components where applicable.
 - No inline styles.
 - Use CSS Modules for component-specific custom CSS when Tailwind/shadcn is insufficient.
 - CSS Modules must be colocated with the component.
-- Dark mode first; light mode remains supported.
-- **Never hardcode a hex value.** Colours resolve from tokens, or the palette stops being swappable.
 
 Example v4 configuration:
 
@@ -136,13 +134,6 @@ with kebab-case.
 
 - Do not create a CSS module unless custom styles are actually needed.
 - Prefer Tailwind for layout, spacing, colors, responsive behavior, and common styling.
-
-## Motion
-
-- Animation is Motion's job. Custom CSS animation only where Motion cannot do it.
-- Animate `transform` and `opacity` only. Never `top`, `left`, `width` or `height`.
-- Never put a CSS transition on a property Motion is animating — the two fight and the result stutters.
-- Reduced motion is handled **per component** with `useReducedMotion()`, never a global kill-switch. The countdown ring carries information and must keep sweeping regardless.
 
 ## Realtime
 

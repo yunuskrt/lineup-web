@@ -108,7 +108,7 @@ cp $WEB/context/README.md  context/
 | `current-feature.md` | ✅ | New and empty (Step 4). |
 | `coding-standards-backend.md` | ✅ | **New** (Step 5). |
 | `api-contract.md` | ✅ | **New** (Step 6). |
-| `theme.md`, `design.md` | ❌ | UI only. |
+| `theme.md` | ❌ | UI only. |
 | `coding-standards-web.md` | ❌ | Web only. |
 | `screenshots/`, `features/`, `fixes/` contents | ❌ | Web history. Only the empty folders go across. |
 | `docs/prompt-*.md` | ❌ | Design-tool prompts. |
@@ -173,7 +173,7 @@ Paste the ready-made file from `lineup-web/context/docs/backend-context-readme.m
 
 - **Loaded on startup:** `project-overview.md`, `coding-standards.md`, `coding-standards-backend.md`, `ai-interaction.md`, `current-feature.md`, `monetization.md`, `todo.md`.
 - **Read on demand:** `api-contract.md`, `mock-to-backend-map.md`, `docs/`, `features/`, `fixes/`, `research/`.
-- No mention of `theme.md`, `design.md`, `screenshots/` or `coding-standards-web.md`.
+- No mention of `theme.md`, `screenshots/` or `coding-standards-web.md`.
 
 ### 4d. `CLAUDE.md` at the repo root
 

@@ -1,6 +1,6 @@
 # Prototype Prompt — Pitch, Match Header & Player Images
 
-Paste everything below the line into the design tool. Save the three results in `context/screenshots/` as `pitch-header-desktop.png`, `pitch-header-tablet.png` and `pitch-header-mobile.png`. They are a reference, not a spec (see `design.md` § Scope).
+Paste everything below the line into the design tool. Save the three results in `context/screenshots/` as `pitch-header-desktop.png`, `pitch-header-tablet.png` and `pitch-header-mobile.png`. They are a reference, not a spec.
 
 The faces and crests the tool generates are placeholders for composition only. Real player photos and club crests carry a licensing risk the rest of the data doesn't (`project-overview.md` § Data Architecture), so never ship anything taken from the generated designs.
 
