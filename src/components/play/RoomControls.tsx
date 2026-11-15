@@ -3,8 +3,14 @@
 import { useRouter } from 'next/navigation';
 import { type SubmitEvent, useId, useState, useTransition } from 'react';
 import { ProLockButton, ProLockCaption } from '@/components/pro/ProLock';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from '@/components/ui/input-otp';
 import { useEnsureSession } from '@/hooks/use-auth';
 import { useProAccess } from '@/hooks/use-pro';
+import { ROOM_CODE_LENGTH } from '@/lib/api/schemas/duel';
 import { authErrorMessageOf } from '@/lib/auth';
 import { withQuery } from '@/lib/filters';
 import {
@@ -17,9 +23,9 @@ import {
 } from '@/lib/room-code';
 import {
   BOARD_SECTION,
-  FOCUS_RING,
   SECONDARY_BUTTON,
   SECTION_LABEL,
+  TYPE_ROOM_CODE,
 } from '@/styles/classes';
 
 type RoomControlsProps = {
@@ -29,6 +35,11 @@ type RoomControlsProps = {
 };
 
 type Pending = 'create' | 'join';
+
+const CODE_SLOTS = Array.from(
+  { length: ROOM_CODE_LENGTH },
+  (_, index) => index,
+);
 
 export function RoomControls({ filterParams, initialCode }: RoomControlsProps) {
   const router = useRouter();
@@ -95,24 +106,34 @@ export function RoomControls({ filterParams, initialCode }: RoomControlsProps) {
         <span aria-hidden="true" className="text-14 text-fg-muted">
           or
         </span>
-        <form onSubmit={join} className="flex gap-2">
+        <form onSubmit={join} className="flex flex-wrap items-center gap-2">
           <label htmlFor={inputId} className="sr-only">
             Room code
           </label>
-          <input
+          <InputOTP
             id={inputId}
-            type="text"
+            maxLength={ROOM_CODE_LENGTH}
             value={code}
-            onChange={(event) => setCode(roomCodeInput(event.target.value))}
-            placeholder="Room code"
+            onChange={(next) => setCode(roomCodeInput(next))}
+            pasteTransformer={roomCodeInput}
+            inputMode="text"
             autoCapitalize="characters"
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
             enterKeyHint="go"
             aria-describedby={showsHint ? hintId : undefined}
-            className={`w-36 rounded-sm border border-line bg-surface-card px-3 py-2 text-16 font-semibold tracking-widest tabular-nums placeholder:font-normal placeholder:tracking-normal placeholder:text-fg-dim ${FOCUS_RING}`}
-          />
+          >
+            <InputOTPGroup>
+              {CODE_SLOTS.map((index) => (
+                <InputOTPSlot
+                  key={index}
+                  index={index}
+                  className={TYPE_ROOM_CODE}
+                />
+              ))}
+            </InputOTPGroup>
+          </InputOTP>
           <button
             type="submit"
             disabled={!isValid || isBusy}

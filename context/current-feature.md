@@ -102,3 +102,4 @@ Not Started
 - Redesign B2 Rail: open-arc clock, lives section, combobox, ink rules.
 - Redesign B3 Summary: peach gate, crest tiles, stats, results table.
 - Redesign C1 Play Board: one peach board, sections, icon mode cards.
+- Redesign C2 Play Controls: search icon, season selects, 6-box room code.

@@ -17,6 +17,8 @@ const COMPETITION_GROUPS = [
   { caption: 'w-[71.7px]', chips: ['w-[285.8px]', 'w-[182.8px]'] },
 ];
 const ANY_CLUB = 'w-[84.6px]';
+// From and to, then a season select each
+const SEASON_LABELS = ['w-[33.6px]', 'w-[12.8px]'];
 
 function SkeletonRow({
   label,
@@ -73,7 +75,14 @@ export function FilterSkeleton() {
         </div>
       </SkeletonRow>
       <SkeletonRow label="w-8">
-        <div className={`h-9.25 w-74 ${SKELETON}`} />
+        <div className="flex flex-wrap items-center gap-3">
+          {SEASON_LABELS.map((label) => (
+            <div key={label} className="flex items-center gap-3">
+              <div className={`h-5.25 ${label} ${SKELETON}`} />
+              <div className={`h-9.75 w-30 ${SKELETON}`} />
+            </div>
+          ))}
+        </div>
       </SkeletonRow>
     </div>
   );
