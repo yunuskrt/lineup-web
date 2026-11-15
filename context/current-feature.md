@@ -101,3 +101,4 @@ Not Started
 - Redesign B1 Pitch: one board, ink scoreboard, checked turf, big discs.
 - Redesign B2 Rail: open-arc clock, lives section, combobox, ink rules.
 - Redesign B3 Summary: peach gate, crest tiles, stats, results table.
+- Redesign C1 Play Board: one peach board, sections, icon mode cards.

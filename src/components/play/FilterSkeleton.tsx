@@ -38,7 +38,7 @@ function SkeletonRow({
 // Default view: no competition, no club chips
 export function FilterSkeleton() {
   return (
-    <div aria-hidden="true" className="border-b border-line">
+    <div aria-hidden="true">
       <SkeletonRow label="w-24">
         <div className="flex flex-col items-start gap-4">
           <div className={`${CHIP} ${ANY_COMPETITION}`} />

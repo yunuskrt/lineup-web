@@ -9,6 +9,16 @@ export const SITE_CONTAINER = 'mx-auto w-full max-w-6xl px-4 sm:px-6';
 // Reaches the game rail's edges, so its rules run edge to edge
 export const RAIL_SECTION = '-mx-3 px-3 sm:-mx-4 sm:px-4';
 
+export const BOARD =
+  'mx-auto w-full max-w-4xl rounded-lg border-2 border-line bg-surface-raised shadow-hard';
+
+// Full-width rows, so the rules run edge to edge
+export const BOARD_SECTION =
+  'flex flex-col gap-4 px-4 py-6 not-first:border-t-2 not-first:border-line sm:px-8 sm:py-8';
+
+// The rail's label look, as the Lives section
+export const SECTION_LABEL = 'text-12 font-medium text-fg-muted uppercase';
+
 export const DUEL_ACTOR_BG: Record<DuelActor, string> = {
   you: 'bg-you',
   opponent: 'bg-opponent',

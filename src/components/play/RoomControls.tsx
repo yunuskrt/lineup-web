@@ -15,7 +15,12 @@ import {
   roomCodeInput,
   withRoom,
 } from '@/lib/room-code';
-import { FOCUS_RING, SECONDARY_BUTTON } from '@/styles/classes';
+import {
+  BOARD_SECTION,
+  FOCUS_RING,
+  SECONDARY_BUTTON,
+  SECTION_LABEL,
+} from '@/styles/classes';
 
 type RoomControlsProps = {
   // Null while the filters load
@@ -66,9 +71,9 @@ export function RoomControls({ filterParams, initialCode }: RoomControlsProps) {
     <section
       id="play-a-friend"
       aria-labelledby={headingId}
-      className="flex scroll-mt-6 flex-col gap-3 border-t border-line pt-6"
+      className={`scroll-mt-6 ${BOARD_SECTION}`}
     >
-      <h3 id={headingId} className="text-16 font-semibold">
+      <h3 id={headingId} className={SECTION_LABEL}>
         Play a friend
       </h3>
       <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">

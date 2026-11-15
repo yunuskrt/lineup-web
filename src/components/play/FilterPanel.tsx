@@ -23,7 +23,7 @@ type FilterPanelProps = {
 };
 
 export const FILTER_ROW =
-  'grid gap-3 border-t border-line py-5 md:grid-cols-[8rem_1fr] md:gap-6';
+  'grid gap-3 border-t border-line py-5 last:pb-0 md:grid-cols-[8rem_1fr] md:gap-6';
 
 export const FILTER_LABEL = 'text-14 font-medium md:py-1.5';
 
@@ -260,7 +260,7 @@ export function FilterPanel(props: FilterPanelProps) {
   const picked = pickedCompetition(props.filters, props.options);
 
   return (
-    <div className="border-b border-line">
+    <div>
       <CompetitionFilter {...props} />
       <ClubFilter key={picked?.id ?? 'any'} {...props} />
       <EraFilter {...props} />

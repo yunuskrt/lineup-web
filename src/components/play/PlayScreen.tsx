@@ -35,7 +35,14 @@ import {
 } from '@/lib/practice';
 import { joinCodeFrom } from '@/lib/room-code';
 import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
-import { SECONDARY_BUTTON, TEXT_LINK } from '@/styles/classes';
+import {
+  BOARD,
+  BOARD_SECTION,
+  SECONDARY_BUTTON,
+  SECTION_LABEL,
+  TEXT_LINK,
+  TYPE_CARD_TITLE,
+} from '@/styles/classes';
 import type { Filters } from '@/types/filters';
 import type { PlayMode } from '@/types/play';
 import { StateNotice } from '@/components/shell/StateNotice';
@@ -100,14 +107,13 @@ export function PlayScreen() {
   const startParams = filterParams && withPractice(filterParams, isPractice);
 
   return (
-    <div className="flex flex-col gap-12">
-      <ModeChoice mode={mode} onChange={changeMode} />
-      <section
-        aria-labelledby="play-filters"
-        className="flex max-w-4xl flex-col gap-8"
-      >
+    <div className={BOARD}>
+      <div className={BOARD_SECTION}>
+        <ModeChoice mode={mode} onChange={changeMode} />
+      </div>
+      <section aria-labelledby="play-filters" className={BOARD_SECTION}>
         <div>
-          <h2 id="play-filters" className="text-20 font-semibold">
+          <h2 id="play-filters" className={TYPE_CARD_TITLE}>
             Match filters
           </h2>
           <p className="mt-2 text-14 text-fg-muted">
@@ -139,6 +145,9 @@ export function PlayScreen() {
         ) : (
           <FilterSkeleton />
         )}
+      </section>
+      <div className={BOARD_SECTION}>
+        <p className={SECTION_LABEL}>Start</p>
         {mode === 'solo' ? (
           <PracticeToggle
             access={practiceAccess}
@@ -174,13 +183,13 @@ export function PlayScreen() {
             </p>
           ) : null}
         </PlayStart>
-        {mode === 'duel' ? (
-          <RoomControls
-            filterParams={filterParams}
-            initialCode={joinCodeFrom(params)}
-          />
-        ) : null}
-      </section>
+      </div>
+      {mode === 'duel' ? (
+        <RoomControls
+          filterParams={filterParams}
+          initialCode={joinCodeFrom(params)}
+        />
+      ) : null}
     </div>
   );
 }
