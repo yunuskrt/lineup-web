@@ -9,8 +9,7 @@ Loaded on startup:
 - `ai-interaction.md` - Workflow and communication guidelines for working with the AI
 - `current-feature.md` - Living document tracking the feature currently being worked on, plus the history of completed ones
 - `monetization.md` - Monetization, pro/free features, subscription details, revenue options
-- `theme.md` - The palette and visual direction
-- `design.md` - Page shape per route, chrome, layout and interaction patterns; `theme.md` wins any conflict
+- `theme.md` - The sound spec, plus a behaviour reference for every screen state; it sets no colour, type, layout or motion
 - `todo.md` - Ordered roadmap of build phases and open decisions, used with the `/todo` command
 
 Read on demand:
@@ -19,7 +18,7 @@ Read on demand:
 - `docs/` - Reference documentation for the engines and designs the phases were built against
 - `features/` - Feature spec files used with the `/feature` command. A spec may reference other project files (context docs, screenshots, existing source) where that helps; references are optional and decided per spec when it is written
 - `fixes/` - Fix spec files used with `/feature load`, shaped like `features/`. They reshape or correct screens already built, outside the `todo.md` phases
-- `screenshots/` - UI screenshots used as visual references for the UI phases. Prototypes from external design tools land here; they guide composition and feel but are not a spec — implementation need not replicate them, and `theme.md` and `design.md` win any conflict (see `design.md` § Scope)
+- `screenshots/` - Reference screenshots for the UI redesign, one folder per section, collected with `docs/ui-redesign-references.md`; your notes are in `screenshots/notes.md`, and the previous design is in `screenshots/_old/`
 - `research/` - Research files used with the `/research` command to generate documentation; created the first time `/research` runs
 
 Outside this folder, `AGENTS.md` in the repo root points the AI at the bundled Next.js docs, so it avoids deprecated APIs.

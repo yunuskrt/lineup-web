@@ -1,6 +1,6 @@
 # Prototype Prompt — Solo Game Screen
 
-Paste everything below the line into the design tool. Save the three results in `context/screenshots/` as `solo-game-desktop.png`, `solo-game-tablet.png` and `solo-game-mobile.png`. They are a reference, not a spec (see `design.md` § Scope).
+Paste everything below the line into the design tool. Save the three results in `context/screenshots/` as `solo-game-desktop.png`, `solo-game-tablet.png` and `solo-game-mobile.png`. They are a reference, not a spec.
 
 ---
 

@@ -42,14 +42,6 @@ What keeps them honest:
 
 A contract change is therefore three pieces of work in sequence: change the backend, update the web client, update the mobile client. Do not treat it as one task.
 
-## Design Tokens
-
-`theme.md` is the canonical palette, type scale, spacing and motion spec. Each client repo holds its own tokens file transcribed from it.
-
-- **Values are copied, not imported.** The document is the single source; the files are its two transcriptions.
-- Within a repo, the tokens file is the only place a hex value appears. Everything else resolves from it, so a palette swap stays a one-file change per repo.
-- When `theme.md` changes, both client repos change. That is a known cost of the three-repo split.
-
 ## TypeScript
 
 - Strict mode enabled.

@@ -1,169 +1,25 @@
-## Lineup — Theme
+## Lineup — Sound and Screen States
 
-⚽ **"Floodlight"** — night football, 2000s archive, a clock running down.
-
----
-
-## 📌 Direction
-
-Three things the theme has to do, in priority order:
-
-1. **Make 15 seconds feel like 15 seconds.** The countdown is the emotional core. Everything else is background.
-2. **Make "you" and "your opponent" unmistakable at a glance** — in a 1v1 with a shared answer pool, confusing the two is the worst possible failure.
-3. **Feel like the 2000s without being a pastiche.** Cream instead of white, condensed type, no skeuomorphic leather or VHS scanlines.
-   **Dark only at MVP.** No light mode. The tension doesn't survive a white background, and a second theme doubles the token work for pages nobody lingers on. Revisit if `/`, `/pro` and the archive become real marketing surfaces.
+⚽ **What the game sounds like, and how every screen behaves.**
 
 ---
 
-## 🎨 Color
+## 📌 Scope
 
-### Surfaces
+This file keeps two things through the UI redesign:
 
-| Token       | Hex       | Use                                                                                            |
-| ----------- | --------- | ---------------------------------------------------------------------------------------------- |
-| `pitch-950` | `#0A0F0C` | App background. Near-black with a green cast — a pitch under floodlights, not a gray dashboard |
-| `pitch-900` | `#121A15` | Raised surface, panels                                                                         |
-| `pitch-800` | `#1A241E` | Cards, player chips, input fields                                                              |
-| `pitch-700` | `#27352C` | Borders, dividers                                                                              |
-| `pitch-600` | `#2F4036` | Pitch markings, empty slot outlines                                                            |
+- **§ Sound** is the sound spec, unchanged.
+- **§ Rules** and **§ States** are a behaviour reference. They say what each screen does in every condition, and what it says. They do not say what it looks like.
 
-### Text
-
-| Token   | Hex       | Use                                                                      |
-| ------- | --------- | ------------------------------------------------------------------------ |
-| `bone`  | `#F2EFE6` | Primary text. Cream, not `#FFF` — warmer, easier at speed, quietly retro |
-| `muted` | `#9BA79E` | Labels, metadata, secondary                                              |
-| `dim`   | `#5F6D64` | Placeholders, disabled, unrevealed slots                                 |
-
-### Semantic
-
-| Token        | Hex       | Use                                         |
-| ------------ | --------- | ------------------------------------------- |
-| `floodlight` | `#FFC043` | Brand, primary CTA, **and "you"** in a duel |
-| `away`       | `#4C9AFF` | **Your opponent** in a duel                 |
-| `turf`       | `#5FE388` | Correct, newly found player                 |
-| `ember`      | `#FF8A3D` | Timer warning (7–4s)                        |
-| `red-card`   | `#FF4A4A` | Life lost, timer critical (3–0s), forfeit   |
-
-### Three rules that make the palette work
-
-**Amber vs blue for player identity, never red vs green.** Red/green is the single most common colorblind pair — roughly 8% of men would lose the most important distinction in the app. Amber/blue is the safest high-contrast pair there is. Still pair it with position and label, never color alone.
-
-**The timer escalates through three colors, never two.** `bone` → `ember` → `red-card`. A two-stage escalation reads as "fine / panic"; three stages give the player a middle state to react to, which is where the tension actually lives.
-
-**The surface ramp is one hue.** Every `pitch-*` value sits at hue **158°** in OKLCH (measured spread: 156.5–158.8°), with chroma rising as it lightens — `0.010` at `950` up to `0.028` at `600`. That relationship is what makes the greens read as _a pitch under floodlights_ rather than gray, and it is why the palette is swappable: change the one hue and the whole ramp moves together, coherently.
-
-| Token       | OKLCH                    | Chroma  |
-| ----------- | ------------------------ | ------- |
-| `pitch-950` | `oklch(16.2% 0.010 158)` | lowest  |
-| `pitch-900` | `oklch(20.8% 0.015 158)` |         |
-| `pitch-800` | `oklch(24.8% 0.018 158)` |         |
-| `pitch-700` | `oklch(31.3% 0.025 158)` |         |
-| `pitch-600` | `oklch(35.3% 0.028 158)` | highest |
-
-Keep the hex values as the shipped source; the OKLCH column is the _rule_ they follow. When a future palette swap happens, derive the new ramp from a single hue the same way — never hand-pick five unrelated darks.
-
-**Note the deliberate text split:** `bone` sits at hue 91° (warm cream, off the surface family — it's the one thing that reads _lit_), while `muted` and `dim` sit at 153–157°, inside the surface family. Primary text stands apart; secondary text belongs to the pitch. Preserve that split in any palette swap.
-
-```css
-:root {
-  --pitch-950: #0a0f0c;
-  --pitch-900: #121a15;
-  --pitch-800: #1a241e;
-  --pitch-700: #27352c;
-  --pitch-600: #2f4036;
-  --bone: #f2efe6;
-  --muted: #9ba79e;
-  --dim: #5f6d64;
-  --floodlight: #ffc043;
-  --away: #4c9aff;
-  --turf: #5fe388;
-  --ember: #ff8a3d;
-  --red-card: #ff4a4a;
-}
-```
-
----
-
-## 🔤 Typography
-
-| Role         | Face                                 | Notes                                  |
-| ------------ | ------------------------------------ | -------------------------------------- |
-| Display      | **Archivo Expanded** / Archivo Black | Match header, scoreline, result screen |
-| Numerals     | **Archivo**, tabular figures         | Countdown, lives, score                |
-| UI & body    | **Inter**                            | Everything else                        |
-| Player names | **Inter Medium**                     | The most-repeated element in the app   |
-
-> ⚠️ **Check Latin Extended-A coverage before committing to any display face.** Your player names include İbrahimović, Şahin, Özil, Łukasz, Čech. Anton and Bebas Neue — the two most common "sports display" picks — have incomplete coverage and will fall back mid-name, which looks broken. Archivo and Inter both cover it fully.
-
-**Tabular figures are mandatory on the countdown.** `font-variant-numeric: tabular-nums`. Without it the number jitters horizontally every tick as glyph widths change, and a jittering clock reads as a bug.
-
-**Scale** (1.25 ratio): 12 · 14 · 16 · 20 · 24 · 32 · 48 · 64
-The 64 is the countdown. Nothing else gets it.
-
----
-
-## 📐 Form
-
-| Token     | Value                                                                                                                    |
-| --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Space     | 4px base — `4 8 12 16 24 32 48 64`                                                                                       |
-| Radius    | `sm` 4px (chips, inputs) · `md` 8px (cards) · `lg` 12px (panels) · `full` (badges only)                                  |
-| Border    | 1px `pitch-700`                                                                                                          |
-| Elevation | **Borders and background lifts, not shadows.** Drop shadows are invisible on a near-black background — they read as dirt |
-
-Keep corners tight. Sports and data interfaces feel sharp; pill-shaped everything reads as a consumer social app.
-
----
-
-## 🎬 Motion
-
-| Event                | Duration | Easing                        |
-| -------------------- | -------- | ----------------------------- |
-| Countdown ring sweep | 15000ms  | **`linear` — non-negotiable** |
-| Player reveal card   | 320ms    | spring                        |
-| Turn handover        | 240ms    | ease-out                      |
-| Life lost            | 480ms    | shake + `red-card` flash      |
-| Timer color shift    | 200ms    | ease                          |
-| Missed XI reveal     | 240ms each, 60ms apart | ease-out, fade + scale 0.96 → 1, goalkeeper first. Reduced motion: all at once |
-
-**The ring must sweep linearly.** Any easing makes the visual position of the ring disagree with the seconds remaining — the player sees the ring slow down while the clock keeps ticking. Easing a progress indicator is a lie about time, and in a game where the clock decides lives, it's a fairness bug, not a style choice.
-
-Respect `prefers-reduced-motion`: drop the shake and the spring, keep the ring (it carries information, not decoration).
-
-**Reduced-motion is a scalpel, never a kill-switch.** The obvious implementation —
-
-```css
-/* Do NOT ship this. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-```
-
-— is common in production codebases and it would **stop the countdown ring**. A player who has reduced motion enabled would lose lives to a clock they cannot see running.
-
-Opt out **per component** instead. Animation is Motion's job here, so read the preference with Motion's `useReducedMotion()` and branch the variant — drop the shake, drop the spring, keep the sweep:
-
-```tsx
-const reduced = useReducedMotion();
-// The ring ignores `reduced` entirely — it carries information.
-// Everything decorative checks it.
-```
-
-**Animate `transform` and `opacity` only.** Never `top`, `left`, `width`, `height` or any other layout property. This matters most on the squad grid: eleven slots re-flowing at once through layout properties will drop frames on mid-range phones, and the reveal is the moment the game has to feel good. Position slots with `x` / `y` (Motion animates these as `transform`), never with grid or absolute offsets.
+The look is open: colours, type, layout, components, icons and motion come from the new UI design docs. Where a state below names a role ("your colour", "the warning stage", "a correct-answer highlight"), the design decides the value; the behaviour behind it stays.
 
 ---
 
 ## 🔊 Sound
 
-**Every sound doubles something the player can already see.** A sound is never the only channel: the reveal, the shake, the pulse, the pip and the ring all stand on their own, and the game is fully playable muted. Sound is presentation, like the ring. No cue decides anything, and none fires from a client-side guess at an outcome.
+**Every sound doubles something the player can already see.** A sound is never the only channel: the reveal, the shake, the pulse, the life display and the clock all stand on their own, and the game is fully playable muted. Sound is presentation, like the clock. No cue decides anything, and none fires from a client-side guess at an outcome.
 
-**Synthesized, not recorded.** Like the pitch, the sounds are built in code (Web Audio on web): no files, no licence risk, nothing to load. The table below is the spec; each client renders it with its own runtime.
+**Synthesized, not recorded.** The sounds are built in code (Web Audio on web): no files, no licence risk, nothing to load. The table below is the spec; each client renders it with its own runtime.
 
 | Cue             | Event                             | Sound                                                        | Length | Gain       |
 | --------------- | --------------------------------- | ------------------------------------------------------------ | ------ | ---------- |
@@ -183,97 +39,112 @@ const reduced = useReducedMotion();
 | `perfectClear`  | Solo: all 11 named                | The win arpeggio with a longer shimmering tail               | 900ms  | 0.45       |
 | `runOver`       | Solo: lives at 0                  | The loss phrase                                              | 700ms  | 0.35       |
 
-Gains are relative to a master gain of 1. Lengths follow § Motion where the two meet: `lifeLost` lands with the 480ms flash, `turnToYou` with the 240ms handover.
+Gains are relative to a master gain of 1. `lifeLost` lands with the life-lost flash, and `turnToYou` with the turn handover.
 
 **Three rules that make the sounds work**
 
 - **Urgency belongs to your own clock.** On the opponent's turn their clock ticks at half gain and never beeps. The final-five beeps are yours alone.
-- **The clock never whistles.** Nothing plays when the ring reaches 0. The whistle comes from the server's life-lost event, because a guess inside the grace window can still land.
+- **The clock never whistles.** Nothing plays when the clock reaches 0. The whistle comes from the server's life-lost event, because a guess inside the grace window can still land.
 - **The two no-penalty verdicts sound different**, just as they look different: `alreadyNamed` is a level blip, while `notInXi` falls.
 
-**On by default, one mute toggle.** It sits beside quit and is remembered on the device. There is no volume slider; the OS sets the volume. Reduced motion does not affect sound.
+**On by default, one mute toggle**, remembered on the device. There is no volume slider; the OS sets the volume. Reduced motion does not affect sound.
+
+---
+
+## ⚖️ Rules
+
+These hold in any design. They protect fairness and access, not a look.
+
+- **The clock shows time honestly.** It is drawn from the server's timestamp, and its visual progress is linear, never eased. Easing makes the clock disagree with the seconds left, and in a game where the clock costs lives, that is a fairness bug.
+- **The clock escalates through three stages, never two:** normal, then warning (7–4s), then critical (3–0s). A middle stage gives the player something to react to.
+- **You and your opponent are unmistakable at a glance.** Each has their own identity colour, and the pair is colourblind-safe: never red against green. Colour is never the only cue; position and label say it too.
+- **Reduced motion is applied per component, never as a global switch.** It drops decorative motion (the shake, the spring) and never stops the clock, which carries information. A player with reduced motion must still see their time running.
+- **The squad always shows all eleven slots.** Unrevealed slots are drawn as empty slots, with their position, so the player always sees how many are left.
+- **Whose turn it is is always visible**, named by label as well as colour.
+- **In a duel, a found player is marked with the finder's colour.**
+- **Every wait has a known shape.** A placeholder takes the exact size of what loads into it, so nothing shifts as the player starts reading.
 
 ---
 
 ## 🔀 States
 
-The duel screen is almost never at rest. These are the conditions it can actually be in — each one gets a decided treatment before anything is built.
+The duel screen is almost never at rest. These are the conditions it can actually be in.
 
-**Two rules across every table below.** State is **server-pushed, never client-inferred** — the client renders what the server says it is, including the timer state. And every state must be reachable in dev without playing a real game; build a `?state=` override on day one or you will never see half of these before a user does.
+**Two rules across every table below.** State is **server-pushed, never client-inferred**: the client renders what the server says it is, including the timer state. And every state must be reachable in dev without playing a real game, through a `?state=` override.
 
 ### Duel — your turn
 
-| State         | Trigger                          | Ring                             | Numeral     | Squad grid                                     | Input                       | Feedback                                   |
-| ------------- | -------------------------------- | -------------------------------- | ----------- | ---------------------------------------------- | --------------------------- | ------------------------------------------ |
-| Idle          | Turn starts                      | `bone`, sweeping                 | 64px `bone` | Unfound slots `pitch-600` outline              | Focused, live               | —                                          |
-| Suggesting    | 3+ letters typed, matches found  | **keeps sweeping**               | unchanged   | unchanged                                      | Live; up to 5 rows above the input, then it scrolls; photo + name; named rows dimmed | — (no motion, no sound)                    |
-| Warning       | 7s left                          | `ember`                          | `ember`     | unchanged                                      | live                        | —                                          |
-| Critical      | 3s left                          | `red-card`, 1s pulse             | `red-card`  | unchanged                                      | live                        | —                                          |
-| Pending       | Guess submitted, awaiting server | **keeps sweeping**               | unchanged   | unchanged                                      | Locked, 16px spinner inline | —                                          |
-| Correct, new  | Server confirms unfound player   | Freezes, then resets on handover | —           | Slot fills, `turf` flash → settles `pitch-800` | Clears, locks               | Name card springs in, 320ms                |
-| Already found | Name is in the found-pool        | **keeps sweeping**               | unchanged   | **Existing slot pulses once, `muted`**         | Clears, stays live          | Toast: "Already named"                     |
-| Not in XI     | Name isn't in the squad          | **keeps sweeping**               | unchanged   | **unchanged**                                  | Shake 240ms, text stays     | Toast: "Not in this XI"                    |
-| Life lost     | Timer hits 0                     | Resets                           | —           | unchanged                                      | Locks                       | Pip empties, `red-card` screen flash 480ms |
+| State         | Trigger                          | Clock                            | Squad grid                                            | Input                                                                                          | Feedback                         |
+| ------------- | -------------------------------- | -------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------- |
+| Idle          | Turn starts                      | Yours, normal stage, running     | Unfound slots drawn empty                             | Focused, live                                                                                  | —                                |
+| Suggesting    | 3+ letters typed, matches found  | **keeps running**                | unchanged                                             | Live; up to 5 suggestion rows, then it scrolls; photo + name; already-named rows dimmed        | — (no motion, no sound)          |
+| Warning       | 7s left                          | Warning stage                    | unchanged                                             | live                                                                                           | —                                |
+| Critical      | 3s left                          | Critical stage, pulsing each second | unchanged                                          | live                                                                                           | —                                |
+| Pending       | Guess submitted, awaiting server | **keeps running**                | unchanged                                             | Locked, with a pending indicator inside it                                                     | —                                |
+| Correct, new  | Server confirms unfound player   | Stops, then resets on handover   | Slot fills with a correct-answer highlight, then settles | Clears, locks                                                                               | The found-player card appears    |
+| Already found | Name is in the found-pool        | **keeps running**                | **The existing slot pulses once**                     | Clears, stays live                                                                             | Toast: "Already named"           |
+| Not in XI     | Name isn't in the squad          | **keeps running**                | **unchanged**                                         | Shakes, text stays                                                                             | Toast: "Not in this XI"          |
+| Life lost     | Timer hits 0                     | Resets                           | unchanged                                             | Locks                                                                                          | A life empties, life-lost flash  |
 
 > The two no-penalty outcomes must be told apart instantly. **Already-found speaks through the grid; not-in-XI speaks through the input.** Same rules, different channel — without that split, players read both as "the app didn't accept my answer" and assume it's broken.
 
 ### Duel — their turn
 
-| State                 | Trigger                     | Treatment                                                                                                               |
-| --------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Waiting               | Handover                    | The rail's single ring switches to their clock, in `away`, and the Lives card switches to them. Grid read-only, input hidden |
-| Their reveal          | Opponent names a new player | Slot fills in `away`-tinted `turf`, same 320ms spring. You watch the pool shrink — this is the tension                  |
-| Their life lost       | Their timer expires         | Their pip empties. No screen flash; it isn't your loss                                                                  |
-| Opponent disconnected | Socket drops                | `ember` "Reconnecting, 18s" chip in the rail's Lives card header; their toggle dot turns `ember`. **Their clock keeps running** — say so explicitly, or it reads as a freeze |
-| Opponent forfeited    | Reconnect window closes     | Straight to result, "Opponent left"                                                                                     |
+| State                 | Trigger                     | Behaviour                                                                                                                       |
+| --------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Waiting               | Handover                    | The one clock switches to theirs, in the opponent's colour, and the lives display switches to them. Grid read-only, input hidden |
+| Their reveal          | Opponent names a new player | The slot fills, marked in the opponent's colour, with the same reveal as yours. You watch the pool shrink — this is the tension |
+| Their life lost       | Their timer expires         | Their life empties. No screen flash; it isn't your loss                                                                         |
+| Opponent disconnected | Socket drops                | A "Reconnecting, 18s" warning by their lives, and their indicator shows it. **Their clock keeps running** — say so explicitly, or it reads as a freeze |
+| Opponent forfeited    | Reconnect window closes     | Straight to result, "Opponent left"                                                                                             |
 
 ### Duel — terminal
 
-| State       | Trigger             | Treatment                                                                                                              |
-| ----------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Win         | Opponent at 0 lives | `floodlight` result card, match identity revealed in full                                                              |
-| Loss        | You at 0 lives      | `pitch-800` card, `red-card` accent, same reveal — never hide the answers from the loser                               |
-| Draw        | All 11 named        | Both colors present, neither dominant. Full XI already visible; the card names the match. Rare and should feel like it |
-| Forfeit win | Opponent left       | Win card, marked as a forfeit. Doesn't count toward streaks                                                            |
+| State       | Trigger             | Behaviour                                                                                                    |
+| ----------- | ------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Win         | Opponent at 0 lives | A win card in your colour, match identity revealed in full                                                   |
+| Loss        | You at 0 lives      | A neutral card with a loss accent, same reveal — never hide the answers from the loser                       |
+| Draw        | All 11 named        | Both player colours present, neither dominant. Full XI already visible; the card names the match. Rare and should feel like it |
+| Forfeit win | Opponent left       | Win card, marked as a forfeit. Doesn't count toward streaks                                                  |
 
 ### Solo
 
-| State                     | Trigger            | Treatment                                                                            |
+| State                     | Trigger            | Behaviour                                                                            |
 | ------------------------- | ------------------ | ------------------------------------------------------------------------------------ |
-| Idle / warning / critical | as duel            | Identical. One ring, `floodlight` throughout                                         |
+| Idle / warning / critical | as duel            | Identical. One clock, always yours                                                   |
 | Correct, new              | Valid unfound name | Slot fills, **next round starts immediately** — no handover pause                    |
 | Already found / not in XI | as duel            | Identical, same two channels                                                         |
-| Suggesting                | as duel            | Identical, the same list above the input                                             |
-| Life lost                 | Timer hits 0       | Pip empties, flash, next round starts                                                |
-| Perfect clear             | All 11 named       | `turf` takeover, lives remaining shown prominently. The solo counterpart of the draw |
+| Suggesting                | as duel            | Identical, the same suggestion list                                                  |
+| Life lost                 | Timer hits 0       | A life empties, life-lost flash, next round starts                                   |
+| Perfect clear             | All 11 named       | A correct-answer takeover, lives remaining shown prominently. The solo counterpart of the draw |
 | Run over                  | Lives at 0         | Summary: named vs missed, time per round, accuracy, streak                           |
-| Missed revealed (Pro)     | Reveal the full XI | Missed slots fill one by one in the dimmed missed style; the button becomes "Showing the N you missed." Free sees the button locked, with "Pro shows every player you missed." |
-| Daily cap reached         | Free, 5 runs today, switch on | On `/play`, Start is disabled; "You've played your 5 solo runs today. More at 01:00." (the reset in local time) sits under it with Play a duel and See Pro. With runs left, a 14px `fg-muted` "3 of 5 solo runs left today" instead. A refused run gates the canvas with the same line: Play a duel, Back to play, See Pro. The summary of the fifth run swaps Play again for Play a duel. Unlimited shows nothing. Never a dead end |
-| Picked match              | A run from the archive (`?match=`) | The side pick shows that match; the run is today's. Its summary leads with **Play it again** (the same match, a new run) and **Back to the archive**. A match no longer in the game gates the canvas: "That match isn't in the game any more", Back to the archive. Free with a picked link: "Picking a match is part of Pro", "A random match from your filters is still free." (at the cap, the cap line in its place), Back to play and See Pro |
-| Practice                  | Pro starts a practice run (the session says `practice`) | No countdown ring and no Lives card: a "Practice" card in their place ("No clock and no lives. Name all eleven, or quit when you like. This run isn't saved."), from the side pick on. The input stays live and no clock or whistle sounds play; the guess cues stay. Quit asks "End this practice run?" ("You'll see the summary. Practice runs aren't saved.", End practice, Keep practising). The summary keeps its title with a "Practice" tag where the lives were (below `sm`, beside "You named…"), finds past a minute read as minutes (1:14), and the actions are **Practise again** and **Back to play** (**Back to the archive** for a picked match). On `/play` a "Practice: no clock, no lives, not saved" checkbox (locked for Free) makes Start read "Start practice" and hides the cap line. Practising over a run left in play asks first. After 30 idle minutes: "This practice run has closed", Back to play. Free with a practice link: "Practice is part of Pro", "A timed run from your filters is still free." (at the cap, the cap line in its place), Back to play and See Pro |
-| Quit confirm              | Quit tapped        | Modal. Mid-run quits are common — make it one tap to cancel, never a double confirm  |
+| Missed revealed (Pro)     | Reveal the full XI | Missed slots fill one by one, goalkeeper first, in a dimmed missed style; the button becomes "Showing the N you missed." Reduced motion: all at once. Free sees the button locked, with "Pro shows every player you missed." |
+| Daily cap reached         | Free, 5 runs today, switch on | On `/play`, Start is disabled; "You've played your 5 solo runs today. More at 01:00." (the reset in local time) with Play a duel and See Pro. With runs left, a quiet "3 of 5 solo runs left today" instead. A refused run gates the game with the same line: Play a duel, Back to play, See Pro. The summary of the fifth run swaps Play again for Play a duel. Unlimited shows nothing. Never a dead end |
+| Picked match              | A run from the archive (`?match=`) | The side pick shows that match; the run is today's. Its summary leads with **Play it again** (the same match, a new run) and **Back to the archive**. A match no longer in the game gates the game: "That match isn't in the game any more", Back to the archive. Free with a picked link: "Picking a match is part of Pro", "A random match from your filters is still free." (at the cap, the cap line in its place), Back to play and See Pro |
+| Practice                  | Pro starts a practice run (the session says `practice`) | No clock and no lives display: a "Practice" panel in their place ("No clock and no lives. Name all eleven, or quit when you like. This run isn't saved."), from the side pick on. The input stays live and no clock or whistle sounds play; the guess cues stay. Quit asks "End this practice run?" ("You'll see the summary. Practice runs aren't saved.", End practice, Keep practising). The summary keeps its title with a "Practice" tag where the lives were, finds past a minute read as minutes (1:14), and the actions are **Practise again** and **Back to play** (**Back to the archive** for a picked match). On `/play` a "Practice: no clock, no lives, not saved" checkbox (locked for Free) makes Start read "Start practice" and hides the cap line. Practising over a run left in play asks first. After 30 idle minutes: "This practice run has closed", Back to play. Free with a practice link: "Practice is part of Pro", "A timed run from your filters is still free." (at the cap, the cap line in its place), Back to play and See Pro |
+| Quit confirm              | Quit tapped        | A confirm dialog. Mid-run quits are common — make it one tap to cancel, never a double confirm |
 
 ### Lobby & matchmaking
 
-| State                   | Trigger             | Treatment                                                                                                        |
+| State                   | Trigger             | Behaviour                                                                                                        |
 | ----------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Searching               | Queue entered       | Ambient, low-tension. Do not use the countdown ring here — the ring means "you are losing time"                  |
+| Searching               | Queue entered       | Ambient, low-tension. No countdown clock here — the clock means "you are losing time"                            |
 | Opponent found          | Pair made           | Brief beat, both handles shown, then straight to filters                                                         |
-| Filters — you submitted | You confirm         | Your panel locks, `floodlight` check. Opponent's panel shows waiting                                             |
+| Filters — you submitted | You confirm         | Your filters lock with a confirmation mark. The opponent's show waiting                                          |
 | Filters — coin flip     | Both submitted      | **Name whose filters won, explicitly.** Without this, the player whose filters lost assumes the app ignored them |
-| Match retrieved         | Squad resolved      | Match header in full: both crests and names, the score, the competition and the date. The named side is emphasised: its crest is ringed in `bone`, and the other side's name is `muted` |
+| Match retrieved         | Squad resolved      | Match header in full: both crests and names, the score, the competition and the date. The named side is emphasised and the other side is muted |
 | No opponent             | Queue timeout       | Offer solo with the same filters. Never a dead end                                                               |
 | Cancelled               | You leave the queue | Back to `/play`, filters preserved                                                                               |
-| Room waiting            | Your room is open   | The code alone is large: display face, tabular, letter-spaced. Copy code and Copy link confirm in place ("Copied"). A quiet "Closes in 9:41" and the room's filters. **No countdown ring**: nothing is lost while you wait |
-| Room filters            | A friend joins      | The coin-flip card, named for the room: "Playing your room" or "Playing {creator}'s room". No coin-flip wording |
-| Joining                 | A code is sent      | "Joining room K7QM2X…" over the gated canvas, the ambient pulse, Cancel. Never a spinner on an empty panel        |
+| Room waiting            | Your room is open   | The code is the most prominent thing, easy to read aloud. Copy code and Copy link confirm in place ("Copied"). A quiet "Closes in 9:41" and the room's filters. **No countdown clock**: nothing is lost while you wait |
+| Room filters            | A friend joins      | The coin-flip result, named for the room: "Playing your room" or "Playing {creator}'s room". No coin-flip wording |
+| Joining                 | A code is sent      | "Joining room K7QM2X…" with an ambient waiting state and Cancel                                                  |
 | Join refused            | Wrong, full or own  | Say which, and Back to play with the code kept in the box. Never "something went wrong"                          |
-| Hosting locked          | Free, split on      | Create room drawn locked (`ProLock`), "Pro hosts rooms. Anyone can join." and See Pro under the row; the code box and Join stay live. A refused create says "Hosting a room needs Pro", with Back to play and See Pro. After a room game, Back to play leads and New room is locked |
+| Hosting locked          | Free, split on      | Create room shown locked, with "Pro hosts rooms. Anyone can join." and See Pro; the code box and Join stay live. A refused create says "Hosting a room needs Pro", with Back to play and See Pro. After a room game, Back to play leads and New room is locked |
 | Room expired            | 10 minutes, no one  | "No one joined", Create a new room. Never a dead end                                                             |
 
 ### System
 
-| State               | Trigger                      | Treatment                                                                       |
+| State               | Trigger                      | Behaviour                                                                       |
 | ------------------- | ---------------------------- | ------------------------------------------------------------------------------- |
 | Protocol refused    | Client on version < N-1      | Full-screen upgrade prompt. Mobile-only in practice; still needs a design       |
 | Empty filter result | No match passes both gates   | Name which filter is too narrow, offer to widen it. Never "no results"          |
@@ -283,102 +154,35 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 
 ### Pro lock
 
-While the backend's `PRO_ENABLED` is on, a Pro feature a Free player can't use is **shown locked, never hidden** (`ProLock`). With the switch off, no lock, no price and no word "Pro" appear anywhere.
+While the backend's `PRO_ENABLED` is on, a Pro feature a Free player can't use is **shown locked, never hidden**. With the switch off, no lock, no price and no word "Pro" appear anywhere.
 
-| State   | Trigger                              | Treatment                                                                                                   |
-| ------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Pending | The switch or the session is loading | The control drawn locked, no caption, so no lock flashes in or out                                          |
-| Locked  | Switch on, Free (or no session yet)  | The control in `line` border and `fg-muted` text, never hovering; a 12px `fg-muted` caption and **See Pro** |
-| Open    | Switch off, or Pro                   | The real control, as if no lock existed                                                                     |
+| State   | Trigger                              | Behaviour                                                                    |
+| ------- | ------------------------------------ | ---------------------------------------------------------------------------- |
+| Pending | The switch or the session is loading | The control shown locked, no caption, so no lock flashes in or out           |
+| Locked  | Switch on, Free (or no session yet)  | The control shown locked and inert, with a short caption and **See Pro**     |
+| Open    | Switch off, or Pro                   | The real control, as if no lock existed                                      |
 
 ### Landing demo
 
-The showcase on `/` plays one solo turn on a loop. It is presentation, not a game: the reveals and the wrong guess come from the response. **It has no countdown ring** (user, 2026-11-10): the game's ring is untouched.
+The showcase on `/` plays one solo turn on a loop. It is presentation, not a game: the reveals and the wrong guess come from the response. **It has no countdown clock** (user, 2026-11-10): the game's clock is untouched.
 
-| State          | Trigger                          | Treatment                                                                                                    |
-| -------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Playing        | At least half in view, tab shown | Typing into the centred input, the suggestion row, reveals with the 320ms spring, one "Not in this XI" shake |
-| Paused         | Pause, out of view, tab hidden   | Everything stops where it was. A Pause / Play chip beside the caption is the demo's only control             |
-| Reduced motion | `prefers-reduced-motion`         | One still frame: the demo's reveals filled, the input empty, no chip                                         |
-| Sound          | Always                           | None. The game's cues never play on `/`                                                                      |
-
-**Landing sections** (below the fold, Landing E): the archive tiles, the rules columns and what's inside each enter **once**, the first time they are 30% in view: fade in and rise 8px, 320ms, ease-out, items 60ms apart (40ms for logos and crests, which grow from 0.92). The rules' marks play with their column: slots 30ms apart, the arc drawing to two thirds over 600ms **linear** (it is the clock's mark), pips 80ms apart. Reduced motion: everything is simply there, the marks complete. Never on the fold, the modes or the footer.
+| State          | Trigger                          | Behaviour                                                                                  |
+| -------------- | -------------------------------- | ------------------------------------------------------------------------------------------ |
+| Playing        | At least half in view, tab shown | Typing into the input, the suggestion row, reveals, one "Not in this XI" shake              |
+| Paused         | Pause, out of view, tab hidden   | Everything stops where it was. A Pause / Play control is the demo's only control           |
+| Reduced motion | `prefers-reduced-motion`         | One still frame: the demo's reveals filled, the input empty, no control                    |
+| Sound          | Always                           | None. The game's cues never play on `/`                                                    |
 
 ### Loading
 
-Every wait in this app has a **known shape** — a squad is always 11 slots, a lobby row is always crest + name + rating. So loading is a skeleton of the real thing, never a centered spinner on an empty panel.
+Every wait in this app has a **known shape** — a squad is always 11 slots, a list row always has the same parts. So loading is a placeholder of the real thing, never a spinner on an empty panel.
 
-| Surface                  | Treatment                                                                                   |
-| ------------------------ | ------------------------------------------------------------------------------------------- |
-| Squad grid loading       | 11 `pitch-800` slot shapes on `pitch-950`, in formation. The layout never shifts on arrival |
-| Lobby / list rows        | `pitch-800` circle + bar pairs at real row height                                           |
-| Match header             | Two crest blocks and two bars, at the scoreline and context line heights                    |
-| Inline (guess submitted) | 16px spinner **inside** the locked input — the only place a spinner is correct              |
-
-Skeletons are flat `pitch-800` blocks. **No shimmer sweep** — a moving highlight on a near-black surface reads as a rendering artifact, and it competes with the ring for attention. If a wait needs to feel alive, pulse opacity `1 → 0.6 → 1` over 1.6s, `ease-in-out`.
-
-**The skeleton must match the final layout exactly.** A skeleton that is the wrong size causes a layout shift at the moment the player is trying to read the squad — worse than no skeleton at all.
-
----
-
-## 🧩 Signature components
-
-These are bespoke — no library ships them, and they carry the whole feel.
-
-- **Countdown ring** — 64px numeral inside a stroked circle, with a muted "seconds" caption under it. Three-stage color escalation. Linear sweep.
-- **Lives** — three shapes, filled in player color, emptied to `dim`. Not hearts; a football-native mark (shirt, ball, or a simple pip) reads better here.
-- **Found-player card** — the reveal moment. Headshot (initials when there is none) and the name. `turf` flash on entry, then settles to `pitch-800` with `bone` name. In a duel, the headshot is ringed in the finder's colour. This is the component to prototype first.
-- **Squad grid** — 11 slots. Unrevealed slots are `pitch-600` outlines on `pitch-950`, not empty space, so the player always sees how much is left. They show an empty headshot disc and the position.
-- **Turn indicator** — the amber/blue pair, always visible, never subtle: the rail's clock label and ring colour name whose turn it is, and the Lives card shows the active player, with a dot toggle for the other.
-
----
-
-## 🛠 Implementation
-
-**This document is the source of truth for the palette.** There is no shared token package — the client repos do not depend on each other. Each one holds its own tokens file transcribed from the tables above: web consumes it through Tailwind's `@theme`, mobile through NativeWind.
-
-Within a repo, that file is the only place a hex value appears, so a palette swap stays a one-file change. Across repos, a palette change means editing this document and then both transcriptions. That is the accepted cost of the split — and it is why the values below are written out in full here rather than left to live in code.
-
-**Share tokens, not components.** The web countdown ring and the native one are different implementations of the same spec, in different repos. That is intended: a single component tree for web and native produces an app that feels wrong on both.
-
-```js
-// tokens/colors.js — identical file in each client repo, transcribed from this document
-export const colors = {
-  pitch: {
-    950: '#0A0F0C',
-    900: '#121A15',
-    800: '#1A241E',
-    700: '#27352C',
-    600: '#2F4036',
-  },
-  bone: '#F2EFE6',
-  muted: '#9BA79E',
-  dim: '#5F6D64',
-  floodlight: '#FFC043',
-  away: '#4C9AFF',
-  turf: '#5FE388',
-  ember: '#FF8A3D',
-  redCard: '#FF4A4A',
-};
-```
-
----
-
-## ✅ Contrast
-
-All checked against `pitch-950` (#0A0F0C):
-
-| Pair                        | Ratio   | Verdict                         |
-| --------------------------- | ------- | ------------------------------- |
-| `bone` on `pitch-950`       | ~16.5:1 | AAA                             |
-| `muted` on `pitch-950`      | ~8.6:1  | AAA                             |
-| `dim` on `pitch-950`        | ~3.6:1  | Large text and non-text UI only |
-| `floodlight` on `pitch-950` | ~11.4:1 | AAA                             |
-| `turf` on `pitch-950`       | ~11.9:1 | AAA                             |
-| `away` on `pitch-950`       | ~7.2:1  | AA                              |
-| `red-card` on `pitch-950`   | ~6.1:1  | AA                              |
-
-Text **on** `floodlight` or `turf` must be `pitch-950`, never `bone`.
+| Surface                  | Behaviour                                                              |
+| ------------------------ | ---------------------------------------------------------------------- |
+| Squad grid loading       | 11 slot placeholders in formation. The layout never shifts on arrival  |
+| Lobby / list rows        | Placeholder rows at the real row height                                |
+| Match header             | Placeholders for the crests, the scoreline and the context line        |
+| Inline (guess submitted) | A pending indicator **inside** the locked input — the only spinner     |
 
 ---
 
