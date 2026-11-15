@@ -32,6 +32,13 @@
   --color-block-butter: var(--block-butter);
   --color-block-coral: var(--block-coral);
   --color-accent-caramel: var(--accent-caramel);
+  --color-tag-green: var(--tag-green);
+  --color-tag-amber: var(--tag-amber);
+  --color-tag-red: var(--tag-red);
+  --color-tag-blue: var(--tag-blue);
+  --color-tag-purple: var(--tag-purple);
+  --color-tag-yellow: var(--tag-yellow);
+  --color-tag-grey: var(--tag-grey);
   --color-reveal-flash-you: var(--reveal-flash-you);
   --color-reveal-flash-opponent: var(--reveal-flash-opponent);
   --color-already-found-pulse: var(--already-found-pulse);

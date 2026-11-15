@@ -4,10 +4,7 @@ import { motion } from 'motion/react';
 import { ClubCrest } from '@/components/game/ClubCrest';
 import { CompetitionLogo } from '@/components/game/CompetitionLogo';
 import { CountUp } from '@/components/home/CountUp';
-import {
-  LandingSkeleton,
-  SKELETON_BLOCK,
-} from '@/components/home/LandingSkeleton';
+import { LandingSkeleton } from '@/components/home/LandingSkeleton';
 import { useCatalogOverview } from '@/hooks/use-catalog-overview';
 import { useEntrance } from '@/hooks/use-entrance';
 import { TOP_CLUBS_MAX } from '@/lib/api/schemas/catalog';
@@ -15,6 +12,7 @@ import { highlightFigures, landingCompetitions } from '@/lib/landing';
 import { SITE_CONTAINER } from '@/styles/classes';
 import { LANDING_TIGHT_STAGGER_MS } from '@/styles/motion';
 import type { CatalogOverview } from '@/types/catalog';
+import { SKELETON } from '@/components/ui/skeleton';
 
 // Two rows on wide screens, as the real pool fills
 const SKELETON_COMPETITIONS = 8;
@@ -32,24 +30,21 @@ function InsideSkeleton() {
         <div className={COMPETITION_ROW}>
           {Array.from({ length: SKELETON_COMPETITIONS }, (_, index) => (
             <span key={index} className="flex h-6 items-center gap-2">
-              <span className={`size-6 ${SKELETON_BLOCK}`} />
-              <span className={`h-4 w-28 ${SKELETON_BLOCK}`} />
+              <span className={`size-6 ${SKELETON}`} />
+              <span className={`h-4 w-28 ${SKELETON}`} />
             </span>
           ))}
         </div>
         <div className={CREST_ROW}>
           {Array.from({ length: TOP_CLUBS_MAX }, (_, index) => (
-            <span
-              key={index}
-              className={`size-8 sm:size-10 ${SKELETON_BLOCK}`}
-            />
+            <span key={index} className={`size-8 sm:size-10 ${SKELETON}`} />
           ))}
         </div>
         <div className={HIGHLIGHTS}>
           {Array.from({ length: HIGHLIGHT_COUNT }, (_, index) => (
             <div key={index} className="flex flex-col gap-1">
-              <span className={`h-8 w-20 sm:h-10 ${SKELETON_BLOCK}`} />
-              <span className={`h-5 w-28 sm:h-6 ${SKELETON_BLOCK}`} />
+              <span className={`h-8 w-20 sm:h-10 ${SKELETON}`} />
+              <span className={`h-5 w-28 sm:h-6 ${SKELETON}`} />
             </div>
           ))}
         </div>

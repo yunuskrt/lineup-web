@@ -24,7 +24,7 @@ export function FeedbackToast({ toast }: FeedbackToastProps) {
       {toast && toast.id !== endedId ? (
         <motion.p
           key={toast.id}
-          className="rounded-sm border border-line bg-surface-raised px-3 py-1 text-14 leading-5 text-fg"
+          className="rounded-md border-2 border-line bg-surface-card px-3 py-0.5 text-14 leading-5 font-medium text-fg shadow-hard-sm"
           initial={{ opacity: 0, y: riseFrom }}
           animate={{ opacity: [0, 1, 1, 0], y: 0 }}
           transition={{

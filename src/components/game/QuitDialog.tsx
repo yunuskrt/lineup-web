@@ -1,6 +1,14 @@
 'use client';
 
-import { useId, useLayoutEffect, useRef } from 'react';
+import { useRef } from 'react';
+import {
+  AlertDialog,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/styles/classes';
 
 export type QuitDialogCopy = {
@@ -43,51 +51,43 @@ export function QuitDialog({
   onDismiss,
   onConfirm,
 }: QuitDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
-  const detailId = useId();
+  const popupRef = useRef<HTMLDivElement>(null);
 
-  // Closes before the summary takes focus
-  useLayoutEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (isOpen && !dialog.open) dialog.showModal();
-    if (!isOpen && dialog.open) dialog.close();
-  }, [isOpen]);
+  // Never pull focus back from the summary or Start
+  function returnFocus(): boolean {
+    const active = document.activeElement;
+    return (
+      !active ||
+      active === document.body ||
+      (popupRef.current?.contains(active) ?? false)
+    );
+  }
 
   return (
-    <dialog
-      ref={dialogRef}
-      aria-labelledby={titleId}
-      aria-describedby={detailId}
-      onClose={onDismiss}
-      className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-lg border border-line bg-surface-raised p-6 text-fg backdrop:bg-gate-scrim"
+    <AlertDialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onDismiss();
+      }}
     >
-      <h2 id={titleId} className="text-20 font-semibold">
-        {copy.title}
-      </h2>
-      <p id={detailId} className="mt-2 text-14 text-fg-muted">
-        {copy.detail}
-      </p>
-      {/* First in order, so showModal focuses it */}
-      <div className="mt-6 flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={onDismiss}
-          disabled={isQuitting}
-          className={PRIMARY_BUTTON}
-        >
-          {copy.dismissLabel ?? 'Keep playing'}
-        </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          disabled={isQuitting}
-          className={SECONDARY_BUTTON}
-        >
-          {isQuitting ? copy.pendingLabel : copy.confirmLabel}
-        </button>
-      </div>
-    </dialog>
+      <AlertDialogContent ref={popupRef} finalFocus={returnFocus}>
+        <AlertDialogTitle>{copy.title}</AlertDialogTitle>
+        <AlertDialogDescription>{copy.detail}</AlertDialogDescription>
+        {/* First in order, so it takes focus on open */}
+        <AlertDialogFooter>
+          <AlertDialogClose disabled={isQuitting} className={PRIMARY_BUTTON}>
+            {copy.dismissLabel ?? 'Keep playing'}
+          </AlertDialogClose>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isQuitting}
+            className={SECONDARY_BUTTON}
+          >
+            {isQuitting ? copy.pendingLabel : copy.confirmLabel}
+          </button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

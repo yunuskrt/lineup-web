@@ -17,6 +17,7 @@ import { SECONDARY_BUTTON, TEXT_INPUT } from '@/styles/classes';
 import type { ArchiveView as ArchiveViewModel } from '@/types/archive';
 import type { Filters } from '@/types/filters';
 import type { MatchIdentity } from '@/types/match';
+import { SKELETON } from '@/components/ui/skeleton';
 
 const LOCKED_LINE =
   'Every match in the game, searchable. Pick one and play it.';
@@ -57,7 +58,7 @@ function Header({ view }: { view: ArchiveViewModel }) {
       ) : (
         // The line's own height while the total loads
         <div aria-hidden="true" className="flex h-6 items-center">
-          <span className="h-4 w-full max-w-md rounded-sm bg-skeleton-fill" />
+          <span className={`h-4 w-full max-w-md ${SKELETON}`} />
         </div>
       )}
     </header>

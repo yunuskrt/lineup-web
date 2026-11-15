@@ -5,8 +5,6 @@ import type { ReactNode } from 'react';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 
-export const SKELETON_BLOCK = 'rounded-sm bg-skeleton-fill';
-
 // Flat blocks at the loaded size; opacity pulse only
 export function LandingSkeleton({ children }: { children: ReactNode }) {
   const runs = useMotionPolicy();

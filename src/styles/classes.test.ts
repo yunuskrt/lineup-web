@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buttonVariants,
   DOT_BUTTON,
   DUEL_ACTOR_BG,
   DUEL_ACTOR_BORDER,
@@ -149,5 +150,37 @@ describe('type roles', () => {
     expect(tokens).toContain('font-stretch-semi-expanded');
     expect(tokens).toContain('md:font-stretch-expanded');
     expect(tokens).not.toContain('font-stretch-expanded');
+  });
+});
+
+describe('button variants', () => {
+  // ui/button and the call sites share one source
+  it('builds the shared constants from buttonVariants', () => {
+    expect(PRIMARY_BUTTON).toBe(buttonVariants());
+    expect(PRIMARY_BUTTON_LARGE).toBe(buttonVariants({ size: 'large' }));
+    expect(SECONDARY_BUTTON).toBe(buttonVariants({ variant: 'secondary' }));
+    expect(SECONDARY_BUTTON_LARGE).toBe(
+      buttonVariants({ variant: 'secondary', size: 'large' }),
+    );
+  });
+
+  // Each size keeps its height with the 2px outline
+  it.each([
+    ['primary', 'default', 'py-1'],
+    ['secondary', 'default', 'py-1.75'],
+    ['primary', 'large', 'py-2.5'],
+    ['secondary', 'large', 'py-2.5'],
+  ] as const)('pads %s %s with %s only', (variant, size, padding) => {
+    const paddings = buttonVariants({ variant, size })
+      .split(' ')
+      .filter((token) => token.startsWith('py-'));
+    expect(paddings).toEqual([padding]);
+  });
+
+  it.each([
+    ['primary', 'bg-brand'],
+    ['secondary', 'bg-surface-card'],
+  ] as const)('fills %s with %s', (variant, fill) => {
+    expect(buttonVariants({ variant }).split(' ')).toContain(fill);
   });
 });

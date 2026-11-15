@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/hooks/use-auth';
 import { NAV_LINK } from '@/styles/classes';
+import { SKELETON } from '@/components/ui/skeleton';
 
 export function NavAccount() {
   const pathname = usePathname();
@@ -11,10 +12,7 @@ export function NavAccount() {
 
   if (session.isPending) {
     return (
-      <div
-        aria-hidden="true"
-        className="size-6 rounded-sm bg-skeleton-fill sm:h-5 sm:w-16"
-      />
+      <div aria-hidden="true" className={`size-6 ${SKELETON} sm:h-5 sm:w-16`} />
     );
   }
 

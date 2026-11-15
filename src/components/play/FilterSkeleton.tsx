@@ -5,9 +5,9 @@ import {
   FILTER_NOTE,
   FILTER_ROW,
 } from '@/components/play/FilterPanel';
+import { SKELETON } from '@/components/ui/skeleton';
 
-const BAR = 'rounded-sm bg-skeleton-fill';
-const CHIP = `h-8.75 ${BAR}`;
+const CHIP = `h-8.75 ${SKELETON}`;
 
 // Measured from the mock catalog so rows wrap alike
 const ANY_COMPETITION = 'w-[135.3px]';
@@ -28,7 +28,7 @@ function SkeletonRow({
   return (
     <div className={FILTER_ROW}>
       <div className={FILTER_LABEL}>
-        <div className={`h-5.25 ${label} ${BAR}`} />
+        <div className={`h-5.25 ${label} ${SKELETON}`} />
       </div>
       {children}
     </div>
@@ -44,7 +44,7 @@ export function FilterSkeleton() {
           <div className={`${CHIP} ${ANY_COMPETITION}`} />
           {COMPETITION_GROUPS.map((group, index) => (
             <div key={index} className="flex flex-col gap-2">
-              <div className={`h-4.5 ${group.caption} ${BAR}`} />
+              <div className={`h-4.5 ${group.caption} ${SKELETON}`} />
               <div className="flex flex-wrap gap-2">
                 {group.chips.map((width) => (
                   <div key={width} className={`${CHIP} ${width}`} />
@@ -58,18 +58,22 @@ export function FilterSkeleton() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <div className={`${CHIP} ${ANY_CLUB}`} />
-            <div className={`h-9.5 sm:h-8.75 max-md:w-full md:w-64 ${BAR}`} />
+            <div
+              className={`h-9.5 sm:h-8.75 max-md:w-full md:w-64 ${SKELETON}`}
+            />
           </div>
           {/* The real copy, unseen, so it wraps alike */}
           <p className={FILTER_NOTE}>
-            <span className={`text-transparent box-decoration-clone ${BAR}`}>
+            <span
+              className={`text-transparent box-decoration-clone ${SKELETON}`}
+            >
               {CLUB_HINT}
             </span>
           </p>
         </div>
       </SkeletonRow>
       <SkeletonRow label="w-8">
-        <div className={`h-9.25 w-74 ${BAR}`} />
+        <div className={`h-9.25 w-74 ${SKELETON}`} />
       </SkeletonRow>
     </div>
   );

@@ -15,11 +15,11 @@ import { summaryTitle } from '@/lib/summary';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 import type { SoloEndView } from '@/types/canvas';
 import type { SoloSummary } from '@/types/solo';
+import { SKELETON } from '@/components/ui/skeleton';
 
 // Fixed heights keep the skeleton in the same box
 const OUTCOME_BOX =
   'flex h-24 items-center justify-between gap-4 rounded-md border p-4';
-const SKELETON = 'rounded-sm bg-skeleton-fill';
 
 type OutcomeProps = {
   summary: SoloSummary;

@@ -25,7 +25,14 @@ export type RoleToken =
   | 'block-lavender'
   | 'block-mint'
   | 'block-butter'
-  | 'block-coral';
+  | 'block-coral'
+  | 'tag-green'
+  | 'tag-amber'
+  | 'tag-red'
+  | 'tag-blue'
+  | 'tag-purple'
+  | 'tag-yellow'
+  | 'tag-grey';
 
 export type ContrastPair = {
   fg: RoleToken;
@@ -78,6 +85,20 @@ export const CONTRAST_PAIRS: ContrastPair[] = [
     'Handles, tags, cooldowns, error text',
   ),
   ...pairs(['on-accent'], FILLS, BODY_TEXT_MIN, 'Text on pastel fills'),
+  ...pairs(
+    ['fg'],
+    [
+      'tag-green',
+      'tag-amber',
+      'tag-red',
+      'tag-blue',
+      'tag-purple',
+      'tag-yellow',
+      'tag-grey',
+    ],
+    BODY_TEXT_MIN,
+    'Tag text',
+  ),
   ...pairs(
     ['fg-dim'],
     ['surface', 'surface-raised', 'surface-card'],

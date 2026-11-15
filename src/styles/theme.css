@@ -33,6 +33,14 @@
   --block-coral: var(--coral);
   --accent-caramel: var(--caramel);
 
+  --tag-green: var(--tint-green);
+  --tag-amber: var(--tint-amber);
+  --tag-red: var(--tint-red);
+  --tag-blue: var(--tint-blue);
+  --tag-purple: var(--tint-purple);
+  --tag-yellow: var(--tint-yellow);
+  --tag-grey: var(--tint-grey);
+
   --reveal-flash-you: var(--found);
   --reveal-flash-opponent: color-mix(
     in oklch,

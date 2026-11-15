@@ -4,6 +4,7 @@ import { foundCountLabel } from '@/lib/canvas';
 import { type HeaderSide, matchHeaderView } from '@/lib/match-header';
 import type { MatchInPlay, Side } from '@/types/match';
 import type { FoundPlayer } from '@/types/player';
+import { SKELETON } from '@/components/ui/skeleton';
 
 // Shared box; phones leave room for the quit chip
 const HEADER_BOX =
@@ -58,14 +59,14 @@ export function MatchHeader({ match, found }: MatchHeaderProps) {
     return (
       <div aria-hidden="true" className={HEADER_BOX}>
         <div className={LINE_ONE}>
-          <span className="size-8 rounded-sm bg-skeleton-fill sm:size-10" />
-          <span className="h-5 w-32 rounded-sm bg-skeleton-fill sm:w-56" />
-          <span className="size-8 rounded-sm bg-skeleton-fill sm:size-10" />
+          <span className={`size-8 ${SKELETON} sm:size-10`} />
+          <span className={`h-5 w-32 ${SKELETON} sm:w-56`} />
+          <span className={`size-8 ${SKELETON} sm:size-10`} />
         </div>
         <div className={LINE_TWO}>
           <span className="flex items-center gap-1.5">
-            <span className="size-5 rounded-sm bg-skeleton-fill" />
-            <span className="h-3.5 w-36 rounded-sm bg-skeleton-fill" />
+            <span className={`size-5 ${SKELETON}`} />
+            <span className={`h-3.5 w-36 ${SKELETON}`} />
           </span>
         </div>
       </div>

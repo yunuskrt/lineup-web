@@ -8,7 +8,6 @@ import {
   type GuessInputStatus,
 } from '@/components/game/GuessInput';
 import { MatchHeader } from '@/components/game/MatchHeader';
-import { SKELETON_BLOCK } from '@/components/home/LandingSkeleton';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { useCatalogOverview } from '@/hooks/use-catalog-overview';
 import { useDemoPlayback } from '@/hooks/use-demo-playback';
@@ -28,6 +27,7 @@ import type { ToastMessage } from '@/types/feedback';
 import type { ShowcasePlayback } from '@/types/landing';
 import type { MatchInPlay } from '@/types/match';
 import type { FoundPlayer } from '@/types/player';
+import { SKELETON } from '@/components/ui/skeleton';
 
 const IGNORE = () => {};
 
@@ -236,7 +236,7 @@ export function ShowcaseFrame({
     <figure className={FIGURE}>
       <Stage {...STILL_STAGE} match={null} found={[]} />
       <div className="flex min-h-6 items-center">
-        <span aria-hidden="true" className={`h-5 w-48 ${SKELETON_BLOCK}`} />
+        <span aria-hidden="true" className={`h-5 w-48 ${SKELETON}`} />
       </div>
     </figure>
   );

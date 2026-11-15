@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority';
 import type { DuelActor } from '@/types/duel';
 
 export const FOCUS_RING =
@@ -46,16 +47,43 @@ export const TYPE_STICKER =
 const PRESS =
   'shadow-hard not-disabled:not-aria-disabled:active:shadow-none motion-safe:not-disabled:not-aria-disabled:active:translate-x-1 motion-safe:not-disabled:not-aria-disabled:active:translate-y-1';
 
-// 2px outline; padding trimmed to keep each height
-export const PRIMARY_BUTTON = `rounded-md border-2 border-line bg-brand px-4 py-1 text-14 font-semibold text-on-accent ${PRESS} ${FOCUS_RING}`;
+// One source for ui/button and the call sites
+export const buttonVariants = cva(
+  `rounded-md border-2 border-line font-semibold disabled:cursor-not-allowed ${PRESS} ${FOCUS_RING}`,
+  {
+    variants: {
+      variant: {
+        primary: 'bg-brand text-on-accent disabled:opacity-70',
+        secondary:
+          'bg-surface-card text-fg hover:bg-surface-raised disabled:text-fg-muted disabled:hover:bg-surface-card',
+      },
+      size: {
+        default: 'px-4 text-14',
+        large: 'px-8 py-2.5 text-16',
+        icon: 'size-10',
+      },
+    },
+    // 2px outline; padding trimmed to keep each height
+    compoundVariants: [
+      { variant: 'primary', size: 'default', className: 'py-1' },
+      { variant: 'secondary', size: 'default', className: 'py-1.75' },
+    ],
+    defaultVariants: { variant: 'primary', size: 'default' },
+  },
+);
 
-export const PRIMARY_BUTTON_LARGE = `rounded-md border-2 border-line bg-brand px-8 py-2.5 text-16 font-semibold text-on-accent disabled:opacity-70 ${PRESS} ${FOCUS_RING}`;
+export const PRIMARY_BUTTON = buttonVariants();
 
-export const SECONDARY_BUTTON_LARGE = `rounded-md border-2 border-line bg-surface-card px-8 py-2.5 text-16 font-semibold text-fg hover:bg-surface-raised ${PRESS} ${FOCUS_RING}`;
+export const PRIMARY_BUTTON_LARGE = buttonVariants({ size: 'large' });
 
-export const SECONDARY_BUTTON = `rounded-md border-2 border-line bg-surface-card px-4 py-1.75 text-14 font-semibold text-fg hover:bg-surface-raised disabled:text-fg-muted disabled:hover:bg-surface-card ${PRESS} ${FOCUS_RING}`;
+export const SECONDARY_BUTTON = buttonVariants({ variant: 'secondary' });
 
-export const TEXT_INPUT = `w-full rounded-md border-2 border-line bg-surface-card px-3 py-2.25 text-16 text-fg aria-invalid:border-danger read-only:text-fg-muted ${FOCUS_RING}`;
+export const SECONDARY_BUTTON_LARGE = buttonVariants({
+  variant: 'secondary',
+  size: 'large',
+});
+
+export const TEXT_INPUT = `w-full rounded-md border-2 border-line bg-surface-card px-3 py-2.25 text-16 text-fg placeholder:text-fg-dim aria-invalid:border-danger read-only:text-fg-muted disabled:cursor-not-allowed disabled:opacity-70 ${FOCUS_RING}`;
 
 export const TEXT_LINK = `rounded-sm font-medium text-fg underline decoration-fg-dim underline-offset-4 hover:decoration-fg ${FOCUS_RING}`;
 
