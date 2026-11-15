@@ -990,6 +990,20 @@ describe('the run summary', () => {
     });
   });
 
+  it('freezes the clock once a quit is sent', () => {
+    const state = run(...PLAYING, { type: 'quitting' });
+    expect(soloCanvasView(state).clock).toEqual({
+      round: ROUND,
+      isFrozen: true,
+    });
+  });
+
+  it('drops the round once the run is over, so no clock ticks', () => {
+    const quit = summary({ endReason: 'quit', livesRemaining: 2 });
+    const state = run(...PLAYING, { type: 'quitting' }, received(quit));
+    expect(soloCanvasView(state).clock.round).toBeNull();
+  });
+
   describe('revealing the missed XI', () => {
     const REVEAL: SoloRunEvent = { type: 'missedRevealed' };
     const MISSED = ALL_FOUND.slice(4);

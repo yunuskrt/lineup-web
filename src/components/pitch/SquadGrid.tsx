@@ -27,6 +27,19 @@ const SLOT_WIDTH_BY_WIDEST_LINE: Record<number, string> = {
   5: 'w-[18%]',
 };
 
+// Disc plus label stays under the row spacing
+const DISC_BY_LINE_COUNT: Record<number, string> = {
+  3: '[--disc:clamp(28px,12cqw,72px)]',
+  4: '[--disc:clamp(20px,8cqw,56px)]',
+  5: '[--disc:clamp(18px,6.5cqw,40px)]',
+};
+
+export function discSizeClass(formation: string): string {
+  const lineCount = (parseFormation(formation) ?? []).length;
+  if (lineCount <= 3) return DISC_BY_LINE_COUNT[3];
+  return DISC_BY_LINE_COUNT[Math.min(lineCount, 5)];
+}
+
 const SETTLE: Transition = { duration: 0.2 };
 const INSTANT: Transition = { duration: 0 };
 
@@ -134,6 +147,7 @@ export function SquadGrid({
 
   const points = slotLayout(formation);
   const widthClass = slotWidthClass(formation);
+  const discClass = discSizeClass(formation);
   const playersBySlot = new Map(
     revealed.map((player) => [player.slot, player]),
   );
@@ -151,7 +165,9 @@ export function SquadGrid({
 
   return (
     <div className="flex size-full items-center justify-center @container-size">
-      <div className="relative aspect-[5/6] w-[min(100cqw,calc(100cqh*5/6))] overflow-clip @container">
+      <div
+        className={`relative aspect-[5/6] w-[min(100cqw,calc(100cqh*5/6))] overflow-clip @container ${discClass}`}
+      >
         <Pitch className="absolute inset-0 size-full" />
         {points ? (
           <motion.ol
@@ -175,8 +191,9 @@ export function SquadGrid({
                   transition={runs('slotMove') ? undefined : INSTANT}
                   className="pointer-events-none absolute inset-0"
                 >
+                  {/* The point is the disc's foot: reveals never shift */}
                   <div
-                    className={`pointer-events-auto absolute top-0 left-0 max-w-40 -translate-x-1/2 -translate-y-1/2 ${widthClass}`}
+                    className={`pointer-events-auto absolute top-0 left-0 max-w-40 -translate-x-1/2 translate-y-[calc(var(--disc)*-1)] ${widthClass}`}
                   >
                     <GridSlot
                       position={point.position}

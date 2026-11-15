@@ -4,7 +4,7 @@ import {
   type ResultSecondary,
   resultActionsLayout,
 } from '@/lib/result-actions';
-import { PRIMARY_BUTTON_LARGE, TEXT_LINK } from '@/styles/classes';
+import { PRIMARY_BUTTON_LARGE, SECONDARY_BUTTON_LARGE } from '@/styles/classes';
 import type { ProAccess } from '@/types/pro';
 
 export type ResultActionsProps = {
@@ -92,7 +92,7 @@ export function ResultActions({
         <button
           type="button"
           onClick={onChangeFilters}
-          className={`text-14 leading-5 ${TEXT_LINK}`}
+          className={`w-full ${SECONDARY_BUTTON_LARGE}`}
         >
           {SECONDARY_LABELS[secondary]}
         </button>

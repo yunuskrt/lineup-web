@@ -42,6 +42,11 @@
   --color-reveal-flash-you: var(--reveal-flash-you);
   --color-reveal-flash-opponent: var(--reveal-flash-opponent);
   --color-already-found-pulse: var(--already-found-pulse);
+  --color-turf: var(--turf);
+  --color-turf-check: var(--turf-check);
+  --color-scoreboard: var(--scoreboard);
+  --color-on-scoreboard: var(--on-scoreboard);
+  --color-score-digits: var(--score-digits);
   --color-skeleton-fill: var(--skeleton-fill);
   --color-gate-scrim: var(--gate-scrim);
 

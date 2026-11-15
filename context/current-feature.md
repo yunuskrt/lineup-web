@@ -98,3 +98,4 @@ Not Started
 - Redesign A1 Theme: light palette, text shades, hard shadows, type roles.
 - Redesign A2 Components: Base UI kit in ui/, stickers, AlertDialog quit.
 - Redesign A3 Layout: nav, footer, ProLock badge, StateNotice, game icons.
+- Redesign B1 Pitch: one board, ink scoreboard, checked turf, big discs.

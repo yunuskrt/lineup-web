@@ -1,20 +1,22 @@
 'use client';
 
-import Image from 'next/image';
-import { useImageFallback } from '@/hooks/use-image-fallback';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { initials } from '@/lib/initials';
-import { DUEL_ACTOR_BORDER } from '@/styles/classes';
+import { cn } from '@/lib/utils';
 import type { DuelActor } from '@/types/duel';
 
-// Largest rendered size; CSS sets the disc
-const HEADSHOT_PX = 40;
+// SquadGrid sets --disc from the formation's density
+export const HEADSHOT_SIZE = 'size-(--disc)';
 
-export const HEADSHOT_SIZE = 'size-5 @min-[480px]:size-8 @min-[560px]:size-10';
+const INITIALS_ON_PITCH = 'text-[length:calc(var(--disc)*0.36)]';
+
+// Initials wait this long for a photo, so none flash in
+const PHOTO_GRACE_MS = 300;
 
 type PlayerHeadshotProps = {
   name: string;
   imageUrl: string | null;
-  // Duel only: rings the disc in the finder's colour
+  // Duel only: fills the disc in the finder's colour
   foundBy?: DuelActor;
   // Replaces the container-sized disc
   sizeClass?: string;
@@ -28,30 +30,22 @@ export function PlayerHeadshot({
   sizeClass = HEADSHOT_SIZE,
   className = '',
 }: PlayerHeadshotProps) {
-  const { showsImage, onError } = useImageFallback(imageUrl);
-  const ring = foundBy ? `border-2 ${DUEL_ACTOR_BORDER[foundBy]}` : '';
-
   return (
-    <span
+    <Avatar
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-raised ${sizeClass} ${ring} ${className}`}
+      tone={foundBy ?? 'neutral'}
+      className={cn(sizeClass, className)}
     >
-      {showsImage && imageUrl ? (
-        // Fetched straight from the CDN, never proxied
-        <Image
-          src={imageUrl}
-          alt=""
-          width={HEADSHOT_PX}
-          height={HEADSHOT_PX}
-          unoptimized
-          onError={onError}
-          className="size-full object-cover"
-        />
-      ) : (
-        <span className="text-12 leading-none font-semibold tracking-tight text-fg-muted">
-          {initials(name)}
-        </span>
-      )}
-    </span>
+      {/* Fetched straight from the CDN, never proxied */}
+      {imageUrl ? <AvatarImage src={imageUrl} alt="" /> : null}
+      <AvatarFallback
+        delay={imageUrl ? PHOTO_GRACE_MS : undefined}
+        className={`leading-none tracking-tight ${
+          sizeClass === HEADSHOT_SIZE ? INITIALS_ON_PITCH : 'text-12'
+        }`}
+      >
+        {initials(name)}
+      </AvatarFallback>
+    </Avatar>
   );
 }

@@ -3,6 +3,7 @@
 import { motion } from 'motion/react';
 import { type ReactNode, useMemo } from 'react';
 import { FeedbackToast } from '@/components/game/FeedbackToast';
+import { FoundCount } from '@/components/game/FoundCount';
 import {
   GuessInput,
   type GuessInputStatus,
@@ -61,8 +62,9 @@ function Stage(props: StageProps) {
         animate={{ opacity: isFading ? 0 : 1 }}
         transition={{ duration: MOTION_SECONDS.demoFade, ease: 'easeOut' }}
       >
-        <MatchHeader match={match} found={found} />
-        <div className="h-80 sm:h-96">
+        <MatchHeader match={match} className="rounded-md" />
+        <div className="relative h-80 sm:h-96">
+          {match ? <FoundCount found={found} /> : null}
           <SquadGrid
             formation={match?.formation ?? LOADING_FORMATION}
             revealed={found}

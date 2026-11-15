@@ -421,12 +421,17 @@ export function soloCanvasView(
   capLine: string | null = null,
 ): SoloCanvasView {
   const { session, summary } = state;
+  const end = endOf(state);
+  // Over: no clock to show or tick
+  const round = end ? null : (session?.round ?? null);
+
   return {
     mode: 'solo',
     match: session?.match ?? null,
     found: summary?.found ?? session?.found ?? [],
     lives: summary?.livesRemaining ?? session?.lives ?? MAX_LIVES,
-    clock: { round: session?.round ?? null, isFrozen: false },
+    // A sent quit stills the clock until the summary
+    clock: { round, isFrozen: state.isQuitting },
     input: inputStatus(state),
     cooldownUntil: state.cooldownUntil ?? undefined,
     toast: state.toast,
@@ -434,7 +439,7 @@ export function soloCanvasView(
     shakeKey: state.shakeKey,
     lifeLostKey: state.lifeLostKey,
     gate: gateOf(state, capLine),
-    end: endOf(state),
+    end,
     capLine: capLine ?? undefined,
     isPicked: state.pickedMatchId !== null,
     isPractice: isPracticeShown(state),
