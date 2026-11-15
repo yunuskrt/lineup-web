@@ -2,15 +2,13 @@
 
 import { motion } from 'motion/react';
 import { CountUp } from '@/components/home/CountUp';
-import {
-  LandingSkeleton,
-  SKELETON_BLOCK,
-} from '@/components/home/LandingSkeleton';
+import { LandingSkeleton } from '@/components/home/LandingSkeleton';
 import { useCatalogOverview } from '@/hooks/use-catalog-overview';
 import { useEntrance } from '@/hooks/use-entrance';
 import { archiveFigures } from '@/lib/landing';
 import { SITE_CONTAINER } from '@/styles/classes';
 import type { CatalogOverview } from '@/types/catalog';
+import { SKELETON } from '@/components/ui/skeleton';
 
 const FIGURE_COUNT = 4;
 
@@ -32,9 +30,9 @@ function ArchiveSkeleton() {
         {Array.from({ length: FIGURE_COUNT }, (_, index) => (
           <div key={index} className={TILE}>
             <span className={BAR} />
-            <span className={`h-10 w-24 sm:h-15 sm:w-32 ${SKELETON_BLOCK}`} />
+            <span className={`h-10 w-24 sm:h-15 sm:w-32 ${SKELETON}`} />
             <span className={LABEL_BOX}>
-              <span className={`block h-5 w-20 sm:h-6 ${SKELETON_BLOCK}`} />
+              <span className={`block h-5 w-20 sm:h-6 ${SKELETON}`} />
             </span>
           </div>
         ))}

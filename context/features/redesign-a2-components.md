@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -93,3 +93,28 @@ The second part of redesign stage A: bring in the neobrutalism.dev components th
 - **Found while writing this spec:** the app had no shadcn/ui, no Radix and no `components/ui` before this phase; every component was hand-built.
 - **Before copying:** check each registry file against our Tailwind v4 setup (neobrutalism.dev's docs don't state the Tailwind version), and read its Base UI imports against the installed version.
 - **References:** `context/docs/ui-redesign-references.md` §§ 2.4–2.9 and § 3; `context/screenshots/notes.md`.
+- **Deviations recorded during implementation:**
+  - **Base UI, not Radix** (agreed by the user, 2026-11-15): `@base-ui/react` 1.9.0, `class-variance-authority` 0.7.1, `clsx` 2.1.1, `tailwind-merge` 3.7.0, `lucide-react` 1.73.0, all pinned exactly.
+  - **Not added yet:**
+    - `dialog.tsx` and `sheet.tsx`: no caller. `QuitDialog` uses the Alert Dialog, and A3's default keeps the phone links inline. Each is added when first used, so there's no dead code.
+    - The Toast component: the spec only takes its look.
+  - **`buttonVariants` lives in `src/styles/classes.ts`,** not `button.tsx`. `button.tsx` imports `FOCUS_RING`, so defining it there would make a circular import. `ui/button` and the shared constants both use it.
+    - The variants are `primary` and `secondary`, named after the constants; the sizes are `default`, `large` and `icon`.
+    - The small primary button now dims to 70% when disabled, like the large one.
+  - **`TEXT_INPUT`** gains `placeholder:text-fg-dim` and a disabled state.
+  - **Skeleton keeps the A1 look:** sage fill, no ink outline, no pulse. Outlined placeholders read as empty slots, and the pulse is motion, which comes later.
+    - The skeleton spans take `SKELETON` from `ui/skeleton`; they sit in inline layouts and can't become `div`s.
+    - `SKELETON_BLOCK` is removed.
+  - **Registry classes dropped:** `tw-animate-css` classes (not installed), dark-mode variants, and the unused sub-parts (card action, avatar badge and group, alert-dialog media, tabs line variant).
+  - **Switch:** the thumb keeps its transition, with `motion-reduce:transition-none`.
+  - **Badge** is a plain `span` (no `useRender`), with `variant` (tag or sticker), `tone` and `tilt`. A sticker leans left (−3°) by default; `tilt="right"` gives +2°.
+  - **Card:** `rounded-md` per the A1 radius. The title is an `h3` in `TYPE_CARD_TITLE`.
+  - **Empty:** the title is an `h2`. The icon tile is butter with `shadow-hard-sm`.
+  - **`cn`** extends `tailwind-merge` with our `text-12`…`72` sizes and the `hard` shadows. Without that, `text-14` and `text-fg` would collide.
+  - **`QuitDialog`:** a `finalFocus` guard returns focus to the opener only if it would otherwise fall to the body or stay in the popup. Checked live:
+    - Escape returns focus to the opener;
+    - Tab stays trapped in the dialog;
+    - after a confirmed quit, focus is on the summary title.
+  - **"Practise now?" not reproduced live:** Start went straight to practice. Its focus code (`PlayStart`'s `flushSync` + `focus()`) is unchanged.
+  - **The contrast suite adds `fg` on the seven tag tints** (≥ 4.5).
+  - **File names:** kebab-case as shadcn uses, matching the coding standards' own `@/components/ui/button` example.

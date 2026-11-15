@@ -28,6 +28,14 @@
   --amber-deep: #915e00;
   --red-deep: #cf1a0c;
 
+  --tint-green: #e1fae7;
+  --tint-amber: #fff4ee;
+  --tint-red: #fdefee;
+  --tint-blue: #e5f3fe;
+  --tint-purple: #efeaff;
+  --tint-yellow: #fcf5db;
+  --tint-grey: #f1f1f1;
+
   --font-size-12: 0.75rem;
   --font-size-14: 0.875rem;
   --font-size-16: 1rem;

@@ -10,8 +10,8 @@ import {
 } from '@/components/profile/styles';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
+import { SKELETON } from '@/components/ui/skeleton';
 
-const BLOCK = 'rounded-sm bg-skeleton-fill';
 const STAT_ROWS = 5;
 const HISTORY_ROWS = 3;
 
@@ -35,14 +35,14 @@ export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
         transition={isPulsing ? SKELETON_PULSE : undefined}
       >
         <div className="flex h-10 items-center">
-          <span className={`h-8 w-48 ${BLOCK}`} />
+          <span className={`h-8 w-48 ${SKELETON}`} />
         </div>
         {isGuest ? (
           <div
             className={`${PROFILE_PANEL} flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6`}
           >
-            <span className={`h-15 w-full max-w-2xl sm:h-10 ${BLOCK}`} />
-            <span className={`h-8 w-full shrink-0 sm:w-36 ${BLOCK}`} />
+            <span className={`h-15 w-full max-w-2xl sm:h-10 ${SKELETON}`} />
+            <span className={`h-8 w-full shrink-0 sm:w-36 ${SKELETON}`} />
           </div>
         ) : null}
         <div className="grid gap-6 lg:grid-cols-12">
@@ -50,8 +50,8 @@ export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
             className={`${PROFILE_PANEL} flex flex-col gap-6 p-4 sm:p-6 lg:col-span-7`}
           >
             <div className={PANEL_HEADER}>
-              <span className={`h-5 w-24 ${BLOCK}`} />
-              <span className={`h-5 w-16 ${BLOCK}`} />
+              <span className={`h-5 w-24 ${SKELETON}`} />
+              <span className={`h-5 w-16 ${SKELETON}`} />
             </div>
             <div className="grid grid-cols-3 gap-4">
               {[0, 1, 2].map((index) => (
@@ -59,8 +59,8 @@ export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
                   key={index}
                   className="flex flex-col items-center gap-1 sm:items-start"
                 >
-                  <span className={`h-12 w-14 ${BLOCK}`} />
-                  <span className={`h-4 w-10 ${BLOCK}`} />
+                  <span className={`h-12 w-14 ${SKELETON}`} />
+                  <span className={`h-4 w-10 ${SKELETON}`} />
                 </div>
               ))}
             </div>
@@ -77,24 +77,24 @@ export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
                     index === STAT_ROWS - 1 ? 'sm:col-span-2' : ''
                   }`}
                 >
-                  <span className={`h-5 w-24 ${BLOCK}`} />
-                  <span className={`h-7 w-12 ${BLOCK}`} />
+                  <span className={`h-5 w-24 ${SKELETON}`} />
+                  <span className={`h-7 w-12 ${SKELETON}`} />
                 </div>
               ))}
             </div>
           </div>
         </div>
         <div className="flex flex-col gap-4">
-          <span className={`h-7 w-20 ${BLOCK}`} />
+          <span className={`h-7 w-20 ${SKELETON}`} />
           <div className={`${PROFILE_PANEL} divide-y divide-line`}>
             {Array.from({ length: HISTORY_ROWS }, (_, index) => (
               <div key={index} className={HISTORY_ROW}>
                 <span
-                  className={`h-5 w-full max-w-56 sm:col-span-3 ${BLOCK}`}
+                  className={`h-5 w-full max-w-56 sm:col-span-3 ${SKELETON}`}
                 />
-                <span className={`h-4 w-14 sm:hidden ${BLOCK}`} />
+                <span className={`h-4 w-14 sm:hidden ${SKELETON}`} />
                 <span
-                  className={`h-5 w-full max-w-72 sm:col-start-4 sm:row-start-1 ${BLOCK}`}
+                  className={`h-5 w-full max-w-72 sm:col-start-4 sm:row-start-1 ${SKELETON}`}
                 />
               </div>
             ))}
