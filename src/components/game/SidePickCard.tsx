@@ -6,7 +6,8 @@ import { CompetitionLogo } from '@/components/game/CompetitionLogo';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { matchDateLabel } from '@/lib/summary';
 import { MOTION_SECONDS } from '@/styles/motion';
-import { FOCUS_RING } from '@/styles/classes';
+import { cn } from '@/lib/utils';
+import { CHOICE_TILE, TYPE_CARD_TITLE, TYPE_NUMBER } from '@/styles/classes';
 import type { CanvasSidePick } from '@/types/canvas';
 import type { Side } from '@/types/match';
 
@@ -66,17 +67,23 @@ function Tile({ sidePick, side, onPick }: TileProps) {
       initial={runs('sidePickSlide') ? 'enter' : false}
       animate="rest"
       whileHover={canLift ? 'hover' : undefined}
-      className={`flex min-w-0 flex-col items-center gap-2 rounded-md border border-line bg-surface-card px-2 py-3 text-center sm:px-3 sm:py-4 ${TILE_CELL[side]} ${FOCUS_RING} ${
+      className={`flex min-w-0 flex-col items-center gap-3 px-2 py-4 text-center sm:px-3 sm:py-5 ${TILE_CELL[side]} ${CHOICE_TILE} ${
         isChoosing ? 'cursor-default' : 'hover:bg-surface-raised'
       }`}
     >
-      <motion.span variants={CREST_VARIANTS} className="flex">
+      {/* The crest sits in a round ink frame, as 12-pick-side-a */}
+      <motion.span
+        variants={CREST_VARIANTS}
+        className="flex size-24 items-center justify-center rounded-full border-2 border-line bg-surface-card sm:size-28"
+      >
         <ClubCrest club={club} size="card" />
       </motion.span>
       <span
-        className={`line-clamp-2 w-full font-display text-14 leading-5 font-semibold wrap-break-word sm:text-16 ${
-          isChoosing ? 'text-fg-muted' : 'text-fg'
-        }`}
+        className={cn(
+          TYPE_CARD_TITLE,
+          'line-clamp-2 w-full text-16 wrap-break-word sm:text-20',
+          isChoosing ? 'text-fg-muted' : 'text-fg',
+        )}
       >
         {club.name}
       </span>
@@ -103,7 +110,7 @@ export function SidePickCard({ sidePick, onPick }: SidePickCardProps) {
           initial={runs('sidePickSlide') ? { opacity: 0 } : false}
           animate={{ opacity: 1 }}
           transition={ENTRANCE}
-          className="col-span-2 row-start-1 flex items-baseline justify-center gap-1.5 self-center font-display text-24 leading-8 font-semibold text-fg tabular-nums sm:col-span-1 sm:col-start-2 sm:text-32 sm:leading-10"
+          className={`col-span-2 row-start-1 flex items-baseline justify-center gap-1.5 self-center text-30 leading-9 text-fg sm:col-span-1 sm:col-start-2 sm:text-40 sm:leading-12 ${TYPE_NUMBER}`}
         >
           <span>{match.score.home}</span>
           <span aria-hidden="true" className="text-fg-dim">

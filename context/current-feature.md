@@ -100,3 +100,4 @@ Not Started
 - Redesign A3 Layout: nav, footer, ProLock badge, StateNotice, game icons.
 - Redesign B1 Pitch: one board, ink scoreboard, checked turf, big discs.
 - Redesign B2 Rail: open-arc clock, lives section, combobox, ink rules.
+- Redesign B3 Summary: peach gate, crest tiles, stats, results table.

@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useIsPresent } from 'motion/react';
 import { type ReactNode, type RefObject, useLayoutEffect, useRef } from 'react';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
+import { TYPE_TITLE_LONG } from '@/styles/classes';
 import { MOTION_SECONDS } from '@/styles/motion';
 
 const GATE_FADE = {
@@ -57,12 +58,9 @@ function GatePanel({
         role="group"
         aria-label={title}
         tabIndex={-1}
-        className={`flex w-full flex-col gap-2 rounded-lg border border-line bg-surface-raised p-4 outline-none ${PANEL_SIZES[size]}`}
+        className={`flex w-full flex-col gap-2 rounded-lg border-2 border-line bg-surface-raised p-4 shadow-hard outline-none ${PANEL_SIZES[size]}`}
       >
-        <p
-          aria-hidden="true"
-          className="text-16 font-semibold text-balance text-fg"
-        >
+        <p aria-hidden="true" className={`text-balance ${TYPE_TITLE_LONG}`}>
           {title}
         </p>
         {detail ? <p className="text-14 text-fg-muted">{detail}</p> : null}

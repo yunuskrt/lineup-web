@@ -75,6 +75,9 @@ export const buttonVariants = cva(
   },
 );
 
+// A choice that presses like a button; flat while busy
+export const CHOICE_TILE = `rounded-md border-2 border-line bg-surface-card aria-disabled:shadow-none ${PRESS} ${FOCUS_RING}`;
+
 export const PRIMARY_BUTTON = buttonVariants();
 
 export const PRIMARY_BUTTON_LARGE = buttonVariants({ size: 'large' });

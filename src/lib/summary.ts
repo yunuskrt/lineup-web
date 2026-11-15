@@ -55,6 +55,11 @@ export function accuracyLabel(ratio: number): string {
   return `${Math.round(ratio * 100)}%`;
 }
 
+// The results table's totals row
+export function namedTotalsLabel(named: number, missed: number): string {
+  return `${named} named, ${missed} missed`;
+}
+
 export function roundSecondsLabel(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
