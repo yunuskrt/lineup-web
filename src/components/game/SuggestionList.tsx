@@ -1,6 +1,7 @@
 'use client';
 
 import { PlayerHeadshot } from '@/components/pitch/PlayerHeadshot';
+import { Badge } from '@/components/ui/badge';
 import type { Suggestion } from '@/lib/suggestions';
 
 type SuggestionListProps = {
@@ -19,7 +20,7 @@ export function SuggestionList({
   onPick,
 }: SuggestionListProps) {
   return (
-    <div className="absolute inset-x-0 bottom-full z-20 mb-1 overflow-hidden rounded-md border border-line bg-surface-card">
+    <div className="absolute inset-x-0 bottom-full z-20 mb-2 overflow-hidden rounded-md border-2 border-line bg-surface-card shadow-hard">
       <ul
         id={id}
         role="listbox"
@@ -41,16 +42,17 @@ export function SuggestionList({
               onClick={() => {
                 if (!isNamed) onPick(suggestion);
               }}
-              className={`flex h-11 items-center gap-3 px-3 ${
+              className={`flex h-11 items-center gap-3 border-b-2 border-rule px-3 last:border-b-0 ${
                 isNamed
                   ? 'cursor-default'
                   : 'cursor-pointer hover:bg-surface-raised'
-              } ${isHighlighted ? 'bg-surface-raised' : ''}`}
+              } ${isHighlighted ? 'bg-brand hover:bg-brand' : ''}`}
             >
               <PlayerHeadshot
                 name={player.name}
                 imageUrl={player.imageUrl}
                 sizeClass="size-8"
+                className={isNamed ? 'opacity-60' : ''}
               />
               <span
                 className={`min-w-0 flex-1 truncate text-14 font-medium ${
@@ -59,9 +61,7 @@ export function SuggestionList({
               >
                 {player.name}
               </span>
-              {isNamed ? (
-                <span className="shrink-0 text-12 text-fg-muted">Named</span>
-              ) : null}
+              {isNamed ? <Badge tone="grey">Named</Badge> : null}
             </li>
           );
         })}

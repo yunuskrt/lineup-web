@@ -6,6 +6,9 @@ export const FOCUS_RING =
 
 export const SITE_CONTAINER = 'mx-auto w-full max-w-6xl px-4 sm:px-6';
 
+// Reaches the game rail's edges, so its rules run edge to edge
+export const RAIL_SECTION = '-mx-3 px-3 sm:-mx-4 sm:px-4';
+
 export const DUEL_ACTOR_BG: Record<DuelActor, string> = {
   you: 'bg-you',
   opponent: 'bg-opponent',
@@ -111,8 +114,6 @@ export const DEV_PREVIEW_BUTTON = `rounded-md border-2 border-line bg-surface-ca
 export const LIFE_LOST_FILL_SHIFT =
   'transition-[fill] duration-480 ease-[ease]';
 
-export const LIFE_LOST_BORDER_SHIFT =
-  'transition-[border-color] duration-480 ease-[ease]';
-
+// A stage change, never the sweep
 export const TIMER_COLOR_SHIFT =
-  'transition-[stroke,color] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)]';
+  'transition-[stroke,stroke-width,color] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)]';

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ARC_SPAN,
+  arcDashArray,
   countdownStage,
   displaySeconds,
   remainingMs,
+  ringStage,
   sweepFraction,
 } from '@/lib/countdown';
 import type { RoundTiming } from '@/types/game';
@@ -124,4 +127,45 @@ describe('other round lengths', () => {
       expect(sweepFraction(remainingMs(round, round.endsAt), round)).toBe(0);
     },
   );
+});
+
+describe('arcDashArray', () => {
+  it('draws the whole open arc at full time', () => {
+    expect(arcDashArray(1)).toBe(`${ARC_SPAN} 1`);
+  });
+
+  it('shrinks in step with time left', () => {
+    expect(arcDashArray(0.5)).toBe(`${ARC_SPAN / 2} 1`);
+    expect(arcDashArray(0.2)).toBe(`${ARC_SPAN * 0.2} 1`);
+  });
+
+  it('draws nothing once time is up', () => {
+    expect(arcDashArray(0)).toBe('0 1');
+  });
+
+  it('clamps a fraction outside the round', () => {
+    expect(arcDashArray(1.4)).toBe(`${ARC_SPAN} 1`);
+    expect(arcDashArray(-0.2)).toBe('0 1');
+  });
+});
+
+describe('ringStage', () => {
+  it('escalates your own running clock', () => {
+    expect(ringStage('running', 'you', 12)).toBe('calm');
+    expect(ringStage('running', 'you', 6)).toBe('warning');
+    expect(ringStage('running', 'you', 2)).toBe('critical');
+  });
+
+  it('keeps a frozen clock on the stage it stopped at', () => {
+    expect(ringStage('frozen', 'you', 3)).toBe('critical');
+  });
+
+  it("never escalates the opponent's clock", () => {
+    expect(ringStage('running', 'opponent', 6)).toBe('calm');
+    expect(ringStage('running', 'opponent', 1)).toBe('calm');
+  });
+
+  it('keeps a waiting clock calm', () => {
+    expect(ringStage('waiting', 'you', 2)).toBe('calm');
+  });
 });

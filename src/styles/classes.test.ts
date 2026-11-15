@@ -9,7 +9,6 @@ import {
   FILTER_SEARCH,
   FILTER_SELECT,
   FOCUS_RING,
-  LIFE_LOST_BORDER_SHIFT,
   LIFE_LOST_FILL_SHIFT,
   NAV_LINK,
   PRIMARY_BUTTON,
@@ -34,7 +33,6 @@ import { MOTION_DURATION_MS, MOTION_EASING } from '@/styles/motion';
 describe('transition classes', () => {
   it.each([
     ['life lost', LIFE_LOST_FILL_SHIFT, MOTION_DURATION_MS.lifeLost],
-    ['tile border', LIFE_LOST_BORDER_SHIFT, MOTION_DURATION_MS.lifeLost],
     ['timer colour', TIMER_COLOR_SHIFT, MOTION_DURATION_MS.timerColorShift],
   ])('keeps the %s duration in step with motion.ts', (_, classes, ms) => {
     expect(classes.split(' ')).toContain(`duration-${ms}`);

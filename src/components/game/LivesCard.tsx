@@ -10,12 +10,8 @@ import {
   type LivesByActor,
   shownLivesActor,
 } from '@/lib/duel-status';
-import {
-  DOT_BUTTON,
-  DUEL_ACTOR_BG,
-  DUEL_ACTOR_BORDER,
-  DUEL_ACTOR_TEXT,
-} from '@/styles/classes';
+import { Badge } from '@/components/ui/badge';
+import { DOT_BUTTON, DUEL_ACTOR_BG, TYPE_NUMBER } from '@/styles/classes';
 import {
   MOTION_DURATION_MS,
   MOTION_EASING,
@@ -46,14 +42,12 @@ type CardFrameProps = {
   children: ReactNode;
 };
 
+// A section of the rail pane, not a card of its own
 function CardFrame({ hint, chip, footer, children }: CardFrameProps) {
   const labelId = useId();
 
   return (
-    <section
-      aria-labelledby={labelId}
-      className="flex flex-col gap-3 rounded-md border border-line bg-surface-card p-3 lg:p-4"
-    >
+    <section aria-labelledby={labelId} className="flex flex-col gap-2">
       <div className="flex h-6 items-center justify-between gap-2">
         <span
           id={labelId}
@@ -71,10 +65,30 @@ function CardFrame({ hint, chip, footer, children }: CardFrameProps) {
   );
 }
 
+type TallyProps = {
+  lives: LivesCount;
+  owner?: DuelActor;
+};
+
+// The count beside the shirts; under 360px, shirts alone
+function Tally({ lives, owner }: TallyProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        aria-hidden="true"
+        className={`text-30 leading-none max-[359px]:hidden lg:text-40 ${TYPE_NUMBER}`}
+      >
+        {lives}
+      </span>
+      <Lives lives={lives} owner={owner} isLarge />
+    </div>
+  );
+}
+
 export function LivesCard({ lives }: { lives: LivesCount }) {
   return (
     <CardFrame hint={SOLO_HINT}>
-      <Lives lives={lives} isTiled />
+      <Tally lives={lives} />
     </CardFrame>
   );
 }
@@ -125,10 +139,8 @@ function Dot({ actor, isShown, isDisabled, isReconnecting, onShow }: DotProps) {
   const tone = isDisabled
     ? 'border-fg-dim'
     : isReconnecting
-      ? `border-warning ${isShown ? 'bg-warning' : ''}`
-      : isShown
-        ? `${DUEL_ACTOR_BORDER[actor]} ${DUEL_ACTOR_BG[actor]}`
-        : 'border-fg-muted';
+      ? `border-line ${isShown ? 'bg-warning' : ''}`
+      : `border-line ${isShown ? DUEL_ACTOR_BG[actor] : ''}`;
 
   return (
     <button
@@ -143,7 +155,7 @@ function Dot({ actor, isShown, isDisabled, isReconnecting, onShow }: DotProps) {
     >
       <span
         aria-hidden="true"
-        className={`size-2.5 rounded-full border-2 ${tone}`}
+        className={`size-3 rounded-full border-2 ${tone}`}
       />
     </button>
   );
@@ -218,17 +230,15 @@ export function DuelLivesCard({
                 ease: MOTION_EASING.turnHandover,
               }}
             >
-              <div className="flex min-w-0 items-baseline gap-2">
-                <span
-                  className={`text-12 font-semibold uppercase ${DUEL_ACTOR_TEXT[actor]}`}
-                >
+              <div className="flex min-w-0 items-center gap-2">
+                <Badge variant="sticker" tone={actor} tilt="none">
                   {ACTOR_LABELS[actor]}
-                </span>
+                </Badge>
                 <span className="min-w-0 truncate text-14 font-medium text-fg">
                   {player.handle}
                 </span>
               </div>
-              <Lives lives={player.lives} owner={actor} isTiled />
+              <Tally lives={player.lives} owner={actor} />
             </motion.div>
           );
         })}

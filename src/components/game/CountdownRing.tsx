@@ -10,34 +10,64 @@ import {
 import { useRef, useState } from 'react';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import {
-  countdownStage,
+  ARC_SPAN,
+  arcDashArray,
   displaySeconds,
   remainingMs,
+  ringStage,
   roundDurationMs,
   sweepFraction,
 } from '@/lib/countdown';
 import { serverClock } from '@/lib/server-clock';
-import { TIMER_COLOR_SHIFT } from '@/styles/classes';
+import { TIMER_COLOR_SHIFT, TYPE_NUMBER } from '@/styles/classes';
 import type { CountdownStage, RingMode } from '@/types/countdown';
 import type { DuelActor } from '@/types/duel';
 import type { RoundTiming } from '@/types/game';
 
-const RADIUS = 46;
-const STROKE_WIDTH = 5;
+// Fits the thickest stage plus its ink edge
+const RADIUS = 41;
 
-const STAGE_TONES: Record<CountdownStage, { stroke: string; text: string }> = {
-  calm: { stroke: 'stroke-fg', text: 'text-fg' },
+// An open arc, as game/05-timer-a: the gap at the bottom
+const ARC_START_DEGREES = 135;
+
+// The ink edge shows this much either side
+const EDGE_WIDTH = 3;
+
+// Weight carries the stage too, not colour alone
+const STAGE_WEIGHTS: Record<CountdownStage, number> = {
+  calm: 6,
+  warning: 9,
+  critical: 12,
+};
+
+type Tone = { stroke: string; text: string };
+
+const OWNER_TONES: Record<DuelActor, Tone> = {
+  you: { stroke: 'stroke-you', text: 'text-fg' },
+  opponent: { stroke: 'stroke-opponent', text: 'text-opponent-text' },
+};
+
+const STAGE_TONES: Record<Exclude<CountdownStage, 'calm'>, Tone> = {
   warning: { stroke: 'stroke-warning', text: 'text-warning-text' },
   critical: { stroke: 'stroke-danger', text: 'text-danger-text' },
 };
 
-const OPPONENT_TONE = { stroke: 'stroke-opponent', text: 'text-opponent-text' };
-const WAITING_TONE = { stroke: 'stroke-fg-dim', text: 'text-fg-dim' };
+const WAITING_TONE: Tone = { stroke: 'stroke-fg-dim', text: 'text-fg-dim' };
 
 const CRITICAL_PULSE: TargetAndTransition = {
   opacity: [1, 0.6, 1],
   transition: { duration: 1, ease: 'easeInOut', repeat: Infinity },
 };
+
+const ARC = {
+  cx: 50,
+  cy: 50,
+  r: RADIUS,
+  fill: 'none',
+  pathLength: 1,
+  strokeLinecap: 'round',
+  transform: `rotate(${ARC_START_DEGREES} 50 50)`,
+} as const;
 
 type CountdownRingProps = {
   round: RoundTiming;
@@ -57,8 +87,9 @@ export function CountdownRing({
   // A stopped ring re-reads when handed a new round
   const syncedRound = useRef<RoundTiming | null>(null);
   const fraction = useMotionValue(1);
-  const dashArray = useTransform(fraction, (value) => `${value} 1`);
-  const dashOffset = useTransform(fraction, (value) => value - 1);
+  const dashArray = useTransform(fraction, arcDashArray);
+  // A spent arc would leave a round-cap dot
+  const arcOpacity = useTransform(fraction, (value) => (value > 0 ? 1 : 0));
 
   // Stopped rings still read the clock once
   useAnimationFrame(() => {
@@ -70,18 +101,16 @@ export function CountdownRing({
     setSeconds(displaySeconds(remaining));
   });
 
-  const stage = countdownStage(seconds);
+  const stage = ringStage(mode, owner, seconds);
   const tone =
     mode === 'waiting'
       ? WAITING_TONE
-      : owner === 'opponent'
-        ? OPPONENT_TONE
+      : stage === 'calm'
+        ? OWNER_TONES[owner]
         : STAGE_TONES[stage];
+  const weight = STAGE_WEIGHTS[stage];
   const isPulsing =
-    mode === 'running' &&
-    owner === 'you' &&
-    stage === 'critical' &&
-    runs('ringCriticalPulse');
+    mode === 'running' && stage === 'critical' && runs('ringCriticalPulse');
 
   return (
     <div
@@ -93,30 +122,33 @@ export function CountdownRing({
         viewBox="0 0 100 100"
         aria-hidden="true"
         focusable="false"
-        className="absolute inset-0 size-full -rotate-90"
+        className="absolute inset-0 size-full"
       >
         <circle
-          cx="50"
-          cy="50"
-          r={RADIUS}
-          strokeWidth={STROKE_WIDTH}
-          className="fill-none stroke-rule"
+          {...ARC}
+          strokeWidth={STAGE_WEIGHTS.calm}
+          strokeDasharray={`${ARC_SPAN} 1`}
+          className="stroke-rule"
         />
-        {/* Offset moves the start; gap grows clockwise */}
-        <motion.circle
-          cx="50"
-          cy="50"
-          r={RADIUS}
-          strokeWidth={STROKE_WIDTH}
-          className={`fill-none ${tone.stroke} ${TIMER_COLOR_SHIFT}`}
-          pathLength={1}
-          strokeDasharray={dashArray}
-          strokeDashoffset={dashOffset}
-          animate={isPulsing ? CRITICAL_PULSE : { opacity: 1 }}
-        />
+        <motion.g animate={isPulsing ? CRITICAL_PULSE : { opacity: 1 }}>
+          <motion.circle
+            {...ARC}
+            strokeWidth={weight + EDGE_WIDTH}
+            strokeDasharray={dashArray}
+            style={{ opacity: arcOpacity }}
+            className={`stroke-line ${TIMER_COLOR_SHIFT}`}
+          />
+          <motion.circle
+            {...ARC}
+            strokeWidth={weight}
+            strokeDasharray={dashArray}
+            style={{ opacity: arcOpacity }}
+            className={`${tone.stroke} ${TIMER_COLOR_SHIFT}`}
+          />
+        </motion.g>
       </svg>
       <span
-        className={`relative font-display text-64 leading-none font-semibold tabular-nums ${tone.text} ${TIMER_COLOR_SHIFT}`}
+        className={`relative text-48 leading-none lg:text-64 ${TYPE_NUMBER} ${tone.text} ${TIMER_COLOR_SHIFT}`}
       >
         {seconds}
       </span>
