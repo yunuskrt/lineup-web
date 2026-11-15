@@ -64,6 +64,16 @@ Decided 2026-11-14, close to the other-01 heading. Both are Google Fonts the app
 - layout/03-footer-a: one quiet line
 - layout/08-locked-a: Free vs Pro comparison, better for /pro (§ 11); the in-place ProLock is composed from Button, a Pro badge and a lock icon
 - layout/09-empty-state-a, 10-error-state-a: layout only (centred title, one line, one action). No illustration: neobrutalism.dev Empty with a Lucide icon in an outlined tile
+- game/01-scoreboard-a, 01-scoreboard-b: layout only (crest over its name, big score beside each crest, context in the centre); not the dark gradients
+- game/02-pitch-a: muted, soft tone; 02-pitch-b: flat pitch, clean outlines; 02-pitch-c: formation layout, name and number under each photo
+- game/03-slot-a to 03-slot-c: found slot (round photo, name below, number); 03-slot-d: empty slot as outlined circle over two outlined bars
+- game/05-timer-a: open arc with round ends, big centred number, pale track
+- game/12-pick-side-a: layout only (round choices, chosen one outlined with a strong label, others muted); one tap picks, no Next step
+- game/00-desktop-a: layout only (header card on top, pitch card left, side panel right); our pitch stays upright, not sideways
+- game/00-mobile-a: layout only (score pill, title, formation of photo cards); we have no shirt numbers, so slots show the position until found
+- game/15-results-a: layout only (title, check/cross table, totals, actions at the bottom); the you-vs-opponent columns fit the duel result later
+
+Decided 2026-11-15 for stage B: mint turf #A7E3C4 with ink lines; clock warning amber + thicker ring, critical red + thicker + pulse; RevealCard and LivesCard designed without references (see the guide § 4)
 
 ## Dislikes
 

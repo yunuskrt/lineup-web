@@ -321,7 +321,8 @@ The building blocks every page shares.
 
 The most important screen. Solo and duel share it: the scoreboard, the 11 slots, the clock, the lives and the guess box. **Collect the most here.**
 
-- **Whole screen (Must, desktop and phone):** game and quiz screens, and football lineup screens.
+- **Whole screen — ✅ Collected** (layout only): `game/00-desktop-a` (match header across the top, pitch card on the left, side panel on the right) and `game/00-mobile-a` (score pill, title, formation, then the controls). **Decided (2026-11-15):** the pitch stays upright on every width, with the side panel (clock, lives, guess box) on its right from `lg`.
+- **Need:** game and quiz screens, and football lineup screens.
 - **Save to:** `game/00-desktop-a.png`, `game/00-mobile-a.png`
 - **Search:**
   - Dribbble: `neubrutalism game ui`, `neubrutalism quiz app`, `neo brutalism mobile game`
@@ -331,12 +332,15 @@ The most important screen. Solo and duel share it: the scoreboard, the 11 slots,
 
 ### Components
 
-#### `MatchHeader` — the scoreboard — **Must**
+#### `MatchHeader` — the scoreboard — ✅ **Collected** (layout only)
+- **Done:** `game/01-scoreboard-a` and `01-scoreboard-b`: crest with its name beneath, a big score beside each crest, the match context in the centre. Their dark gradients give way to our cream and ink.
 - **Today:** both crests and names, the score, the competition and the date; the side you're naming is emphasised.
 - **Save to:** `game/01-scoreboard-a.png`
 - **Search:** Dribbble `neubrutalism scoreboard`, `retro scoreboard ui`, `match score card ui`; Real, layout only: the FotMob and Sofascore match header
 
-#### `SquadGrid` and `Pitch` — the 11 slots in formation — **Must**
+#### `SquadGrid` and `Pitch` — the 11 slots in formation — ✅ **Collected**
+- **Done:** `game/02-pitch-a` (soft, muted tone), `02-pitch-b` (flat pitch, clean outlines), `02-pitch-c` (slots in formation, name and number under each photo).
+- **Decided (2026-11-15):** flat mint turf (`#A7E3C4`, palette b) with ink lines, no stripes or checks.
 - **Today:** a drawn pitch with 11 slots placed by position (goalkeeper, defenders, midfielders, forwards).
 - **Need:** a flat pitch drawn with outlines, in a pastel green or mint.
 - **Save to:** `game/02-pitch-a.png`
@@ -345,68 +349,93 @@ The most important screen. Solo and duel share it: the scoreboard, the 11 slots,
   - Pinterest: `football pitch line art`, `football tactics board flat`
   - Real, layout only: FotMob lineups, Fantasy Premier League
 
-#### `SquadSlot` — one slot, empty and found — **Must**
+#### `SquadSlot` — one slot, empty and found — ✅ **Collected**
+- **Done:** `game/03-slot-a` to `03-slot-c` for a found slot (round photo, name below, shirt number); `03-slot-d` for the empty slot (an outlined circle over two outlined bars).
 - **Today:** empty, it shows a position (DF, MF…); found, it shows the photo or initials and the name. In a duel it carries the finder's colour.
 - **Save to:** `game/03-slot-a.png`
 - **Search:** Dribbble `neubrutalism profile card`, `sticker player card`, `fantasy football player card`, `avatar with name label`
 
-#### `RevealCard` — the moment a player is found — **Must**
+#### `RevealCard` — the moment a player is found — ✅ **Decided** (no reference needed)
+- **Decided (2026-11-15):** the found slot itself, drawn as a small collectible sticker:
+  - the accepted Avatar (photo or initials) in an ink outline, on the finder's colour (yours in a duel, the opponent's, or the found colour in solo);
+  - the name under it on a white label with an ink outline and a hard shadow, Inter 600, as in `03-slot-a`/`03-slot-c`;
+  - the moment: the slot springs in, flashes in the finder's colour, and the label lands slightly tilted, then settles straight. Reduced motion: it simply appears, with no spring or tilt. The motion itself comes in the motion pass.
 - **Save to:** `game/04-reveal-a.png`
 - **Search:** Dribbble `neubrutalism success`, `achievement sticker ui`, `correct answer ui`
 - **Motion links:** if you see an animation you love, paste its link into `notes.md` under "Motion".
 
-#### `CountdownRing` — the 15-second clock — **Must**
+#### `CountdownRing` — the 15-second clock — ✅ **Collected**
+- **Done:** `game/05-timer-a`: an open arc with round ends and a big centred number, the track a pale tone of the arc.
+- **Decided (2026-11-15):**
+  - **Normal:** the owner's colour (blue for you, orange for the opponent).
+  - **Warning (7–4s):** amber, and the ring gets thicker.
+  - **Critical (3–0s):** red, thicker still, pulsing each second.
+  - The stage shows in the ring's weight as well as its colour, so amber never reads as the opponent's orange. Reduced motion drops only the pulse; the colour and weight stay.
 - **Today:** a ring plus a big number. It changes through three stages: normal, warning (7 s) and critical (3 s).
 - **Save to:** `game/05-timer-a.png`
 - **Search:** Dribbble `neubrutalism timer`, `neubrutalism progress`, `countdown timer ui`, `circular progress timer`
 
-#### `Lives` and `LivesCard` — three lives — **Must**
+#### `Lives` and `LivesCard` — three lives — ✅ **Decided** (no reference needed)
+- **Decided (2026-11-15):** an outlined card in the shape of a streak card:
+  - a "Lives" label, a big Archivo number (lives left), and a row of our three shirts;
+  - a remaining life is a shirt filled in the owner's colour with an ink outline; a lost one is an empty dashed outline;
+  - in a duel the card switches to whoever's turn it is: their colour, their name as the label.
+  - Life lost: the shirt empties, with the life-lost flash on your own loss only. The motion comes in the motion pass.
 - **Today:** three small shirts that empty as lives go. In a duel, the card switches between you and your opponent.
 - **Save to:** `game/06-lives-a.png`
 - **Search:** Dribbble `neubrutalism game hud`, `retro game lives ui`, `hearts counter ui`
 
-#### Turn indicator — you vs your opponent — **Must**
+#### Turn indicator — you vs your opponent — ⏭ **Skip** (our sticker `Badge` in blue or orange, from A2)
 - **Need:** a very clear "your turn / their turn", with two colours that never get confused. A sticker tag is a good fit.
 - **Save to:** `game/07-turn-a.png`
 - **Search:** Dribbble `neubrutalism versus`, `player vs player ui`, `turn indicator game`, `sticker badge ui`
 
-#### `GuessInput` and `SuggestionList` — the guess box — **Must**
+#### `GuessInput` and `SuggestionList` — the guess box — ✅ **Decided: neobrutalism.dev**
+- **Decided:** we use the neobrutalism.dev [Combobox](https://www.neobrutalism.dev/docs/combobox) / [Command](https://www.neobrutalism.dev/docs/command) for the box and its list, with our Avatar in each row and the pending spinner inside the box. Adjusted to our palette and fonts. Nothing to collect.
 - **Today:** type a name; up to 5 suggestions with photo and name appear; already-named rows are dimmed. A "Not in this XI" guess shakes the box.
 - **Save to:** `game/08-guess-a.png`
 - **Search:** neobrutalism.dev Combobox, Command; Dribbble `neubrutalism search`, `neubrutalism autocomplete`, `search autocomplete ui`
 
-#### Answer feedback — **Must**
+#### Answer feedback — ⏭ **Skip** (the restyled `FeedbackToast`; the pulse and shake come in the motion pass)
 - **Today:** "Already named" pulses the slot; "Not in this XI" shakes the input. They must look different.
 - **Save to:** `game/09-feedback-a.png`
 - **Search:** Dribbble `neubrutalism quiz`, `quiz feedback correct wrong`, `wrong answer ui`
 
-#### `LifeLostFlash` — losing a life — **Nice**
+#### `LifeLostFlash` — losing a life — ⏭ **Skip** (pure motion)
 - **Save to:** `game/10-life-lost-a.png`
 - **Search:** Dribbble `neubrutalism game over`, `life lost game ui`
 
-#### `CanvasGate` and `SidePickCard` — the overlay and "pick your side" — **Must**
+#### `CanvasGate` — the overlay — ✅ **Decided: neobrutalism.dev**
+- **Decided:** the dimmed layer of the accepted Alert Dialog, with our `Card` on top. Nothing to collect.
 - **Today:** the pitch is dimmed with a card on top: pick the home or away team, or a message with actions ("Back to play", "See Pro").
-- **Save to:** `game/11-overlay-a.png`, `game/12-pick-side-a.png`
+- **Save to:** `game/11-overlay-a.png`
+
+#### `SidePickCard` — "pick your side" — ✅ **Collected** (layout only)
+- **Done:** `game/12-pick-side-a`: round choices side by side, the chosen one outlined and its label strong, the others muted. Ours are two crests and pick on one tap, with no Next step.
+- **Save to:** `game/12-pick-side-a.png`
 - **Search:** Dribbble `neubrutalism choose option`, `choose team ui`, `team selection card`, `match card ui`
 
-#### `PracticeCard` — practice runs (no clock, no lives) — **Nice**
+#### `PracticeCard` — practice runs (no clock, no lives) — ✅ **Decided: neobrutalism.dev**
+- **Decided:** our accepted `Card` (or the neobrutalism.dev [Alert](https://www.neobrutalism.dev/docs/alert)) with a title and one line. Nothing to collect.
 - **Save to:** `game/13-info-card-a.png`
 - **Search:** neobrutalism.dev Alert; Dribbble `neubrutalism info card`
 
-#### `QuitChip` and `SoundToggle` — the only controls during a game — **Must**
+#### `QuitChip` and `SoundToggle` — the only controls during a game — ✅ **Done** (restyled in A3)
 - **Save to:** `game/14-controls-a.png`
 - **Search:** Dribbble `neubrutalism icon buttons`, `game pause button ui`
 
-#### `RunSummary` — the end of a solo run — **Must**
+#### `RunSummary` — the end of a solo run — ✅ **Collected** (layout only)
+- **Done:** `game/15-results-a`: a title, then a results table with a check or cross icon per row, a totals row and the actions at the bottom. For us: the title ("Run ended" / "Perfect clear"), the big result and stat tiles, then one row per round (the `NamedOrder` rows: number, Avatar, name or "Clock ran out", time, a check or cross), then the actions. Its you-vs-opponent columns are kept for the duel result (§ 7).
 - **Today:** named vs missed, accuracy, streak, time per round; "Perfect clear" when all 11 are named; Play again.
 - **Save to:** `game/15-results-a.png`
 - **Search:** Dribbble `neubrutalism results`, `neubrutalism stats card`, `quiz results screen`; Real, layout only: the Duolingo lesson-complete screen, the Wordle stats
 
-#### `NamedOrder` — the list of players in the order you named them — **Must**
+#### `NamedOrder` — the list of players in the order you named them — ✅ **Decided: neobrutalism.dev**
+- **Decided:** neobrutalism.dev Item rows (number, our Avatar, name, time), adjusted to our palette and fonts. Nothing to collect.
 - **Save to:** `game/16-named-list-a.png`
 - **Search:** Dribbble `neubrutalism list`, `neubrutalism leaderboard`, `ranked list ui`
 
-#### `MissedReveal` — Pro: show the players you missed — **Nice**
+#### `MissedReveal` — Pro: show the players you missed — ⏭ **Skip** (the slots in a dimmed style, plus Button and `ProLock`)
 - **Save to:** `game/17-reveal-missed-a.png`
 - **Search:** Dribbble `reveal answers ui`, `show answers button quiz`
 
