@@ -2,7 +2,7 @@
 
 What to collect for the new Lineup UI, where to find it, what to type, and where to save it. Follow it top to bottom.
 
-**What's decided:** a **light, pastel** UI in the **Matchday Sticker** direction (see § 1), **Lucide** icons, a few **football doodles**, and animation added at the end with Motion.
+**What's decided:** a **light, pastel** UI in the **Matchday Sticker** direction (see § 1), **Lucide** icons, **no illustrations or doodles**, and animation added at the end with Motion.
 
 **What doesn't change:** the gameplay, the features, the copy and the sounds. Every screen behaves as `context/theme.md` § States describes; only the look changes.
 
@@ -152,8 +152,8 @@ Picked on 2026-11-14 from `brutal-01`, `brutal-02`, `other-01` and `other-02`:
 - **Lines and depth:** thick dark outlines (about 2px) and **hard offset shadows** (a solid block shifted down-right, not a blur).
 - **Type:** chunky, wide headings like `other-02` ("Live the Fantasy Football Dream!"), with a plain, readable text face.
 - **Stickers:** small tilted tags ("Your turn", "Found", "Pro", "Practice") like the "NEW" and "PLAYING" tags in `brutal-02`.
-- **Doodles:** a few black line doodles (a ball, a boot, motion lines, smileys) like `other-01`. Only on the landing page, empty states and 404.
-- **Not this:** `game-01`'s flat clip-art objects.
+- **No illustrations or doodles** (changed 2026-11-14): type, colour, sticker tags and Lucide icons carry the look, including on empty states and 404.
+- **Not this:** `game-01`'s flat clip-art objects, or `other-01`'s doodles.
 
 **Style words for your searches:**
 
@@ -163,7 +163,6 @@ Picked on 2026-11-14 from `brutal-01`, `brutal-02`, `other-01` and `other-02`:
 | `bold outline` and `hard shadow` | Buttons, cards, inputs, chips |
 | `sticker` and `retro` | Tags, badges, the turn indicator, results |
 | `cream` or `beige` | When the background comes back pure white or grey |
-| `doodle` | Doodles, empty states, 404 |
 
 The searches below already include these words. The plain terms after them are the fallback.
 
@@ -177,7 +176,8 @@ Collect § 2 and § 3, then stop.
 
 The building blocks every page shares.
 
-### 2.1 Colour palette — **Must**
+### 2.1 Colour palette — ✅ **Decided**
+- **Done:** palettes a (base), b (pastel blocks), c (duel) and d (status) are in `notes.md`, each with its use. Nothing more to collect; the notes below are kept for reference.
 - **Need:** 2 or 3 palettes in the Matchday Sticker spirit. Each needs:
   - a cream background and an ink colour for text and outlines;
   - three or four pastel blocks;
@@ -190,7 +190,8 @@ The building blocks every page shares.
   - Dribbble: `neubrutalism color palette`
 - **Look for:** soft, not washed out. Text on every block must stay easy to read.
 
-### 2.2 Typography — **Must**
+### 2.2 Typography — ✅ **Decided**
+- **Done:** Archivo for headings and numbers, Inter for text. The roles, widths and sizes are in `notes.md`. Nothing to collect; the notes below are kept for reference.
 - **Need:** the names of 2 fonts: a **chunky, wide one** for headings and big numbers (like `other-02`), and a **plain one** for text. No screenshots are needed; write the names in `notes.md`.
 - **Try these first:**
   - Headings, on Fontshare: Clash Display, Cabinet Grotesk.
@@ -200,38 +201,37 @@ The building blocks every page shares.
 - **How to test a font:** in its preview box, type `İbrahimović Şahin Özil Łukasz Čech 0123456789`. If any letter looks different from the rest, or shows as a box, skip the font: our player names need these letters.
 - **Optional:** Pinterest `neubrutalism typography`, `chunky font poster`.
 
-### 2.3 Big numbers — **Nice**
+### 2.3 Big numbers — ✅ **Decided**
+- **Done:** Archivo width 125, weight 900, with the slashed zero from `foundations/03-numerals-a`.
 - **Need:** large, chunky numerals, for the clock and scores.
 - **Save to:** `foundations/03-numerals-a.png`
 - **Search:** Pinterest `chunky numbers typography`, `retro scoreboard numbers`; Dribbble `neubrutalism numbers`, `big numbers ui`
 
-### 2.4 Buttons — **Must**
-- **Need:** primary, secondary, quiet, disabled, icon button, a large call-to-action, and the **pressed** state (the shadow shrinks as the button moves down).
-- **Save to:** `foundations/04-buttons-a.png`
-- **Search:**
-  - neobrutalism.dev: Button
-  - Uiverse: `brutalist button`
-  - Dribbble: `neubrutalism buttons`, `neo brutalism ui kit`
-  - Fallback: Dribbble `button styles ui kit`
+### 2.4 Buttons — ✅ **Decided: neobrutalism.dev**
+- **Decided:** we use the [neobrutalism.dev Button](https://www.neobrutalism.dev/docs/button), copied into the app and adjusted to our palette and fonts. Nothing to collect.
+- **What we need from it:** primary, secondary, quiet, disabled, icon button, a large call-to-action, and the **pressed** state (the shadow shrinks as the button moves down).
+- **Your part (optional):** open the Button page and look at its variants. Judge the **shape** (outline, shadow, roundness, the press), not the colours; our palette replaces them. If something should differ, write one line in `notes.md`, e.g. `neobrutalism.dev Button: rounder corners`. Save a screenshot only to point at one variant: `foundations/04-buttons-a.png`.
 
-### 2.5 Inputs and form controls — **Must**
-- **Need:**
-  - a text input with a label and an error;
-  - a search box;
-  - a checkbox and a toggle switch;
-  - a segmented control (two or three options in one pill).
-- **Save to:** `foundations/05-inputs-a.png`
-- **Search:**
-  - neobrutalism.dev: Input, Checkbox, Switch, Tabs
-  - Uiverse: `brutalist input`, `brutalist toggle`, `brutalist checkbox`
-  - Dribbble: `neubrutalism form`, `neo brutalism input`
+### 2.5 Inputs and form controls — ✅ **Decided: neobrutalism.dev**
+- **Decided:** we use the neobrutalism.dev components, adjusted to our palette and fonts. Nothing to collect.
 
-### 2.6 Cards and surfaces — **Must**
-- **Need:** how cards sit on the page: outline weight, shadow offset, corner roundness, padding, and a card on a coloured block.
-- **Save to:** `foundations/06-cards-a.png`
-- **Search:** neobrutalism.dev Card; Dribbble `neubrutalism card`, `neo brutalism cards pastel`; Pinterest `neubrutalism card ui`
+  | Need | neobrutalism.dev component |
+  | --- | --- |
+  | A text input with a label and an error | [Input](https://www.neobrutalism.dev/docs/input) and Label |
+  | A search box | Input, with a Lucide search icon |
+  | A checkbox | [Checkbox](https://www.neobrutalism.dev/docs/checkbox) |
+  | A toggle switch | [Switch](https://www.neobrutalism.dev/docs/switch) |
+  | A segmented control (two or three options in one pill) | [Tabs](https://www.neobrutalism.dev/docs/tabs) |
 
-### 2.7 Chips, tags and stickers — **Must**
+- **Your part (optional):** open those pages and judge the shape, as with buttons. Write a line in `notes.md` only if something should differ. Save a screenshot only to point at one variant: `foundations/05-inputs-a.png`.
+
+### 2.6 Cards and surfaces — ✅ **Decided: neobrutalism.dev**
+- **Decided:** we use the [neobrutalism.dev Card](https://www.neobrutalism.dev/docs/card), adjusted to our palette and fonts. Its outline weight, shadow offset and corner roundness come from the theme, so every card follows one setting. Nothing to collect.
+- **What we need from it:** cards on the cream page and on coloured blocks, with roomy padding.
+- **Your part (optional):** open the Card page and judge the shape, not the colours. Write a line in `notes.md` only if something should differ, e.g. `neobrutalism.dev Card: bigger shadow`. Save a screenshot only to point at one variant: `foundations/06-cards-a.png`.
+
+### 2.7 Chips, tags and stickers — ✅ **Collected**
+- **Done:** `foundations/07-chips-a` for tags, `moodboard/brutal-02` for tilted stickers, the neobrutalism.dev [Badge](https://www.neobrutalism.dev/docs/badge) as the base.
 - **Need:** rounded chips, including ones with a small logo inside, and **tilted sticker tags**. These become the filter chips, the "Pro", "Practice" and "Friend" tags, and "Your turn".
 - **Save to:** `foundations/07-chips-a.png`
 - **Search:**
@@ -239,31 +239,33 @@ The building blocks every page shares.
   - Dribbble: `neubrutalism badges`, `sticker tags ui`, `retro sticker labels`
   - Pinterest: `sticker label design retro`
 
-### 2.8 Icons in use — **Nice**
+### 2.8 Icons in use — ⏭ **Skip**
+- **Decided:** Lucide inside the accepted components; nothing to collect.
 - **Icon set:** Lucide is decided; browse [lucide.dev](https://lucide.dev) to see the style. Nothing to save there.
 - **Need:** icons used well in this style: inside outlined buttons, in a nav, beside stats.
 - **Save to:** `foundations/08-icons-a.png`
 - **Search:** Dribbble `neubrutalism icons`, `icon button outline hard shadow`
 
-### 2.9 Avatars and initials — **Must**
-- **Need:** round avatars with an outline, including **initials** when there's no photo, plus an empty placeholder. Used for players and for your profile.
-- **Save to:** `foundations/09-avatars-a.png`
-- **Search:** neobrutalism.dev Avatar; Dribbble `neubrutalism avatar`, `avatar initials ui`
+### 2.9 Avatars and initials — ✅ **Decided: neobrutalism.dev**
+- **Decided:** we use the [neobrutalism.dev Avatar](https://www.neobrutalism.dev/docs/avatar), adjusted to our palette and fonts. Nothing to collect.
+- **What we need from it:**
+  - a round photo with the ink outline, on a pastel fill;
+  - **initials** in bold Inter when there's no photo, in the same frame;
+  - an empty placeholder.
+  - Used for players and for your profile. In a duel, the fill or outline carries the finder's colour. Framing follows `moodboard/other-01` and `other-02`.
+- **Your part (optional):** open the Avatar page and judge the shape. Write a line in `notes.md` only if something should differ. Save a screenshot only to point at one variant: `foundations/09-avatars-a.png`.
 
-### 2.10 Logo and wordmark — **Nice**
+### 2.10 Logo and wordmark — **Nice** (optional; skipped means Archivo 900, width 125)
 - **Need:** wordmark styles you like for the "Lineup" name.
 - **Save to:** `foundations/10-wordmark-a.png`
 - **Search:** Pinterest `neubrutalism logo`, `chunky wordmark logo`, `sticker logo design`; Dribbble `bold wordmark sport`
 
-### 2.11 Doodles — **Nice**
-- **Decided:** black line doodles like `moodboard/other-01` (a ball, a boot, motion lines, smileys), not flat illustrations.
-- **Need:** doodle sets whose line weight and mood you like, for the landing page, empty states and 404.
-- **Save to:** `foundations/11-doodles-a.png`
-- **Search:** Dribbble `football doodle`, `sport doodle line icons`, `hand drawn doodle ui`; Pinterest `football doodle line art`, `hand drawn sport doodles`
+### 2.11 Illustrations — ⏭ **Skip**
+- **Decided:** none. No doodles and no illustrations anywhere; nothing to collect.
 
 ## § 3. Layout (shared across pages)
 
-### `SiteNav` — the top bar on site pages — **Must**
+### `SiteNav` — the top bar on site pages — ✅ **Collected** (layout only; phone menu = neobrutalism.dev Sheet)
 - **Today:** the wordmark on the left; Archive, your account and a Play button on the right. Below a certain width, the account becomes a person icon.
 - **Need:** a desktop header and its phone version (with a menu if it has one).
 - **Save to:** `layout/01-header-desktop-a.png`, `layout/02-header-mobile-a.png`
@@ -272,40 +274,42 @@ The building blocks every page shares.
   - neobrutalism.dev: Menubar, Sheet (for the phone menu)
   - Gumroad: its top bar
 
-### `SiteFooter` — **Must**
+### `SiteFooter` — ✅ **Collected**
 - **Today:** one short line, and on `/` a closing statement with a Play button.
 - **Need:** small, tidy footers. Not the big four-column ones.
 - **Save to:** `layout/03-footer-a.png`
 - **Search:** Dribbble `neubrutalism footer`, `minimal footer website`; 21st.dev `footer`
 
-### Page title area — **Nice**
+### Page title area — ⏭ **Skip** (follows from the type roles)
 - **Need:** how a page opens: a title, a short line and maybe an action.
 - **Save to:** `layout/04-page-title-a.png`
 - **Search:** Dribbble `neubrutalism page header`, `neubrutalism dashboard`
 
-### `QuitDialog` and other dialogs — **Must**
-- **Today:** "Quit this run?", "Forfeit this duel?", "Practise now?", each with a confirm and a cancel.
-- **Save to:** `layout/05-dialog-a.png`
-- **Search:** neobrutalism.dev Dialog; Dribbble `neubrutalism modal`, `neo brutalism dialog`
+### `QuitDialog` and other dialogs — ✅ **Decided: neobrutalism.dev**
+- **Decided:** we use the neobrutalism.dev [Alert Dialog](https://www.neobrutalism.dev/docs/alert-dialog) (confirm or cancel) and [Dialog](https://www.neobrutalism.dev/docs/dialog), adjusted to our palette and fonts. Nothing to collect.
+- **What we need from it:** "Quit this run?", "Forfeit this duel?", "Practise now?", each with a confirm and a cancel. Cancel stays one tap.
+- **Your part (optional):** judge the shape; write a line in `notes.md` only if something should differ. Save a screenshot only to point at one variant: `layout/05-dialog-a.png`.
 
-### `FeedbackToast` — small messages — **Must**
-- **Today:** "Already named" and "Not in this XI".
-- **Save to:** `layout/06-toast-a.png`
-- **Search:** neobrutalism.dev Sonner; Dribbble `neubrutalism toast`, `neubrutalism notification`
+### `FeedbackToast` — small messages — ✅ **Decided: neobrutalism.dev**
+- **Decided:** we use the [neobrutalism.dev Toast](https://www.neobrutalism.dev/docs/toast), adjusted to our palette and fonts. Nothing to collect.
+- **What we need from it:** "Already named" and "Not in this XI", short and clearly different from each other.
+- **Your part (optional):** as with dialogs. Screenshot only to point at a variant: `layout/06-toast-a.png`.
 
-### Loading placeholders (skeletons) — **Nice**
-- **Save to:** `layout/07-skeleton-a.png`
-- **Search:** neobrutalism.dev Skeleton; Dribbble `skeleton loading ui`
+### Loading placeholders (skeletons) — ✅ **Decided: neobrutalism.dev**
+- **Decided:** we use the [neobrutalism.dev Skeleton](https://www.neobrutalism.dev/docs/skeleton), shaped like what loads (11 slots, rows, the match header). Nothing to collect.
+- **Your part (optional):** as with dialogs. Screenshot only to point at a variant: `layout/07-skeleton-a.png`.
 
-### `ProLock` — a locked Pro feature — **Must**
+### `ProLock` — a locked Pro feature — ✅ **Decided**
+- **Done:** composed from the accepted Button, a Pro badge and a Lucide lock icon. `layout/08-locked-a` (a Free vs Pro comparison) is kept for the `/pro` page.
 - **Today:** the feature is shown but locked, with a short line and a "See Pro" link. It applies to Create room, Practice, the archive, the missed-XI reveal and picking a match.
 - **Save to:** `layout/08-locked-a.png`
 - **Search:** Dribbble `neubrutalism premium`, `neubrutalism pricing card`, `locked feature ui`, `upgrade to pro card`
 
-### Empty and error states — **Must**
+### Empty and error states — ✅ **Collected** (layout only)
+- **Done:** the references give the layout; built from the neobrutalism.dev [Empty](https://www.neobrutalism.dev/docs/empty) component with a Lucide icon in an outlined tile, no illustration.
 - **Today:** "No match fits. Try fewer words…", "Couldn't load…" with Try again. Never a dead end.
 - **Save to:** `layout/09-empty-state-a.png`, `layout/10-error-state-a.png`
-- **Search:** Dribbble `neubrutalism empty state`, `doodle empty state`, `error state ui`
+- **Search:** Dribbble `neubrutalism empty state`, `empty state icon ui`, `error state ui`
 
 > ✋ **End of stage A.** Tell me **"foundations ready"**. I build the palette, type, components and layout with a `/dev` preview page; you review it before stage B.
 
@@ -627,7 +631,7 @@ The duel uses the game screen from § 4, plus these.
 
 ## § 10. Page: Sign in `/sign-in`
 
-- **Whole page (Must):** sign-in pages you like, with or without a doodle beside the form.
+- **Whole page (Must):** sign-in pages you like, with or without a coloured panel beside the form.
 - **Save to:** `sign-in/00-page-a.png`
 - **Search:** Dribbble `neubrutalism login`, `neubrutalism sign up`; Pinterest `neubrutalism login page`; Gumroad: its log-in page
 
@@ -661,10 +665,10 @@ The duel uses the game screen from § 4, plus these.
 
 | Item | Today | Save to | Search |
 | --- | --- | --- | --- |
-| Not found (404) — **Must** | The built-in page | `system/01-404-a.png` | Dribbble `neubrutalism 404`, `doodle 404 page` |
+| Not found (404) — **Must** | The built-in page | `system/01-404-a.png` | Dribbble `neubrutalism 404`, `typographic 404 page` |
 | Update required — **Nice** | "Update Lineup to keep playing" | `system/02-update-a.png` | Dribbble `app update required screen` |
 | Rate limited — **Nice** | Input locked briefly, with a reason | `system/03-rate-limit-a.png` | Dribbble `too many attempts ui`, `cooldown ui` |
-| Empty filter result — **Nice** | "No match in those seasons" and "Include every season" | `system/04-no-results-a.png` | Dribbble `neubrutalism no results`, `doodle no results` |
+| Empty filter result — **Nice** | "No match in those seasons" and "Include every season" | `system/04-no-results-a.png` | Dribbble `neubrutalism no results`, `no results found ui` |
 
 > ✋ **End of stage H.** Tell me **"rest ready"**.
 
@@ -677,7 +681,7 @@ Use it in any stage, for that stage's screen. Free AI screens are a quick way to
 Start each prompt with the **style line**:
 
 ```text
-Neubrutalism UI on a warm cream background. Flat pastel blocks in lavender, mint, butter yellow and coral, thick black 2px outlines, hard offset shadows, rounded corners, chunky wide headings, small tilted sticker tags, a few black line football doodles, Lucide-style line icons. A football trivia game called "Lineup".
+Neubrutalism UI on a warm cream background. Flat pastel blocks in lavender, mint, butter yellow and coral, thick black 2px outlines, hard offset shadows, rounded corners, chunky wide headings, small tilted sticker tags, Lucide-style line icons, no illustrations. A football trivia game called "Lineup".
 ```
 
 | Stage | Screen | Prompt (after the style line) | Save to |
@@ -710,7 +714,7 @@ Write these in `context/screenshots/notes.md` as you go:
 ## Checklist
 
 - [x] § 1 Moodboard (Matchday Sticker chosen)
-- [ ] **Stage A:** § 2 Foundations (palette hex and font names in `notes.md`) and § 3 Layout → "foundations ready"
+- [x] **Stage A:** § 2 Foundations (palette hex and font names in `notes.md`) and § 3 Layout → "foundations ready"
 - [ ] **Stage B:** § 4 Game screen (desktop **and** phone) → "game ready"
 - [ ] **Stage C:** § 5 Play → "play ready"
 - [ ] **Stage D:** § 6 Home → "home ready"
