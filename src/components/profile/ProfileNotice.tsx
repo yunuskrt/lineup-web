@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import { PROFILE_HEADING } from '@/components/profile/styles';
+import { TriangleAlert, UserRound } from 'lucide-react';
 import {
   PRIMARY_BUTTON_LARGE,
   SECONDARY_BUTTON,
   TEXT_LINK,
 } from '@/styles/classes';
+import { StateNotice } from '@/components/shell/StateNotice';
 
 type ProfileNoticeProps =
   | { kind: 'signedOut' }
@@ -13,11 +14,13 @@ type ProfileNoticeProps =
 export function ProfileNotice(props: ProfileNoticeProps) {
   if (props.kind === 'error') {
     return (
-      <div className="flex flex-col items-start gap-4">
-        <h1 className={PROFILE_HEADING}>Couldn&apos;t load your profile</h1>
-        <p role="alert" className="text-16 leading-6 text-danger-text">
-          {props.message}
-        </p>
+      <StateNotice
+        tone="error"
+        icon={TriangleAlert}
+        title="Couldn't load your profile"
+        titleLevel={1}
+        message={props.message}
+      >
         <button
           type="button"
           onClick={props.onRetry}
@@ -25,26 +28,24 @@ export function ProfileNotice(props: ProfileNoticeProps) {
         >
           Try again
         </button>
-      </div>
+      </StateNotice>
     );
   }
 
   return (
-    <div className="flex max-w-xl flex-col items-start gap-6">
-      <div className="flex flex-col gap-2">
-        <h1 className={PROFILE_HEADING}>No profile yet</h1>
-        <p className="text-16 leading-6 text-fg-muted">
-          Play a game and your history starts here. No account needed.
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-6">
-        <Link href="/play" className={PRIMARY_BUTTON_LARGE}>
-          Play
-        </Link>
-        <Link href="/sign-in" className={`text-14 ${TEXT_LINK}`}>
-          Sign in
-        </Link>
-      </div>
-    </div>
+    <StateNotice
+      tone="info"
+      icon={UserRound}
+      title="No profile yet"
+      titleLevel={1}
+      message="Play a game and your history starts here. No account needed."
+    >
+      <Link href="/play" className={PRIMARY_BUTTON_LARGE}>
+        Play
+      </Link>
+      <Link href="/sign-in" className={`text-14 ${TEXT_LINK}`}>
+        Sign in
+      </Link>
+    </StateNotice>
   );
 }

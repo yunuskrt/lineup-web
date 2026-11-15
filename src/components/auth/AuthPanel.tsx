@@ -1,5 +1,6 @@
 'use client';
 
+import { TriangleAlert } from 'lucide-react';
 import { AuthSkeleton } from '@/components/auth/AuthSkeleton';
 import { ContinueAsGuest } from '@/components/auth/ContinueAsGuest';
 import { ModeSwitch } from '@/components/auth/ModeSwitch';
@@ -10,6 +11,7 @@ import { useSession } from '@/hooks/use-auth';
 import { authErrorMessageOf } from '@/lib/auth';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { AuthMode } from '@/types/auth';
+import { StateNotice } from '@/components/shell/StateNotice';
 
 type AuthPanelProps = {
   mode: AuthMode;
@@ -42,10 +44,11 @@ export function AuthPanel({ mode }: AuthPanelProps) {
     return (
       <>
         <Heading>{HEADINGS[mode]}</Heading>
-        <div className="flex flex-col items-start gap-4">
-          <p role="alert" className="text-14 text-danger-text">
-            {authErrorMessageOf(session.error)}
-          </p>
+        <StateNotice
+          tone="error"
+          icon={TriangleAlert}
+          message={authErrorMessageOf(session.error)}
+        >
           <button
             type="button"
             onClick={() => session.refetch()}
@@ -53,7 +56,7 @@ export function AuthPanel({ mode }: AuthPanelProps) {
           >
             Try again
           </button>
-        </div>
+        </StateNotice>
       </>
     );
   }

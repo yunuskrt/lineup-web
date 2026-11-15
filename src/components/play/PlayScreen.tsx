@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useId, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { TriangleAlert } from 'lucide-react';
 import { FilterPanel } from '@/components/play/FilterPanel';
 import { FilterSkeleton } from '@/components/play/FilterSkeleton';
 import { ModeChoice } from '@/components/play/ModeChoice';
@@ -37,6 +38,7 @@ import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
 import { SECONDARY_BUTTON, TEXT_LINK } from '@/styles/classes';
 import type { Filters } from '@/types/filters';
 import type { PlayMode } from '@/types/play';
+import { StateNotice } from '@/components/shell/StateNotice';
 
 export function PlayScreen() {
   // Page props go stale after replaceState; this won't
@@ -121,10 +123,11 @@ export function PlayScreen() {
             onChange={changeFilters}
           />
         ) : options.isError ? (
-          <div className="flex flex-col items-start gap-4">
-            <p role="alert" className="text-14 text-danger-text">
-              {authErrorMessageOf(options.error)}
-            </p>
+          <StateNotice
+            tone="error"
+            icon={TriangleAlert}
+            message={authErrorMessageOf(options.error)}
+          >
             <button
               type="button"
               onClick={() => options.refetch()}
@@ -132,7 +135,7 @@ export function PlayScreen() {
             >
               Try again
             </button>
-          </div>
+          </StateNotice>
         ) : (
           <FilterSkeleton />
         )}

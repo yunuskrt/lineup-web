@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -44,3 +44,25 @@ The last part of redesign stage A: the shared layout pieces every page uses. Dep
 - **References:** `context/screenshots/layout/*`, and the per-image notes in `context/screenshots/notes.md`.
 - No illustrations anywhere (decided 2026-11-14).
 - With A3 done, stage A is complete. Tell the user, and the next collection is stage B (the game screen, § 4 of the guide).
+- **Deviations recorded during implementation:**
+  - **Phone menu:** the default kept. Archive, account and Play stay inline at 320px with no overflow, so `sheet.tsx` isn't added.
+  - **`StateNotice`** (`src/components/shell/StateNotice.tsx`): a shared wrapper on `Empty` that takes a tone, an icon, a title, a message and the actions. The tones are:
+    - **error:** a coral tile with `TriangleAlert`, and the message is `role="alert"`;
+    - **empty:** a butter tile;
+    - **info:** a mint tile.
+  - **`EmptyTitle` gains `level`.** The `/pro` and profile notices are the page itself, so their title stays an `h1`.
+  - **Notices without a title** show the message as the main line, in `text-fg`. Error messages lose the red `danger-text`; the coral tile and `role="alert"` carry the error instead.
+  - **Notices are centred** in a dashed box; they were left-aligned before. Copy and actions are unchanged.
+  - **The profile's signed-out notice also moved** ("No profile yet", an info tone), because it's an empty state.
+  - **`ProLock`:**
+    - the Pro badge sits in the caption line, not inside the button, so the button's accessible name doesn't change and Pending stays bare;
+    - the badge is `aria-hidden`, since the caption says it;
+    - the locked control is the secondary variant with no shadow, muted text and `cursor-not-allowed`; it never hovers or presses.
+  - **`NavAccount` marks `/profile` as the current page** (`aria-current`), which is new. On phones the link is the icon (the handle is screen-reader only), so it shows no underline there.
+  - **The Quit icon shows only from `sm`.** At 320px the wider chip covered the away crest in the match header.
+  - **Footer:** the statement uses `TYPE_SECTION` in sentence case; it was uppercase and expanded. The divider is `rule`.
+  - **Wordmark:** weight 900 (was 700), still uppercase at width 125.
+  - **Checked live:**
+    - after Clear search on `/archive`, focus still lands in the search box (Pro Polish B);
+    - the profile error notice keeps its `h1` and alert;
+    - there's no horizontal overflow at 320px.

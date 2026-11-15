@@ -1,9 +1,11 @@
 'use client';
 
 import { type RefObject, useLayoutEffect, useRef } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { HistoryMoreState } from '@/types/profile-screen';
+import { StateNotice } from '@/components/shell/StateNotice';
 
 type HistoryMoreProps = {
   more: HistoryMoreState;
@@ -60,14 +62,16 @@ export function HistoryMore({
         {hasAppended ? `Showing ${count} ${noun}` : ''}
       </p>
       {more === 'failed' ? (
-        <>
-          <p role="alert" className="text-14 leading-5 text-danger-text">
-            Couldn&apos;t load more {noun}.
-          </p>
+        <StateNotice
+          tone="error"
+          icon={TriangleAlert}
+          message={`Couldn't load more ${noun}.`}
+          isCompact
+        >
           <button type="button" onClick={showMore} className={BUTTON}>
             Try again
           </button>
-        </>
+        </StateNotice>
       ) : null}
       {more === 'idle' || isLoading ? (
         // Not `disabled`: that would drop keyboard focus
