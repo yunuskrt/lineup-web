@@ -33,11 +33,12 @@ const COOLDOWN_TICK_MS = 250;
 const INERT_FOCUS_RING =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg-dim';
 
+// Live stands proud on its shadow; the rest sit flat
 const STATUS_CLASSES: Record<GuessInputStatus, string> = {
-  live: `border-you text-fg ${FOCUS_RING}`,
-  pending: `cursor-progress border-line text-fg-muted ${INERT_FOCUS_RING}`,
-  locked: `cursor-not-allowed border-line text-fg-dim ${INERT_FOCUS_RING}`,
-  cooldown: `cursor-not-allowed border-warning text-fg-muted ${INERT_FOCUS_RING}`,
+  live: `text-fg shadow-hard-sm ${FOCUS_RING}`,
+  pending: `cursor-progress text-fg-muted ${INERT_FOCUS_RING}`,
+  locked: `cursor-not-allowed text-fg-dim ${INERT_FOCUS_RING}`,
+  cooldown: `cursor-not-allowed text-fg-muted ${INERT_FOCUS_RING}`,
 };
 
 const REJECT_TINT_OPACITY = [1, 1, 0];
@@ -71,7 +72,7 @@ function Spinner({ isSpinning }: { isSpinning: boolean }) {
           fill="none"
           strokeWidth="2"
           strokeLinecap="round"
-          className="stroke-fg-muted"
+          className="stroke-line"
         />
       </motion.svg>
       <span className="sr-only">Checking</span>
@@ -264,13 +265,13 @@ export function GuessInput({
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
-          className={`w-full rounded-sm border bg-surface-card py-2.5 pr-10 pl-3 text-16 font-medium placeholder:text-fg-dim ${STATUS_CLASSES[status]}`}
+          className={`w-full rounded-md border-2 border-line bg-surface-card py-2.25 pr-10 pl-3 text-16 font-medium placeholder:text-fg-dim ${STATUS_CLASSES[status]}`}
         />
         {hasShaken && runs('inputRejectTint') ? (
           <motion.span
             key={shakeKey}
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-sm border-2 border-danger"
+            className="pointer-events-none absolute inset-0 rounded-md border-2 border-danger"
             initial={{ opacity: 1 }}
             animate={{ opacity: REJECT_TINT_OPACITY }}
             transition={{

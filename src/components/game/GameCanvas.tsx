@@ -19,6 +19,7 @@ import { SoundToggle } from '@/components/game/SoundToggle';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { useGameSounds } from '@/hooks/use-game-sounds';
 import { QuitChip } from '@/components/shell/QuitChip';
+import { Badge } from '@/components/ui/badge';
 import { activeRing, clockLabel } from '@/lib/canvas';
 import {
   reconnectSecondsLeft,
@@ -35,8 +36,8 @@ import {
 } from '@/lib/suggestions';
 import { missedOnPitch } from '@/lib/summary';
 import {
-  DUEL_ACTOR_TEXT,
   PRIMARY_BUTTON,
+  RAIL_SECTION,
   SECONDARY_BUTTON,
   TEXT_LINK,
 } from '@/styles/classes';
@@ -58,17 +59,23 @@ function ClockBlock({ view }: { view: CanvasView }) {
   const label = clockLabel(view.mode, turn);
 
   return (
-    <div className="flex shrink-0 flex-col items-center gap-2">
-      {/* The duel label is the turn cue; keep it */}
-      <span
-        className={`text-12 leading-6 uppercase ${
-          label.actor
-            ? `font-semibold ${DUEL_ACTOR_TEXT[label.actor]}`
-            : 'font-medium text-fg-muted'
-        } ${view.mode === 'solo' ? 'max-lg:hidden' : ''}`}
-      >
-        {label.text}
-      </span>
+    <div className="flex shrink-0 flex-col items-center gap-2 lg:-mx-4 lg:border-b-2 lg:border-line lg:px-4 lg:pb-4">
+      {/* The duel sticker is the turn cue; keep it */}
+      {label.actor ? (
+        <span className="flex h-6 items-center">
+          <Badge variant="sticker" tone={label.actor}>
+            {label.text}
+          </Badge>
+        </span>
+      ) : (
+        <span
+          className={`text-12 leading-6 font-medium text-fg-muted uppercase ${
+            view.mode === 'solo' ? 'max-lg:hidden' : ''
+          }`}
+        >
+          {label.text}
+        </span>
+      )}
       <CountdownRing round={ring.round} mode={ring.mode} owner={ring.owner} />
     </div>
   );
@@ -190,14 +197,17 @@ function ActiveRail({
         <PracticeCard />
       ) : (
         <div
-          className={`flex flex-wrap items-center gap-4 lg:flex-col lg:flex-nowrap lg:items-stretch lg:gap-8 ${
+          className={`${RAIL_SECTION} flex flex-wrap items-center gap-4 border-b-2 border-line pb-3 sm:pb-4 lg:flex-col lg:flex-nowrap lg:items-stretch lg:gap-0 lg:border-b-0 lg:pb-0 ${
             isReconnecting ? 'max-[413px]:justify-center' : ''
           }`}
         >
           <ClockBlock view={view} />
+          {/* Phones: a rule between clock and lives */}
           <div
-            className={`min-w-0 flex-1 lg:flex-none ${
-              isReconnecting ? 'max-[413px]:basis-full' : ''
+            className={`flex min-w-0 flex-1 flex-col justify-center self-stretch border-line lg:flex-none lg:py-4 ${
+              isReconnecting
+                ? 'max-[413px]:basis-full min-[414px]:max-lg:border-l-2 min-[414px]:max-lg:pl-4'
+                : 'max-lg:border-l-2 max-lg:pl-4'
             }`}
           >
             <RailLives view={view} />
@@ -212,7 +222,7 @@ function ActiveRail({
           )}
         </p>
       ) : null}
-      <div className="relative flex flex-col gap-2 lg:mt-auto">
+      <div className="relative flex flex-col gap-2 border-line lg:mt-auto lg:-mx-4 lg:border-t-2 lg:px-4 lg:pt-4">
         {/* Phones: floats over the band's bottom */}
         <div className="pointer-events-none max-sm:absolute max-sm:inset-x-0 max-sm:bottom-full max-sm:mb-2">
           <FeedbackToast toast={view.toast} />

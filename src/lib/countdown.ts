@@ -1,4 +1,5 @@
-import type { CountdownStage } from '@/types/countdown';
+import type { CountdownStage, RingMode } from '@/types/countdown';
+import type { DuelActor } from '@/types/duel';
 import type { RoundTiming } from '@/types/game';
 
 export const WARNING_SECONDS = 7;
@@ -26,4 +27,22 @@ export function countdownStage(seconds: number): CountdownStage {
   if (seconds <= CRITICAL_SECONDS) return 'critical';
   if (seconds <= WARNING_SECONDS) return 'warning';
   return 'calm';
+}
+
+// The open ring's share of a full circle
+export const ARC_SPAN = 0.75;
+
+// Linear: time left maps straight onto the arc's length
+export function arcDashArray(fraction: number): string {
+  return `${Math.min(Math.max(fraction, 0), 1) * ARC_SPAN} 1`;
+}
+
+// Urgency belongs to your own clock, never the opponent's
+export function ringStage(
+  mode: RingMode,
+  owner: DuelActor,
+  seconds: number,
+): CountdownStage {
+  if (mode === 'waiting' || owner === 'opponent') return 'calm';
+  return countdownStage(seconds);
 }
