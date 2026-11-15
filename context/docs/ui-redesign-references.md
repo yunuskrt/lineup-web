@@ -449,13 +449,15 @@ The most important screen. Solo and duel share it: the scoreboard, the 11 slots,
 
 Where you choose Solo or Duel and set the filters before starting.
 
-- **Whole page (Must):** game setup and settings screens.
+- **Whole page — ✅ Collected** (layout only): `play/00-page-a` (one outlined board: search, filter rows as outlined dropdowns with count badges, a dropdown with search and checkboxes) and `play/00-mobile-a` (section labels, rows with an ink outline and a small hard shadow).
+- **Need:** game setup and settings screens.
 - **Save to:** `play/00-page-a.png`
 - **Search:** Dribbble `neubrutalism settings`, `neubrutalism onboarding`, `game setup screen ui`, `quiz settings ui`
 
 ### Components
 
-#### `ModeChoice` — Solo or Duel — **Must**
+#### `ModeChoice` — Solo or Duel — ✅ **Collected** (layout only)
+- **Done:** `play/01-mode-cards-a`: big option cards (heavy title, one line, a small badge), the picked one in a solid colour. No images here: a Lucide icon stands in.
 - **Need:** two big selectable cards, one picked.
 - **Save to:** `play/01-mode-cards-a.png`
 - **Search:** neobrutalism.dev Radio Group; Dribbble `neubrutalism selection cards`, `selectable cards ui`, `radio card ui`
@@ -481,12 +483,12 @@ Where you choose Solo or Duel and set the filters before starting.
 - **Save to:** `play/04-toggle-a.png`
 - **Search:** neobrutalism.dev Switch, Checkbox; Dribbble `settings toggle row ui`
 
-#### `SoloAllowanceNote` — "3 of 5 solo runs left today" — **Must**
+#### `SoloAllowanceNote` — "3 of 5 solo runs left today" — ⏭ **Skip** (a quiet text line by spec; the cap state uses the existing notice and buttons)
 - **Need:** a small, friendly usage meter or line.
 - **Save to:** `play/05-usage-a.png`
 - **Search:** neobrutalism.dev Progress; Dribbble `neubrutalism progress bar`, `credits remaining ui`, `daily limit progress`
 
-#### `PlayStart` — the Start button — **Must**
+#### `PlayStart` — the Start button — ✅ **Done** (the large primary Button from A2)
 - **Save to:** `play/06-start-a.png`
 - **Search:** Uiverse `brutalist button`; Dribbble `neubrutalism cta button`, `play button ui game`
 
@@ -752,7 +754,7 @@ Write these in `context/screenshots/notes.md` as you go:
 - [x] § 1 Moodboard (Matchday Sticker chosen)
 - [x] **Stage A:** § 2 Foundations (palette hex and font names in `notes.md`) and § 3 Layout → "foundations ready"
 - [x] **Stage B:** § 4 Game screen (desktop **and** phone) → "game ready" (specs B1–B3 in `context/features/redesign-b*.md`)
-- [ ] **Stage C:** § 5 Play → "play ready"
+- [x] **Stage C:** § 5 Play → "play ready" (specs C1–C2 in `context/features/redesign-c*.md`)
 - [ ] **Stage D:** § 6 Home → "home ready"
 - [ ] **Stage E:** § 7 Duel → "duel ready"
 - [ ] **Stage F:** § 8 Profile → "profile ready"

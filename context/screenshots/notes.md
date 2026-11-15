@@ -73,6 +73,10 @@ Decided 2026-11-14, close to the other-01 heading. Both are Google Fonts the app
 - game/00-mobile-a: layout only (score pill, title, formation of photo cards); we have no shirt numbers, so slots show the position until found
 - game/15-results-a: layout only (title, check/cross table, totals, actions at the bottom); the you-vs-opponent columns fit the duel result later
 
+- play/00-page-a: layout only (one outlined board; search box, filter rows as outlined dropdowns with count badges, a dropdown opening into search + checkbox list); not the pink header or its fonts
+- play/00-mobile-a: phone stacking (section labels, then rows with an ink outline and a small hard shadow, toggles at the right)
+- play/01-mode-cards-a: layout only (big option cards: heavy title, one line, a small badge; the picked one in a solid colour); dark and 3D characters, so no images: a Lucide icon instead
+
 Decided 2026-11-15 for stage B: mint turf #A7E3C4 with ink lines; clock warning amber + thicker ring, critical red + thicker + pulse; RevealCard and LivesCard designed without references (see the guide § 4)
 
 ## Dislikes

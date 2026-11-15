@@ -43,7 +43,7 @@ export function ArchiveFilters({ state, onChange }: ArchiveFiltersProps) {
           <p className="min-w-0 text-14 leading-5 text-fg-muted">{active}</p>
         ) : null}
       </div>
-      <div id={panelId} hidden={!isOpen}>
+      <div id={panelId} hidden={!isOpen} className="border-b border-line pb-5">
         {state ? (
           <FilterPanel
             options={state.options}
