@@ -43,7 +43,7 @@ export function AuthPanel({ mode }: AuthPanelProps) {
       <>
         <Heading>{HEADINGS[mode]}</Heading>
         <div className="flex flex-col items-start gap-4">
-          <p role="alert" className="text-14 text-danger">
+          <p role="alert" className="text-14 text-danger-text">
             {authErrorMessageOf(session.error)}
           </p>
           <button

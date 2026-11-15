@@ -64,7 +64,7 @@ function Spinner({ isSpinning }: { isSpinning: boolean }) {
           r="6"
           fill="none"
           strokeWidth="2"
-          className="stroke-line"
+          className="stroke-rule"
         />
         <path
           d="M8 2a6 6 0 0 1 6 6"
@@ -89,7 +89,7 @@ function CooldownLine({ until }: { until: number }) {
   }, []);
 
   return (
-    <p aria-hidden="true" className="text-12 font-medium text-warning">
+    <p aria-hidden="true" className="text-12 font-medium text-warning-text">
       {cooldownLabel(until - now)}
     </p>
   );

@@ -67,7 +67,7 @@ function Tile({ sidePick, side, onPick }: TileProps) {
       animate="rest"
       whileHover={canLift ? 'hover' : undefined}
       className={`flex min-w-0 flex-col items-center gap-2 rounded-md border border-line bg-surface-card px-2 py-3 text-center sm:px-3 sm:py-4 ${TILE_CELL[side]} ${FOCUS_RING} ${
-        isChoosing ? 'cursor-default' : 'hover:border-brand'
+        isChoosing ? 'cursor-default' : 'hover:bg-surface-raised'
       }`}
     >
       <motion.span variants={CREST_VARIANTS} className="flex">

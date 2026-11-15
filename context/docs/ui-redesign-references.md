@@ -98,7 +98,7 @@ All of these are free to browse. Some ask you to sign up with an email; none nee
 
 | Website | Good for | Notes |
 | --- | --- | --- |
-| [neobrutalism.dev](https://www.neobrutalism.dev) | **Components in exactly our style** | Free, built on shadcn/ui (our base). Open "Components" in the menu; each page shows a live preview. Screenshot the preview |
+| [neobrutalism.dev](https://www.neobrutalism.dev) | **Components in exactly our style** | Free, MIT, shadcn-style copy-in components on Base UI. Open "Components" in the menu; each page shows a live preview. Screenshot the preview |
 | [Dribbble](https://dribbble.com) | **The best source for app screens and components** | Search "Shots". Filter by colour: after searching, open **Filters** → **Color** and pick a pastel |
 | [Pinterest](https://www.pinterest.com) | Whole screens, colours, style boards | Free account needed. Click a pin, then "More like this" below it finds similar ones |
 | [Behance](https://www.behance.net) | Full case studies, many screens of one app | Search, then filter by "UI/UX". One project often shows the desktop and the phone together |

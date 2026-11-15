@@ -35,7 +35,7 @@ export function ModeChoice({ mode, onChange }: ModeChoiceProps) {
         {MODES.map((option) => (
           <label
             key={option.mode}
-            className="flex cursor-pointer flex-col gap-4 rounded-md border border-line p-6 hover:bg-surface-raised has-checked:border-brand has-checked:bg-surface-raised has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand sm:p-8"
+            className="flex cursor-pointer flex-col gap-4 rounded-md border border-line p-6 hover:bg-surface-raised has-checked:bg-brand has-checked:shadow-hard has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus sm:p-8"
           >
             <input
               type="radio"

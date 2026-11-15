@@ -73,7 +73,7 @@ export function AuthForm<S extends z.ZodType>({
         />
       ))}
       {error && !isPending ? (
-        <p role="alert" className="text-14 text-danger">
+        <p role="alert" className="text-14 text-danger-text">
           {authErrorMessageOf(error)}
         </p>
       ) : null}

@@ -61,7 +61,7 @@ export function HistoryMore({
       </p>
       {more === 'failed' ? (
         <>
-          <p role="alert" className="text-14 leading-5 text-danger">
+          <p role="alert" className="text-14 leading-5 text-danger-text">
             Couldn&apos;t load more {noun}.
           </p>
           <button type="button" onClick={showMore} className={BUTTON}>

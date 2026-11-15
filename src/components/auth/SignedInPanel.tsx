@@ -19,7 +19,7 @@ export function SignedInPanel({ handle }: SignedInPanelProps) {
         <span className="font-medium text-fg">{handle}</span>.
       </p>
       {signOut.error && !signOut.isPending ? (
-        <p role="alert" className="text-14 text-danger">
+        <p role="alert" className="text-14 text-danger-text">
           {authErrorMessageOf(signOut.error)}
         </p>
       ) : null}

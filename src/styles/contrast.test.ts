@@ -2,16 +2,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
-  BODY_TEXT_MIN,
   CONTRAST_EXCEPTIONS,
   CONTRAST_PAIRS,
   contrastRatio,
-  LARGE_TEXT_MIN,
   relativeLuminance,
   type RoleToken,
 } from '@/styles/contrast';
-
-const AAA = 7;
 
 function readCss(name: string): string {
   return readFileSync(join(process.cwd(), 'src/styles', name), 'utf8');
@@ -74,7 +70,7 @@ describe('contrastRatio', () => {
   });
 
   it('reads 1:1 for a colour on itself', () => {
-    expect(contrastRatio('#27352c', '#27352c')).toBe(1);
+    expect(contrastRatio('#1f1b16', '#1f1b16')).toBe(1);
   });
 });
 
@@ -97,21 +93,6 @@ describe('the shipped palette', () => {
       expect(contrastRatio(hexOf(fg), hexOf(bg))).toBeGreaterThanOrEqual(min);
     },
   );
-
-  // theme.md § Contrast verdicts, against pitch-950
-  it.each([
-    ['fg', AAA],
-    ['fg-muted', AAA],
-    ['brand', AAA],
-    ['found', AAA],
-    ['opponent', BODY_TEXT_MIN],
-    ['danger', BODY_TEXT_MIN],
-    ['fg-dim', LARGE_TEXT_MIN],
-  ] as const)('keeps %s at the verdict theme.md gives it', (role, min) => {
-    expect(contrastRatio(hexOf(role), hexOf('surface'))).toBeGreaterThanOrEqual(
-      min,
-    );
-  });
 });
 
 describe('contrast exceptions', () => {

@@ -5,11 +5,7 @@ import { useState } from 'react';
 import { SHIRT_PATH } from '@/components/game/shirt';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
-import {
-  DUEL_ACTOR_BORDER,
-  LIFE_LOST_BORDER_SHIFT,
-  LIFE_LOST_FILL_SHIFT,
-} from '@/styles/classes';
+import { LIFE_LOST_BORDER_SHIFT, LIFE_LOST_FILL_SHIFT } from '@/styles/classes';
 import { MOTION_SECONDS } from '@/styles/motion';
 import type { DuelActor } from '@/types/duel';
 import type { Lives as LivesCount } from '@/types/game';
@@ -69,9 +65,12 @@ export function Lives({ lives, owner = 'you', isTiled = false }: LivesProps) {
             focusable="false"
             className={isTiled ? 'size-5 lg:size-6' : 'size-5'}
           >
+            {/* Ink outline: the pastels alone are under 3:1 */}
             <path
               d={SHIRT_PATH}
-              className={`${isFilled ? OWNER_FILL[owner] : 'fill-fg-dim'} ${
+              strokeWidth={1.5}
+              strokeLinejoin="round"
+              className={`${isFilled ? `${OWNER_FILL[owner]} stroke-line` : 'fill-rule stroke-none'} ${
                 fades ? LIFE_LOST_FILL_SHIFT : ''
               }`}
             />
@@ -90,7 +89,7 @@ export function Lives({ lives, owner = 'you', isTiled = false }: LivesProps) {
             {isTiled ? (
               <span
                 className={`${TILE} ${
-                  isFilled ? DUEL_ACTOR_BORDER[owner] : 'border-line'
+                  isFilled ? 'border-line' : 'border-rule'
                 } ${fades ? LIFE_LOST_BORDER_SHIFT : ''}`}
               >
                 {shirt}

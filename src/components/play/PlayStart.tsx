@@ -91,7 +91,7 @@ export function PlayStart({
       </button>
       {children}
       {ensureSession.error && !isStarting ? (
-        <p role="alert" className="text-14 text-danger">
+        <p role="alert" className="text-14 text-danger-text">
           {authErrorMessageOf(ensureSession.error)}
         </p>
       ) : null}

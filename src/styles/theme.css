@@ -1,22 +1,37 @@
 :root {
-  --surface: var(--pitch-950);
-  --surface-raised: var(--pitch-900);
-  --surface-card: var(--pitch-800);
+  --surface: var(--cream);
+  --surface-raised: var(--peach-cream);
+  --surface-card: var(--white);
+  --surface-sage: var(--sage-pale);
 
-  --line: var(--pitch-700);
-  --marking: var(--pitch-600);
+  --line: var(--ink);
+  --rule: color-mix(in oklch, var(--ink) 18%, var(--cream));
+  --marking: var(--sage);
 
-  --fg: var(--bone);
-  --fg-muted: var(--muted);
-  --fg-dim: var(--dim);
-  --on-accent: var(--pitch-950);
+  --fg: var(--ink);
+  --fg-muted: var(--umber);
+  --fg-dim: var(--taupe);
+  --on-accent: var(--ink);
+  --focus: var(--ink);
 
-  --brand: var(--floodlight);
-  --you: var(--floodlight);
-  --opponent: var(--away);
-  --found: var(--turf);
-  --warning: var(--ember);
-  --danger: var(--red-card);
+  --brand: var(--lavender);
+  --you: var(--duel-blue);
+  --opponent: var(--duel-orange);
+  --found: var(--status-green);
+  --warning: var(--status-amber);
+  --danger: var(--status-red);
+
+  --you-text: var(--blue-deep);
+  --opponent-text: var(--orange-deep);
+  --found-text: var(--green-deep);
+  --warning-text: var(--amber-deep);
+  --danger-text: var(--red-deep);
+
+  --block-lavender: var(--lavender);
+  --block-mint: var(--mint);
+  --block-butter: var(--butter);
+  --block-coral: var(--coral);
+  --accent-caramel: var(--caramel);
 
   --reveal-flash-you: var(--found);
   --reveal-flash-opponent: color-mix(
@@ -27,6 +42,6 @@
 
   --already-found-pulse: var(--fg-muted);
 
-  --skeleton-fill: var(--surface-card);
-  --gate-scrim: color-mix(in oklch, var(--surface) 72%, transparent);
+  --skeleton-fill: var(--surface-sage);
+  --gate-scrim: color-mix(in oklch, var(--ink) 40%, transparent);
 }

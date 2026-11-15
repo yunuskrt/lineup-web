@@ -1,7 +1,7 @@
 import type { DuelActor } from '@/types/duel';
 
 export const FOCUS_RING =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand';
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
 export const SITE_CONTAINER = 'mx-auto w-full max-w-6xl px-4 sm:px-6';
 
@@ -11,8 +11,8 @@ export const DUEL_ACTOR_BG: Record<DuelActor, string> = {
 };
 
 export const DUEL_ACTOR_TEXT: Record<DuelActor, string> = {
-  you: 'text-you',
-  opponent: 'text-opponent',
+  you: 'text-you-text',
+  opponent: 'text-opponent-text',
 };
 
 export const DUEL_ACTOR_BORDER: Record<DuelActor, string> = {
@@ -20,37 +20,63 @@ export const DUEL_ACTOR_BORDER: Record<DuelActor, string> = {
   opponent: 'border-opponent',
 };
 
-export const PRIMARY_BUTTON = `rounded-sm bg-brand px-4 py-1.5 text-14 font-semibold text-on-accent ${FOCUS_RING}`;
+export const TYPE_DISPLAY =
+  'font-display text-34 leading-none font-extrabold font-stretch-semi-expanded md:text-72 md:font-stretch-expanded';
 
-export const PRIMARY_BUTTON_LARGE = `rounded-sm bg-brand px-8 py-3 text-16 font-semibold text-on-accent disabled:opacity-70 ${FOCUS_RING}`;
+export const TYPE_TITLE =
+  'font-display text-30 leading-tight font-extrabold font-stretch-semi-expanded md:text-40';
 
-// Primary's size; 11px padding plus the 1px border
-export const SECONDARY_BUTTON_LARGE = `rounded-sm border border-line px-8 py-2.75 text-16 font-semibold text-fg hover:bg-surface-card ${FOCUS_RING}`;
+export const TYPE_SECTION =
+  'font-display text-24 leading-tight font-extrabold font-stretch-semi-expanded md:text-28';
 
-export const SECONDARY_BUTTON = `rounded-sm border border-line px-4 py-2 text-14 font-semibold text-fg hover:bg-surface-raised disabled:text-fg-muted disabled:hover:bg-transparent ${FOCUS_RING}`;
+export const TYPE_CARD_TITLE =
+  'font-display text-20 leading-tight font-extrabold font-stretch-semi-expanded';
 
-export const TEXT_INPUT = `w-full rounded-sm border border-line bg-surface-card px-3 py-2.5 text-16 text-fg aria-invalid:border-danger read-only:text-fg-muted ${FOCUS_RING}`;
+// Titles over ~20 characters
+export const TYPE_TITLE_LONG =
+  'font-display text-20 leading-tight font-bold font-stretch-normal';
 
-export const TEXT_LINK = `rounded-sm font-medium text-fg underline decoration-line underline-offset-4 hover:decoration-fg ${FOCUS_RING}`;
+export const TYPE_NUMBER =
+  'font-display font-black font-stretch-expanded tabular-nums slashed-zero';
+
+export const TYPE_STICKER =
+  'font-display text-12 font-extrabold uppercase font-stretch-semi-expanded';
+
+// Sinks into its shadow; no shift with reduced motion
+const PRESS =
+  'shadow-hard not-disabled:not-aria-disabled:active:shadow-none motion-safe:not-disabled:not-aria-disabled:active:translate-x-1 motion-safe:not-disabled:not-aria-disabled:active:translate-y-1';
+
+// 2px outline; padding trimmed to keep each height
+export const PRIMARY_BUTTON = `rounded-md border-2 border-line bg-brand px-4 py-1 text-14 font-semibold text-on-accent ${PRESS} ${FOCUS_RING}`;
+
+export const PRIMARY_BUTTON_LARGE = `rounded-md border-2 border-line bg-brand px-8 py-2.5 text-16 font-semibold text-on-accent disabled:opacity-70 ${PRESS} ${FOCUS_RING}`;
+
+export const SECONDARY_BUTTON_LARGE = `rounded-md border-2 border-line bg-surface-card px-8 py-2.5 text-16 font-semibold text-fg hover:bg-surface-raised ${PRESS} ${FOCUS_RING}`;
+
+export const SECONDARY_BUTTON = `rounded-md border-2 border-line bg-surface-card px-4 py-1.75 text-14 font-semibold text-fg hover:bg-surface-raised disabled:text-fg-muted disabled:hover:bg-surface-card ${PRESS} ${FOCUS_RING}`;
+
+export const TEXT_INPUT = `w-full rounded-md border-2 border-line bg-surface-card px-3 py-2.25 text-16 text-fg aria-invalid:border-danger read-only:text-fg-muted ${FOCUS_RING}`;
+
+export const TEXT_LINK = `rounded-sm font-medium text-fg underline decoration-fg-dim underline-offset-4 hover:decoration-fg ${FOCUS_RING}`;
 
 export const NAV_LINK = `rounded-sm text-14 font-medium whitespace-nowrap text-fg-muted hover:text-fg aria-[current=page]:text-fg ${FOCUS_RING}`;
 
-export const QUIT_CHIP = `rounded-sm border border-line px-3 py-1 text-12 font-medium uppercase text-fg-muted hover:text-fg ${FOCUS_RING}`;
+export const QUIT_CHIP = `rounded-md border-2 border-line bg-surface-card px-3 py-0.75 text-12 font-semibold uppercase text-fg hover:bg-surface-raised ${FOCUS_RING}`;
 
 // Quit's height from sm; 24px stacked on phones
-export const SOUND_TOGGLE = `flex size-6 items-center justify-center rounded-sm border border-line text-fg-muted hover:text-fg sm:size-7 ${FOCUS_RING}`;
+export const SOUND_TOGGLE = `flex size-6 items-center justify-center rounded-md border-2 border-line bg-surface-card text-fg hover:bg-surface-raised sm:size-7 ${FOCUS_RING}`;
 
-export const FILTER_CHIP = `rounded-sm border border-line px-3 py-1.5 text-14 font-medium text-fg-muted hover:text-fg aria-pressed:border-fg aria-pressed:bg-surface-card aria-pressed:text-fg ${FOCUS_RING}`;
+export const FILTER_CHIP = `rounded-full border-2 border-line bg-surface-card px-3 py-1.25 text-14 font-medium text-fg hover:bg-surface-raised aria-pressed:bg-brand ${FOCUS_RING}`;
 
-export const FILTER_SELECT = `rounded-sm border border-line bg-surface-card px-3 py-2 text-14 text-fg ${FOCUS_RING}`;
+export const FILTER_SELECT = `rounded-md border-2 border-line bg-surface-card px-3 py-1.75 text-14 text-fg ${FOCUS_RING}`;
 
 // 16px on phones stops iOS zooming on focus
-export const FILTER_SEARCH = `rounded-sm border border-line bg-surface-card px-3 py-1.5 text-16 text-fg placeholder:text-fg-dim sm:text-14 ${FOCUS_RING}`;
+export const FILTER_SEARCH = `rounded-md border-2 border-line bg-surface-card px-3 py-1.25 text-16 text-fg placeholder:text-fg-dim sm:text-14 ${FOCUS_RING}`;
 
 // 24px hit area around a small dot (WCAG 2.5.8)
 export const DOT_BUTTON = `flex size-6 items-center justify-center rounded-sm disabled:cursor-not-allowed ${FOCUS_RING}`;
 
-export const DEV_PREVIEW_BUTTON = `rounded-sm border border-line px-3 py-1.5 text-14 text-fg hover:bg-surface-raised disabled:text-fg-dim disabled:hover:bg-transparent aria-pressed:bg-surface-card ${FOCUS_RING}`;
+export const DEV_PREVIEW_BUTTON = `rounded-md border-2 border-line bg-surface-card px-3 py-1.25 text-14 text-fg hover:bg-surface-raised disabled:text-fg-dim disabled:hover:bg-surface-card aria-pressed:bg-brand ${FOCUS_RING}`;
 
 // Literal for Tailwind; checked against motion.ts
 export const LIFE_LOST_FILL_SHIFT =

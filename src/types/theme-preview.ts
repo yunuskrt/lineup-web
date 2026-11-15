@@ -26,3 +26,10 @@ export type RadiusStep = {
   value: string;
   use: string;
 };
+
+export type TypeRole = {
+  name: string;
+  detail: string;
+  className: string;
+  sample: string;
+};

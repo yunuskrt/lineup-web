@@ -96,7 +96,7 @@ function Results({
     case 'error':
       return (
         <div className="flex flex-col items-start gap-4">
-          <p role="alert" className="text-16 leading-6 text-danger">
+          <p role="alert" className="text-16 leading-6 text-danger-text">
             {view.errorMessage}
           </p>
           <button type="button" onClick={onRetry} className={SECONDARY_BUTTON}>
@@ -229,7 +229,7 @@ export function ArchiveView({
       </div>
       <section aria-label="Results" className="flex flex-col gap-4">
         {playError ? (
-          <p role="alert" className="text-14 leading-5 text-danger">
+          <p role="alert" className="text-14 leading-5 text-danger-text">
             {playError}
           </p>
         ) : null}

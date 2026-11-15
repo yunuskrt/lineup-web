@@ -40,7 +40,7 @@ export function ProPlanTable() {
             <th scope="col" className={`${CELL} font-semibold text-fg-muted`}>
               Free
             </th>
-            <th scope="col" className={`${CELL} font-semibold text-brand`}>
+            <th scope="col" className={`${CELL} font-semibold text-fg`}>
               Pro
             </th>
           </tr>
