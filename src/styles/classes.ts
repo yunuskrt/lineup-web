@@ -53,6 +53,10 @@ export const TYPE_TITLE_LONG =
 export const TYPE_NUMBER =
   'font-display font-black font-stretch-expanded tabular-nums slashed-zero';
 
+// The 6-character code; its alphabet has no look-alikes
+export const TYPE_ROOM_CODE =
+  'font-display text-20 font-extrabold font-stretch-semi-expanded';
+
 export const TYPE_STICKER =
   'font-display text-12 font-extrabold uppercase font-stretch-semi-expanded';
 
@@ -113,10 +117,11 @@ export const SOUND_TOGGLE = `flex size-6 items-center justify-center rounded-md 
 
 export const FILTER_CHIP = `rounded-full border-2 border-line bg-surface-card px-3 py-1.25 text-14 font-medium text-fg hover:bg-surface-raised aria-pressed:bg-brand ${FOCUS_RING}`;
 
-export const FILTER_SELECT = `rounded-md border-2 border-line bg-surface-card px-3 py-1.75 text-14 text-fg ${FOCUS_RING}`;
+export const SELECT_TRIGGER = `inline-flex items-center justify-between gap-2 rounded-md border-2 border-line bg-surface-card px-3 py-1.75 text-14 text-fg tabular-nums hover:bg-surface data-popup-open:shadow-hard-sm data-disabled:cursor-not-allowed data-disabled:opacity-70 ${FOCUS_RING}`;
 
 // 16px on phones stops iOS zooming on focus
-export const FILTER_SEARCH = `rounded-md border-2 border-line bg-surface-card px-3 py-1.25 text-16 text-fg placeholder:text-fg-dim sm:text-14 ${FOCUS_RING}`;
+// Room for the search icon on the left
+export const FILTER_SEARCH = `w-full rounded-md border-2 border-line bg-surface-card py-1.25 pr-3 pl-9 text-16 text-fg placeholder:text-fg-dim sm:text-14 ${FOCUS_RING}`;
 
 // 24px hit area around a small dot (WCAG 2.5.8)
 export const DOT_BUTTON = `flex size-6 items-center justify-center rounded-sm disabled:cursor-not-allowed ${FOCUS_RING}`;

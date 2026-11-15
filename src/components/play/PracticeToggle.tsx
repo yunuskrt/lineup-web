@@ -1,6 +1,5 @@
-import { useId } from 'react';
 import { ProLock } from '@/components/pro/ProLock';
-import { FOCUS_RING } from '@/styles/classes';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { ProAccess } from '@/types/pro';
 
 type PracticeToggleProps = {
@@ -15,8 +14,6 @@ export function PracticeToggle({
   isOn,
   onChange,
 }: PracticeToggleProps) {
-  const id = useId();
-
   if (access !== 'open') {
     return (
       <ProLock
@@ -28,17 +25,9 @@ export function PracticeToggle({
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <input
-        id={id}
-        type="checkbox"
-        checked={isOn}
-        onChange={(event) => onChange(event.target.checked)}
-        className={`size-4 accent-fg ${FOCUS_RING}`}
-      />
-      <label htmlFor={id} className="text-14 font-medium">
-        Practice: no clock, no lives, not saved
-      </label>
-    </div>
+    <label className="flex w-fit cursor-pointer items-center gap-3 text-14 font-medium">
+      <Checkbox checked={isOn} onCheckedChange={onChange} />
+      Practice: no clock, no lives, not saved
+    </label>
   );
 }

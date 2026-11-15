@@ -1,8 +1,18 @@
+import { Search } from 'lucide-react';
 import { useId, useState, type ReactNode } from 'react';
 import {
   ClubChipImage,
   CompetitionChipImage,
 } from '@/components/play/FilterChipImage';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   clubRowView,
   competitionGroups,
@@ -12,7 +22,7 @@ import {
   selectCompetition,
   toggleId,
 } from '@/lib/filters';
-import { FILTER_CHIP, FILTER_SEARCH, FILTER_SELECT } from '@/styles/classes';
+import { FILTER_CHIP, FILTER_SEARCH } from '@/styles/classes';
 import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
 
@@ -23,7 +33,7 @@ type FilterPanelProps = {
 };
 
 export const FILTER_ROW =
-  'grid gap-3 border-t border-line py-5 last:pb-0 md:grid-cols-[8rem_1fr] md:gap-6';
+  'grid gap-3 border-t border-rule py-5 last:pb-0 md:grid-cols-[8rem_1fr] md:gap-6';
 
 export const FILTER_LABEL = 'text-14 font-medium md:py-1.5';
 
@@ -152,15 +162,21 @@ function ClubFilter({ options, filters, onChange }: FilterPanelProps) {
             Any club
           </Chip>
           {view.hasSearch ? (
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              aria-label="Search clubs"
-              aria-describedby={view.isSearchingAll ? hintId : undefined}
-              placeholder="Search clubs"
-              className={`${FILTER_SEARCH} max-md:w-full md:w-64`}
-            />
+            <span className="relative max-md:w-full md:w-64">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-muted"
+              />
+              <Input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                aria-label="Search clubs"
+                aria-describedby={view.isSearchingAll ? hintId : undefined}
+                placeholder="Search clubs"
+                className={FILTER_SEARCH}
+              />
+            </span>
           ) : null}
         </div>
         {view.isSearchingAll ? (
@@ -203,6 +219,46 @@ function ClubFilter({ options, filters, onChange }: FilterPanelProps) {
   );
 }
 
+type SeasonSelectProps = {
+  label: string;
+  value: number;
+  seasons: number[];
+  onChange: (season: number) => void;
+};
+
+function SeasonSelect({ label, value, seasons, onChange }: SeasonSelectProps) {
+  const items = seasons.map((season) => ({
+    value: season,
+    label: seasonLabel(season),
+  }));
+
+  return (
+    <Select
+      items={items}
+      value={value}
+      // Ignore Base UI's own clears; picks only
+      onValueChange={(next, details) => {
+        if (details.reason === 'none' || next === null) return;
+        if (seasons.includes(next)) onChange(next);
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <SelectLabel>{label}</SelectLabel>
+        <SelectTrigger className="min-w-30">
+          <SelectValue />
+        </SelectTrigger>
+      </div>
+      <SelectContent>
+        {items.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function EraFilter({ options, filters, onChange }: FilterPanelProps) {
   const { era } = filters;
   const seasons = effectiveSeasons(filters, options);
@@ -210,47 +266,20 @@ function EraFilter({ options, filters, onChange }: FilterPanelProps) {
   return (
     <FilterRow label="Era">
       <div className="flex flex-wrap items-center gap-3 text-14 text-fg-muted">
-        <label className="flex items-center gap-3">
-          From
-          <select
-            value={era.from}
-            onChange={(event) => {
-              const from = Number(event.target.value);
-              onChange({
-                ...filters,
-                era: { from, to: Math.max(from, era.to) },
-              });
-            }}
-            className={FILTER_SELECT}
-          >
-            {seasons.map((season) => (
-              <option key={season} value={season}>
-                {seasonLabel(season)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-center gap-3">
-          to
-          <select
-            value={era.to}
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                era: { ...era, to: Number(event.target.value) },
-              })
-            }
-            className={FILTER_SELECT}
-          >
-            {seasons
-              .filter((season) => season >= era.from)
-              .map((season) => (
-                <option key={season} value={season}>
-                  {seasonLabel(season)}
-                </option>
-              ))}
-          </select>
-        </label>
+        <SeasonSelect
+          label="From"
+          value={era.from}
+          seasons={seasons}
+          onChange={(from) =>
+            onChange({ ...filters, era: { from, to: Math.max(from, era.to) } })
+          }
+        />
+        <SeasonSelect
+          label="to"
+          value={era.to}
+          seasons={seasons.filter((season) => season >= era.from)}
+          onChange={(to) => onChange({ ...filters, era: { ...era, to } })}
+        />
       </div>
     </FilterRow>
   );

@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -50,3 +50,15 @@ The second part of redesign stage C: the controls inside the `/play` board. Depe
   - 320px and `lg`.
 - **Dev server:** the dev cache is off since C1 (`next.config.ts`), so `npm run build` can run while the user's dev server is up.
 - **With C2 done, stage C is complete.** The next collection is stage D (`/`, guide § 6).
+
+- **Deviations recorded during implementation:**
+  - **Open question 1:** `input-otp@1.5.0` added, pinned (`--save-exact`), the default; the user gave no other answer. It adds no install scripts.
+  - **Room code input settings:** `input-otp` defaults to a numeric keyboard and one-time-code autofill. The room code sets `inputMode="text"`, `autoComplete="off"`, `autoCapitalize="characters"`, and runs both typing and `pasteTransformer` through `roomCodeInput`.
+  - **Static caret:** the OTP's fake caret is a still bar, not the registry's blink, since C2 adds no motion and the theme has no keyframes. The active box shows the focus outline.
+  - **No placeholder in the boxes:** the old field's "Room code" placeholder doesn't fit six boxes; the sr-only label still names the input.
+  - **Room code type:** `TYPE_ROOM_CODE` in `classes.ts` (Archivo 800, width 112, from the notes.md type table).
+  - **Join on phones:** at 320px the six 40px boxes take the row, so Join wraps under them (`flex-wrap`).
+  - **Select, trimmed:** no scroll-arrow buttons and no enter animation from the registry copy (the popup scrolls; no new motion). The chevron is passed as a child of `Select.Icon`, because Base UI's default "▼" text otherwise sits inside the SVG.
+  - **Select guard (found while testing):** Base UI fires `onValueChange` itself (reason `none`) when "From" moves past "to" and the old "to" leaves the list. `SeasonSelect` ignores that and any value outside its seasons, so only picks change the filters. Moving "From" past "to" now carries "to" along, as before.
+  - **Class rename:** `FILTER_SELECT` became `SELECT_TRIGGER`, owned by `ui/select`, still in the focus-ring guard test. `FILTER_SEARCH` gained `pl-9` for the icon.
+  - **Archive too:** `/archive` shares `FilterPanel`, so its folded filters get the same search field and selects.
