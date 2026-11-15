@@ -11,6 +11,7 @@ import {
   FOCUS_RING,
   LIFE_LOST_BORDER_SHIFT,
   LIFE_LOST_FILL_SHIFT,
+  NAV_LINK,
   PRIMARY_BUTTON,
   PRIMARY_BUTTON_LARGE,
   QUIT_CHIP,
@@ -182,5 +183,18 @@ describe('button variants', () => {
     ['secondary', 'bg-surface-card'],
   ] as const)('fills %s with %s', (variant, fill) => {
     expect(buttonVariants({ variant }).split(' ')).toContain(fill);
+  });
+});
+
+describe('nav links', () => {
+  // theme.md: never colour alone
+  it('marks the current page with an underline bar', () => {
+    const tokens = NAV_LINK.split(' ');
+    expect(tokens).toContain('aria-[current=page]:underline');
+    expect(tokens).toContain('decoration-2');
+  });
+
+  it('gives nav links the shared focus ring', () => {
+    expect(NAV_LINK).toContain(FOCUS_RING);
   });
 });

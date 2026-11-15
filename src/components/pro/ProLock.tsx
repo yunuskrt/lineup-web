@@ -1,15 +1,20 @@
+import { Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useId } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { PRO_PATH } from '@/lib/pro';
-import { FOCUS_RING, TEXT_LINK } from '@/styles/classes';
+import { cn } from '@/lib/utils';
+import { buttonVariants, TEXT_LINK } from '@/styles/classes';
 
 export type ProLockSize = 'default' | 'large';
 
-// Never hovers: a locked control does nothing
-const LOCKED_CONTROL: Record<ProLockSize, string> = {
-  default: `rounded-sm border border-line px-4 py-2 text-14 font-semibold text-fg-muted ${FOCUS_RING}`,
-  large: `rounded-sm border border-line px-8 py-2.75 text-16 font-semibold text-fg-muted ${FOCUS_RING}`,
-};
+// Never hovers or presses: it does nothing
+function lockedControl(size: ProLockSize): string {
+  return cn(
+    buttonVariants({ variant: 'secondary', size }),
+    'cursor-not-allowed text-fg-muted shadow-none hover:bg-surface-card',
+  );
+}
 
 type ProLockButtonProps = {
   label: string;
@@ -27,7 +32,7 @@ export function ProLockButton({
       type="button"
       aria-disabled="true"
       aria-describedby={captionId}
-      className={LOCKED_CONTROL[size]}
+      className={lockedControl(size)}
     >
       {label}
     </button>
@@ -42,7 +47,11 @@ export function ProLockCaption({
   caption: string;
 }) {
   return (
-    <p id={id} className="text-12 leading-4 text-fg-muted">
+    <p id={id} className="text-12 leading-5 text-fg-muted">
+      <Badge tone="brand" aria-hidden="true" className="mr-1.5 align-middle">
+        <Lock />
+        Pro
+      </Badge>
       {caption}{' '}
       <Link href={PRO_PATH} className={TEXT_LINK}>
         See Pro

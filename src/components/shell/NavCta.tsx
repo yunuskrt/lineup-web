@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FOCUS_RING } from '@/styles/classes';
+import { PRIMARY_BUTTON } from '@/styles/classes';
 
 export function NavCta() {
   const pathname = usePathname();
@@ -11,10 +11,7 @@ export function NavCta() {
   if (pathname === '/play') return null;
 
   return (
-    <Link
-      href="/play"
-      className={`rounded-sm bg-brand px-4 py-2 text-14 font-semibold text-on-accent ${FOCUS_RING}`}
-    >
+    <Link href="/play" className={`shrink-0 ${PRIMARY_BUTTON}`}>
       Play
     </Link>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { type SubmitEvent, useId, useRef } from 'react';
+import { SearchX, TriangleAlert } from 'lucide-react';
 import {
   type ArchiveFilterState,
   ArchiveFilters,
@@ -18,6 +19,7 @@ import type { ArchiveView as ArchiveViewModel } from '@/types/archive';
 import type { Filters } from '@/types/filters';
 import type { MatchIdentity } from '@/types/match';
 import { SKELETON } from '@/components/ui/skeleton';
+import { StateNotice } from '@/components/shell/StateNotice';
 
 const LOCKED_LINE =
   'Every match in the game, searchable. Pick one and play it.';
@@ -96,25 +98,27 @@ function Results({
       );
     case 'error':
       return (
-        <div className="flex flex-col items-start gap-4">
-          <p role="alert" className="text-16 leading-6 text-danger-text">
-            {view.errorMessage}
-          </p>
+        <StateNotice
+          tone="error"
+          icon={TriangleAlert}
+          message={view.errorMessage}
+        >
           <button type="button" onClick={onRetry} className={SECONDARY_BUTTON}>
             Try again
           </button>
-        </div>
+        </StateNotice>
       );
     case 'empty':
       return (
-        <div className="flex flex-col items-start gap-4">
-          <p className="text-16 leading-6">
-            No match fits. Try fewer words or a wider filter.
-          </p>
+        <StateNotice
+          tone="empty"
+          icon={SearchX}
+          message="No match fits. Try fewer words or a wider filter."
+        >
           <button type="button" onClick={onClear} className={SECONDARY_BUTTON}>
             {clearLabel}
           </button>
-        </div>
+        </StateNotice>
       );
     case 'list':
       return (

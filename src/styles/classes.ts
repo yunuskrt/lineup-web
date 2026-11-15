@@ -87,9 +87,10 @@ export const TEXT_INPUT = `w-full rounded-md border-2 border-line bg-surface-car
 
 export const TEXT_LINK = `rounded-sm font-medium text-fg underline decoration-fg-dim underline-offset-4 hover:decoration-fg ${FOCUS_RING}`;
 
-export const NAV_LINK = `rounded-sm text-14 font-medium whitespace-nowrap text-fg-muted hover:text-fg aria-[current=page]:text-fg ${FOCUS_RING}`;
+// Current page: a 2px underline bar, not colour alone
+export const NAV_LINK = `rounded-sm text-14 font-medium whitespace-nowrap text-fg-muted decoration-2 underline-offset-8 hover:text-fg aria-[current=page]:text-fg aria-[current=page]:underline ${FOCUS_RING}`;
 
-export const QUIT_CHIP = `rounded-md border-2 border-line bg-surface-card px-3 py-0.75 text-12 font-semibold uppercase text-fg hover:bg-surface-raised ${FOCUS_RING}`;
+export const QUIT_CHIP = `inline-flex items-center gap-1 rounded-md border-2 border-line bg-surface-card px-3 py-0.75 text-12 font-semibold uppercase text-fg hover:bg-surface-raised ${FOCUS_RING}`;
 
 // Quit's height from sm; 24px stacked on phones
 export const SOUND_TOGGLE = `flex size-6 items-center justify-center rounded-md border-2 border-line bg-surface-card text-fg hover:bg-surface-raised sm:size-7 ${FOCUS_RING}`;

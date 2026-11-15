@@ -23,6 +23,7 @@ export function NavAccount() {
       <Link
         href="/profile"
         title={user.handle}
+        aria-current={pathname === '/profile' ? 'page' : undefined}
         className={`block max-sm:p-0.5 sm:max-w-48 sm:truncate ${NAV_LINK}`}
       >
         <svg

@@ -97,3 +97,4 @@ Not Started
 - Pro Polish E: last Show more keeps focus, cap line on pick gates.
 - Redesign A1 Theme: light palette, text shades, hard shadows, type roles.
 - Redesign A2 Components: Base UI kit in ui/, stickers, AlertDialog quit.
+- Redesign A3 Layout: nav, footer, ProLock badge, StateNotice, game icons.

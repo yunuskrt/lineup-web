@@ -40,9 +40,20 @@ export function EmptyMedia({ className, ...props }: ComponentProps<'div'>) {
   );
 }
 
-export function EmptyTitle({ className, ...props }: ComponentProps<'h2'>) {
+type EmptyTitleProps = ComponentProps<'h2'> & {
+  // 1 when the notice is the page itself
+  level?: 1 | 2;
+};
+
+export function EmptyTitle({
+  className,
+  level = 2,
+  ...props
+}: EmptyTitleProps) {
+  const Heading = level === 1 ? 'h1' : 'h2';
+
   return (
-    <h2
+    <Heading
       data-slot="empty-title"
       className={cn(TYPE_CARD_TITLE, className)}
       {...props}

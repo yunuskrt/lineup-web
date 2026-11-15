@@ -1,12 +1,13 @@
 'use client';
 
 import { notFound } from 'next/navigation';
+import { TriangleAlert } from 'lucide-react';
 import { type ProPlan, ProView } from '@/components/pro/ProView';
-import { PROFILE_HEADING } from '@/components/profile/styles';
 import { useSession } from '@/hooks/use-auth';
 import { useAppConfig } from '@/hooks/use-pro';
 import { authErrorMessageOf } from '@/lib/auth';
 import { SECONDARY_BUTTON } from '@/styles/classes';
+import { StateNotice } from '@/components/shell/StateNotice';
 
 export function ProScreen() {
   const config = useAppConfig();
@@ -14,11 +15,13 @@ export function ProScreen() {
 
   if (config.isError && !config.data) {
     return (
-      <div className="flex flex-col items-start gap-4">
-        <h1 className={PROFILE_HEADING}>Couldn&apos;t load this page</h1>
-        <p role="alert" className="text-16 leading-6 text-danger-text">
-          {authErrorMessageOf(config.error)}
-        </p>
+      <StateNotice
+        tone="error"
+        icon={TriangleAlert}
+        title="Couldn't load this page"
+        titleLevel={1}
+        message={authErrorMessageOf(config.error)}
+      >
         <button
           type="button"
           onClick={() => config.refetch()}
@@ -26,7 +29,7 @@ export function ProScreen() {
         >
           Try again
         </button>
-      </div>
+      </StateNotice>
     );
   }
 
