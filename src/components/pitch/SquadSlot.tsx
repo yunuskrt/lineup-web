@@ -4,6 +4,8 @@ import {
   PlayerHeadshot,
 } from '@/components/pitch/PlayerHeadshot';
 import { PERSON_PATH } from '@/components/pitch/person';
+import { SKELETON } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import type { DuelActor } from '@/types/duel';
 import type { PositionGroup } from '@/types/player';
 
@@ -19,13 +21,23 @@ const FINDER_NAMES: Record<DuelActor, string> = {
   opponent: 'named by your opponent',
 };
 
-// Each height clears the densest formation's lines
+// Solo labels stay white; the flash says "correct"
+const LABEL_FILL: Record<DuelActor | 'solo', string> = {
+  solo: 'bg-surface-card',
+  you: 'bg-you',
+  opponent: 'bg-opponent',
+};
+
+// Disc on top: SquadGrid anchors its foot to the spot
 const SLOT_BOX =
-  'flex h-14 w-full flex-col items-center justify-center gap-0.5 rounded-sm border px-0.5 text-center text-12 @min-[480px]:h-20 @min-[480px]:gap-1 @min-[480px]:text-14 @min-[560px]:h-24';
+  'relative flex w-full flex-col items-center gap-0.5 text-center @min-[480px]:gap-1';
 
-const POSITION_LABEL = 'text-12 leading-4 font-medium uppercase';
+const LABEL =
+  'max-w-full rounded-sm border-2 px-0.5 py-px text-[11px] leading-none @min-[360px]:text-12 @min-[360px]:leading-[1.1] @min-[480px]:px-1 @min-[480px]:text-14';
 
-const NAME = 'line-clamp-2 w-full leading-tight break-words hyphens-auto';
+const NAME = 'line-clamp-2 break-words hyphens-auto';
+
+const POSITION_PILL = `${LABEL} rounded-full px-1.5 font-semibold uppercase`;
 
 type SquadSlotProps = {
   position: PositionGroup;
@@ -39,7 +51,7 @@ type SquadSlotProps = {
       name: string;
       imageUrl: string | null;
       foundBy?: DuelActor;
-      // Painted under the text, e.g. the reveal flash
+      // Painted under the slot, e.g. the reveal flash
       backdrop?: ReactNode;
     }
 );
@@ -48,10 +60,10 @@ function EmptyDisc() {
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-full border border-marking ${HEADSHOT_SIZE}`}
+      className={`flex shrink-0 items-center justify-center rounded-full border-2 border-line bg-surface-card ${HEADSHOT_SIZE}`}
     >
       <svg viewBox="0 0 24 24" focusable="false" className="size-3/5">
-        <path d={PERSON_PATH} className="fill-fg-dim" />
+        <path d={PERSON_PATH} className="fill-fg-muted" />
       </svg>
     </span>
   );
@@ -63,18 +75,21 @@ export function SquadSlot(props: SquadSlotProps) {
 
   if (props.state === 'loading') {
     return (
-      <div
-        aria-hidden="true"
-        className={`${SLOT_BOX} border-skeleton-fill bg-skeleton-fill`}
-      />
+      <div aria-hidden="true" className={SLOT_BOX}>
+        <span className={cn(SKELETON, 'rounded-full', HEADSHOT_SIZE)} />
+        <span className={cn(SKELETON, 'h-4 w-3/4 rounded-full')} />
+      </div>
     );
   }
 
   if (props.state === 'empty') {
     return (
-      <div className={`${SLOT_BOX} border-marking bg-surface`}>
+      <div className={SLOT_BOX}>
         <EmptyDisc />
-        <span aria-hidden="true" className={`${POSITION_LABEL} text-fg-dim`}>
+        <span
+          aria-hidden="true"
+          className={`${POSITION_PILL} border-line bg-surface-card text-fg-muted`}
+        >
           {position}
         </span>
         <span className="sr-only">{positionName}, not yet named</span>
@@ -84,15 +99,15 @@ export function SquadSlot(props: SquadSlotProps) {
 
   if (props.state === 'missed') {
     return (
-      <div className={`${SLOT_BOX} border-marking bg-surface`}>
+      <div className={SLOT_BOX}>
         <PlayerHeadshot
           name={props.name}
           imageUrl={props.imageUrl}
-          className="opacity-60"
+          className="border-dashed border-fg-muted opacity-60"
         />
         <span
           aria-hidden="true"
-          className={`${NAME} font-medium text-fg-muted`}
+          className={`${LABEL} ${NAME} border-dashed border-fg-muted bg-turf font-medium text-fg-muted`}
         >
           {props.name}
         </span>
@@ -107,9 +122,7 @@ export function SquadSlot(props: SquadSlotProps) {
   const finder = foundBy ? `, ${FINDER_NAMES[foundBy]}` : '';
 
   return (
-    <div
-      className={`relative overflow-hidden ${SLOT_BOX} border-line bg-surface-card`}
-    >
+    <div className={SLOT_BOX}>
       {backdrop}
       <PlayerHeadshot
         name={name}
@@ -119,7 +132,7 @@ export function SquadSlot(props: SquadSlotProps) {
       />
       <span
         aria-hidden="true"
-        className={`relative ${NAME} font-medium text-fg`}
+        className={`relative ${LABEL} ${NAME} border-line font-semibold text-on-accent shadow-hard-sm ${LABEL_FILL[foundBy ?? 'solo']}`}
       >
         {name}
       </span>

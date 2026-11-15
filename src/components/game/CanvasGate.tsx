@@ -46,7 +46,7 @@ function GatePanel({
   return (
     <motion.div
       inert={!isPresent}
-      className="absolute inset-0 flex items-center justify-center bg-gate-scrim p-4"
+      className="absolute inset-0 flex items-center justify-center rounded-lg bg-gate-scrim p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

@@ -425,7 +425,7 @@ The most important screen. Solo and duel share it: the scoreboard, the 11 slots,
 - **Search:** Dribbble `neubrutalism icon buttons`, `game pause button ui`
 
 #### `RunSummary` — the end of a solo run — ✅ **Collected** (layout only)
-- **Done:** `game/15-results-a`: a title, then a results table with a check or cross icon per row, a totals row and the actions at the bottom. For us: the title ("Run ended" / "Perfect clear"), the big result and stat tiles, then one row per round (the `NamedOrder` rows: number, Avatar, name or "Clock ran out", time, a check or cross), then the actions. Its you-vs-opponent columns are kept for the duel result (§ 7).
+- **Done:** `game/15-results-a`: a title, then a results table with a check or cross icon per row, a totals row and the actions at the bottom. For us: the title ("Run ended" / "Perfect clear"), the big result and stat tiles, then one row per named player (the `NamedOrder` rows: number, Avatar, name, time, a check) with a totals row, then the actions. Rounds lost to the clock get no row: the summary doesn't say which rounds they were. Its you-vs-opponent columns are kept for the duel result (§ 7).
 - **Today:** named vs missed, accuracy, streak, time per round; "Perfect clear" when all 11 are named; Play again.
 - **Save to:** `game/15-results-a.png`
 - **Search:** Dribbble `neubrutalism results`, `neubrutalism stats card`, `quiz results screen`; Real, layout only: the Duolingo lesson-complete screen, the Wordle stats
@@ -744,7 +744,7 @@ Write these in `context/screenshots/notes.md` as you go:
 
 - [x] § 1 Moodboard (Matchday Sticker chosen)
 - [x] **Stage A:** § 2 Foundations (palette hex and font names in `notes.md`) and § 3 Layout → "foundations ready"
-- [ ] **Stage B:** § 4 Game screen (desktop **and** phone) → "game ready"
+- [x] **Stage B:** § 4 Game screen (desktop **and** phone) → "game ready" (specs B1–B3 in `context/features/redesign-b*.md`)
 - [ ] **Stage C:** § 5 Play → "play ready"
 - [ ] **Stage D:** § 6 Home → "home ready"
 - [ ] **Stage E:** § 7 Duel → "duel ready"

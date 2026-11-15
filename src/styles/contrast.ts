@@ -32,7 +32,11 @@ export type RoleToken =
   | 'tag-blue'
   | 'tag-purple'
   | 'tag-yellow'
-  | 'tag-grey';
+  | 'tag-grey'
+  | 'turf'
+  | 'scoreboard'
+  | 'on-scoreboard'
+  | 'score-digits';
 
 export type ContrastPair = {
   fg: RoleToken;
@@ -106,6 +110,14 @@ export const CONTRAST_PAIRS: ContrastPair[] = [
     'Large numerals, pips, no-crest shield',
   ),
   ...pairs(['line', 'focus'], SURFACES, LARGE_TEXT_MIN, 'Outlines, focus ring'),
+  ...pairs(['line'], ['turf'], LARGE_TEXT_MIN, 'Pitch lines, slot outlines'),
+  ...pairs(['fg-muted'], ['turf'], BODY_TEXT_MIN, 'Text on the turf'),
+  ...pairs(
+    ['on-scoreboard', 'score-digits'],
+    ['scoreboard'],
+    BODY_TEXT_MIN,
+    'Scoreboard names, context and score',
+  ),
 ];
 
 export type ContrastException = ContrastPair & { why: string };
@@ -118,13 +130,6 @@ export const CONTRAST_EXCEPTIONS: ContrastException[] = [
     min: BODY_TEXT_MIN,
     use: 'Disabled input text and placeholders',
     why: 'Inactive controls; each field has a visible label',
-  },
-  {
-    fg: 'fg-dim',
-    bg: 'surface',
-    min: BODY_TEXT_MIN,
-    use: 'Unrevealed slot position labels',
-    why: 'Incidental and aria-hidden; the grid is labelled',
   },
 ];
 

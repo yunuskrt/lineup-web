@@ -1,50 +1,50 @@
 import { ClubCrest } from '@/components/game/ClubCrest';
 import { CompetitionLogo } from '@/components/game/CompetitionLogo';
-import { foundCountLabel } from '@/lib/canvas';
 import { type HeaderSide, matchHeaderView } from '@/lib/match-header';
+import { cn } from '@/lib/utils';
+import { TYPE_NUMBER } from '@/styles/classes';
 import type { MatchInPlay, Side } from '@/types/match';
-import type { FoundPlayer } from '@/types/player';
-import { SKELETON } from '@/components/ui/skeleton';
 
-// Shared box; phones leave room for the quit chip
+// Stacked on phones, one row from sm
 const HEADER_BOX =
-  'grid h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto] content-center items-center gap-x-3 gap-y-1 px-2 max-sm:pr-18 sm:h-18';
+  'flex h-28 shrink-0 flex-col justify-center gap-1.5 bg-scoreboard px-3 text-on-scoreboard sm:h-20 sm:gap-1';
 
-// Phones give line one the full width
-const LINE_ONE =
-  'col-start-1 row-start-1 flex h-8 items-center justify-center gap-2 max-sm:col-span-2 sm:h-10 sm:gap-3';
+// Room for the quit and sound chips
+const CONTROLS_ROOM = 'max-sm:pr-18 sm:px-28';
 
-const LINE_TWO =
-  'col-start-1 row-start-2 flex h-5 min-w-0 items-center justify-center gap-3';
+const SCORE_ROW =
+  'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-5';
 
-// Beside line two on phones, both lines from sm
-const COUNT = 'col-start-2 row-start-2 sm:row-span-2 sm:row-start-1';
-
-type MatchHeaderProps = {
-  match: MatchInPlay | null;
-  found: FoundPlayer[];
+// Phones: crest over name. From sm both pack toward the score
+const TEAM: Record<Side, string> = {
+  home: 'flex min-w-0 flex-col items-center gap-1 sm:flex-row-reverse sm:gap-3',
+  away: 'flex min-w-0 flex-col items-center gap-1 sm:flex-row sm:gap-3',
 };
+
+const CONTEXT_LINE =
+  'flex h-5 min-w-0 items-center justify-center gap-3 text-12 leading-5 text-on-scoreboard/75 sm:text-14';
+
+const PLACEHOLDER = 'rounded-sm bg-on-scoreboard/15';
 
 type TeamProps = {
   team: HeaderSide;
   side: Side;
 };
 
-// Both sides pack toward the score
-const TEAM_ROW: Record<Side, string> = {
-  home: 'justify-end',
-  away: 'flex-row-reverse justify-end',
-};
-
 function Team({ team, side }: TeamProps) {
   return (
-    <span
-      className={`flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2 ${TEAM_ROW[side]}`}
-    >
-      <ClubCrest club={team.club} isNamed={team.isNamed} />
+    <span className={TEAM[side]}>
+      {/* The named XI's crest gets the scoreboard's accent */}
       <span
-        className={`min-w-0 truncate font-display text-16 leading-7 font-semibold sm:text-20 ${
-          team.isNamed ? 'text-fg' : 'text-fg-muted'
+        className={`flex shrink-0 rounded-md bg-surface-card ${
+          team.isNamed ? 'outline-2 outline-offset-2 outline-score-digits' : ''
+        }`}
+      >
+        <ClubCrest club={team.club} />
+      </span>
+      <span
+        className={`w-full truncate text-center text-14 leading-5 sm:w-auto sm:text-16 sm:leading-6 ${
+          team.isNamed ? 'font-bold' : 'font-medium text-on-scoreboard/70'
         }`}
       >
         <span className="sm:hidden">{team.club.shortName}</span>
@@ -54,35 +54,55 @@ function Team({ team, side }: TeamProps) {
   );
 }
 
-export function MatchHeader({ match, found }: MatchHeaderProps) {
+type MatchHeaderProps = {
+  match: MatchInPlay | null;
+  // The game's quit and sound chips sit on the strip
+  hasControls?: boolean;
+  className?: string;
+};
+
+export function MatchHeader({
+  match,
+  hasControls = false,
+  className,
+}: MatchHeaderProps) {
+  const box = cn(HEADER_BOX, hasControls && CONTROLS_ROOM, className);
+
   if (!match) {
     return (
-      <div aria-hidden="true" className={HEADER_BOX}>
-        <div className={LINE_ONE}>
-          <span className={`size-8 ${SKELETON} sm:size-10`} />
-          <span className={`h-5 w-32 ${SKELETON} sm:w-56`} />
-          <span className={`size-8 ${SKELETON} sm:size-10`} />
+      <div aria-hidden="true" className={box}>
+        <div className={SCORE_ROW}>
+          {(['home', 'away'] as const).map((side) => (
+            <span
+              key={side}
+              className={`${TEAM[side]} ${side === 'away' ? 'col-start-3' : ''}`}
+            >
+              <span className={`size-9 sm:size-11 ${PLACEHOLDER}`} />
+              <span className={`h-5 w-12 sm:h-6 sm:w-28 ${PLACEHOLDER}`} />
+            </span>
+          ))}
+          <span
+            className={`col-start-2 row-start-1 h-8 w-18 sm:h-10 sm:w-24 ${PLACEHOLDER}`}
+          />
         </div>
-        <div className={LINE_TWO}>
-          <span className="flex items-center gap-1.5">
-            <span className={`size-5 ${SKELETON}`} />
-            <span className={`h-3.5 w-36 ${SKELETON}`} />
-          </span>
+        <div className={CONTEXT_LINE}>
+          <span className={`h-3.5 w-40 ${PLACEHOLDER}`} />
         </div>
       </div>
     );
   }
 
-  const count = foundCountLabel(found);
   const view = matchHeaderView(match);
 
   return (
-    <header className={HEADER_BOX}>
-      <h2 className={LINE_ONE}>
+    <header className={box}>
+      <h2 className={SCORE_ROW}>
         <Team team={view.home} side="home" />
-        <span className="flex shrink-0 items-baseline gap-1.5 font-display text-20 leading-7 font-semibold text-fg tabular-nums sm:text-24">
+        <span
+          className={`flex items-baseline gap-1.5 text-24 leading-8 text-score-digits sm:gap-2 sm:text-34 sm:leading-10 ${TYPE_NUMBER}`}
+        >
           <span>{view.home.score}</span>
-          <span aria-hidden="true" className="text-fg-dim">
+          <span aria-hidden="true" className="text-on-scoreboard/50">
             –
           </span>
           <span className="sr-only">to</span>
@@ -90,20 +110,19 @@ export function MatchHeader({ match, found }: MatchHeaderProps) {
         </span>
         <Team team={view.away} side="away" />
       </h2>
-      <p className={`${LINE_TWO} text-14 leading-5 text-fg-muted`}>
+      <p className={CONTEXT_LINE}>
         <span className="flex min-w-0 items-center gap-1.5">
-          <CompetitionLogo competition={match.competition} className="size-5" />
+          <span className="flex shrink-0 rounded-sm bg-surface-card p-px">
+            <CompetitionLogo
+              competition={match.competition}
+              className="size-4"
+            />
+          </span>
           <span className="min-w-0 truncate">{view.competition}</span>
         </span>
         <span className="shrink-0">{view.date}</span>
       </p>
       <p className="sr-only">{view.namingLabel}</p>
-      <p
-        className={`${COUNT} font-display text-16 leading-5 font-semibold text-fg tabular-nums sm:text-24`}
-      >
-        <span aria-hidden="true">{count.label}</span>
-        <span className="sr-only">{count.spoken}</span>
-      </p>
     </header>
   );
 }

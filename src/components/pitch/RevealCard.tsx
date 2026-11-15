@@ -54,7 +54,7 @@ export function RevealCard({
       <motion.span
         key={pulseKey}
         aria-hidden="true"
-        className="absolute inset-0 rounded-sm border-2 border-already-found-pulse bg-already-found-pulse/50"
+        className="absolute inset-0 rounded-md border-2 border-already-found-pulse bg-already-found-pulse/50"
         initial={{ opacity: 0 }}
         animate={{ opacity: [0, 1, 0] }}
         transition={PULSE}
@@ -65,7 +65,7 @@ export function RevealCard({
     isRevealing && runs('revealFlash') ? (
       <motion.span
         aria-hidden="true"
-        className={`absolute inset-0 ${FLASH_TONES[foundBy]}`}
+        className={`absolute inset-0 rounded-md ${FLASH_TONES[foundBy]}`}
         initial={{ opacity: FLASH_PEAK_OPACITY }}
         animate={{ opacity: 0 }}
         transition={FLASH_FADE}

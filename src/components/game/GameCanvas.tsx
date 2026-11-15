@@ -7,6 +7,7 @@ import { CanvasGate, type GateSize } from '@/components/game/CanvasGate';
 import { CountdownRing } from '@/components/game/CountdownRing';
 import { DuelResultPanel } from '@/components/game/DuelResultPanel';
 import { FeedbackToast } from '@/components/game/FeedbackToast';
+import { FoundCount } from '@/components/game/FoundCount';
 import { GuessInput } from '@/components/game/GuessInput';
 import { LifeLostFlash } from '@/components/game/LifeLostFlash';
 import { DuelLivesCard, LivesCard } from '@/components/game/LivesCard';
@@ -33,15 +34,18 @@ import {
   type SuggestionIndex,
 } from '@/lib/suggestions';
 import { missedOnPitch } from '@/lib/summary';
-import { DUEL_ACTOR_TEXT, PRIMARY_BUTTON, TEXT_LINK } from '@/styles/classes';
+import {
+  DUEL_ACTOR_TEXT,
+  PRIMARY_BUTTON,
+  SECONDARY_BUTTON,
+  TEXT_LINK,
+} from '@/styles/classes';
 import type {
   CanvasGateCountdown,
   CanvasGateView,
   CanvasView,
 } from '@/types/canvas';
 import type { LobbyAction } from '@/types/duel-lobby';
-
-const PANEL = 'rounded-lg border bg-surface-raised';
 
 const HEADINGS: Record<CanvasView['mode'], string> = {
   solo: 'Solo game',
@@ -131,22 +135,20 @@ function GateAction({
         >
           {gate.actionLabel}
         </button>
-        <div className="flex items-center gap-6">
-          {gate.secondaryActionLabel ? (
-            <button
-              type="button"
-              className={`text-14 ${TEXT_LINK}`}
-              onClick={onGateSecondaryAction}
-            >
-              {gate.secondaryActionLabel}
-            </button>
-          ) : null}
-          {gate.seePro ? (
-            <Link href={PRO_PATH} className={`text-14 ${TEXT_LINK}`}>
-              See Pro
-            </Link>
-          ) : null}
-        </div>
+        {gate.secondaryActionLabel ? (
+          <button
+            type="button"
+            className={`w-full ${SECONDARY_BUTTON}`}
+            onClick={onGateSecondaryAction}
+          >
+            {gate.secondaryActionLabel}
+          </button>
+        ) : null}
+        {gate.seePro ? (
+          <Link href={PRO_PATH} className={`text-14 ${TEXT_LINK}`}>
+            See Pro
+          </Link>
+        ) : null}
       </div>
     );
   }
@@ -309,15 +311,10 @@ export function GameCanvas({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4">
       <h1 className="sr-only">{HEADINGS[view.mode]}</h1>
-      {/* Phones get the chips in the canvas header row */}
-      <div className="hidden h-7 items-center justify-end gap-2 sm:flex">
-        <SoundToggle />
-        {quitChip}
-      </div>
       {/* Grid, so the gate's full-size box resolves */}
       <div className="relative grid flex-1 grid-cols-1">
-        {/* Phones: header row, but first in tab order */}
-        <div className="pointer-events-none absolute inset-x-2 top-2 z-10 flex h-14 flex-col items-end justify-center gap-1 px-2 sm:hidden">
+        {/* On the scoreboard strip, but first in tab order */}
+        <div className="pointer-events-none absolute inset-x-0.5 top-0.5 z-10 flex h-28 flex-col items-end justify-center gap-1 px-3 sm:h-20 sm:flex-row sm:items-center sm:justify-end sm:gap-2 sm:px-4">
           {quitChip ? (
             <div className="pointer-events-auto">{quitChip}</div>
           ) : null}
@@ -358,60 +355,65 @@ export function GameCanvas({
             ) : undefined
           }
         >
-          <div className="flex size-full flex-col gap-4 lg:flex-row">
-            <section
-              aria-label="Match"
-              className={`flex min-w-0 flex-1 flex-col gap-2 p-2 ${PANEL} ${
-                isPerfectClear ? 'border-found' : 'border-line'
-              }`}
-            >
-              <MatchHeader match={view.match} found={found} />
-              <div className="min-h-72 flex-1 sm:min-h-80">
-                <SquadGrid
-                  formation={view.match?.formation ?? LOADING_FORMATION}
-                  revealed={found}
-                  missed={missedOnPitch(soloEnd)}
-                  pulse={view.pulse}
-                  isLoading={view.match === null}
-                />
-              </div>
+          {/* One board: scoreboard, pitch and rail */}
+          <div className="flex size-full flex-col overflow-hidden rounded-lg border-2 border-line bg-surface-raised shadow-hard">
+            <section aria-label="Match" className="border-b-2 border-line">
+              <MatchHeader match={view.match} hasControls />
             </section>
-            <div
-              className={`flex shrink-0 flex-col gap-2 p-3 sm:gap-3 sm:p-4 lg:w-88 border-line ${PANEL}`}
-            >
-              {soloEnd ? (
-                <RunSummary
-                  end={soloEnd}
-                  capLine={view.mode === 'solo' ? view.capLine : undefined}
-                  isPicked={view.mode === 'solo' && view.isPicked}
-                  isPractice={view.mode === 'solo' && view.isPractice}
-                  onPlayAgain={onPlayAgain}
-                  onChangeFilters={onChangeFilters}
-                  onPlayDuel={onPlayDuel}
-                  onRevealMissed={onRevealMissed}
-                />
-              ) : result ? (
-                <DuelResultPanel
-                  result={result}
-                  isConnectionLost={
-                    view.mode === 'duel' && view.endReason === 'connectionLost'
-                  }
-                  onPlayAgain={onPlayAgain}
-                  onChangeFilters={onChangeFilters}
-                  isPrivate={view.mode === 'duel' && view.isPrivate}
-                  hostAccess={
-                    view.mode === 'duel' ? view.hostAccess : undefined
-                  }
-                />
-              ) : (
-                <ActiveRail
-                  view={view}
-                  guess={guess}
-                  suggestions={suggestions}
-                  onGuessChange={onGuessChange}
-                  onGuessSubmit={onGuessSubmit}
-                />
-              )}
+            <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+              <div
+                className={`relative flex min-w-0 flex-1 flex-col bg-turf p-2 sm:p-3 ${
+                  isPerfectClear ? 'ring-4 ring-found ring-inset' : ''
+                }`}
+              >
+                {view.match ? <FoundCount found={found} /> : null}
+                {/* Below lg the width sets the height */}
+                <div className="max-lg:aspect-[5/6] max-lg:max-h-[70svh] lg:min-h-80 lg:flex-1">
+                  <SquadGrid
+                    formation={view.match?.formation ?? LOADING_FORMATION}
+                    revealed={found}
+                    missed={missedOnPitch(soloEnd)}
+                    pulse={view.pulse}
+                    isLoading={view.match === null}
+                  />
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-col gap-2 border-line p-3 max-lg:border-t-2 sm:gap-3 sm:p-4 lg:w-88 lg:border-l-2">
+                {soloEnd ? (
+                  <RunSummary
+                    end={soloEnd}
+                    capLine={view.mode === 'solo' ? view.capLine : undefined}
+                    isPicked={view.mode === 'solo' && view.isPicked}
+                    isPractice={view.mode === 'solo' && view.isPractice}
+                    onPlayAgain={onPlayAgain}
+                    onChangeFilters={onChangeFilters}
+                    onPlayDuel={onPlayDuel}
+                    onRevealMissed={onRevealMissed}
+                  />
+                ) : result ? (
+                  <DuelResultPanel
+                    result={result}
+                    isConnectionLost={
+                      view.mode === 'duel' &&
+                      view.endReason === 'connectionLost'
+                    }
+                    onPlayAgain={onPlayAgain}
+                    onChangeFilters={onChangeFilters}
+                    isPrivate={view.mode === 'duel' && view.isPrivate}
+                    hostAccess={
+                      view.mode === 'duel' ? view.hostAccess : undefined
+                    }
+                  />
+                ) : (
+                  <ActiveRail
+                    view={view}
+                    guess={guess}
+                    suggestions={suggestions}
+                    onGuessChange={onGuessChange}
+                    onGuessSubmit={onGuessSubmit}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </CanvasGate>

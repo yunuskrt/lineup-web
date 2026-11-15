@@ -50,6 +50,13 @@
 
   --already-found-pulse: var(--fg-muted);
 
+  --turf: var(--mint);
+  --turf-check: color-mix(in oklch, var(--mint) 88%, var(--ink));
+
+  --scoreboard: var(--ink);
+  --on-scoreboard: var(--cream);
+  --score-digits: var(--butter);
+
   --skeleton-fill: var(--surface-sage);
   --gate-scrim: color-mix(in oklch, var(--ink) 40%, transparent);
 }
