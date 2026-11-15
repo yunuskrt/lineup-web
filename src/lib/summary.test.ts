@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   findTimeLabel,
   accuracyLabel,
+  namedTotalsLabel,
   matchContext,
   matchDateLabel,
   matchSubtitle,
@@ -112,6 +113,17 @@ describe('accuracyLabel', () => {
     expect(accuracyLabel(1)).toBe('100%');
     expect(accuracyLabel(2 / 3)).toBe('67%');
     expect(accuracyLabel(0.667)).toBe('67%');
+  });
+});
+
+describe('namedTotalsLabel', () => {
+  it('counts the named and the missed for the totals row', () => {
+    expect(namedTotalsLabel(4, 7)).toBe('4 named, 7 missed');
+  });
+
+  it('reads a perfect clear and an empty run plainly', () => {
+    expect(namedTotalsLabel(11, 0)).toBe('11 named, 0 missed');
+    expect(namedTotalsLabel(0, 11)).toBe('0 named, 11 missed');
   });
 });
 
