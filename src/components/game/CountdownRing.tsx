@@ -27,11 +27,11 @@ const STROKE_WIDTH = 5;
 
 const STAGE_TONES: Record<CountdownStage, { stroke: string; text: string }> = {
   calm: { stroke: 'stroke-fg', text: 'text-fg' },
-  warning: { stroke: 'stroke-warning', text: 'text-warning' },
-  critical: { stroke: 'stroke-danger', text: 'text-danger' },
+  warning: { stroke: 'stroke-warning', text: 'text-warning-text' },
+  critical: { stroke: 'stroke-danger', text: 'text-danger-text' },
 };
 
-const OPPONENT_TONE = { stroke: 'stroke-opponent', text: 'text-opponent' };
+const OPPONENT_TONE = { stroke: 'stroke-opponent', text: 'text-opponent-text' };
 const WAITING_TONE = { stroke: 'stroke-fg-dim', text: 'text-fg-dim' };
 
 const CRITICAL_PULSE: TargetAndTransition = {
@@ -100,7 +100,7 @@ export function CountdownRing({
           cy="50"
           r={RADIUS}
           strokeWidth={STROKE_WIDTH}
-          className="fill-none stroke-line"
+          className="fill-none stroke-rule"
         />
         {/* Offset moves the start; gap grows clockwise */}
         <motion.circle

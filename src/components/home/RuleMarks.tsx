@@ -88,7 +88,7 @@ export function ArcMark({ isShown, delayMs }: MarkProps) {
         cy="50"
         r={ARC_RADIUS}
         strokeWidth={8}
-        className="fill-none stroke-line"
+        className="fill-none stroke-rule"
       />
       <motion.circle
         cx="50"

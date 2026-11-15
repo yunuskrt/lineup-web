@@ -23,7 +23,7 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
             aria-current={isActive ? 'page' : undefined}
             className={`-mb-px rounded-t-sm border-b-2 pb-3 text-14 font-semibold ${
               isActive
-                ? 'border-brand text-fg'
+                ? 'border-fg text-fg'
                 : 'border-transparent text-fg-muted hover:text-fg'
             } ${FOCUS_RING}`}
           >

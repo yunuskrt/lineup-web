@@ -7,10 +7,10 @@ import type { HistoryEntry } from '@/types/profile';
 import type { HistoryTone } from '@/types/profile-screen';
 
 const TONE_TEXT: Record<HistoryTone, string> = {
-  win: 'text-you',
-  loss: 'text-danger',
+  win: 'text-you-text',
+  loss: 'text-danger-text',
   draw: 'text-fg',
-  clear: 'text-found',
+  clear: 'text-found-text',
   neutral: 'text-fg-muted',
 };
 

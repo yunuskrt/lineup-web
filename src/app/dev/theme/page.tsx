@@ -8,9 +8,11 @@ import {
   LATIN_EXTENDED_SAMPLE,
   RADIUS_SCALE,
   SPACING_SCALE,
+  TYPE_ROLES,
   TYPE_SCALE,
 } from '@/app/dev/theme/theme-preview';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
+import { TYPE_NUMBER } from '@/styles/classes';
 
 export const metadata = devMetadata('Theme');
 
@@ -37,8 +39,8 @@ type SwatchProps = {
 
 function Swatch({ className, label, detail, variable }: SwatchProps) {
   return (
-    <div className="overflow-hidden rounded-md border border-line bg-surface-raised">
-      <div className={`h-16 border-b border-line ${className}`} />
+    <div className="overflow-hidden rounded-md border-2 border-line bg-surface-card">
+      <div className={`h-16 border-b-2 border-line ${className}`} />
       <div className="flex flex-col gap-1 p-3">
         <span className="text-14 font-medium">{label}</span>
         <span className="font-mono text-12 text-fg-muted">{detail}</span>
@@ -80,27 +82,79 @@ function RolesSection() {
           />
         ))}
       </div>
-      <div className="flex flex-col gap-2 rounded-md border border-line bg-surface p-4">
+      <div className="flex flex-col gap-2 rounded-md border-2 border-line bg-surface p-4">
         <p className="text-fg">fg — primary text</p>
         <p className="text-fg-muted">fg-muted — labels, metadata</p>
         <p className="text-fg-dim">fg-dim — placeholders, disabled</p>
       </div>
+      <div className="flex flex-col gap-2 rounded-md border-2 border-line bg-surface p-4">
+        <p className="text-you-text">you-text — your handle</p>
+        <p className="text-opponent-text">opponent-text — their handle</p>
+        <p className="text-found-text">found-text — correct</p>
+        <p className="text-warning-text">warning-text — cooldown, reconnect</p>
+        <p className="text-danger-text">danger-text — errors</p>
+      </div>
       <div className="flex flex-wrap gap-3">
-        <span className="rounded-sm bg-brand px-3 py-2 text-14 font-medium text-on-accent">
-          on-accent on brand
-        </span>
-        <span className="rounded-sm bg-found px-3 py-2 text-14 font-medium text-on-accent">
-          on-accent on found
-        </span>
+        {[
+          'bg-brand',
+          'bg-you',
+          'bg-opponent',
+          'bg-found',
+          'bg-warning',
+          'bg-danger',
+          'bg-block-lavender',
+          'bg-block-mint',
+          'bg-block-butter',
+          'bg-block-coral',
+        ].map((fill) => (
+          <span
+            key={fill}
+            className={`rounded-md border-2 border-line px-3 py-2 text-14 font-medium text-on-accent ${fill}`}
+          >
+            on-accent on {fill.slice(3)}
+          </span>
+        ))}
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-md border-2 border-you p-4 font-display text-16 font-semibold text-you">
+        <div className="rounded-md border-2 border-line bg-you p-4 font-display text-16 font-semibold text-on-accent">
           You
         </div>
-        <div className="rounded-md border-2 border-opponent p-4 font-display text-16 font-semibold text-opponent">
+        <div className="rounded-md border-2 border-line bg-opponent p-4 font-display text-16 font-semibold text-on-accent">
           Opponent
         </div>
       </div>
+    </Section>
+  );
+}
+
+function TypeRolesSection() {
+  return (
+    <Section title="Type roles">
+      <div className="flex flex-col gap-6">
+        {TYPE_ROLES.map((role) => (
+          <div key={role.name} className="flex min-w-0 flex-col gap-1">
+            <span className="font-mono text-12 text-fg-muted">
+              {role.name} · {role.detail}
+            </span>
+            <p className={`wrap-break-word ${role.className}`}>{role.sample}</p>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function ShapeSection() {
+  return (
+    <Section title="Outline and shadow">
+      <div className="flex flex-wrap gap-6">
+        <div className="h-16 w-24 rounded-md border-2 border-line bg-surface-card shadow-hard" />
+        <div className="h-16 w-24 rounded-md border-2 border-line bg-brand shadow-hard-sm" />
+        <div className="h-16 w-24 rounded-md border-2 border-line bg-surface-card" />
+      </div>
+      <span className="font-mono text-12 text-fg-muted">
+        2px line · shadow-hard 4px · shadow-hard-sm 2px · no shadow
+      </span>
     </Section>
   );
 }
@@ -141,9 +195,11 @@ function TypeSection() {
       </div>
       <div className="flex flex-col gap-2">
         <span className="font-mono text-12 text-fg-muted">
-          Countdown — tabular-nums
+          Countdown — TYPE_NUMBER
         </span>
-        <div className="flex flex-wrap gap-x-6 gap-y-2 font-display text-64 tabular-nums">
+        <div
+          className={`flex flex-wrap gap-x-6 gap-y-2 text-64 ${TYPE_NUMBER}`}
+        >
           {COUNTDOWN_SAMPLE.map((second) => (
             <span key={second}>{second}</span>
           ))}
@@ -177,7 +233,7 @@ function RadiusSection() {
         {RADIUS_SCALE.map((step) => (
           <div key={step.className} className="flex flex-col gap-2">
             <div
-              className={`h-16 w-16 border border-line bg-surface-card ${step.className}`}
+              className={`h-16 w-16 border-2 border-line bg-surface-card ${step.className}`}
             />
             <span className="font-mono text-12 text-fg-muted">
               {step.className} · {step.value}
@@ -201,6 +257,8 @@ export default function ThemePreviewPage() {
     >
       <PrimitivesSection />
       <RolesSection />
+      <ShapeSection />
+      <TypeRolesSection />
       <TypeSection />
       <SpacingSection />
       <RadiusSection />

@@ -3,18 +3,29 @@ export type RoleToken =
   | 'surface'
   | 'surface-raised'
   | 'surface-card'
+  | 'surface-sage'
   | 'line'
   | 'marking'
   | 'fg'
   | 'fg-muted'
   | 'fg-dim'
   | 'on-accent'
+  | 'focus'
   | 'brand'
   | 'you'
   | 'opponent'
   | 'found'
   | 'warning'
-  | 'danger';
+  | 'danger'
+  | 'you-text'
+  | 'opponent-text'
+  | 'found-text'
+  | 'warning-text'
+  | 'danger-text'
+  | 'block-lavender'
+  | 'block-mint'
+  | 'block-butter'
+  | 'block-coral';
 
 export type ContrastPair = {
   fg: RoleToken;
@@ -27,8 +38,26 @@ export type ContrastPair = {
 export const BODY_TEXT_MIN = 4.5;
 export const LARGE_TEXT_MIN = 3;
 
-const SURFACES: RoleToken[] = ['surface', 'surface-raised', 'surface-card'];
-const PANELS: RoleToken[] = ['surface-raised', 'surface-card'];
+const SURFACES: RoleToken[] = [
+  'surface',
+  'surface-raised',
+  'surface-card',
+  'surface-sage',
+];
+
+// Pastel fills; their text is on-accent
+const FILLS: RoleToken[] = [
+  'brand',
+  'you',
+  'opponent',
+  'found',
+  'warning',
+  'danger',
+  'block-lavender',
+  'block-mint',
+  'block-butter',
+  'block-coral',
+];
 
 function pairs(
   fgs: RoleToken[],
@@ -43,24 +72,19 @@ function pairs(
 export const CONTRAST_PAIRS: ContrastPair[] = [
   ...pairs(['fg', 'fg-muted'], SURFACES, BODY_TEXT_MIN, 'Body text'),
   ...pairs(
-    ['you', 'opponent', 'found', 'danger'],
+    ['you-text', 'opponent-text', 'found-text', 'warning-text', 'danger-text'],
     SURFACES,
     BODY_TEXT_MIN,
-    'Handles, tags, error text',
+    'Handles, tags, cooldowns, error text',
   ),
-  ...pairs(['warning'], PANELS, BODY_TEXT_MIN, 'Cooldown and reconnect'),
-  ...pairs(
-    ['on-accent'],
-    ['brand', 'found', 'warning', 'opponent'],
-    BODY_TEXT_MIN,
-    'Buttons, turn chips, win cards',
-  ),
+  ...pairs(['on-accent'], FILLS, BODY_TEXT_MIN, 'Text on pastel fills'),
   ...pairs(
     ['fg-dim'],
-    ['surface', 'surface-raised'],
+    ['surface', 'surface-raised', 'surface-card'],
     LARGE_TEXT_MIN,
     'Large numerals, pips, no-crest shield',
   ),
+  ...pairs(['line', 'focus'], SURFACES, LARGE_TEXT_MIN, 'Outlines, focus ring'),
 ];
 
 export type ContrastException = ContrastPair & { why: string };
@@ -80,13 +104,6 @@ export const CONTRAST_EXCEPTIONS: ContrastException[] = [
     min: BODY_TEXT_MIN,
     use: 'Unrevealed slot position labels',
     why: 'Incidental and aria-hidden; the grid is labelled',
-  },
-  {
-    fg: 'fg-dim',
-    bg: 'surface-card',
-    min: LARGE_TEXT_MIN,
-    use: 'Empty life pips on the Lives card',
-    why: 'An absence; filled pips and the label give the count',
   },
 ];
 

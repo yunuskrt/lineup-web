@@ -58,7 +58,7 @@ export function AuthField({
         </p>
       ) : null}
       {error ? (
-        <p id={errorId} className="text-14 text-danger">
+        <p id={errorId} className="text-14 text-danger-text">
           {error}
         </p>
       ) : null}

@@ -122,7 +122,7 @@ export function PlayScreen() {
           />
         ) : options.isError ? (
           <div className="flex flex-col items-start gap-4">
-            <p role="alert" className="text-14 text-danger">
+            <p role="alert" className="text-14 text-danger-text">
               {authErrorMessageOf(options.error)}
             </p>
             <button

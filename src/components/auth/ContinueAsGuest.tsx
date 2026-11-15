@@ -22,7 +22,7 @@ export function ContinueAsGuest() {
     <div className="flex flex-col items-start gap-3 border-t border-line pt-6">
       <p className="text-14 text-fg-muted">No account needed to play.</p>
       {continueAsGuest.error && !continueAsGuest.isPending ? (
-        <p role="alert" className="text-14 text-danger">
+        <p role="alert" className="text-14 text-danger-text">
           {authErrorMessageOf(continueAsGuest.error)}
         </p>
       ) : null}

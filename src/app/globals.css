@@ -7,18 +7,31 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-surface-card: var(--surface-card);
+  --color-surface-sage: var(--surface-sage);
   --color-line: var(--line);
+  --color-rule: var(--rule);
   --color-marking: var(--marking);
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
   --color-fg-dim: var(--fg-dim);
   --color-on-accent: var(--on-accent);
+  --color-focus: var(--focus);
   --color-brand: var(--brand);
   --color-you: var(--you);
   --color-opponent: var(--opponent);
   --color-found: var(--found);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-you-text: var(--you-text);
+  --color-opponent-text: var(--opponent-text);
+  --color-found-text: var(--found-text);
+  --color-warning-text: var(--warning-text);
+  --color-danger-text: var(--danger-text);
+  --color-block-lavender: var(--block-lavender);
+  --color-block-mint: var(--block-mint);
+  --color-block-butter: var(--block-butter);
+  --color-block-coral: var(--block-coral);
+  --color-accent-caramel: var(--accent-caramel);
   --color-reveal-flash-you: var(--reveal-flash-you);
   --color-reveal-flash-opponent: var(--reveal-flash-opponent);
   --color-already-found-pulse: var(--already-found-pulse);
@@ -31,9 +44,14 @@
   --text-16: var(--font-size-16);
   --text-20: var(--font-size-20);
   --text-24: var(--font-size-24);
+  --text-28: var(--font-size-28);
+  --text-30: var(--font-size-30);
   --text-32: var(--font-size-32);
+  --text-34: var(--font-size-34);
+  --text-40: var(--font-size-40);
   --text-48: var(--font-size-48);
   --text-64: var(--font-size-64);
+  --text-72: var(--font-size-72);
 
   --spacing: var(--space-4);
 
@@ -43,13 +61,18 @@
   --radius-lg: var(--corner-radius-lg);
   --radius-full: var(--corner-radius-full);
 
+  --shadow-*: initial;
+  --shadow-hard: var(--shadow-offset) var(--shadow-offset) 0 0 var(--line);
+  --shadow-hard-sm: var(--shadow-offset-sm) var(--shadow-offset-sm) 0 0
+    var(--line);
+
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   *,

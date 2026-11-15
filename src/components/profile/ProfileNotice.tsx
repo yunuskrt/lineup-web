@@ -15,7 +15,7 @@ export function ProfileNotice(props: ProfileNoticeProps) {
     return (
       <div className="flex flex-col items-start gap-4">
         <h1 className={PROFILE_HEADING}>Couldn&apos;t load your profile</h1>
-        <p role="alert" className="text-16 leading-6 text-danger">
+        <p role="alert" className="text-16 leading-6 text-danger-text">
           {props.message}
         </p>
         <button

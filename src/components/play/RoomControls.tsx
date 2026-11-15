@@ -130,7 +130,7 @@ export function RoomControls({ filterParams, initialCode }: RoomControlsProps) {
         </p>
       ) : null}
       {ensureSession.error && !isBusy ? (
-        <p role="alert" className="text-14 text-danger">
+        <p role="alert" className="text-14 text-danger-text">
           {authErrorMessageOf(ensureSession.error)}
         </p>
       ) : null}

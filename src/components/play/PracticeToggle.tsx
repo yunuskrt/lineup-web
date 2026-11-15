@@ -34,7 +34,7 @@ export function PracticeToggle({
         type="checkbox"
         checked={isOn}
         onChange={(event) => onChange(event.target.checked)}
-        className={`size-4 accent-brand ${FOCUS_RING}`}
+        className={`size-4 accent-fg ${FOCUS_RING}`}
       />
       <label htmlFor={id} className="text-14 font-medium">
         Practice: no clock, no lives, not saved

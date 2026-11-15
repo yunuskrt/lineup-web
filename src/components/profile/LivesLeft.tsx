@@ -26,7 +26,11 @@ export function LivesLeft({ lives }: { lives: Lives }) {
         >
           <path
             d={SHIRT_PATH}
-            className={index < lives ? 'fill-you' : 'fill-fg-dim'}
+            strokeWidth={2}
+            strokeLinejoin="round"
+            className={
+              index < lives ? 'fill-you stroke-line' : 'fill-rule stroke-none'
+            }
           />
         </svg>
       ))}

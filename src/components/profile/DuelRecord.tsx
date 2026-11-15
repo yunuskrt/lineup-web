@@ -15,9 +15,9 @@ export function DuelRecord({ stats }: { stats: UserStats }) {
   const hasDuels = record.total > 0;
   // Coloured zeros would read as a result
   const counts = [
-    { label: 'Won', value: record.wins, tone: 'text-you' },
+    { label: 'Won', value: record.wins, tone: 'text-you-text' },
     { label: 'Drawn', value: record.draws, tone: 'text-fg' },
-    { label: 'Lost', value: record.losses, tone: 'text-danger' },
+    { label: 'Lost', value: record.losses, tone: 'text-danger-text' },
   ].map((count) => ({
     ...count,
     tone: hasDuels ? count.tone : 'text-fg-dim',
