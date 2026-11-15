@@ -460,7 +460,12 @@ Where you choose Solo or Duel and set the filters before starting.
 - **Save to:** `play/01-mode-cards-a.png`
 - **Search:** neobrutalism.dev Radio Group; Dribbble `neubrutalism selection cards`, `selectable cards ui`, `radio card ui`
 
-#### `FilterPanel` — competition, club and seasons — **Must**
+#### `FilterPanel` — competition, club and seasons — ✅ **Decided: neobrutalism.dev**
+- **Decided (2026-11-15):**
+  - **competition chips:** covered by `foundations/07-chips-a` and our `Badge`; they stay pressable toggle chips;
+  - **club search:** the accepted [Input](https://www.neobrutalism.dev/docs/input) with a Lucide search icon, the same white field as the guess box;
+  - **season range:** two neobrutalism.dev [Select](https://www.neobrutalism.dev/docs/select)s ("from" and "to"), in place of the native dropdowns. Same behaviour, no slider.
+  - The row layout follows the type roles and stage B's ink-rule sections. `play/02-filters-a` is optional, only if the rows should look different.
 - **Today:**
   - one competition, chosen from logo chips;
   - clubs, with a search and chips;
@@ -471,7 +476,8 @@ Where you choose Solo or Duel and set the filters before starting.
   - Dribbble: `neubrutalism filter`, `filter chips ui`, `range slider ui`, `year range selector`
   - Pinterest: `filter ui design app`
 
-#### `PracticeToggle` — "Practice: no clock, no lives, not saved" — **Nice**
+#### `PracticeToggle` — "Practice: no clock, no lives, not saved" — ✅ **Decided: neobrutalism.dev**
+- **Decided (2026-11-15):** the accepted [Checkbox](https://www.neobrutalism.dev/docs/checkbox) (already in `ui/`), locked for Free through `ProLock`. Nothing to collect.
 - **Save to:** `play/04-toggle-a.png`
 - **Search:** neobrutalism.dev Switch, Checkbox; Dribbble `settings toggle row ui`
 
@@ -484,7 +490,8 @@ Where you choose Solo or Duel and set the filters before starting.
 - **Save to:** `play/06-start-a.png`
 - **Search:** Uiverse `brutalist button`; Dribbble `neubrutalism cta button`, `play button ui game`
 
-#### `RoomControls` — Create room, or type a code and Join — **Must**
+#### `RoomControls` — Create room, or type a code and Join — ✅ **Decided: neobrutalism.dev**
+- **Decided (2026-11-15):** the accepted Button for Create room and Join, and the neobrutalism.dev [Input OTP](https://www.neobrutalism.dev/docs/input-otp) for the code: **6 boxes**, one character each, easy to type and read aloud. Create room is locked for Free through `ProLock`. Nothing to collect.
 - **Save to:** `play/07-join-code-a.png`
 - **Search:** neobrutalism.dev Input OTP; Dribbble `join with code ui`, `enter invite code`
 
