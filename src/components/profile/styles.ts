@@ -17,6 +17,9 @@ export const PANEL_HEADER =
 export const STAT_ROW =
   'flex items-baseline justify-between gap-4 border-b border-line py-3 last:border-b-0';
 
+// The last row's partner in the sm two-column grid
+export const STAT_ROW_PAIRED = 'sm:border-b-0 lg:border-b';
+
 export const STAT_VALUE =
   'font-display text-20 leading-7 font-semibold tabular-nums';
 

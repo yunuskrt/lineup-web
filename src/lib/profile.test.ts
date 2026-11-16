@@ -3,7 +3,6 @@ import {
   accuracyStat,
   duelCountLabel,
   duelRecord,
-  favouriteClubStat,
   handleInitial,
   historyOutcomeLabel,
   historyTone,
@@ -208,16 +207,6 @@ describe('accuracyStat', () => {
 
   it('reads a whole percentage', () => {
     expect(accuracyStat(STATS)).toBe('64%');
-  });
-});
-
-describe('favouriteClubStat', () => {
-  it('names the club', () => {
-    expect(favouriteClubStat(STATS)).toBe('Northgate United');
-  });
-
-  it('reads None yet without one', () => {
-    expect(favouriteClubStat(NO_GAMES)).toBe('None yet');
   });
 });
 

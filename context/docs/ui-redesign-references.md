@@ -480,6 +480,7 @@ Where you choose Solo or Duel and set the filters before starting.
 
 #### `PracticeToggle` — "Practice: no clock, no lives, not saved" — ✅ **Decided: neobrutalism.dev**
 - **Decided (2026-11-15):** the accepted [Checkbox](https://www.neobrutalism.dev/docs/checkbox) (already in `ui/`), locked for Free through `ProLock`. Nothing to collect.
+- **Changed (2026-11-16, user):** Practice is now a third mode card beside Solo and Duel, not a checkbox; locked for Free in place (`context/fixes/play-profile-layout.md`).
 - **Save to:** `play/04-toggle-a.png`
 - **Search:** neobrutalism.dev Switch, Checkbox; Dribbble `settings toggle row ui`
 
@@ -617,7 +618,7 @@ The duel uses the game screen from § 4, plus these.
 
 ## § 8. Page: Profile `/profile`
 
-- **Whole page (Must, desktop and phone):** ✅ **Collected** (layout only). One united board like `/play` (C1), not separate cards.
+- **Whole page (Must, desktop and phone):** ✅ **Collected** (layout only). One open page with ruled sections like `/play` (C1), no box and no separate cards (user, 2026-11-16).
 - **Done:** `profile/00-page-a` (desktop: outlined blocks on top, one ruled list below) and `00-page-b` (phone: big title, a lavender hero block, a ruled list).
 - **Save to:** `profile/00-page-a.png`
 - **Search:** Dribbble `neubrutalism profile`, `neubrutalism dashboard`, `user profile stats page`; Real, layout only: a Chess.com profile, a Duolingo profile
@@ -642,8 +643,8 @@ The duel uses the game screen from § 4, plus these.
 - **Save to:** `profile/03-record-a.png`
 - **Search:** Dribbble `neubrutalism stats`, `win loss stats ui`, `stacked bar stats card`
 
-#### `ProfileStats` — solo runs, perfect clears, best streak, accuracy, favourite club — ♻️ **Reuse B3** (decided 2026-11-16)
-- **Decided:** the `RunSummary` stat tiles (a big Archivo number, a small label); favourite club is one wide tile, as it's text, not a number. Nothing to collect.
+#### `ProfileStats` — solo runs, perfect clears, best streak, accuracy — ♻️ **Reuse B3** (decided 2026-11-16)
+- **Decided:** the `RunSummary` stat tiles (a big Archivo number, a small label). Favourite club removed (user, 2026-11-16). Nothing to collect.
 - **Save to:** `profile/04-stats-a.png`
 - **Search:** Dribbble `neubrutalism stat cards`, `neubrutalism kpi`, `stats cards dashboard`
 
@@ -755,7 +756,7 @@ Neubrutalism UI on a warm cream background. Flat pastel blocks in lavender, mint
 | C | Play | `Game setup page. Two big selectable cards, Solo and Duel. Below: filters with competition chips with logos, a club search with chips, a season range. A large Start button with "3 of 5 solo runs left today" under it.` | `play/ai-01.png` |
 | D | Home | `Landing page. Headline "Know the XI. Guess the Squad." with a Play button, and beside it a small live game preview in an outlined browser frame. Then sections: match archive stats with competition logos, three rules (name the starting eleven, 15 seconds per turn, three lives), and two mode cards: Solo and Duel.` | `landing/ai-01.png` |
 | E | Duel lobby | `Online 1v1 matchmaking screen: "Finding an opponent…", then a versus card with both player names, then a private room screen with a big 6-character code, Copy code and Copy link buttons, and "Closes in 9:41".` | `duel/ai-01.png` |
-| F | Profile | `Player profile page: handle and plan badge, a won/drawn/lost record with a bar, stat cards (solo runs, perfect clears, best streak, accuracy, favourite club), and a match history list.` | `profile/ai-01.png` |
+| F | Profile | `Player profile page: handle and plan badge, a won/drawn/lost record with a bar, stat cards (solo runs, perfect clears, best streak, accuracy), and a match history list.` | `profile/ai-01.png` |
 | G | Archive | `Searchable match archive: a search box, a Filters button, and a list of football matches (date, two teams with crests, score, competition and stage), each with Play and Practise buttons.` | `archive/ai-01.png` |
 
 ---

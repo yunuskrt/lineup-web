@@ -9,7 +9,6 @@ import { FilterPanel } from '@/components/play/FilterPanel';
 import { FilterSkeleton } from '@/components/play/FilterSkeleton';
 import { ModeChoice } from '@/components/play/ModeChoice';
 import { PlayStart } from '@/components/play/PlayStart';
-import { PracticeToggle } from '@/components/play/PracticeToggle';
 import { RoomControls } from '@/components/play/RoomControls';
 import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
 import { useFilterOptions } from '@/hooks/use-filter-options';
@@ -30,6 +29,8 @@ import {
 import {
   hasOpenRun,
   isPracticeFrom,
+  modeOf,
+  modeOptionOf,
   PRACTICE_OVER_RUN_COPY,
   withPractice,
 } from '@/lib/practice';
@@ -44,7 +45,7 @@ import {
   TYPE_CARD_TITLE,
 } from '@/styles/classes';
 import type { Filters } from '@/types/filters';
-import type { PlayMode } from '@/types/play';
+import type { ModeOption, PlayMode } from '@/types/play';
 import { StateNotice } from '@/components/shell/StateNotice';
 
 export function PlayScreen() {
@@ -82,14 +83,17 @@ export function PlayScreen() {
     replaceQuery(withPractice(withMode(base, nextMode), on));
   }
 
-  function changeMode(next: PlayMode) {
-    setMode(next);
-    syncUrl(filterParams ?? params, next, practice);
+  // Practice is a card, so a pick sets both
+  function changeOption(next: ModeOption) {
+    const picked = modeOf(next);
+    setMode(picked.mode);
+    setPractice(picked.practice);
+    syncUrl(filterParams ?? params, picked.mode, picked.practice);
   }
 
   // Its button goes; Start enables after it
   function playDuelInstead() {
-    flushSync(() => changeMode('duel'));
+    flushSync(() => changeOption('duel'));
     startRef.current?.focus();
   }
 
@@ -99,17 +103,16 @@ export function PlayScreen() {
     syncUrl(filtersToParams(next, options.data), mode, practice);
   }
 
-  function changePractice(on: boolean) {
-    setPractice(on);
-    syncUrl(filterParams ?? params, mode, on);
-  }
-
   const startParams = filterParams && withPractice(filterParams, isPractice);
 
   return (
     <div className={BOARD}>
       <div className={BOARD_SECTION}>
-        <ModeChoice mode={mode} onChange={changeMode} />
+        <ModeChoice
+          option={modeOptionOf(mode, isPractice)}
+          onChange={changeOption}
+          practiceAccess={practiceAccess}
+        />
       </div>
       <section aria-labelledby="play-filters" className={BOARD_SECTION}>
         <div>
@@ -148,13 +151,6 @@ export function PlayScreen() {
       </section>
       <div className={BOARD_SECTION}>
         <p className={SECTION_LABEL}>Start</p>
-        {mode === 'solo' ? (
-          <PracticeToggle
-            access={practiceAccess}
-            isOn={practice}
-            onChange={changePractice}
-          />
-        ) : null}
         <PlayStart
           ref={startRef}
           mode={mode}
