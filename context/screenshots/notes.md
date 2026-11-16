@@ -85,6 +85,10 @@ Decided 2026-11-14, close to the other-01 heading. Both are Google Fonts the app
 - landing/03-stats-tiles-a: white tiles with a hard shadow on a lavender band, an icon sticker overlapping each tile's top-left corner; our icons are Lucide in an outlined tile, not illustrations
 - landing/04-how-it-works-a: layout only (Shaytoon): three numbered colour blocks for the rules, an ink marquee band, the framed demo with a "LIVE" sticker; not the mascot or the dark parts
 
+- duel/02-versus-a: layout only (Soccer Party): room waiting (the code in a bar with a share button, a "share the link or join with the code" panel, "Waiting…" with an empty opponent slot) and the versus screen (opponent on top, a big VS, you below, each with a badge); not the 3D characters or the glossy colours
+- duel/04-room-code-a: little to take (Digital Housie): pill-shaped step titles and code boxes, which C2 already has; not the teal or the tickets
+- duel/04-room-code-b: the code card: a label, the code large, a divider, Copy code beside it, in a dashed outline; not the blue fill
+
 Decided 2026-11-15 for stage B: mint turf #A7E3C4 with ink lines; clock warning amber + thicker ring, critical red + thicker + pulse; RevealCard and LivesCard designed without references (see the guide § 4)
 
 ## Dislikes

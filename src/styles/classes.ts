@@ -63,6 +63,10 @@ export const TYPE_TITLE_LONG =
 export const TYPE_NUMBER =
   'font-display font-black font-stretch-expanded tabular-nums slashed-zero';
 
+// One character box: the join field and the room code
+export const CODE_BOX =
+  'relative flex items-center justify-center border-y-2 border-r-2 border-line bg-surface-card text-fg first:rounded-l-md first:border-l-2 last:rounded-r-md';
+
 // The 6-character code; its alphabet has no look-alikes
 export const TYPE_ROOM_CODE =
   'font-display text-20 font-extrabold font-stretch-semi-expanded';
