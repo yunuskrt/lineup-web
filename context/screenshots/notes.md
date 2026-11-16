@@ -94,6 +94,10 @@ Decided 2026-11-14, close to the other-01 heading. Both are Google Fonts the app
 - profile/03-record-a: the record's numbers: big numbers in a row, a small label above each, no box around each; not the superscripts, the calendar or the payment cards
 - profile/03-record-b: layout only (Delulu, dark): W / D / L as small coloured letter tiles; our colours (you blue, draw both, loss red), never green against red, and no "last five" strip
 
+- archive/03-row-a: the desktop row (Bristol City fixtures): competition and date stacked on the left, home name and crest, a centred score, crest and away name, the actions on the right, each row a white outlined box; its notice strip under a row suits a row-level message; not the photo hero, the red header or the uppercase names
+- archive/03-row-b: layout only (Werder Bremen): one match, one action under it; not the photo, the gradients or the sideways scroll
+- archive/03-row-c: the phone row: name, crest, score, crest, name on one line with the score centred and a small line under it; white rows, no inner rules; not the grouping by competition
+
 Decided 2026-11-15 for stage B: mint turf #A7E3C4 with ink lines; clock warning amber + thicker ring, critical red + thicker + pulse; RevealCard and LivesCard designed without references (see the guide § 4)
 
 ## Dislikes
