@@ -12,7 +12,7 @@ type SiteFooterProps = {
 export function SiteFooter({ variant }: SiteFooterProps) {
   if (variant === 'statement') {
     return (
-      <footer className="border-t border-rule">
+      <footer className="border-t-2 border-line bg-block-butter text-on-accent">
         <div
           className={`${SITE_CONTAINER} flex flex-col items-start gap-4 py-16 sm:flex-row sm:items-center sm:justify-between sm:gap-8`}
         >

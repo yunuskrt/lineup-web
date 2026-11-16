@@ -1,51 +1,31 @@
 'use client';
 
-import { motion } from 'motion/react';
 import { ClubCrest } from '@/components/game/ClubCrest';
 import { CompetitionLogo } from '@/components/game/CompetitionLogo';
-import { CountUp } from '@/components/home/CountUp';
 import { LandingSkeleton } from '@/components/home/LandingSkeleton';
 import { useCatalogOverview } from '@/hooks/use-catalog-overview';
-import { useEntrance } from '@/hooks/use-entrance';
-import { TOP_CLUBS_MAX } from '@/lib/api/schemas/catalog';
-import { highlightFigures, landingCompetitions } from '@/lib/landing';
-import { HOME_BAND, SITE_CONTAINER } from '@/styles/classes';
-import { LANDING_TIGHT_STAGGER_MS } from '@/styles/motion';
+import { landingCompetitions } from '@/lib/landing';
+import { HOME_BAND } from '@/styles/classes';
 import type { CatalogOverview } from '@/types/catalog';
+import { Marquee } from '@/components/ui/marquee';
 import { SKELETON } from '@/components/ui/skeleton';
 
-// Two rows on wide screens, as the real pool fills
-const SKELETON_COMPETITIONS = 8;
-const CREST_FROM_SCALE = 0.92;
-const HIGHLIGHT_COUNT = 4;
+const SKELETON_TILES = 10;
 
-const COMPETITION_ROW = 'flex flex-wrap gap-x-6 gap-y-3';
-const CREST_ROW = 'flex flex-wrap gap-3';
-const HIGHLIGHTS = 'grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4';
+// The closing band's rule sits right under it
+const STRIP = 'bg-scoreboard py-4';
+const PILL =
+  'flex h-11 shrink-0 items-center gap-2 rounded-full border-2 border-line bg-surface-card px-3 text-14 font-medium whitespace-nowrap text-fg';
+const CREST_TILE =
+  'flex size-11 shrink-0 items-center justify-center rounded-md border-2 border-line bg-surface-card';
 
-function InsideSkeleton() {
+function StripSkeleton() {
   return (
     <LandingSkeleton>
-      <div className="flex flex-col gap-10">
-        <div className={COMPETITION_ROW}>
-          {Array.from({ length: SKELETON_COMPETITIONS }, (_, index) => (
-            <span key={index} className="flex h-6 items-center gap-2">
-              <span className={`size-6 ${SKELETON}`} />
-              <span className={`h-4 w-28 ${SKELETON}`} />
-            </span>
-          ))}
-        </div>
-        <div className={CREST_ROW}>
-          {Array.from({ length: TOP_CLUBS_MAX }, (_, index) => (
-            <span key={index} className={`size-8 sm:size-10 ${SKELETON}`} />
-          ))}
-        </div>
-        <div className={HIGHLIGHTS}>
-          {Array.from({ length: HIGHLIGHT_COUNT }, (_, index) => (
-            <div key={index} className="flex flex-col gap-1">
-              <span className={`h-8 w-20 sm:h-10 ${SKELETON}`} />
-              <span className={`h-5 w-28 sm:h-6 ${SKELETON}`} />
-            </div>
+      <div className={STRIP}>
+        <div className="flex gap-3 overflow-hidden px-4">
+          {Array.from({ length: SKELETON_TILES }, (_, index) => (
+            <span key={index} className={`h-11 w-32 shrink-0 ${SKELETON}`} />
           ))}
         </div>
       </div>
@@ -53,57 +33,43 @@ function InsideSkeleton() {
   );
 }
 
-function InsideContent({ overview }: { overview: CatalogOverview }) {
-  const { ref, item } = useEntrance<HTMLDivElement>();
-  const competitions = landingCompetitions(overview);
-  // Crests follow the last logo in
-  const crestsDelayMs = competitions.length * LANDING_TIGHT_STAGGER_MS;
-
+// Decorative: the hidden lists say it to readers
+function LogoStrip({ overview }: { overview: CatalogOverview }) {
   return (
-    <div ref={ref} className="flex flex-col gap-10">
-      <ul aria-label="Competitions" className={COMPETITION_ROW}>
-        {competitions.map((competition, index) => (
-          <motion.li
-            key={competition.id}
-            className="flex h-6 min-w-0 items-center gap-2 text-14 text-fg sm:text-16"
-            {...item(index, { staggerMs: LANDING_TIGHT_STAGGER_MS })}
-          >
+    <div aria-hidden="true" className={STRIP}>
+      <Marquee className="px-4">
+        {landingCompetitions(overview).map((competition) => (
+          <span key={competition.id} className={PILL}>
             <CompetitionLogo competition={competition} className="size-6" />
-            <span className="min-w-0 truncate">{competition.name}</span>
-          </motion.li>
+            {competition.name}
+          </span>
+        ))}
+        {overview.topClubs.map((club) => (
+          <span key={club.id} className={CREST_TILE}>
+            <ClubCrest club={club} size="row" />
+          </span>
+        ))}
+      </Marquee>
+    </div>
+  );
+}
+
+function InsideLists({ overview }: { overview: CatalogOverview }) {
+  return (
+    <>
+      <ul aria-label="Competitions" className="sr-only">
+        {landingCompetitions(overview).map((competition) => (
+          <li key={competition.id}>{competition.name}</li>
         ))}
       </ul>
       {overview.topClubs.length > 0 ? (
-        <ul aria-label="Clubs with the most matches" className={CREST_ROW}>
-          {overview.topClubs.map((club, index) => (
-            <motion.li
-              key={club.id}
-              title={club.name}
-              {...item(index, {
-                staggerMs: LANDING_TIGHT_STAGGER_MS,
-                fromScale: CREST_FROM_SCALE,
-                delayMs: crestsDelayMs,
-              })}
-            >
-              <ClubCrest club={club} />
-              <span className="sr-only">{club.name}</span>
-            </motion.li>
+        <ul aria-label="Clubs with the most matches" className="sr-only">
+          {overview.topClubs.map((club) => (
+            <li key={club.id}>{club.name}</li>
           ))}
         </ul>
       ) : null}
-      <dl className={HIGHLIGHTS}>
-        {highlightFigures(overview).map((figure) => (
-          <div key={figure.key} className="flex flex-col gap-1">
-            <dt className="order-2 text-14 leading-5 text-fg-muted sm:text-16 sm:leading-6">
-              {figure.label}
-            </dt>
-            <dd className="order-1 font-display text-24 leading-8 font-bold tabular-nums sm:text-32 sm:leading-10">
-              <CountUp value={figure.value} />
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </div>
+    </>
   );
 }
 
@@ -117,12 +83,17 @@ export function InsideBand({ overview, isLoading }: InsideBandProps) {
 
   return (
     <section aria-labelledby="home-inside" className={HOME_BAND}>
-      <div className={`${SITE_CONTAINER} py-16`}>
-        <h2 id="home-inside" className="mb-8 font-display text-24 font-bold">
-          What&apos;s inside
-        </h2>
-        {overview ? <InsideContent overview={overview} /> : <InsideSkeleton />}
-      </div>
+      <h2 id="home-inside" className="sr-only">
+        What&apos;s inside
+      </h2>
+      {overview ? (
+        <>
+          <LogoStrip overview={overview} />
+          <InsideLists overview={overview} />
+        </>
+      ) : (
+        <StripSkeleton />
+      )}
     </section>
   );
 }

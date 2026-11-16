@@ -1,6 +1,12 @@
 import { Check, type LucideIcon, Swords, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { DUEL_ACTOR_BG, SECTION_LABEL, TYPE_TITLE } from '@/styles/classes';
+import {
+  ACTOR_BAR,
+  DUEL_ACTOR_BG,
+  ICON_TILE,
+  SECTION_LABEL,
+  TYPE_TITLE,
+} from '@/styles/classes';
 import type { DuelActor } from '@/types/duel';
 import type { PlayMode } from '@/types/play';
 
@@ -56,7 +62,7 @@ export function ModeChoice({ mode, onChange }: ModeChoiceProps) {
               <span className="flex items-start justify-between gap-3">
                 <span
                   aria-hidden="true"
-                  className="flex size-12 items-center justify-center rounded-md border-2 border-line bg-surface-raised"
+                  className={`size-12 bg-surface-raised ${ICON_TILE}`}
                 >
                   <Icon className="size-6" strokeWidth={2.25} />
                 </span>
@@ -81,7 +87,7 @@ export function ModeChoice({ mode, onChange }: ModeChoiceProps) {
                 {option.players.map((player) => (
                   <span
                     key={player}
-                    className={`h-2.5 w-10 rounded-full border-2 border-line ${DUEL_ACTOR_BG[player]}`}
+                    className={`${ACTOR_BAR} ${DUEL_ACTOR_BG[player]}`}
                   />
                 ))}
               </span>

@@ -9,27 +9,34 @@ import {
   SlotsMark,
 } from '@/components/home/RuleMarks';
 import { useEntrance } from '@/hooks/use-entrance';
-import { HOME_BAND, SITE_CONTAINER } from '@/styles/classes';
+import { HOME_BAND, SITE_CONTAINER, TYPE_NUMBER } from '@/styles/classes';
 import { LANDING_STAGGER_MS } from '@/styles/motion';
 
-const RULES: { count: number; text: string; Mark: ComponentType<MarkProps> }[] =
-  [
-    {
-      count: 11,
-      text: 'Starters to name, from one team in one real match.',
-      Mark: SlotsMark,
-    },
-    {
-      count: 15,
-      text: 'Seconds a turn. Name a new player to end it.',
-      Mark: ArcMark,
-    },
-    {
-      count: 3,
-      text: 'Lives. Only the clock takes one. A wrong name just costs time.',
-      Mark: PipsMark,
-    },
-  ];
+const RULES: {
+  count: number;
+  text: string;
+  Mark: ComponentType<MarkProps>;
+  fill: string;
+}[] = [
+  {
+    count: 11,
+    text: 'Starters to name, from one team in one real match.',
+    Mark: SlotsMark,
+    fill: 'bg-block-lavender',
+  },
+  {
+    count: 15,
+    text: 'Seconds a turn. Name a new player to end it.',
+    Mark: ArcMark,
+    fill: 'bg-block-mint',
+  },
+  {
+    count: 3,
+    text: 'Lives. Only the clock takes one. A wrong name just costs time.',
+    Mark: PipsMark,
+    fill: 'bg-block-butter',
+  },
+];
 
 export function HomeRules() {
   const { ref, item, isShown } = useEntrance<HTMLDListElement>();
@@ -40,24 +47,26 @@ export function HomeRules() {
         <h2 id="home-rules" className="sr-only">
           How it plays
         </h2>
-        <dl ref={ref} className="grid gap-10 sm:grid-cols-3 sm:gap-8">
-          {RULES.map(({ count, text, Mark }, index) => (
+        <dl ref={ref} className="grid gap-4 sm:grid-cols-3 sm:gap-6">
+          {RULES.map(({ count, text, Mark, fill }, index) => (
             <motion.div
               key={count}
-              className="flex flex-col gap-3"
+              className={`flex flex-col gap-3 rounded-lg border-2 border-line p-5 text-on-accent shadow-hard sm:p-6 ${fill}`}
               {...item(index)}
             >
               {/* The mark sits in the term: dl allows dt, dd */}
-              <dt className="flex flex-col gap-3 font-display text-32 leading-10 font-bold tabular-nums sm:text-48 sm:leading-15">
+              <dt
+                className={`flex items-center justify-between gap-3 text-48 leading-15 sm:text-64 sm:leading-16 ${TYPE_NUMBER}`}
+              >
+                {count}
                 <span className="flex h-12 items-center">
                   <Mark
                     isShown={isShown}
                     delayMs={index * LANDING_STAGGER_MS}
                   />
                 </span>
-                {count}
               </dt>
-              <dd className="max-w-xs text-16 text-pretty text-fg-muted sm:text-20">
+              <dd className="max-w-xs text-16 text-pretty sm:text-20">
                 {text}
               </dd>
             </motion.div>

@@ -22,6 +22,13 @@ export const SECTION_LABEL = 'text-12 font-medium text-fg-muted uppercase';
 // A full-bleed home band: an edge-to-edge ink rule
 export const HOME_BAND = 'border-t-2 border-line';
 
+// An outlined icon tile, as the mode cards
+export const ICON_TILE =
+  'flex items-center justify-center rounded-md border-2 border-line';
+
+// A you / opponent colour bar
+export const ACTOR_BAR = 'h-2.5 w-10 rounded-full border-2 border-line';
+
 export const DUEL_ACTOR_BG: Record<DuelActor, string> = {
   you: 'bg-you',
   opponent: 'bg-opponent',
