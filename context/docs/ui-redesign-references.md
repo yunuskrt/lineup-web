@@ -715,44 +715,54 @@ The duel uses the game screen from § 4, plus these.
 
 ## § 10. Page: Sign in `/sign-in`
 
-- **Whole page (Must):** sign-in pages you like, with or without a coloured panel beside the form.
+- **Whole page (Must):** sign-in pages you like, with or without a coloured panel beside the form. The one layout still open: the form alone on the open page, or the form beside a lavender or mint block with the tagline. Desktop and phone.
 - **Save to:** `sign-in/00-page-a.png`
 - **Search:** Dribbble `neubrutalism login`, `neubrutalism sign up`; Pinterest `neubrutalism login page`; Gumroad: its log-in page
 
 ### Components
 
-#### `ModeSwitch` — Sign in or Sign up — **Nice**
+#### `ModeSwitch` — Sign in or Create account — ✅ **Decided: neobrutalism.dev** (2026-11-16)
+- **Decided:** the [Tabs](https://www.neobrutalism.dev/docs/tabs) look only: two options in one outlined pill, the active one filled. They stay **links** with `aria-current`, not a tab list, as each mode has its own URL (`?mode=sign-up`). Nothing to collect.
 - **Save to:** `sign-in/01-switch-a.png`
 - **Search:** neobrutalism.dev Tabs; Dribbble `login signup tabs`
 
-#### `SignInForm` and `SignUpForm` (`AuthForm`, `AuthField`) — **Must**
-- **Need:** fields with labels, an error under a field, and a busy submit button.
+#### `SignInForm` and `SignUpForm` (`AuthForm`, `AuthField`) — ✅ **Decided: neobrutalism.dev** (2026-11-16)
+- **Decided:** the [Input](https://www.neobrutalism.dev/docs/input) and Label already in `ui/`: white field, 2px ink outline, the label above, the hint muted, the error under the field in danger text, a busy primary submit. Nothing to collect.
+- **Form-level error** (a wrong password, for example): the [Alert](https://www.neobrutalism.dev/docs/alert) in `ui/alert` from E2, warning tone, keeping its `role="alert"`.
 - **Save to:** `sign-in/02-form-a.png`
 - **Search:** Dribbble `neubrutalism form`, `form validation error ui`
 
-#### `ContinueAsGuest` — **Must**
-- **Need:** a clear second option ("Play as a guest") beside the main form.
+#### `ContinueAsGuest` — ♻️ **Reuse A2** (decided 2026-11-16)
+- **Decided:** an ink rule, "No account needed to play." and the secondary Button, as today, restyled. Nothing to collect.
 - **Save to:** `sign-in/03-guest-a.png`
 - **Search:** Dribbble `continue as guest login`, `login options ui`
 
-#### `SignedInPanel` — when you're already signed in — **Nice**
+#### `SignedInPanel` — when you're already signed in — ♻️ **Reuse F1** (decided 2026-11-16)
+- **Decided:** the profile header look: the Avatar with the handle's letter, "You're playing as …", then Play (primary) and Sign out (secondary). Nothing to collect.
 - **Save to:** `sign-in/04-signed-in-a.png`
 - **Search:** Dribbble `neubrutalism account card`, `signed in state ui`
 
-## § 11. Page: Pro `/pro`
+#### `AuthSkeleton` and the session error — ♻️ **Follows / reuse A3** (decided 2026-11-16)
+- **Decided:** the skeleton mirrors the new form at the same heights; the session error keeps `StateNotice`. Nothing to collect.
+
+## § 11. Page: Pro `/pro` — ✅ **Decided** (2026-11-16)
 
 - **Today:** "Lineup Pro", one line, a Free vs Pro table, then Get Pro (or "You have Pro.").
+- **Whole page and header:** ♻️ **Reuse** `layout/08-locked-a` (the Free vs Pro comparison, kept for this page) and F1: the title in `TYPE_TITLE`, as on the profile and archive.
+- **`ProPlanTable`:** ✅ the neobrutalism.dev [Table](https://www.neobrutalism.dev/docs/table). It's a real data table, so the Table fits: white, 2px ink outline and rules, the Pro column in lavender, Lucide check and minus marks beside the words.
+- **`GetProButton` and "You have Pro.":** ♻️ **Reuse A2**: the large primary Button (disabled, "Pro isn't on sale yet."), and "You have Pro." as a sticker or a line; the same height in every plan.
+- Nothing to collect.
 - **Save to:** `pro/01-pricing-a.png`
 - **Search:** Dribbble `neubrutalism pricing`, `neubrutalism comparison table`, `free vs pro comparison`; Gumroad: its pricing page
 
-## § 12. System states
+## § 12. System states — ✅ **Decided** (2026-11-16)
 
-| Item | Today | Save to | Search |
+| Item | Decided | Save to | Search |
 | --- | --- | --- | --- |
-| Not found (404) — **Must** | The built-in page | `system/01-404-a.png` | Dribbble `neubrutalism 404`, `typographic 404 page` |
-| Update required — **Nice** | "Update Lineup to keep playing" | `system/02-update-a.png` | Dribbble `app update required screen` |
-| Rate limited — **Nice** | Input locked briefly, with a reason | `system/03-rate-limit-a.png` | Dribbble `too many attempts ui`, `cooldown ui` |
-| Empty filter result — **Nice** | "No match in those seasons" and "Include every season" | `system/04-no-results-a.png` | Dribbble `neubrutalism no results`, `no results found ui` |
+| Not found (404) | ♻️ **Reuse A3** (reference optional): our own page, a big `TYPE_NUMBER` "404", a tilted sticker, one line, then Play and Home, on the open page with no illustration. Today it's Next's built-in page | `system/01-404-a.png` (optional) | Dribbble `neubrutalism 404`, `typographic 404 page` |
+| Update required (`ProtocolRefused`) | ♻️ **Reuse A3**: the `StateNotice` look with a Lucide refresh icon tile, Reload as the primary Button and Back to Play as a secondary Button (today a text link) | `system/02-update-a.png` | Dribbble `app update required screen` |
+| Rate limited | ♻️ **Reuse B2**: the game's locked guess box with its reason, already restyled; only the reason line takes the warning tone | `system/03-rate-limit-a.png` | Dribbble `too many attempts ui`, `cooldown ui` |
+| Empty filter result | ♻️ **Reuse B3**: the game's `CanvasGate` (peach panel) with "Include every season" as the primary Button, already restyled | `system/04-no-results-a.png` | Dribbble `neubrutalism no results`, `no results found ui` |
 
 > ✋ **End of stage H.** Tell me **"rest ready"**.
 
