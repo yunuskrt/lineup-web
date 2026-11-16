@@ -4,11 +4,14 @@ import { motion } from 'motion/react';
 import {
   HISTORY_ROW,
   PANEL_HEADER,
+  PROFILE_FIGURES,
   PROFILE_PANEL,
   RECORD_BAR,
   STAT_ROW,
 } from '@/components/profile/styles';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
+import { cn } from '@/lib/utils';
+import { BOARD, BOARD_SECTION } from '@/styles/classes';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 import { SKELETON } from '@/components/ui/skeleton';
 
@@ -27,25 +30,34 @@ export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
       </p>
       <motion.div
         aria-hidden="true"
-        className="flex flex-col gap-6"
+        className={BOARD}
         initial={false}
         animate={{
           opacity: isPulsing ? [...SKELETON_PULSE_OPACITY] : 1,
         }}
         transition={isPulsing ? SKELETON_PULSE : undefined}
       >
-        <div className="flex h-10 items-center">
-          <span className={`h-8 w-48 ${SKELETON}`} />
-        </div>
-        {isGuest ? (
-          <div
-            className={`${PROFILE_PANEL} flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6`}
-          >
-            <span className={`h-15 w-full max-w-2xl sm:h-10 ${SKELETON}`} />
-            <span className={`h-8 w-full shrink-0 sm:w-36 ${SKELETON}`} />
+        <div className={BOARD_SECTION}>
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:gap-4">
+            <span className={cn(SKELETON, 'size-12 shrink-0 rounded-full')} />
+            <div className="flex items-center gap-3">
+              <span
+                className={`h-7.5 w-40 sm:h-9.5 sm:w-48 md:h-12.5 ${SKELETON}`}
+              />
+              {isGuest ? <span className={`h-7.5 w-18 ${SKELETON}`} /> : null}
+            </div>
           </div>
-        ) : null}
-        <div className="grid gap-6 lg:grid-cols-12">
+          {isGuest ? (
+            // The prompt's height at 320, sm and md
+            <span
+              className={cn(
+                SKELETON,
+                'h-44.5 w-full rounded-md sm:h-22.75 md:h-17.5',
+              )}
+            />
+          ) : null}
+        </div>
+        <div className={PROFILE_FIGURES}>
           <div
             className={`${PROFILE_PANEL} flex flex-col gap-6 p-4 sm:p-6 lg:col-span-7`}
           >
@@ -84,7 +96,7 @@ export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className={BOARD_SECTION}>
           <span className={`h-7 w-20 ${SKELETON}`} />
           <div className={`${PROFILE_PANEL} divide-y divide-line`}>
             {Array.from({ length: HISTORY_ROWS }, (_, index) => (

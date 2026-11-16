@@ -5,6 +5,8 @@ import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileNotice } from '@/components/profile/ProfileNotice';
 import { ProfileSkeleton } from '@/components/profile/ProfileSkeleton';
 import { ProfileStats } from '@/components/profile/ProfileStats';
+import { PROFILE_FIGURES } from '@/components/profile/styles';
+import { BOARD, BOARD_SECTION } from '@/styles/classes';
 import type { ProfileScreenView } from '@/types/profile-screen';
 
 type ProfileViewProps = {
@@ -26,18 +28,22 @@ export function ProfileView({ view, onRetry, onShowMore }: ProfileViewProps) {
     case 'ready': {
       const { user, stats } = view.profile;
       return (
-        <div className="flex flex-col gap-6">
-          <ProfileHeader user={user} />
-          {user.isGuest ? <GuestUpgrade /> : null}
-          <div className="grid gap-6 lg:grid-cols-12">
+        <div className={BOARD}>
+          <div className={BOARD_SECTION}>
+            <ProfileHeader user={user} />
+            {user.isGuest ? <GuestUpgrade /> : null}
+          </div>
+          <div className={PROFILE_FIGURES}>
             <DuelRecord stats={stats} />
             <ProfileStats stats={stats} />
           </div>
-          <HistoryList
-            history={view.history}
-            more={view.more}
-            onShowMore={onShowMore}
-          />
+          <div className={BOARD_SECTION}>
+            <HistoryList
+              history={view.history}
+              more={view.more}
+              onShowMore={onShowMore}
+            />
+          </div>
         </div>
       );
     }

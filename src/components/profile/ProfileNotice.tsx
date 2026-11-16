@@ -3,7 +3,7 @@ import { TriangleAlert, UserRound } from 'lucide-react';
 import {
   PRIMARY_BUTTON_LARGE,
   SECONDARY_BUTTON,
-  TEXT_LINK,
+  SECONDARY_BUTTON_LARGE,
 } from '@/styles/classes';
 import { StateNotice } from '@/components/shell/StateNotice';
 
@@ -43,7 +43,7 @@ export function ProfileNotice(props: ProfileNoticeProps) {
       <Link href="/play" className={PRIMARY_BUTTON_LARGE}>
         Play
       </Link>
-      <Link href="/sign-in" className={`text-14 ${TEXT_LINK}`}>
+      <Link href="/sign-in" className={SECONDARY_BUTTON_LARGE}>
         Sign in
       </Link>
     </StateNotice>
