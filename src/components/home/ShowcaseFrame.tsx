@@ -10,6 +10,7 @@ import {
 } from '@/components/game/GuessInput';
 import { MatchHeader } from '@/components/game/MatchHeader';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
+import { Badge } from '@/components/ui/badge';
 import { useCatalogOverview } from '@/hooks/use-catalog-overview';
 import { useDemoPlayback } from '@/hooks/use-demo-playback';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
@@ -31,6 +32,7 @@ import type { FoundPlayer } from '@/types/player';
 import { SKELETON } from '@/components/ui/skeleton';
 
 const IGNORE = () => {};
+const WINDOW_DOTS = ['close', 'minimise', 'zoom'];
 
 const NO_SUGGESTIONS: readonly Suggestion[] = [];
 
@@ -46,6 +48,21 @@ type StageProps = {
   isFading: boolean;
 };
 
+// A browser window's top bar, drawn, not real
+function WindowBar() {
+  return (
+    <div className="flex items-center gap-1.5 rounded-t-[inherit] border-b-2 border-line bg-surface-card px-3 py-2">
+      {WINDOW_DOTS.map((dot) => (
+        <span
+          key={dot}
+          className="size-2.5 rounded-full border-2 border-line"
+        />
+      ))}
+      <span className="ml-2 h-4 w-full max-w-40 rounded-full border-2 border-line bg-surface" />
+    </div>
+  );
+}
+
 // Shared by the still frame and the demo
 function Stage(props: StageProps) {
   const { match, found, isFading } = props;
@@ -54,37 +71,48 @@ function Stage(props: StageProps) {
     <div
       inert
       aria-hidden="true"
-      className="flex flex-col gap-2 rounded-lg border border-line bg-surface-raised p-2"
+      className="relative flex flex-col rounded-lg border-2 border-line bg-surface-raised shadow-hard"
     >
-      <motion.div
-        className="flex flex-col gap-2"
-        initial={false}
-        animate={{ opacity: isFading ? 0 : 1 }}
-        transition={{ duration: MOTION_SECONDS.demoFade, ease: 'easeOut' }}
+      <WindowBar />
+      <Badge
+        variant="sticker"
+        tone="butter"
+        tilt="right"
+        className="absolute -top-3 right-4 z-10"
       >
-        <MatchHeader match={match} className="rounded-md" />
-        <div className="relative h-80 sm:h-96">
-          {match ? <FoundCount found={found} /> : null}
-          <SquadGrid
-            formation={match?.formation ?? LOADING_FORMATION}
-            revealed={found}
-            isLoading={!match}
-          />
-        </div>
-      </motion.div>
-      {/* No clock in the demo: the input alone */}
-      <div className="flex justify-center border-t border-line px-2 pt-3 pb-2">
-        <div className="flex w-full min-w-0 flex-col gap-1 sm:max-w-sm">
-          <FeedbackToast toast={props.toast} />
-          <GuessInput
-            status={props.status}
-            value={props.value}
-            onValueChange={IGNORE}
-            onSubmit={IGNORE}
-            shakeKey={props.shakeKey}
-            suggestions={props.suggestions}
-            drivenHighlight={props.drivenHighlight}
-          />
+        Demo
+      </Badge>
+      <div className="flex flex-col gap-2 p-2">
+        <motion.div
+          className="flex flex-col gap-2"
+          initial={false}
+          animate={{ opacity: isFading ? 0 : 1 }}
+          transition={{ duration: MOTION_SECONDS.demoFade, ease: 'easeOut' }}
+        >
+          <MatchHeader match={match} className="rounded-md" />
+          <div className="relative h-80 sm:h-96">
+            {match ? <FoundCount found={found} /> : null}
+            <SquadGrid
+              formation={match?.formation ?? LOADING_FORMATION}
+              revealed={found}
+              isLoading={!match}
+            />
+          </div>
+        </motion.div>
+        {/* No clock in the demo: the input alone */}
+        <div className="flex justify-center border-t border-line px-2 pt-3 pb-2">
+          <div className="flex w-full min-w-0 flex-col gap-1 sm:max-w-sm">
+            <FeedbackToast toast={props.toast} />
+            <GuessInput
+              status={props.status}
+              value={props.value}
+              onValueChange={IGNORE}
+              onSubmit={IGNORE}
+              shakeKey={props.shakeKey}
+              suggestions={props.suggestions}
+              drivenHighlight={props.drivenHighlight}
+            />
+          </div>
         </div>
       </div>
     </div>

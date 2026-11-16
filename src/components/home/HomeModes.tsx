@@ -3,6 +3,7 @@ import { FILTER_PARAMS } from '@/lib/filters';
 import {
   PRIMARY_BUTTON_LARGE,
   SECONDARY_BUTTON_LARGE,
+  HOME_BAND,
   SITE_CONTAINER,
 } from '@/styles/classes';
 
@@ -38,7 +39,7 @@ const MODES: { name: string; line: string; links: ModeLink[] }[] = [
 
 export function HomeModes() {
   return (
-    <section aria-labelledby="home-modes" className="border-t border-line">
+    <section aria-labelledby="home-modes" className={HOME_BAND}>
       <div className={`${SITE_CONTAINER} py-16`}>
         <h2 id="home-modes" className="sr-only">
           Two ways to play

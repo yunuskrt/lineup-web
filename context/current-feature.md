@@ -103,3 +103,4 @@ Not Started
 - Redesign B3 Summary: peach gate, crest tiles, stats, results table.
 - Redesign C1 Play Board: one peach board, sections, icon mode cards.
 - Redesign C2 Play Controls: search icon, season selects, 6-box room code.
+- Redesign D1 Home Fold: new tagline, butter block, browser-frame demo.

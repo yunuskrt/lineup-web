@@ -16,7 +16,7 @@ const archivo = Archivo({
 
 export const metadata: Metadata = {
   title: { template: '%s · Lineup', default: 'Lineup' },
-  description: 'Know the XI. Beat the Clock.',
+  description: 'Know the XI. Guess the Squad.',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

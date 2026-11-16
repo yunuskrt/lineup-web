@@ -9,7 +9,7 @@ import {
   SlotsMark,
 } from '@/components/home/RuleMarks';
 import { useEntrance } from '@/hooks/use-entrance';
-import { SITE_CONTAINER } from '@/styles/classes';
+import { HOME_BAND, SITE_CONTAINER } from '@/styles/classes';
 import { LANDING_STAGGER_MS } from '@/styles/motion';
 
 const RULES: { count: number; text: string; Mark: ComponentType<MarkProps> }[] =
@@ -35,7 +35,7 @@ export function HomeRules() {
   const { ref, item, isShown } = useEntrance<HTMLDListElement>();
 
   return (
-    <section aria-labelledby="home-rules" className="border-t border-line">
+    <section aria-labelledby="home-rules" className={HOME_BAND}>
       <div className={`${SITE_CONTAINER} py-16`}>
         <h2 id="home-rules" className="sr-only">
           How it plays

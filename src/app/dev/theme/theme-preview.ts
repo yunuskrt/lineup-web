@@ -169,7 +169,7 @@ export const TYPE_ROLES: readonly TypeRole[] = [
     name: 'TYPE_DISPLAY',
     detail: '800 · width 112, 125 from md · 34 / 72px',
     className: TYPE_DISPLAY,
-    sample: 'Know the XI. Beat the Clock.',
+    sample: 'Know the XI. Guess the Squad.',
   },
   {
     name: 'TYPE_TITLE',

@@ -28,7 +28,7 @@ export function SiteFooter({ variant }: SiteFooterProps) {
   return (
     <footer className="border-t border-rule">
       <p className={`${SITE_CONTAINER} py-6 text-12 text-fg-muted`}>
-        Lineup — Know the XI. Beat the Clock.
+        Lineup — Know the XI. Guess the Squad.
       </p>
     </footer>
   );

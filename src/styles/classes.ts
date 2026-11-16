@@ -19,6 +19,9 @@ export const BOARD_SECTION =
 // The rail's label look, as the Lives section
 export const SECTION_LABEL = 'text-12 font-medium text-fg-muted uppercase';
 
+// A full-bleed home band: an edge-to-edge ink rule
+export const HOME_BAND = 'border-t-2 border-line';
+
 export const DUEL_ACTOR_BG: Record<DuelActor, string> = {
   you: 'bg-you',
   opponent: 'bg-opponent',
