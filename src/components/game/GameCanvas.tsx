@@ -1,7 +1,14 @@
 'use client';
 
+import { CircleAlert, WifiOff } from 'lucide-react';
 import Link from 'next/link';
-import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import {
+  type ReactNode,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { LOBBY_GATE_SIZE, LobbyPanel } from '@/components/duel/LobbyPanel';
 import { CanvasGate, type GateSize } from '@/components/game/CanvasGate';
 import { CountdownRing } from '@/components/game/CountdownRing';
@@ -19,6 +26,7 @@ import { SoundToggle } from '@/components/game/SoundToggle';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { useGameSounds } from '@/hooks/use-game-sounds';
 import { QuitChip } from '@/components/shell/QuitChip';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { activeRing, clockLabel } from '@/lib/canvas';
 import {
@@ -36,10 +44,12 @@ import {
 } from '@/lib/suggestions';
 import { missedOnPitch } from '@/lib/summary';
 import {
+  ICON_TILE,
   PRIMARY_BUTTON,
   RAIL_SECTION,
   SECONDARY_BUTTON,
   TEXT_LINK,
+  TYPE_NUMBER,
 } from '@/styles/classes';
 import type {
   CanvasGateCountdown,
@@ -100,8 +110,8 @@ function readClock(clock: CanvasGateCountdown['clock']): number {
   return clock === 'local' ? Date.now() : serverClock.now();
 }
 
-// Ticks to the deadline; decides nothing
-function GateCountdown({ countdown }: { countdown: CanvasGateCountdown }) {
+// Seconds left to the deadline; decides nothing
+function useSecondsLeft(countdown: CanvasGateCountdown): number {
   const { clock } = countdown;
   const [now, setNow] = useState(() => readClock(clock));
 
@@ -113,12 +123,69 @@ function GateCountdown({ countdown }: { countdown: CanvasGateCountdown }) {
     return () => clearInterval(timer);
   }, [clock]);
 
+  return reconnectSecondsLeft(countdown.deadline, now);
+}
+
+function GateCountdown({ countdown }: { countdown: CanvasGateCountdown }) {
+  const secondsLeft = useSecondsLeft(countdown);
+
   return (
     // Server and client clocks may differ by a tick
-    <span suppressHydrationWarning>
-      {countdown.label(reconnectSecondsLeft(countdown.deadline, now))}
-    </span>
+    <span suppressHydrationWarning>{countdown.label(secondsLeft)}</span>
   );
+}
+
+// The same deadline, big; the sentence says it too
+function GateSeconds({ countdown }: { countdown: CanvasGateCountdown }) {
+  const secondsLeft = useSecondsLeft(countdown);
+
+  return (
+    <p
+      aria-hidden="true"
+      suppressHydrationWarning
+      className={`text-center text-48 leading-none ${TYPE_NUMBER}`}
+    >
+      {secondsLeft}s
+    </p>
+  );
+}
+
+// A gate's notice: an icon, or the detail as an Alert
+function noticeParts(gate: CanvasGateView | null): {
+  icon?: ReactNode;
+  detail?: ReactNode;
+  body?: ReactNode;
+} {
+  if (gate?.notice === 'refused') {
+    return {
+      body: gate.detail ? (
+        <Alert>
+          <CircleAlert aria-hidden="true" strokeWidth={2.5} />
+          <AlertDescription>{gate.detail}</AlertDescription>
+        </Alert>
+      ) : undefined,
+    };
+  }
+  const detail = gate?.countdown ? (
+    <GateCountdown countdown={gate.countdown} />
+  ) : (
+    gate?.detail
+  );
+  if (gate?.notice !== 'connection') return { detail };
+  return {
+    icon: (
+      <span
+        aria-hidden="true"
+        className={`size-12 bg-surface-card ${ICON_TILE}`}
+      >
+        <WifiOff className="size-6" strokeWidth={2.25} />
+      </span>
+    ),
+    detail,
+    body: gate.countdown ? (
+      <GateSeconds countdown={gate.countdown} />
+    ) : undefined,
+  };
 }
 
 type GateActionProps = {
@@ -300,6 +367,7 @@ export function GameCanvas({
   const quitChip = summary || result ? null : <QuitChip onQuit={onQuit} />;
   const found = result?.found ?? view.found;
   const sidePick = view.gate?.sidePick;
+  const notice = noticeParts(view.gate);
   const gateSize: GateSize = lobby
     ? LOBBY_GATE_SIZE[lobby.step]
     : sidePick
@@ -334,14 +402,9 @@ export function GameCanvas({
         </div>
         <CanvasGate
           isOpen={view.gate !== null}
+          icon={notice.icon}
           title={view.gate?.title ?? ''}
-          detail={
-            view.gate?.countdown ? (
-              <GateCountdown countdown={view.gate.countdown} />
-            ) : (
-              view.gate?.detail
-            )
-          }
+          detail={notice.detail}
           size={gateSize}
           body={
             view.mode === 'duel' && lobby ? (
@@ -353,7 +416,9 @@ export function GameCanvas({
               />
             ) : sidePick ? (
               <SidePickCard sidePick={sidePick} onPick={onGateAction} />
-            ) : undefined
+            ) : (
+              notice.body
+            )
           }
           action={
             view.gate?.actionLabel ? (

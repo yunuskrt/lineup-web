@@ -20,12 +20,12 @@ import { Badge } from '@/components/ui/badge';
 import { SKELETON } from '@/components/ui/skeleton';
 
 // Fixed heights keep the skeleton in the same boxes
-const OUTCOME_BOX = `flex h-24 items-center justify-between gap-4 border-b-2 border-line -mt-3 sm:-mt-4 ${RAIL_SECTION}`;
+export const OUTCOME_BOX = `relative flex h-24 items-center justify-between gap-4 border-b-2 border-line -mt-3 sm:-mt-4 ${RAIL_SECTION}`;
 
 const STATS_BOX = `grid h-18 grid-cols-2 border-b-2 border-line ${RAIL_SECTION}`;
 
 // The 352px rail can't take TYPE_TITLE's 40px
-const OUTCOME_TITLE =
+export const OUTCOME_TITLE =
   'font-display text-24 leading-tight font-extrabold font-stretch-semi-expanded outline-none min-[360px]:text-30';
 
 type OutcomeProps = {

@@ -25,6 +25,7 @@ const PANEL_SIZES: Record<GateSize, string> = {
 
 type GatePanelProps = {
   panelRef: RefObject<HTMLDivElement | null>;
+  icon?: ReactNode;
   title: string;
   detail?: ReactNode;
   body?: ReactNode;
@@ -34,6 +35,7 @@ type GatePanelProps = {
 
 function GatePanel({
   panelRef,
+  icon,
   title,
   detail,
   body,
@@ -60,6 +62,7 @@ function GatePanel({
         tabIndex={-1}
         className={`flex w-full flex-col gap-2 rounded-lg border-2 border-line bg-surface-raised p-4 shadow-hard outline-none ${PANEL_SIZES[size]}`}
       >
+        {icon}
         <p aria-hidden="true" className={`text-balance ${TYPE_TITLE_LONG}`}>
           {title}
         </p>
@@ -73,6 +76,8 @@ function GatePanel({
 
 type CanvasGateProps = {
   isOpen: boolean;
+  // Decorative, above the title
+  icon?: ReactNode;
   title: string;
   // May tick; the title is what gets announced
   detail?: ReactNode;
@@ -85,6 +90,7 @@ type CanvasGateProps = {
 
 export function CanvasGate({
   isOpen,
+  icon,
   title,
   detail,
   body,
@@ -133,6 +139,7 @@ export function CanvasGate({
           <GatePanel
             key="gate"
             panelRef={panelRef}
+            icon={icon}
             title={title}
             detail={detail}
             body={body}

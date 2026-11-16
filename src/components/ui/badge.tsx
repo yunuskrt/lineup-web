@@ -25,6 +25,7 @@ const badgeVariants = cva(
         you: 'bg-you',
         opponent: 'bg-opponent',
         found: 'bg-found',
+        warning: 'bg-warning',
         mint: 'bg-block-mint',
         butter: 'bg-block-butter',
         coral: 'bg-block-coral',

@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -34,3 +34,15 @@ None.
 - **Check:** `/play/duel?state=` for win, loss, draw, forfeit win, connection lost, opponent reconnecting (chip), you reconnecting (overlay), and each join refusal; focus on the result title; reduced motion; 320px and `lg`.
 - **Dev server:** the dev cache is off (`next.config.ts`), so `npm run build` can run while the user's dev server is up.
 - **With E2 done, stage E is complete.** The next collection is stage F (`/profile`, guide § 8).
+
+- **Deviations recorded during implementation:**
+  - **A `notice` hint on the gate view:** `CanvasGateView` gains `notice?: 'connection' | 'refused'`, set by `reconnectingGate` (both branches) and by the join-refusal branch of `roomFailedGate`. It only says how to draw the gate; no behaviour reads it. `system-states.test.ts` and `duel-session.test.ts` now assert it (the no-deadline reconnect gate's `toEqual` includes it).
+  - **`CanvasGate` gains an `icon` slot** above the title (decorative), used for the `WifiOff` tile on the reconnecting overlay.
+  - **Reconnecting countdown:** the sentence stays as the gate's detail (it names the seconds for screen readers), and a big `TYPE_NUMBER` "17s" (`aria-hidden`) sits under it in the gate's body, ticking from the same server deadline.
+  - **Join refused:** the detail moves out of the gate's `<p>` (a `div` can't sit in a `p`) into the body as the Alert. The Alert has **no `role="alert"`**: the registry's live role would announce the message on top of the gate's announced title, which today is the only announcement.
+  - **`ui/alert.tsx`:** only `Alert` and `AlertDescription` (no `AlertTitle`, unused); tones `warning` (default) and `neutral`.
+  - **Badge `warning` tone** added (`bg-warning`, `on-accent` text, tested). The reconnect chip keeps the sticker look in **normal case**, since the sticker's uppercase would turn "18s" into "18S".
+  - **Outcome box:** reuses the solo `OUTCOME_BOX` / `OUTCOME_TITLE` (now exported from `RunSummary`), but grows (`min-h-24`, `py-3`) because the duel result has no skeleton to match and "Opponent left" wraps beside the Forfeit sticker. A loss gets a red top band; a draw keeps the split you / opponent band.
+  - **Actions** sit in their own ruled rail section at the bottom (`lg:mt-auto`), as in the solo summary.
+  - **Tests:** the create-refusal tests (Pro required and plain) now assert there is no `notice`, so only a refused join draws the Alert.
+  - **Review fixes:** the two gate countdowns share one `useSecondsLeft` hook (they had copied the tick), and `noticeParts` builds the gate's icon, detail and body before the JSX instead of a nested ternary.

@@ -1989,6 +1989,7 @@ describe('private rooms', () => {
       expect(view.gate?.title).toBe("Couldn't join the room");
       expect(view.gate?.detail).toBe(detail);
       expect(view.gate?.actionLabel).toBe(DUEL_GATE_COPY.backToPlay);
+      expect(view.gate?.notice).toBe('refused');
       expect(duelGateAction(state)).toBe('leave');
     },
   );
@@ -2052,6 +2053,7 @@ describe('private rooms', () => {
     expect(gate?.detail).toBe(DUEL_GATE_COPY.anyoneCanJoin);
     expect(gate?.actionLabel).toBe(DUEL_GATE_COPY.backToPlay);
     expect(gate?.seePro).toBe(true);
+    expect(gate?.notice).toBeUndefined();
     expect(gate?.secondaryActionLabel).toBeUndefined();
     expect(duelGateAction(state)).toBe('leave');
   });
@@ -2071,6 +2073,8 @@ describe('private rooms', () => {
     expect(isProRequired(state)).toBe(false);
     expect(gate?.title).toBe("Couldn't create the room");
     expect(gate?.detail).toBe('You already have a room open.');
+    // Only a refused join is drawn as the alert
+    expect(gate?.notice).toBeUndefined();
     expect(gate?.secondaryActionLabel).toBeUndefined();
   });
 

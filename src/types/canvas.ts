@@ -46,6 +46,8 @@ export type CanvasGateView = {
   countdown?: CanvasGateCountdown;
   // The solo side pick, drawn as a match card
   sidePick?: CanvasSidePick;
+  // How it's drawn: a lost connection or a refused join
+  notice?: 'connection' | 'refused';
 };
 
 export type CanvasViewBase = {

@@ -99,9 +99,12 @@ export function reconnectingGate(
 ): CanvasGateView | null {
   if (connection?.status !== 'reconnecting') return null;
   const deadline = connection.reconnectDeadline;
-  if (deadline === null) return { title: RECONNECTING_TITLE };
+  if (deadline === null) {
+    return { title: RECONNECTING_TITLE, notice: 'connection' };
+  }
   return {
     title: RECONNECTING_TITLE,
     countdown: { deadline, label: reconnectingDetail },
+    notice: 'connection',
   };
 }

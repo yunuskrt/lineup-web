@@ -7,25 +7,32 @@ import {
   ResultActions,
   type ResultActionsProps,
 } from '@/components/game/ResultActions';
+import { OUTCOME_BOX, OUTCOME_TITLE } from '@/components/game/RunSummary';
+import { Badge } from '@/components/ui/badge';
 import {
   duelResultDetail,
   duelResultTitle,
   foundTally,
 } from '@/lib/duel-result';
-import { DUEL_ACTOR_BG } from '@/styles/classes';
+import { cn } from '@/lib/utils';
+import {
+  ACTOR_BAR,
+  DUEL_ACTOR_BG,
+  RAIL_SECTION,
+  TYPE_NUMBER,
+} from '@/styles/classes';
 import type { DuelActor, DuelResult } from '@/types/duel';
 import type { DuelOutcome } from '@/types/game';
 
-// Same height as the solo outcome box
-const OUTCOME_BOX =
-  'relative flex h-24 items-center justify-between gap-4 overflow-hidden rounded-md border p-4';
-
+// A win takes the block in your colour, edge to edge
 const OUTCOME_TONES: Record<DuelOutcome, string> = {
-  win: 'border-you bg-you text-on-accent',
-  forfeit_win: 'border-you bg-you text-on-accent',
-  loss: 'border-danger bg-surface-card text-fg',
-  draw: 'border-line bg-surface-card text-fg',
+  win: 'bg-you text-on-accent',
+  forfeit_win: 'bg-you text-on-accent',
+  loss: 'bg-surface-card text-fg',
+  draw: 'bg-surface-card text-fg',
 };
+
+const TOP_BAND = 'absolute inset-x-0 top-0 flex h-1.5';
 
 type OutcomeProps = {
   result: DuelResult;
@@ -43,21 +50,26 @@ function Outcome({
   const isWin = result.outcome === 'win' || result.outcome === 'forfeit_win';
 
   return (
-    <div className={`${OUTCOME_BOX} ${OUTCOME_TONES[result.outcome]}`}>
+    // No skeleton here, so a long title may grow it
+    <div
+      className={cn(
+        OUTCOME_BOX,
+        'h-auto min-h-24 py-3',
+        OUTCOME_TONES[result.outcome],
+      )}
+    >
       {/* A draw carries both colours, neither leading */}
       {result.outcome === 'draw' ? (
-        <span aria-hidden="true" className="absolute inset-x-0 top-0 flex h-1">
+        <span aria-hidden="true" className={TOP_BAND}>
           <span className={`flex-1 ${DUEL_ACTOR_BG.you}`} />
           <span className={`flex-1 ${DUEL_ACTOR_BG.opponent}`} />
         </span>
       ) : null}
-      <div className="flex min-w-0 flex-col">
-        <h2
-          ref={titleRef}
-          id={titleId}
-          tabIndex={-1}
-          className="font-display text-32 leading-10 font-semibold outline-none"
-        >
+      {result.outcome === 'loss' ? (
+        <span aria-hidden="true" className={`${TOP_BAND} bg-danger`} />
+      ) : null}
+      <div className="flex min-w-0 flex-col gap-1">
+        <h2 ref={titleRef} id={titleId} tabIndex={-1} className={OUTCOME_TITLE}>
           {duelResultTitle(result, { isConnectionLost })}
         </h2>
         <p className={`text-14 leading-5 ${isWin ? '' : 'text-fg-muted'}`}>
@@ -65,9 +77,9 @@ function Outcome({
         </p>
       </div>
       {result.isForfeit ? (
-        <span className="shrink-0 rounded-sm border border-current px-2 py-0.5 text-12 font-semibold">
+        <Badge variant="sticker" tone="neutral">
           Forfeit
-        </span>
+        </Badge>
       ) : null}
     </div>
   );
@@ -85,18 +97,21 @@ function Tally({ result }: { result: DuelResult }) {
   ];
 
   return (
-    <dl className="grid grid-cols-2 gap-4">
+    <dl className={`grid grid-cols-2 border-b-2 border-line ${RAIL_SECTION}`}>
       {sides.map(({ actor, label, lives }) => (
-        <div key={actor} className="flex min-w-0 flex-col gap-1.5">
+        <div
+          key={actor}
+          className="flex min-w-0 flex-col gap-1.5 py-3 pr-3 first:border-r-2 first:border-line last:pl-4"
+        >
           {/* The bar sits in the dt: a dl group holds dt/dd */}
-          <dt className="flex min-w-0 flex-col gap-1.5 text-12 leading-4 text-fg-muted">
+          <dt className="flex min-w-0 flex-col gap-1.5 text-12 leading-4 font-medium text-fg-muted uppercase">
             <span
               aria-hidden="true"
-              className={`h-1 w-8 ${DUEL_ACTOR_BG[actor]}`}
+              className={`${ACTOR_BAR} ${DUEL_ACTOR_BG[actor]}`}
             />
             <span className="truncate">{label}</span>
           </dt>
-          <dd className="font-display text-32 leading-10 font-semibold tabular-nums">
+          <dd className={`text-28 leading-none ${TYPE_NUMBER}`}>
             {tally[actor]}
           </dd>
           <dd>
@@ -134,7 +149,7 @@ export function DuelResultPanel({
   return (
     <section
       aria-labelledby={titleId}
-      className="flex flex-1 flex-col gap-6 lg:min-h-0 lg:contain-size"
+      className="flex flex-1 flex-col gap-4 lg:min-h-0 lg:contain-size"
     >
       <Outcome
         result={result}
@@ -148,12 +163,16 @@ export function DuelResultPanel({
         found={result.found}
         opponentHandle={result.opponent.handle}
       />
-      <ResultActions
-        onPlayAgain={onPlayAgain}
-        onChangeFilters={onChangeFilters}
-        isPrivate={isPrivate}
-        hostAccess={hostAccess}
-      />
+      <div
+        className={`flex flex-col border-t-2 border-line pt-3 sm:pt-4 lg:mt-auto ${RAIL_SECTION}`}
+      >
+        <ResultActions
+          onPlayAgain={onPlayAgain}
+          onChangeFilters={onChangeFilters}
+          isPrivate={isPrivate}
+          hostAccess={hostAccess}
+        />
+      </div>
     </section>
   );
 }
