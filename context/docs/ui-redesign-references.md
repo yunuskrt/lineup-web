@@ -569,36 +569,43 @@ The marketing page: the statement, a live demo turn, then the sections.
 
 The duel uses the game screen from § 4, plus these.
 
-#### `LobbyPanel`: searching for an opponent — **Must**
+#### `LobbyPanel`: searching for an opponent — ♻️ **No reference needed** (decided 2026-11-16)
+- **Decided:** ambient and low-tension, with no countdown (theme.md § States): our notice with a Lucide icon in an outlined tile, "Finding an opponent…" and Cancel. A gentle pulse comes in the motion pass. Nothing to collect.
 - **Save to:** `duel/01-searching-a.png`
 - **Search:** Dribbble `neubrutalism loading screen`, `matchmaking screen ui`, `searching for opponent`
 
-#### Opponent found — **Must**
+#### Opponent found — ✅ **Collected** (layout only)
+- **Done:** `duel/02-versus-a`: the opponent and you on either side of a big "VS", each with an avatar, a badge and the handle.
 - **Need:** both players shown together (a "versus" moment).
 - **Save to:** `duel/02-versus-a.png`
 - **Search:** Dribbble `neubrutalism versus`, `vs screen game ui`, `versus card ui`
 
-#### Filters and the coin flip — **Must**
+#### Filters and the coin flip — ♻️ **Reuse C1 / C2** (decided 2026-11-16)
+- **Decided:** two filter cards side by side, each with its owner's colour bar (as on the mode cards) and the filter rows' look inside; the winning set gets a **"Used"** sticker, and "Your filters won" / "Their filters won" stays explicit. Nothing to collect.
 - **Today:** both players' filters are shown; one is picked at random, and the screen says whose won.
 - **Save to:** `duel/03-coin-flip-a.png`
 - **Search:** Dribbble `neubrutalism comparison`, `coin flip ui`, `comparison cards ui`
 
-#### Room waiting — a private room's code — **Must**
+#### Room waiting — a private room's code — ✅ **Collected** (layout only)
+- **Done:** `duel/02-versus-a` (the code in a bar with share, "Waiting…" with an empty opponent slot) and `04-room-code-b` (a code card: label, big code, Copy code, dashed outline). `04-room-code-a` adds little.
 - **Today:** a big 6-character code, Copy code and Copy link, and "Closes in 9:41".
 - **Save to:** `duel/04-room-code-a.png`
 - **Search:** Dribbble `neubrutalism invite`, `room code game lobby`, `invite friends code screen`, `share link ui`
 
-#### Join refused — **Nice**
+#### Join refused — ✅ **Decided: neobrutalism.dev** (2026-11-16)
+- **Decided:** the neobrutalism.dev [Alert](https://www.neobrutalism.dev/docs/alert), adjusted to our palette: one short message naming the case (wrong, full or own code), Back to play, the code kept in the box. Nothing to collect.
 - **Today:** a wrong, full or own code, said plainly.
 - **Save to:** `duel/05-join-error-a.png`
 - **Search:** neobrutalism.dev Alert; Dribbble `invalid code ui`
 
-#### `ReconnectChip` and the reconnecting overlay — **Must**
+#### `ReconnectChip` and the reconnecting overlay — ♻️ **Reuse A2 / B3** (decided 2026-11-16)
+- **Decided:** the chip is our sticker `Badge` in the warning tone ("Reconnecting, 18s"); the overlay is the existing `CanvasGate` (dimmed layer and peach panel) with your countdown, and the clock visibly still running. Nothing to collect.
 - **Today:** "Reconnecting, 18s" for the opponent, and a countdown overlay for you.
 - **Save to:** `duel/06-reconnecting-a.png`
 - **Search:** Dribbble `reconnecting ui`, `connection lost ui`, `offline banner ui`
 
-#### `DuelResultPanel` — win, loss, draw, forfeit — **Must**
+#### `DuelResultPanel` — win, loss, draw, forfeit — ♻️ **Reuse B3** (decided 2026-11-16)
+- **Decided:** the solo `RunSummary` layout (outcome section, stat tiles, results table, actions) with the **you vs opponent columns** kept from `game/15-results-a`. A victory reference (`duel/07-result-a`) stays optional, only if winning should feel bigger. Nothing else to collect.
 - **Save to:** `duel/07-result-a.png`
 - **Search:** Dribbble `neubrutalism win screen`, `victory screen ui`, `win lose screen game`
 
@@ -764,7 +771,7 @@ Write these in `context/screenshots/notes.md` as you go:
 - [x] **Stage B:** § 4 Game screen (desktop **and** phone) → "game ready" (specs B1–B3 in `context/features/redesign-b*.md`)
 - [x] **Stage C:** § 5 Play → "play ready" (specs C1–C2 in `context/features/redesign-c*.md`)
 - [x] **Stage D:** § 6 Home → "home ready" (specs D1–D2 in `context/features/redesign-d*.md`)
-- [ ] **Stage E:** § 7 Duel → "duel ready"
+- [x] **Stage E:** § 7 Duel → "duel ready" (specs E1–E2 in `context/features/redesign-e*.md`)
 - [ ] **Stage F:** § 8 Profile → "profile ready"
 - [ ] **Stage G:** § 9 Archive → "archive ready"
 - [ ] **Stage H:** § 10 Sign in, § 11 Pro and § 12 System → "rest ready"
