@@ -1,6 +1,8 @@
 'use client';
 
+import { WifiOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { reconnectSecondsLeft } from '@/lib/duel-status';
 import { serverClock } from '@/lib/server-clock';
 
@@ -19,11 +21,13 @@ export function ReconnectChip({ deadline }: { deadline: number }) {
   }, []);
 
   return (
-    <span className="rounded-sm bg-warning px-2 py-0.5 text-12 font-semibold whitespace-nowrap text-on-accent">
+    // Normal case: "18S" would misread the seconds
+    <Badge variant="sticker" tone="warning" tilt="none" className="normal-case">
+      <WifiOff aria-hidden="true" strokeWidth={2.5} />
       {/* Server and client clocks may differ by a tick */}
       <span suppressHydrationWarning>
         Reconnecting, {reconnectSecondsLeft(deadline, now)}s
       </span>
-    </span>
+    </Badge>
   );
 }

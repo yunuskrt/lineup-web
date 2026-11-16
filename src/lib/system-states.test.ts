@@ -138,12 +138,13 @@ describe('reconnectingGate', () => {
     expect(gate?.countdown?.deadline).toBe(NOW + 18_000);
     expect(gate?.actionLabel).toBeUndefined();
     expect(gate?.detail).toBeUndefined();
+    expect(gate?.notice).toBe('connection');
   });
 
   it('keeps a stable title without a deadline', () => {
     expect(
       reconnectingGate({ status: 'reconnecting', reconnectDeadline: null }),
-    ).toEqual({ title: 'Reconnecting' });
+    ).toEqual({ title: 'Reconnecting', notice: 'connection' });
   });
 
   it('has no gate unless you are reconnecting', () => {

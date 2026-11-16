@@ -733,12 +733,17 @@ function roomFailedGate(state: DuelSessionState): CanvasGateView | null {
       seePro: true,
     };
   }
+  if (failure.step === 'joinRoom') {
+    return {
+      title: FAILED_TITLES.joinRoom,
+      detail: joinRefusalDetail(failure.error),
+      actionLabel: DUEL_GATE_COPY.backToPlay,
+      notice: 'refused',
+    };
+  }
   return {
     title: FAILED_TITLES[failure.step],
-    detail:
-      failure.step === 'joinRoom'
-        ? joinRefusalDetail(failure.error)
-        : failure.error.message,
+    detail: failure.error.message,
     actionLabel: DUEL_GATE_COPY.backToPlay,
   };
 }
