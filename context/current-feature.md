@@ -105,3 +105,4 @@ Not Started
 - Redesign C2 Play Controls: search icon, season selects, 6-box room code.
 - Redesign D1 Home Fold: new tagline, butter block, browser-frame demo.
 - Redesign D2 Home Sections: colour bands, rule blocks, logo marquee.
+- Redesign E1 Duel Lobby: code card boxes, versus cards, filter stickers.

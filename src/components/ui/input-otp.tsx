@@ -3,6 +3,7 @@
 import { OTPInput, OTPInputContext } from 'input-otp';
 import { type ComponentProps, useContext } from 'react';
 import { cn } from '@/lib/utils';
+import { CODE_BOX } from '@/styles/classes';
 
 // neobrutalism.dev Input OTP: one real input, boxes drawn over it
 export function InputOTP({
@@ -47,7 +48,7 @@ export function InputOTPSlot({
       data-slot="input-otp-slot"
       data-active={isActive}
       className={cn(
-        'relative flex size-10 items-center justify-center border-y-2 border-r-2 border-line bg-surface-card text-fg first:rounded-l-md first:border-l-2 last:rounded-r-md data-[active=true]:z-10 data-[active=true]:outline-2 data-[active=true]:outline-offset-2 data-[active=true]:outline-focus',
+        `size-10 data-[active=true]:z-10 data-[active=true]:outline-2 data-[active=true]:outline-offset-2 data-[active=true]:outline-focus ${CODE_BOX}`,
         className,
       )}
       {...props}

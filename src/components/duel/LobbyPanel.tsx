@@ -1,18 +1,23 @@
 'use client';
 
+import { Check, Copy, Link, type LucideIcon, User, Users } from 'lucide-react';
 import { motion, type Transition } from 'motion/react';
 import { type ReactNode, useEffect, useState } from 'react';
 import type { GateSize } from '@/components/game/CanvasGate';
+import { Badge } from '@/components/ui/badge';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { roomClosesLabel, roomLink } from '@/lib/room-code';
+import { cn } from '@/lib/utils';
 import { serverClock } from '@/lib/server-clock';
 import {
+  ACTOR_BAR,
+  CODE_BOX,
   DUEL_ACTOR_BG,
-  DUEL_ACTOR_BORDER,
   DUEL_ACTOR_TEXT,
+  ICON_TILE,
   PRIMARY_BUTTON,
   SECONDARY_BUTTON,
-  TEXT_LINK,
+  TYPE_ROOM_CODE,
 } from '@/styles/classes';
 import {
   MOTION_EASING,
@@ -39,7 +44,11 @@ export const LOBBY_GATE_SIZE: Record<DuelLobbyStep, GateSize> = {
   noOpponent: 'narrow',
 };
 
-const CARD = 'flex flex-col gap-3 rounded-md border bg-surface-card p-4';
+const CARD =
+  'relative flex flex-col gap-3 rounded-lg border-2 border-line bg-surface-card p-4 shadow-hard';
+
+// Narrow gates: the main action first, stacked
+const ACTIONS = 'flex w-full flex-col gap-3';
 
 // Button height, so locking in doesn't shift the card
 const STATUS_ROW = 'flex h-8 items-center gap-2 text-14 font-medium';
@@ -52,20 +61,10 @@ const AMBIENT_PULSE: Transition = {
 
 function ActorBar({ actor }: { actor: DuelActor }) {
   return (
-    <span aria-hidden="true" className={`h-1 w-8 ${DUEL_ACTOR_BG[actor]}`} />
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
+    <span
       aria-hidden="true"
-      focusable="false"
-      className="size-4 fill-none stroke-current stroke-3"
-    >
-      <path d="M5 12.5 9.5 17 19 7" />
-    </svg>
+      className={`${ACTOR_BAR} ${DUEL_ACTOR_BG[actor]}`}
+    />
   );
 }
 
@@ -87,12 +86,18 @@ function Searching({ onAction }: { onAction: (action: LobbyAction) => void }) {
   const isPulsing = runs('lobbyPulse');
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="flex flex-col items-center gap-5">
+      <span
+        aria-hidden="true"
+        className={`size-12 bg-surface-card ${ICON_TILE}`}
+      >
+        <Users className="size-6" strokeWidth={2.25} />
+      </span>
       {/* The opponent's mark waits, dim, to be filled */}
       <span aria-hidden="true" className="flex gap-1.5">
         <ActorBar actor="you" />
         <motion.span
-          className="h-1 w-8 bg-fg-dim"
+          className={`${ACTOR_BAR} bg-fg-dim`}
           initial={false}
           animate={{
             opacity: isPulsing ? [...SKELETON_PULSE_OPACITY] : 1,
@@ -161,35 +166,73 @@ type RoomWaitingProps = {
   onAction: (action: LobbyAction) => void;
 };
 
+function CopyButton({
+  label,
+  isCopied,
+  icon: Icon,
+  onCopy,
+}: {
+  label: string;
+  isCopied: boolean;
+  icon: LucideIcon;
+  onCopy: () => void;
+}) {
+  const Shown = isCopied ? Check : Icon;
+  return (
+    <button
+      type="button"
+      className={`inline-flex items-center justify-center gap-2 whitespace-nowrap ${SECONDARY_BUTTON}`}
+      onClick={onCopy}
+    >
+      <Shown aria-hidden="true" className="size-4 shrink-0" strokeWidth={2.5} />
+      {isCopied ? 'Copied' : label}
+    </button>
+  );
+}
+
 function RoomWaiting({ lobby, onAction }: RoomWaitingProps) {
   const { copied, isRefused, copy } = useCopy();
   const { code } = lobby;
 
   return (
     <div className="flex flex-col gap-5">
-      <p
-        aria-label={`Room code ${code.split('').join(' ')}`}
-        className="text-center font-display text-48 leading-none font-bold tracking-widest tabular-nums select-all"
-      >
-        {code}
-      </p>
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          className={SECONDARY_BUTTON}
-          onClick={() => void copy('code', code)}
+      <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-line bg-surface-card p-4">
+        {/* The code below names itself, letter by letter */}
+        <span
+          aria-hidden="true"
+          className="text-12 font-medium text-fg-muted uppercase"
         >
-          {copied === 'code' ? 'Copied' : 'Copy code'}
-        </button>
-        <button
-          type="button"
-          className={SECONDARY_BUTTON}
-          onClick={() =>
-            void copy('link', roomLink(window.location.origin, code))
-          }
+          Room code
+        </span>
+        <p
+          aria-label={`Room code ${code.split('').join(' ')}`}
+          className="flex w-full max-w-84 justify-center select-all"
         >
-          {copied === 'link' ? 'Copied' : 'Copy link'}
-        </button>
+          {code.split('').map((char, index) => (
+            <span
+              key={index}
+              className={`aspect-square max-w-14 min-w-0 flex-1 text-20 sm:text-28 ${TYPE_ROOM_CODE} ${CODE_BOX}`}
+            >
+              {char}
+            </span>
+          ))}
+        </p>
+        <div className="grid w-full gap-3 min-[360px]:grid-cols-2">
+          <CopyButton
+            label="Copy code"
+            icon={Copy}
+            isCopied={copied === 'code'}
+            onCopy={() => void copy('code', code)}
+          />
+          <CopyButton
+            label="Copy link"
+            icon={Link}
+            isCopied={copied === 'link'}
+            onCopy={() =>
+              void copy('link', roomLink(window.location.origin, code))
+            }
+          />
+        </div>
       </div>
       <p role="status" className="text-center text-14 text-fg-muted">
         {isRefused
@@ -203,7 +246,7 @@ function RoomWaiting({ lobby, onAction }: RoomWaitingProps) {
         <ClosesIn expiresAt={lobby.expiresAt} />
         <button
           type="button"
-          className={`text-14 ${TEXT_LINK}`}
+          className={SECONDARY_BUTTON}
           onClick={() => onAction('cancel')}
         >
           Cancel
@@ -219,17 +262,17 @@ function RoomExpired({
   onAction: (action: LobbyAction) => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className={ACTIONS}>
       <button
         type="button"
-        className={`w-full ${PRIMARY_BUTTON}`}
+        className={PRIMARY_BUTTON}
         onClick={() => onAction('newRoom')}
       >
         Create a new room
       </button>
       <button
         type="button"
-        className={`text-14 ${TEXT_LINK}`}
+        className={SECONDARY_BUTTON}
         onClick={() => onAction('cancel')}
       >
         Back to play
@@ -238,32 +281,48 @@ function RoomExpired({
   );
 }
 
-function Handle({ actor, player }: { actor: DuelActor; player: DuelPlayer }) {
-  const isYou = actor === 'you';
-
+function PlayerCard({
+  actor,
+  player,
+}: {
+  actor: DuelActor;
+  player: DuelPlayer;
+}) {
   return (
     <div
-      className={`flex min-w-0 flex-col gap-1.5 ${isYou ? 'items-start text-left' : 'items-end text-right'}`}
+      className={`flex min-w-0 flex-col items-center gap-2 rounded-lg border-2 border-line p-4 text-center text-on-accent shadow-hard ${DUEL_ACTOR_BG[actor]}`}
     >
-      <ActorBar actor={actor} />
       <span
-        className={`w-full truncate text-16 font-medium ${DUEL_ACTOR_TEXT[actor]}`}
+        aria-hidden="true"
+        className={`size-10 bg-surface-card ${ICON_TILE}`}
       >
+        <User className="size-5" strokeWidth={2.25} />
+      </span>
+      <span className="w-full truncate text-16 font-semibold">
         {player.handle}
       </span>
-      <span className="text-12 text-fg-muted">
-        {isYou ? 'You' : 'Opponent'}
-      </span>
+      <span className="text-12">{actor === 'you' ? 'You' : 'Opponent'}</span>
     </div>
   );
 }
 
+// Reading order on phones too: you, vs, opponent
 function Paired({ you, opponent }: { you: DuelPlayer; opponent: DuelPlayer }) {
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-      <Handle actor="you" player={you} />
-      <span className="text-14 text-fg-muted">vs</span>
-      <Handle actor="opponent" player={opponent} />
+    <div className="flex flex-col items-stretch gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+      <PlayerCard actor="you" player={you} />
+      <span className="flex justify-center">
+        <span className="sr-only">vs</span>
+        <Badge
+          aria-hidden="true"
+          variant="sticker"
+          tone="butter"
+          className="px-3 py-1 text-20"
+        >
+          VS
+        </Badge>
+      </span>
+      <PlayerCard actor="opponent" player={opponent} />
     </div>
   );
 }
@@ -271,23 +330,13 @@ function Paired({ you, opponent }: { you: DuelPlayer; opponent: DuelPlayer }) {
 type FilterCardProps = {
   actor: DuelActor;
   title: string;
-  isLocked: boolean;
   children: ReactNode;
   footer: ReactNode;
 };
 
-function FilterCard({
-  actor,
-  title,
-  isLocked,
-  children,
-  footer,
-}: FilterCardProps) {
+function FilterCard({ actor, title, children, footer }: FilterCardProps) {
   return (
-    <section
-      aria-label={title}
-      className={`${CARD} ${isLocked ? DUEL_ACTOR_BORDER[actor] : 'border-line'}`}
-    >
+    <section aria-label={title} className={CARD}>
       <div className="flex flex-col gap-2">
         <ActorBar actor={actor} />
         <h3 className="truncate text-14 font-semibold text-fg">{title}</h3>
@@ -300,9 +349,11 @@ function FilterCard({
 
 function LockedIn({ actor }: { actor: DuelActor }) {
   return (
-    <span className={`${STATUS_ROW} ${DUEL_ACTOR_TEXT[actor]}`}>
-      <CheckIcon />
-      Locked in
+    <span className={STATUS_ROW}>
+      <Badge variant="sticker" tone={actor} tilt="none">
+        <Check strokeWidth={3} aria-hidden="true" />
+        Locked in
+      </Badge>
     </span>
   );
 }
@@ -331,7 +382,6 @@ function Filters({ lobby, opponent, onAction }: FiltersProps) {
       <FilterCard
         actor="you"
         title="Your filters"
-        isLocked={isYoursLocked}
         footer={
           isYoursLocked ? (
             <LockedIn actor="you" />
@@ -352,7 +402,6 @@ function Filters({ lobby, opponent, onAction }: FiltersProps) {
       <FilterCard
         actor="opponent"
         title={`${theirName}'s filters`}
-        isLocked={isTheirsLocked}
         footer={
           isTheirsLocked ? (
             <LockedIn actor="opponent" />
@@ -380,7 +429,7 @@ function CoinFlip({
   return (
     <motion.section
       aria-label={title}
-      className={`${CARD} border-2 ${DUEL_ACTOR_BORDER[winner]}`}
+      className={CARD}
       initial={{ opacity: 0, scale: runs('coinFlipScale') ? 0.96 : 1 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{
@@ -389,14 +438,24 @@ function CoinFlip({
         scale: runs('coinFlipScale') ? undefined : { duration: 0 },
       }}
     >
+      <Badge
+        variant="sticker"
+        tone={winner}
+        tilt="right"
+        className="absolute -top-3 right-4"
+      >
+        Used
+      </Badge>
       {/* Both marks stay; the winner's leads */}
       <span aria-hidden="true" className="flex items-center gap-1.5">
         {(['you', 'opponent'] as const).map((actor) => (
           <span
             key={actor}
-            className={`h-1 ${DUEL_ACTOR_BG[actor]} ${
-              actor === winner ? 'w-16' : 'w-8 opacity-40'
-            }`}
+            className={cn(
+              ACTOR_BAR,
+              DUEL_ACTOR_BG[actor],
+              actor === winner ? 'w-16' : 'opacity-40',
+            )}
           />
         ))}
       </span>
@@ -412,17 +471,17 @@ function CoinFlip({
 
 function NoOpponent({ onAction }: { onAction: (action: LobbyAction) => void }) {
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className={ACTIONS}>
       <button
         type="button"
-        className={`w-full ${PRIMARY_BUTTON}`}
+        className={PRIMARY_BUTTON}
         onClick={() => onAction('solo')}
       >
         Play solo with these filters
       </button>
       <button
         type="button"
-        className={`text-14 ${TEXT_LINK}`}
+        className={SECONDARY_BUTTON}
         onClick={() => onAction('searchAgain')}
       >
         Search again
