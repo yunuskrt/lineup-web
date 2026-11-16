@@ -4,6 +4,7 @@ import {
   duelCountLabel,
   duelRecord,
   favouriteClubStat,
+  handleInitial,
   historyOutcomeLabel,
   historyTone,
   isStaleCursor,
@@ -217,6 +218,24 @@ describe('favouriteClubStat', () => {
 
   it('reads None yet without one', () => {
     expect(favouriteClubStat(NO_GAMES)).toBe('None yet');
+  });
+});
+
+describe('handleInitial', () => {
+  it('capitalises the first letter', () => {
+    expect(handleInitial('floodlit_fan')).toBe('F');
+  });
+
+  it('keeps a digit or symbol as it is', () => {
+    expect(handleInitial('9ine')).toBe('9');
+  });
+
+  it('takes a whole code point, not half a pair', () => {
+    expect(handleInitial('𝒜lex')).toBe('𝒜');
+  });
+
+  it('falls back to a question mark when empty', () => {
+    expect(handleInitial('  ')).toBe('?');
   });
 });
 

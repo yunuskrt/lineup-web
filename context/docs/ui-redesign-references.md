@@ -617,7 +617,8 @@ The duel uses the game screen from § 4, plus these.
 
 ## § 8. Page: Profile `/profile`
 
-- **Whole page (Must, desktop and phone):** profile and stats pages. One united board like `/play` (C1), not separate cards.
+- **Whole page (Must, desktop and phone):** ✅ **Collected** (layout only). One united board like `/play` (C1), not separate cards.
+- **Done:** `profile/00-page-a` (desktop: outlined blocks on top, one ruled list below) and `00-page-b` (phone: big title, a lavender hero block, a ruled list).
 - **Save to:** `profile/00-page-a.png`
 - **Search:** Dribbble `neubrutalism profile`, `neubrutalism dashboard`, `user profile stats page`; Real, layout only: a Chess.com profile, a Duolingo profile
 
@@ -635,7 +636,8 @@ The duel uses the game screen from § 4, plus these.
 - **Save to:** `profile/02-upgrade-a.png`
 - **Search:** neobrutalism.dev Alert; Dribbble `neubrutalism banner`, `create account prompt ui`
 
-#### `DuelRecord` — won, drawn, lost — **Must**
+#### `DuelRecord` — won, drawn, lost — ✅ **Collected**
+- **Done:** `profile/03-record-a` (big numbers in a row, a small label above each) and `03-record-b` (W / D / L letter tiles, layout only).
 - **Need:** the page's main piece: three big numbers and a won / drawn / lost bar (a draw shows both colours).
 - **Save to:** `profile/03-record-a.png`
 - **Search:** Dribbble `neubrutalism stats`, `win loss stats ui`, `stacked bar stats card`
@@ -780,6 +782,6 @@ Write these in `context/screenshots/notes.md` as you go:
 - [x] **Stage C:** § 5 Play → "play ready" (specs C1–C2 in `context/features/redesign-c*.md`)
 - [x] **Stage D:** § 6 Home → "home ready" (specs D1–D2 in `context/features/redesign-d*.md`)
 - [x] **Stage E:** § 7 Duel → "duel ready" (specs E1–E2 in `context/features/redesign-e*.md`)
-- [ ] **Stage F:** § 8 Profile → "profile ready"
+- [x] **Stage F:** § 8 Profile → "profile ready" (specs F1–F2 in `context/features/redesign-f*.md`)
 - [ ] **Stage G:** § 9 Archive → "archive ready"
 - [ ] **Stage H:** § 10 Sign in, § 11 Pro and § 12 System → "rest ready"

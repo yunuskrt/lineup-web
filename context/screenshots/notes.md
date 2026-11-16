@@ -89,6 +89,11 @@ Decided 2026-11-14, close to the other-01 heading. Both are Google Fonts the app
 - duel/04-room-code-a: little to take (Digital Housie): pill-shaped step titles and code boxes, which C2 already has; not the teal or the tickets
 - duel/04-room-code-b: the code card: a label, the code large, a divider, Copy code beside it, in a dashed outline; not the blue fill
 
+- profile/00-page-a: layout only (Bruddle dashboard): big bold title, a row of outlined blocks on top, then one outlined list with ink rules between rows; white controls, few pastel accents; not the black sidebar (our top nav stays) or the tabs
+- profile/00-page-b: phone stacking (Bruddle Accounts): a big display title, one lavender hero block with a hard shadow, then an outlined list with ruled rows (title and line left, value and date right)
+- profile/03-record-a: the record's numbers: big numbers in a row, a small label above each, no box around each; not the superscripts, the calendar or the payment cards
+- profile/03-record-b: layout only (Delulu, dark): W / D / L as small coloured letter tiles; our colours (you blue, draw both, loss red), never green against red, and no "last five" strip
+
 Decided 2026-11-15 for stage B: mint turf #A7E3C4 with ink lines; clock warning amber + thicker ring, critical red + thicker + pulse; RevealCard and LivesCard designed without references (see the guide § 4)
 
 ## Dislikes

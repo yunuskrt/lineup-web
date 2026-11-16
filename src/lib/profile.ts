@@ -106,6 +106,12 @@ export function favouriteClubStat(stats: UserStats): string {
   return stats.favouriteClub?.name ?? 'None yet';
 }
 
+// Not locale-aware: server and browser must agree
+export function handleInitial(handle: string): string {
+  const first = Array.from(handle.trim())[0] ?? '?';
+  return first.toUpperCase();
+}
+
 // The backend refused the cursor; restart paging
 export function isStaleCursor(error: unknown): boolean {
   return (

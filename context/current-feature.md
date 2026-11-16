@@ -107,3 +107,4 @@ Not Started
 - Redesign D2 Home Sections: colour bands, rule blocks, logo marquee.
 - Redesign E1 Duel Lobby: code card boxes, versus cards, filter stickers.
 - Redesign E2 Duel Result: summary sections, reconnect sticker, join Alert.
+- Redesign F1 Profile Board: one board, avatar header, stickers, Alert.
