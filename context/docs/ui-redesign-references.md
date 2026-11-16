@@ -665,27 +665,46 @@ The duel uses the game screen from § 4, plus these.
 
 ## § 9. Page: Archive `/archive` (Pro)
 
-- **Whole page (Must):** search pages with results lists.
+- **Whole page:** ♻️ **Reuse C1 / F** (decided 2026-11-16). An open page with ruled sections and no box, a big title, then the controls, then one white outlined list, as `/profile` and `/play`. Nothing to collect; `archive/00-page-a` stays optional.
 - **Save to:** `archive/00-page-a.png`
 - **Search:** Dribbble `neubrutalism search results`, `neubrutalism list view`, `search results page filters`; Real, layout only: FotMob fixtures, Sofascore results
 
 ### Components
 
-#### Search box — **Must**
+#### Header — "Archive" and the count line — ♻️ **Reuse F1** (decided 2026-11-16)
+- **Decided:** the title in `TYPE_TITLE`, like the profile handle, with the "N matches" line below; a "Pro" sticker beside the title only while the split is on. Nothing to collect.
+
+#### Search box — ✅ **Decided: neobrutalism.dev** (2026-11-16)
+- **Decided:** the [Input](https://www.neobrutalism.dev/docs/input) already in `ui/input` from C2, with a Lucide search icon inside, as the club search. White, 2px ink outline. Nothing to collect.
 - **Save to:** `archive/01-search-a.png`
 - **Search:** Uiverse `brutalist input`; Dribbble `neubrutalism search bar`
 
-#### `ArchiveFilters` — filters behind a button — **Must**
+#### `ArchiveFilters` — filters behind a button — ♻️ **Reuse C1 / C2** (decided 2026-11-16)
+- **Decided:** stays a fold-out panel on the page with the same `FilterPanel` as `/play`. The "Filters" button gets a Lucide sliders icon and a small count sticker when filters are on. **Not** the neobrutalism.dev Sheet / Drawer: an overlay and focus trap for a panel that sits inline on `/play`. Nothing to collect.
 - **Save to:** `archive/02-filters-a.png`
 - **Search:** neobrutalism.dev Popover, Sheet, Drawer; Dribbble `neubrutalism filter`, `filter drawer ui`
 
 #### `ArchiveRow` — one match — **Must**
+- **Need:** the page's main piece: two teams with crests either side of a centred score, then the date, competition, stage and nickname, then Play and Practise; scannable at three widths (phone, `sm`, `xl`).
 - **Today:** the date, both teams with crests, the score, the competition and stage, then Play and Practise.
 - **Save to:** `archive/03-row-a.png`
 - **Search:** Dribbble `neubrutalism list item`, `fixtures list ui`, `match list ui`; Real, layout only: FotMob, Sofascore
 
-#### Locked archive (Free) — **Nice**
-- Uses the § 3 `ProLock` references. Save page-level examples only if you find something special: `archive/04-locked-a.png`.
+#### Results list and Show more — ♻️ **Reuse F2** (decided 2026-11-16)
+- **Decided:** the profile history's white outlined list with 2px ink rules; Show more stays the secondary Button with its loading, failed and end states. Nothing to collect.
+
+#### Play and Practise buttons — ♻️ **Reuse A2** (decided 2026-11-16)
+- **Decided:** small secondary Buttons (white, ink outline, press shadow); Practise keeps its Pro rules. Nothing to collect.
+
+#### No results and error — ♻️ **Reuse A3** (decided 2026-11-16)
+- **Decided:** `StateNotice` with a Lucide icon tile, and Clear search or Try again, as today. Nothing to collect.
+
+#### Locked archive (Free) — ♻️ **Reuse A3** (decided 2026-11-16)
+- **Decided:** `ProLock` ("Browse the archive", "The archive is part of Pro.", See Pro), possibly inside the dashed empty box so the page isn't bare. Nothing to collect.
+- Save page-level examples only if you find something special: `archive/04-locked-a.png`.
+
+#### `ArchiveSkeleton` — ♻️ **Follows** (decided 2026-11-16)
+- **Decided:** mirrors the new rows at the same heights. Nothing to collect.
 
 > ✋ **End of stage G.** Tell me **"archive ready"**.
 
