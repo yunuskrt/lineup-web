@@ -79,4 +79,4 @@ Do not launch monetized.
 
 ---
 
-⚽ **Lineup — Know the XI. Beat the Clock.**
+⚽ **Lineup — Know the XI. Guess the Squad.**

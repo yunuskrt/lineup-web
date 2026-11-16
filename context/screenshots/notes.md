@@ -46,6 +46,8 @@ Decided 2026-11-14, close to the other-01 heading. Both are Google Fonts the app
 
 **Why the width changes:** measured at weight 800, "Beat the Clock." is 9.5em wide at width 125 and 8.5em at 112. On a 320px phone (288px of content), width 125 caps that line at about 30px, width 112 allows about 34px. So 125 is for desktop display and numbers, 112 for phone display and every title, and 100 for long titles.
 
+**Tagline changed** (2026-11-16): "Know the XI. Beat the Clock." became **"Know the XI. Guess the Squad."** everywhere. The width measurement above used the old line; "Guess the Squad." is re-measured when the home headline is built (stage D).
+
 **Numbers** (2026-11-15): stay Archivo width 125, weight 900, against the DIN-style `foundations/03-numerals-a`. Borrowed from it: the slashed zero (Archivo's `zero` feature) on the clock and scores.
 
 **Starting sizes** (tuned in stage A): display 72px desktop / 34px phone, line height 1.0; title 40 / 30; section title 28 / 24; card title 20; text 16, line height 1.5; small 14; caption 12. Clock seconds 64px.

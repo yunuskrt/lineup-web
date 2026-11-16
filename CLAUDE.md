@@ -1,6 +1,6 @@
 # Lineup
 
-Know the XI. Beat the Clock.
+Know the XI. Guess the Squad.
 
 ## Architecture
 

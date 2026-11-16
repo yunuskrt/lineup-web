@@ -537,17 +537,20 @@ The marketing page: the statement, a live demo turn, then the sections.
 - **Save to:** `landing/04-how-it-works-a.png`
 - **Search:** Dribbble `neubrutalism features section`, `neubrutalism how it works`, `3 steps section ui`
 
-#### `HomeModes` — Solo and Duel panels — **Must**
+#### `HomeModes` — Solo and Duel panels — ♻️ **Reuse C1** (decided 2026-11-16)
+- **Decided:** the same option-card look as the `/play` mode cards from C1 (Lucide icon tile, title, line, you / opponent colour bars), each with its buttons. The two pages match; nothing to collect.
 - **Today:** two panels side by side, each with a button ("Play solo", "Find a duel", "Play a friend").
 - **Save to:** `landing/05-modes-a.png`
 - **Search:** Dribbble `neubrutalism two cards`, `game mode selection ui`, `two option cards website`
 
-#### `HomeInside` — competitions and clubs inside — **Nice**
+#### `HomeInside` — competitions and clubs inside — ✅ **Decided: neobrutalism.dev** (2026-11-16)
+- **Decided:** the neobrutalism.dev [Marquee](https://www.neobrutalism.dev/docs/marquee): a scrolling strip of competition logos and club crests, adjusted to our palette. With reduced motion it becomes a still row. Nothing to collect.
 - **Today:** competition logos and club crests with counts.
 - **Save to:** `landing/06-logo-wall-a.png`
 - **Search:** neobrutalism.dev Marquee; Dribbble `neubrutalism marquee`, `logo wall section`
 
-#### Closing call to action — **Nice**
+#### Closing call to action — ♻️ **No reference needed** (decided 2026-11-16)
+- **Decided:** one full-width coloured band with the closing line and the large primary Button, from our theme. Nothing to collect.
 - **Save to:** `landing/07-cta-a.png`
 - **Search:** Dribbble `neubrutalism cta section`, `neubrutalism footer cta`
 
@@ -728,7 +731,7 @@ Neubrutalism UI on a warm cream background. Flat pastel blocks in lavender, mint
 | B | Game (phone) | The same prompt, ending with `, mobile phone layout` | `game/ai-02.png` |
 | B | Results | `Quiz results card: "Run ended", 7 of 11 named, accuracy, best streak, time per round, the list of named players in order, and buttons Play again and Back to play.` | `game/ai-03.png` |
 | C | Play | `Game setup page. Two big selectable cards, Solo and Duel. Below: filters with competition chips with logos, a club search with chips, a season range. A large Start button with "3 of 5 solo runs left today" under it.` | `play/ai-01.png` |
-| D | Home | `Landing page. Headline "Know the XI. Beat the Clock." with a Play button, and beside it a small live game preview in an outlined browser frame. Then sections: match archive stats with competition logos, three rules (name the starting eleven, 15 seconds per turn, three lives), and two mode cards: Solo and Duel.` | `landing/ai-01.png` |
+| D | Home | `Landing page. Headline "Know the XI. Guess the Squad." with a Play button, and beside it a small live game preview in an outlined browser frame. Then sections: match archive stats with competition logos, three rules (name the starting eleven, 15 seconds per turn, three lives), and two mode cards: Solo and Duel.` | `landing/ai-01.png` |
 | E | Duel lobby | `Online 1v1 matchmaking screen: "Finding an opponent…", then a versus card with both player names, then a private room screen with a big 6-character code, Copy code and Copy link buttons, and "Closes in 9:41".` | `duel/ai-01.png` |
 | F | Profile | `Player profile page: handle and plan badge, a won/drawn/lost record with a bar, stat cards (solo runs, perfect clears, best streak, accuracy, favourite club), and a match history list.` | `profile/ai-01.png` |
 | G | Archive | `Searchable match archive: a search box, a Filters button, and a list of football matches (date, two teams with crests, score, competition and stage), each with Play and Practise buttons.` | `archive/ai-01.png` |

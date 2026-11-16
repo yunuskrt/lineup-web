@@ -1,6 +1,6 @@
 ## Lineup Project Specifications
 
-⚽ **Know the XI. Beat the Clock.**
+⚽ **Know the XI. Guess the Squad.**
 
 ---
 
@@ -310,4 +310,4 @@ Pro sells **depth and convenience in solo play**. It never sells advantage in du
 
 ---
 
-⚽ **Lineup — Know the XI. Beat the Clock.**
+⚽ **Lineup — Know the XI. Guess the Squad.**

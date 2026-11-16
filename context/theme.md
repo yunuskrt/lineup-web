@@ -186,4 +186,4 @@ Every wait in this app has a **known shape** — a squad is always 11 slots, a l
 
 ---
 
-⚽ **Lineup — Know the XI. Beat the Clock.**
+⚽ **Lineup — Know the XI. Guess the Squad.**
