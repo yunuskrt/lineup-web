@@ -1,9 +1,11 @@
 'use client';
 
 import { useId, useState } from 'react';
+import { SlidersHorizontal } from 'lucide-react';
 import { FilterPanel } from '@/components/play/FilterPanel';
 import { FilterSkeleton } from '@/components/play/FilterSkeleton';
-import { activeFiltersLabel } from '@/lib/archive';
+import { Badge } from '@/components/ui/badge';
+import { activeFilterCount, activeFiltersLabel } from '@/lib/archive';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
@@ -26,6 +28,7 @@ export function ArchiveFilters({ state, onChange }: ArchiveFiltersProps) {
   const active = state
     ? activeFiltersLabel(state.filters, state.options)
     : null;
+  const count = state ? activeFilterCount(state.filters, state.options) : 0;
 
   return (
     <div className="flex flex-col gap-2">
@@ -35,15 +38,27 @@ export function ArchiveFilters({ state, onChange }: ArchiveFiltersProps) {
           aria-expanded={isOpen}
           aria-controls={panelId}
           onClick={() => setIsOpen((open) => !open)}
-          className={SECONDARY_BUTTON}
+          className={`inline-flex items-center gap-2 ${SECONDARY_BUTTON}`}
         >
+          <SlidersHorizontal aria-hidden="true" className="size-4" />
           {isOpen ? 'Hide filters' : 'Filters'}
+          {/* The line beside it names them for readers */}
+          {count > 0 ? (
+            <Badge aria-hidden="true" tone="butter" className="px-1.5">
+              {count}
+            </Badge>
+          ) : null}
         </button>
         {active ? (
           <p className="min-w-0 text-14 leading-5 text-fg-muted">{active}</p>
         ) : null}
       </div>
-      <div id={panelId} hidden={!isOpen} className="border-b border-line pb-5">
+      <div
+        id={panelId}
+        hidden={!isOpen}
+        // FilterPanel draws its own rule on top
+        className="pt-2"
+      >
         {state ? (
           <FilterPanel
             options={state.options}

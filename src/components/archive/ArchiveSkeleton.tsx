@@ -21,16 +21,13 @@ export function ArchiveSkeletonRows() {
   return (
     <motion.div
       aria-hidden="true"
-      className={`${ARCHIVE_LIST} divide-y divide-line`}
+      className={ARCHIVE_LIST}
       initial={false}
       animate={{ opacity: isPulsing ? [...SKELETON_PULSE_OPACITY] : 1 }}
       transition={isPulsing ? SKELETON_PULSE : undefined}
     >
       {Array.from({ length: ROWS }, (_, index) => (
         <div key={index} className={ARCHIVE_ROW}>
-          <span
-            className={`hidden h-5 w-20 xl:col-start-1 xl:block ${SKELETON}`}
-          />
           <span
             className={`col-start-1 row-start-1 h-5 w-full max-w-40 justify-self-end sm:h-8 xl:col-start-2 ${SKELETON}`}
           />
@@ -42,7 +39,7 @@ export function ArchiveSkeletonRows() {
           />
           <div className={ARCHIVE_ROW_FOOT}>
             <span
-              className={`h-4 w-full max-w-64 min-w-0 sm:flex-1 xl:col-start-5 xl:row-start-1 xl:h-5 xl:max-w-56 ${SKELETON}`}
+              className={`h-4 w-full max-w-64 min-w-0 sm:flex-1 xl:col-start-1 xl:row-start-1 xl:h-9 xl:max-w-56 ${SKELETON}`}
             />
             <div className={ARCHIVE_ROW_ACTIONS}>
               <span className={`h-7.5 w-13 ${SKELETON}`} />

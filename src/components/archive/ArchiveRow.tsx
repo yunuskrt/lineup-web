@@ -3,11 +3,13 @@ import {
   ARCHIVE_ROW,
   ARCHIVE_ROW_ACTIONS,
   ARCHIVE_ROW_FOOT,
+  TEAM_NAME,
 } from '@/components/archive/styles';
 import { ClubCrest } from '@/components/game/ClubCrest';
 import { CompetitionLogo } from '@/components/game/CompetitionLogo';
 import { archiveDateLabel, playMatchLabel } from '@/lib/archive';
 import { matchEvent } from '@/lib/summary';
+import { TYPE_NUMBER } from '@/styles/classes';
 import type { MatchIdentity } from '@/types/match';
 
 const ROW_ACTIONS = [
@@ -25,7 +27,7 @@ type ArchiveRowProps = {
   isDisabled?: boolean;
 };
 
-// Phones drop the crests; one line from xl
+// Phones drop the crests; one line from xl, meta first
 export function ArchiveRow({
   match,
   onPlay,
@@ -37,24 +39,17 @@ export function ArchiveRow({
 
   return (
     <li className={ARCHIVE_ROW}>
-      <time
-        dateTime={match.date}
-        className="hidden text-14 leading-5 text-fg-muted tabular-nums xl:col-start-1 xl:row-start-1 xl:block"
-      >
-        {date}
-      </time>
       <span className="col-start-1 row-start-1 flex min-w-0 items-center justify-end gap-2 xl:col-start-2">
-        <span
-          title={match.home.name}
-          className="truncate text-14 leading-5 font-medium sm:text-16 sm:leading-6"
-        >
+        <span title={match.home.name} className={TEAM_NAME}>
           {match.home.name}
         </span>
         <span className="hidden sm:flex">
-          <ClubCrest club={match.home} size="row" />
+          <ClubCrest club={match.home} size="row" fallbackFill="raised" />
         </span>
       </span>
-      <span className="col-start-2 row-start-1 flex items-baseline justify-center gap-1 font-display text-16 leading-6 font-semibold tabular-nums xl:col-start-3">
+      <span
+        className={`col-start-2 row-start-1 flex items-baseline justify-center gap-1 text-16 leading-6 sm:text-18 xl:col-start-3 ${TYPE_NUMBER}`}
+      >
         <span>{match.score.home}</span>
         <span aria-hidden="true" className="text-fg-dim">
           –
@@ -64,26 +59,29 @@ export function ArchiveRow({
       </span>
       <span className="col-start-3 row-start-1 flex min-w-0 items-center gap-2 xl:col-start-4">
         <span className="hidden sm:flex">
-          <ClubCrest club={match.away} size="row" />
+          <ClubCrest club={match.away} size="row" fallbackFill="raised" />
         </span>
-        <span
-          title={match.away.name}
-          className="truncate text-14 leading-5 font-medium sm:text-16 sm:leading-6"
-        >
+        <span title={match.away.name} className={TEAM_NAME}>
           {match.away.name}
         </span>
       </span>
       <div className={ARCHIVE_ROW_FOOT}>
-        <span className="flex min-w-0 items-center gap-2 text-12 leading-4 text-fg-muted sm:flex-1 xl:col-start-5 xl:row-start-1 xl:flex-col xl:items-start xl:gap-0.5">
-          <span className="shrink-0 tabular-nums xl:hidden">{date}</span>
-          <span className="flex min-w-0 flex-1 items-center gap-1.5 sm:flex-initial xl:max-w-full">
+        {/* From xl: the event, then the date and nickname */}
+        <span className="flex min-w-0 items-center gap-2 text-12 leading-4 text-fg-muted sm:flex-1 xl:col-start-1 xl:row-start-1 xl:grid xl:grid-cols-[auto_minmax(0,1fr)] xl:gap-x-2 xl:gap-y-0.5">
+          <time
+            dateTime={match.date}
+            className="shrink-0 tabular-nums xl:row-start-2"
+          >
+            {date}
+          </time>
+          <span className="flex min-w-0 flex-1 items-center gap-1.5 sm:flex-initial xl:col-span-2 xl:row-start-1">
             <CompetitionLogo
               competition={match.competition}
               className="size-4"
             />
             <span
               title={event}
-              className="truncate xl:text-14 xl:leading-5 xl:text-fg"
+              className="truncate xl:text-14 xl:leading-5 xl:font-medium xl:text-fg"
             >
               {event}
             </span>
@@ -91,7 +89,7 @@ export function ArchiveRow({
           {match.nickname ? (
             <span
               title={match.nickname}
-              className="min-w-0 truncate max-sm:hidden xl:max-w-full"
+              className="min-w-0 truncate max-sm:hidden xl:row-start-2"
             >
               {match.nickname}
             </span>

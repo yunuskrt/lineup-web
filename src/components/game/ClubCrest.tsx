@@ -21,17 +21,25 @@ const FALLBACK_TEXT: Record<CrestSize, string> = {
   card: 'text-16',
 };
 
+// White vanishes on a white surface; peach shows
+const FALLBACK_FILL = {
+  card: 'bg-surface-card',
+  raised: 'bg-surface-raised',
+} as const;
+
 type ClubCrestProps = {
   club: ClubRef;
   // Rings the crest of the XI being named
   isNamed?: boolean;
   size?: CrestSize;
+  fallbackFill?: keyof typeof FALLBACK_FILL;
 };
 
 export function ClubCrest({
   club,
   isNamed = false,
   size = 'header',
+  fallbackFill = 'card',
 }: ClubCrestProps) {
   const { showsImage, onError } = useImageFallback(club.crestUrl);
 
@@ -55,7 +63,7 @@ export function ClubCrest({
         />
       ) : (
         <span
-          className={`flex size-full items-center justify-center bg-surface-card leading-none font-semibold text-fg-muted ${FALLBACK_TEXT[size]}`}
+          className={`flex size-full items-center justify-center leading-none font-semibold text-fg-muted ${FALLBACK_FILL[fallbackFill]} ${FALLBACK_TEXT[size]}`}
         >
           <span className="truncate px-0.5">{club.shortName}</span>
         </span>
