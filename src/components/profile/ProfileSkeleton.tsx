@@ -8,6 +8,7 @@ import {
   PROFILE_PANEL,
   RECORD_BAR,
   STAT_ROW,
+  STAT_ROW_PAIRED,
 } from '@/components/profile/styles';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { cn } from '@/lib/utils';
@@ -15,7 +16,7 @@ import { BOARD, BOARD_SECTION } from '@/styles/classes';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 import { SKELETON } from '@/components/ui/skeleton';
 
-const STAT_ROWS = 5;
+const STAT_ROWS = 4;
 const HISTORY_ROWS = 3;
 
 // Same classes as the loaded panels, so nothing shifts
@@ -86,7 +87,7 @@ export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
                 <div
                   key={index}
                   className={`${STAT_ROW} items-center ${
-                    index === STAT_ROWS - 1 ? 'sm:col-span-2' : ''
+                    index === STAT_ROWS - 2 ? STAT_ROW_PAIRED : ''
                   }`}
                 >
                   <span className={`h-5 w-24 ${SKELETON}`} />

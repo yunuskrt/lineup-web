@@ -2,12 +2,14 @@
 
 import { type ReactNode, useId, useState } from 'react';
 import { PlayStart } from '@/components/play/PlayStart';
-import { PracticeToggle } from '@/components/play/PracticeToggle';
+import { ModeChoice } from '@/components/play/ModeChoice';
 import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
 import { ProLock, type ProLockSize } from '@/components/pro/ProLock';
 import { type ProPlan, ProView } from '@/components/pro/ProView';
 import { sampleAllowance } from '@/lib/dev/samples';
 import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
+import type { ModeOption } from '@/types/play';
+import type { ProAccess } from '@/types/pro';
 import { SECONDARY_BUTTON, DEV_PREVIEW_BUTTON } from '@/styles/classes';
 
 const SIZES: ProLockSize[] = ['default', 'large'];
@@ -47,9 +49,13 @@ function SoloStartSample({ used }: { used: number }) {
   );
 }
 
-function PracticeSample() {
-  const [isOn, setIsOn] = useState(true);
-  return <PracticeToggle access="open" isOn={isOn} onChange={setIsOn} />;
+function PracticeSample({ access }: { access: ProAccess }) {
+  const [option, setOption] = useState<ModeOption>(
+    access === 'open' ? 'practice' : 'solo',
+  );
+  return (
+    <ModeChoice option={option} onChange={setOption} practiceAccess={access} />
+  );
 }
 
 export function ProPreview() {
@@ -97,15 +103,15 @@ export function ProPreview() {
       </section>
       <section className="flex flex-col gap-6">
         <h2 className="text-20 font-semibold">Practice (/play)</h2>
-        <div className="flex flex-wrap items-start gap-12">
+        <div className="flex flex-col gap-12">
           <Specimen label="Open">
-            <PracticeSample />
+            <PracticeSample access="open" />
           </Specimen>
           <Specimen label="Locked: Free, switch on">
-            <PracticeToggle access="locked" isOn={false} onChange={() => {}} />
+            <PracticeSample access="locked" />
           </Specimen>
           <Specimen label="Pending">
-            <PracticeToggle access="pending" isOn={false} onChange={() => {}} />
+            <PracticeSample access="pending" />
           </Specimen>
         </div>
       </section>

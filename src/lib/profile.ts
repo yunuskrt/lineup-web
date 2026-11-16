@@ -102,10 +102,6 @@ export function accuracyStat(stats: UserStats): string {
   return stats.played === 0 ? '—' : accuracyLabel(stats.accuracy);
 }
 
-export function favouriteClubStat(stats: UserStats): string {
-  return stats.favouriteClub?.name ?? 'None yet';
-}
-
 // Not locale-aware: server and browser must agree
 export function handleInitial(handle: string): string {
   const first = Array.from(handle.trim())[0] ?? '?';

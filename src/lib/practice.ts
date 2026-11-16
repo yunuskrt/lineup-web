@@ -1,4 +1,5 @@
 import type { QuitDialogCopy } from '@/components/game/QuitDialog';
+import type { ModeOption, PlayMode } from '@/types/play';
 
 export const PRACTICE_PARAM = 'practice';
 
@@ -15,6 +16,20 @@ export function withPractice(
   next.delete(PRACTICE_PARAM);
   if (isPractice) next.set(PRACTICE_PARAM, '1');
   return next;
+}
+
+// isPractice already holds the Pro check
+export function modeOptionOf(mode: PlayMode, isPractice: boolean): ModeOption {
+  return isPractice ? 'practice' : mode;
+}
+
+export function modeOf(option: ModeOption): {
+  mode: PlayMode;
+  practice: boolean;
+} {
+  return option === 'practice'
+    ? { mode: 'solo', practice: true }
+    : { mode: option, practice: false };
 }
 
 // R14 ends a run in play when practice starts

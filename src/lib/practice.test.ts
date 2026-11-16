@@ -4,8 +4,34 @@ import {
   hasOpenRun,
   isPracticeFrom,
   markOpenRun,
+  modeOf,
+  modeOptionOf,
   withPractice,
 } from '@/lib/practice';
+
+describe('the mode cards', () => {
+  it('shows practice only when the run is one', () => {
+    expect(modeOptionOf('solo', true)).toBe('practice');
+    expect(modeOptionOf('solo', false)).toBe('solo');
+    expect(modeOptionOf('duel', false)).toBe('duel');
+  });
+
+  it('turns practice into a solo run', () => {
+    expect(modeOf('practice')).toEqual({ mode: 'solo', practice: true });
+  });
+
+  it('clears practice for solo and duel', () => {
+    expect(modeOf('solo')).toEqual({ mode: 'solo', practice: false });
+    expect(modeOf('duel')).toEqual({ mode: 'duel', practice: false });
+  });
+
+  it('round-trips every card when practice is open', () => {
+    for (const option of ['solo', 'duel', 'practice'] as const) {
+      const { mode, practice } = modeOf(option);
+      expect(modeOptionOf(mode, practice)).toBe(option);
+    }
+  });
+});
 
 describe('practice in the URL', () => {
   it('reads only practice=1', () => {

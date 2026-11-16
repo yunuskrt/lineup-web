@@ -108,3 +108,4 @@ Not Started
 - Redesign E1 Duel Lobby: code card boxes, versus cards, filter stickers.
 - Redesign E2 Duel Result: summary sections, reconnect sticker, join Alert.
 - Redesign F1 Profile Board: one board, avatar header, stickers, Alert.
+- Fix Play and Profile Layout: no box, Practice mode card, no fav club.
