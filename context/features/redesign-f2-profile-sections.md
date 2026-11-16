@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -47,3 +47,14 @@ The second part of redesign stage F (`/profile`, `context/docs/ui-redesign-refer
 - **Check:** `/profile?state=` `populated`, `guest`, `empty` (zero duels, no games), `loading`, `loading-more`, `more-failed`, `end`; Show more to the end with focus kept; 320, 640, 1024 and 1280px; screen-reader names for the record, stats and rows; loading and loaded heights.
 - **Dev server:** the dev cache is off (`next.config.ts`), so `npm run build` can run while the user's dev server is up.
 - Then stage G (`/archive`, § 9).
+
+- **Deviations recorded during implementation:**
+  - **Open questions:** all three defaults: the record is lavender on every width; ink numbers with the colour in the W / D / L tiles; mode stickers Solo `mint`, Duel `purple`, Friend `butter`.
+  - **Zero duels:** the letter tiles turn white with ink letters and the bar is white; the numbers stay ink, as muted text on lavender would fail contrast and an ink 0 isn't a result.
+  - **Record numbers:** 40px on phones, 48 from `sm` (`TYPE_NUMBER` is wider than the old numeral).
+  - **Stats block:** white, 2px ink outline, no shadow, so the record keeps the page's one shadow; the section is the grid item and the tiles fill its height beside the record.
+  - **Mode column:** the sticker is narrowed (`px-1.5`, normal width; Friend is 64px), and `HISTORY_ROW`'s first column grows from 3rem to 4rem to hold it. Heights and the rest of the grid are unchanged.
+  - **Phone rows:** the scoreline is 14px below `sm` (16 from `sm`) and the row's side padding 12px, so scorelines fit from 360. At 320 rows with a long outcome ("Perfect clear", "Forfeit win", "Run ended") still cut it, as before the redesign.
+  - **Empty history:** `StateNotice` (empty tone, `History` icon); `EmptyTitle` and `StateNotice` now take heading level 3.
+  - **Guest prompt placeholder (F1):** re-tuned after the box went: it matches 360–414, `sm` and `md`; at 320 the prompt is 21px taller than its placeholder.
+  - **Not re-run in the browser:** Show more to the end with focus: the dev states are static and the mock account has one page. `HistoryMore` and the `ol` > `li` structure are unchanged.

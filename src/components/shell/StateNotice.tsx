@@ -23,7 +23,7 @@ type StateNoticeProps = {
   icon: LucideIcon;
   message: ReactNode;
   title?: string;
-  titleLevel?: 1 | 2;
+  titleLevel?: 1 | 2 | 3;
   // Inline under a list: smaller box and tile
   isCompact?: boolean;
   children?: ReactNode;

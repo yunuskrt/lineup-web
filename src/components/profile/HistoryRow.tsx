@@ -1,5 +1,6 @@
-import { HISTORY_ROW, PROFILE_TAG } from '@/components/profile/styles';
+import { HISTORY_ROW } from '@/components/profile/styles';
 import { LivesLeft, livesLeftLabel } from '@/components/profile/LivesLeft';
+import { Badge } from '@/components/ui/badge';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { historyOutcomeLabel, historyTone, playedAtLabel } from '@/lib/profile';
 import { matchSubtitle, scoreline } from '@/lib/summary';
@@ -19,16 +20,40 @@ const MODE_LABELS: Record<HistoryEntry['mode'], string> = {
   duel: 'Duel',
 };
 
+type ModeKind = 'solo' | 'duel' | 'friend';
+
+// Neither side's colour: a mode is not a side
+const MODE_TONES = {
+  solo: 'mint',
+  duel: 'purple',
+  friend: 'butter',
+} as const;
+
+function modeKind(entry: HistoryEntry): ModeKind {
+  if (entry.mode === 'solo') return 'solo';
+  return entry.isPrivate ? 'friend' : 'duel';
+}
+
 // A private room's duel; the column fits one word
 function ModeTag({ entry }: { entry: HistoryEntry }) {
-  const isFriend = entry.mode === 'duel' && entry.isPrivate;
-  return isFriend ? (
-    <>
-      <span aria-hidden="true">Friend</span>
-      <span className="sr-only">Duel with a friend</span>
-    </>
-  ) : (
-    MODE_LABELS[entry.mode]
+  const kind = modeKind(entry);
+  return (
+    <Badge
+      variant="sticker"
+      tone={MODE_TONES[kind]}
+      tilt="none"
+      // Narrow, so the phone row keeps its scoreline
+      className="px-1.5 font-stretch-normal sm:col-start-1 sm:row-start-1 sm:justify-self-start"
+    >
+      {kind === 'friend' ? (
+        <>
+          <span aria-hidden="true">Friend</span>
+          <span className="sr-only">Duel with a friend</span>
+        </>
+      ) : (
+        MODE_LABELS[entry.mode]
+      )}
+    </Badge>
   );
 }
 
@@ -65,13 +90,9 @@ export function HistoryRow({ entry, today }: HistoryRowProps) {
     // Focusable only from script: the last Show more
     <li tabIndex={-1} className={HISTORY_ROW}>
       <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2 sm:contents">
-        <span
-          className={`sm:col-start-1 sm:row-start-1 sm:justify-self-start ${PROFILE_TAG}`}
-        >
-          <ModeTag entry={entry} />
-        </span>
+        <ModeTag entry={entry} />
         <Outcome entry={entry} />
-        <span className="truncate font-display text-16 leading-6 font-semibold tabular-nums sm:col-start-3 sm:row-start-1">
+        <span className="truncate font-display text-14 leading-6 font-semibold tabular-nums sm:col-start-3 sm:row-start-1 sm:text-16">
           {scoreline(entry.match, 'shortName')}
         </span>
       </div>

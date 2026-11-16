@@ -42,7 +42,7 @@ export function EmptyMedia({ className, ...props }: ComponentProps<'div'>) {
 
 type EmptyTitleProps = ComponentProps<'h2'> & {
   // 1 when the notice is the page itself
-  level?: 1 | 2;
+  level?: 1 | 2 | 3;
 };
 
 export function EmptyTitle({
@@ -50,7 +50,7 @@ export function EmptyTitle({
   level = 2,
   ...props
 }: EmptyTitleProps) {
-  const Heading = level === 1 ? 'h1' : 'h2';
+  const Heading = (['h1', 'h2', 'h3'] as const)[level - 1];
 
   return (
     <Heading
