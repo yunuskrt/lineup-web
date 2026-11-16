@@ -617,34 +617,42 @@ The duel uses the game screen from § 4, plus these.
 
 ## § 8. Page: Profile `/profile`
 
-- **Whole page (Must, desktop and phone):** profile and stats pages.
+- **Whole page (Must, desktop and phone):** profile and stats pages. One united board like `/play` (C1), not separate cards.
 - **Save to:** `profile/00-page-a.png`
 - **Search:** Dribbble `neubrutalism profile`, `neubrutalism dashboard`, `user profile stats page`; Real, layout only: a Chess.com profile, a Duolingo profile
 
 ### Components
 
-#### `ProfileHeader` and `ProfilePlan` — **Must**
+#### `ProfileHeader` and `ProfilePlan` — ✅ **Decided: neobrutalism.dev** (2026-11-16)
+- **Decided:** the neobrutalism.dev [Avatar](https://www.neobrutalism.dev/docs/avatar) (already in `ui/avatar.tsx`) with the handle's initials; beside the handle, our `Badge` stickers ("Guest", and "Pro" or "Free"); See Pro becomes a secondary Button. Nothing to collect.
 - **Today:** the handle, and the plan line ("You're on Pro." or "You're on the Free plan. See Pro").
 - **Save to:** `profile/01-header-a.png`
 - **Search:** Dribbble `neubrutalism profile header`, `user card with badge`
 
-#### `GuestUpgrade` — **Must**
+#### `GuestUpgrade` — ✅ **Decided: neobrutalism.dev** (2026-11-16)
+- **Decided:** the neobrutalism.dev [Alert](https://www.neobrutalism.dev/docs/alert) (already in `ui/alert.tsx` from E2) with a `UserRound` icon, the same guest line, and Create account as the primary button. Nothing to collect.
 - **Today:** "You're playing as a guest. Create an account to keep your history on any device. Nothing you've played is lost."
 - **Save to:** `profile/02-upgrade-a.png`
 - **Search:** neobrutalism.dev Alert; Dribbble `neubrutalism banner`, `create account prompt ui`
 
 #### `DuelRecord` — won, drawn, lost — **Must**
+- **Need:** the page's main piece: three big numbers and a won / drawn / lost bar (a draw shows both colours).
 - **Save to:** `profile/03-record-a.png`
 - **Search:** Dribbble `neubrutalism stats`, `win loss stats ui`, `stacked bar stats card`
 
-#### `ProfileStats` — solo runs, perfect clears, best streak, accuracy, favourite club — **Must**
+#### `ProfileStats` — solo runs, perfect clears, best streak, accuracy, favourite club — ♻️ **Reuse B3** (decided 2026-11-16)
+- **Decided:** the `RunSummary` stat tiles (a big Archivo number, a small label); favourite club is one wide tile, as it's text, not a number. Nothing to collect.
 - **Save to:** `profile/04-stats-a.png`
 - **Search:** Dribbble `neubrutalism stat cards`, `neubrutalism kpi`, `stats cards dashboard`
 
-#### `HistoryList`, `HistoryRow` and `HistoryMore` — past games — **Must**
+#### `HistoryList`, `HistoryRow` and `HistoryMore` — past games — ♻️ **Reuse B3** (decided 2026-11-16)
+- **Decided:** the summary's results-table look: ink rules, the mode as a `Badge` sticker (Solo / Duel / Friend), the outcome in its tone with the draw's two-colour mark, Show more as a secondary Button. **Not** the neobrutalism.dev Table: a real `<table>` breaks the row layout that changes with width (two lines on phones, the lives column from lg). Nothing to collect.
 - **Today:** each row has the mode, the result, the score, the match, how many were named, the lives left and when. Show more loads more.
 - **Save to:** `profile/05-history-a.png`
 - **Search:** neobrutalism.dev Table; Dribbble `neubrutalism table`, `neubrutalism list`, `match history ui`; Real, layout only: Chess.com game history
+
+#### `ProfileSkeleton` and `ProfileNotice` — ♻️ **Follow / reuse A3** (decided 2026-11-16)
+- **Decided:** the skeleton mirrors the new layout at the same heights; the signed-out and error notices keep `StateNotice` with a Lucide icon tile. Nothing to collect.
 
 > ✋ **End of stage F.** Tell me **"profile ready"**.
 
