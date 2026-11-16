@@ -1,7 +1,7 @@
 'use client';
 
 import { type SubmitEvent, useId, useRef } from 'react';
-import { SearchX, TriangleAlert } from 'lucide-react';
+import { Archive, Search, SearchX, TriangleAlert } from 'lucide-react';
 import {
   type ArchiveFilterState,
   ArchiveFilters,
@@ -10,11 +10,21 @@ import { ArchiveRow } from '@/components/archive/ArchiveRow';
 import { ArchiveSkeletonRows } from '@/components/archive/ArchiveSkeleton';
 import { ARCHIVE_LIST } from '@/components/archive/styles';
 import { HistoryMore } from '@/components/profile/HistoryMore';
-import { PROFILE_HEADING } from '@/components/profile/styles';
 import { ProLock } from '@/components/pro/ProLock';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Empty, EmptyHeader, EmptyMedia } from '@/components/ui/empty';
+import { useAppConfig } from '@/hooks/use-pro';
 import { ARCHIVE_SEARCH_MAX } from '@/lib/api/schemas/catalog';
 import { archiveTotalLine } from '@/lib/archive';
-import { SECONDARY_BUTTON, TEXT_INPUT } from '@/styles/classes';
+import { showsPro } from '@/lib/pro';
+import { cn } from '@/lib/utils';
+import {
+  BOARD_SECTION,
+  SECONDARY_BUTTON,
+  TEXT_INPUT,
+  TYPE_TITLE,
+} from '@/styles/classes';
 import type { ArchiveView as ArchiveViewModel } from '@/types/archive';
 import type { Filters } from '@/types/filters';
 import type { MatchIdentity } from '@/types/match';
@@ -47,10 +57,19 @@ type ArchiveViewProps = {
 
 function Header({ view }: { view: ArchiveViewModel }) {
   const isLocked = view.status === 'locked';
+  const config = useAppConfig();
 
   return (
-    <header className="flex flex-col gap-2">
-      <h1 className={PROFILE_HEADING}>Archive</h1>
+    <header className={cn(BOARD_SECTION, 'gap-2')}>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <h1 className={TYPE_TITLE}>Archive</h1>
+        {/* No word "Pro" while the split is off */}
+        {showsPro(config.data ?? null) ? (
+          <Badge variant="sticker" tone="brand">
+            Pro
+          </Badge>
+        ) : null}
+      </div>
       {isLocked ? (
         <p className={LINE}>{LOCKED_LINE}</p>
       ) : view.total !== null ? (
@@ -127,9 +146,7 @@ function Results({
             ref={listRef}
             aria-label="Matches, newest first"
             aria-busy={view.isRefreshing}
-            className={`${ARCHIVE_LIST} divide-y divide-line ${
-              view.isRefreshing ? 'opacity-60' : ''
-            }`}
+            className={cn(ARCHIVE_LIST, view.isRefreshing && 'opacity-60')}
           >
             {view.entries.map((match) => (
               <ArchiveRow
@@ -188,34 +205,49 @@ export function ArchiveView({
   // No controls until the lock is known: no flash
   if (view.status === 'pending') {
     return (
-      <div className="flex flex-col gap-8">
+      <div>
         <Header view={view} />
-        <ArchiveSkeletonRows />
+        <div className={BOARD_SECTION}>
+          <ArchiveSkeletonRows />
+        </div>
       </div>
     );
   }
 
   if (view.status === 'locked') {
     return (
-      <div className="flex flex-col gap-8">
+      <div>
         <Header view={view} />
-        <ProLock
-          label="Browse the archive"
-          caption="The archive is part of Pro."
-          size="large"
-        />
+        <div className={BOARD_SECTION}>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <Archive />
+              </EmptyMedia>
+            </EmptyHeader>
+            <ProLock
+              label="Browse the archive"
+              caption="The archive is part of Pro."
+              size="large"
+            />
+          </Empty>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div>
       <Header view={view} />
-      <div className="flex flex-col gap-4">
-        <form role="search" onSubmit={submit} className="max-w-xl">
+      <div className={BOARD_SECTION}>
+        <form role="search" onSubmit={submit} className="relative max-w-xl">
           <label htmlFor={searchId} className="sr-only">
             Search the archive
           </label>
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-fg-muted"
+          />
           <input
             ref={searchRef}
             id={searchId}
@@ -227,16 +259,17 @@ export function ArchiveView({
             enterKeyHint="search"
             autoComplete="off"
             spellCheck={false}
-            className={`${TEXT_INPUT} placeholder:text-fg-dim`}
+            className={cn(TEXT_INPUT, 'pl-11')}
           />
         </form>
         <ArchiveFilters state={filterState} onChange={onFiltersChange} />
       </div>
-      <section aria-label="Results" className="flex flex-col gap-4">
+      <section aria-label="Results" className={BOARD_SECTION}>
         {playError ? (
-          <p role="alert" className="text-14 leading-5 text-danger-text">
-            {playError}
-          </p>
+          <Alert role="alert">
+            <TriangleAlert aria-hidden="true" />
+            <AlertDescription>{playError}</AlertDescription>
+          </Alert>
         ) : null}
         <Results
           view={view}

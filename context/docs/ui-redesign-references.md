@@ -684,7 +684,8 @@ The duel uses the game screen from § 4, plus these.
 - **Save to:** `archive/02-filters-a.png`
 - **Search:** neobrutalism.dev Popover, Sheet, Drawer; Dribbble `neubrutalism filter`, `filter drawer ui`
 
-#### `ArchiveRow` — one match — **Must**
+#### `ArchiveRow` — one match — ✅ **Collected**
+- **Done:** `archive/03-row-a` (desktop: meta on the left, teams and score centred, actions on the right), `03-row-b` (one match with its action, layout only) and `03-row-c` (phone: name, crest, score, crest, name on one line).
 - **Need:** the page's main piece: two teams with crests either side of a centred score, then the date, competition, stage and nickname, then Play and Practise; scannable at three widths (phone, `sm`, `xl`).
 - **Today:** the date, both teams with crests, the score, the competition and stage, then Play and Practise.
 - **Save to:** `archive/03-row-a.png`
@@ -803,5 +804,5 @@ Write these in `context/screenshots/notes.md` as you go:
 - [x] **Stage D:** § 6 Home → "home ready" (specs D1–D2 in `context/features/redesign-d*.md`)
 - [x] **Stage E:** § 7 Duel → "duel ready" (specs E1–E2 in `context/features/redesign-e*.md`)
 - [x] **Stage F:** § 8 Profile → "profile ready" (specs F1–F2 in `context/features/redesign-f*.md`)
-- [ ] **Stage G:** § 9 Archive → "archive ready"
+- [x] **Stage G:** § 9 Archive → "archive ready" (spec G1 in `context/features/redesign-g1-archive.md`)
 - [ ] **Stage H:** § 10 Sign in, § 11 Pro and § 12 System → "rest ready"

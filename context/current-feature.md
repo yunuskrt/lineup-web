@@ -110,3 +110,4 @@ Not Started
 - Redesign F1 Profile Board: one board, avatar header, stickers, Alert.
 - Fix Play and Profile Layout: no box, Practice mode card, no fav club.
 - Redesign F2 Profile Sections: lavender record, stat tiles, history list.
+- Redesign G1 Archive: open sections, fixture rows, filter count, Pro lock.

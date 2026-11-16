@@ -122,14 +122,29 @@ export function withOneClub(previous: Filters, next: Filters): Filters {
 }
 
 // Null when every filter is on Any
+// The filter groups not left on Any
+function activeFilterValues(
+  filters: Filters,
+  options: FilterOptions,
+): string[] {
+  return filterSummary(filters, options)
+    .map((line) => line.value)
+    .filter((value) => value !== 'Any' && value !== 'Any season');
+}
+
 export function activeFiltersLabel(
   filters: Filters,
   options: FilterOptions,
 ): string | null {
-  const values = filterSummary(filters, options)
-    .map((line) => line.value)
-    .filter((value) => value !== 'Any' && value !== 'Any season');
+  const values = activeFilterValues(filters, options);
   return values.length ? values.join(', ') : null;
+}
+
+export function activeFilterCount(
+  filters: Filters,
+  options: FilterOptions,
+): number {
+  return activeFilterValues(filters, options).length;
 }
 
 export function archiveTotalLine(total: number): string {

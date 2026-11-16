@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ApiRequestError } from '@/lib/api/unwrap';
 import {
+  activeFilterCount,
   activeFiltersLabel,
   archiveDateLabel,
   archiveParams,
@@ -101,6 +102,26 @@ describe('activeFiltersLabel', () => {
   it('names what is picked', () => {
     const picked = { ...ALL, clubIds: [CLUB_A.id] };
     expect(activeFiltersLabel(picked, OPTIONS)).toBe(CLUB_A.name);
+  });
+});
+
+describe('activeFilterCount', () => {
+  it('is 0 with every filter on Any', () => {
+    expect(activeFilterCount(ALL, OPTIONS)).toBe(0);
+  });
+
+  it('counts each group that is narrowed', () => {
+    const picked = { ...ALL, clubIds: [CLUB_A.id] };
+    expect(activeFilterCount(picked, OPTIONS)).toBe(1);
+  });
+
+  it('counts a group once, however many it holds', () => {
+    const picked = {
+      ...ALL,
+      competitionIds: [COMPETITION.id],
+      clubIds: [CLUB_A.id, CLUB_B.id],
+    };
+    expect(activeFilterCount(picked, OPTIONS)).toBe(2);
   });
 });
 
