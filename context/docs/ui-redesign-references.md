@@ -507,6 +507,7 @@ Where you choose Solo or Duel and set the filters before starting.
 
 The marketing page: the statement, a live demo turn, then the sections.
 
+- **Whole page — ✅ Collected** (layout only): `landing/00-page-a` (full-width colour bands divided by ink lines, sticker-block headline words, floating outlined frames, a chip marquee band).
 - **Whole-page references (Must):** 2 to 4 full landing pages you love. Use the full-page screenshot trick from § 0.3.
 - **Save to:** `landing/00-page-a.png`
 - **Search:**
@@ -517,22 +518,26 @@ The marketing page: the statement, a live demo turn, then the sections.
 
 ### Components
 
-#### `HomeFold` — the first screen: statement, Play button, demo beside it — **Must**
+#### `HomeFold` — the first screen: statement, Play button, demo beside it — ✅ **Collected** (layout only)
+- **Done:** `landing/01-hero-a`: headline and line on the left, a large button, an outlined visual on the right with a sticker tile on its corner. No decorations.
 - **Save to:** `landing/01-hero-a.png`
 - **Search:** Dribbble `neubrutalism hero section`, `neubrutalism hero sticker`, `hero section app demo`
 
-#### `ShowcaseFrame` — the demo turn inside a frame — **Must**
+#### `ShowcaseFrame` — the demo turn inside a frame — ✅ **Collected** (layout only)
+- **Done:** `landing/02-demo-frame-a`: the product in an outlined browser window, with a sticker beside it.
 - **Today:** a small live game (scoreboard, pitch, the typed guess) shown in a frame.
 - **Need:** products shown in an outlined browser or phone frame, or floating cards.
 - **Save to:** `landing/02-demo-frame-a.png`
 - **Search:** Dribbble `neubrutalism browser mockup`, `neubrutalism app preview`, `app preview floating cards`
 
-#### `HomeArchive` — the archive tiles — **Must**
+#### `HomeArchive` — the archive tiles — ✅ **Collected**
+- **Done:** `landing/03-stats-tiles-a` (white tiles with a hard shadow on a lavender band, an icon sticker on each corner) and the number tiles in `02-demo-frame-a`.
 - **Today:** numbers about the match pool (how many matches, competitions, eras), with logos.
 - **Save to:** `landing/03-stats-tiles-a.png`
 - **Search:** Dribbble `neubrutalism bento`, `neubrutalism stats section`, `bento grid features`
 
-#### `HomeRules` — "how it plays" — **Must**
+#### `HomeRules` — "how it plays" — ✅ **Collected** (layout only)
+- **Done:** `landing/04-how-it-works-a`: three numbered colour blocks, one per rule.
 - **Today:** three big numbers with a line each (11 starters to name, 15 seconds a turn, 3 lives), each with a small game mark.
 - **Save to:** `landing/04-how-it-works-a.png`
 - **Search:** Dribbble `neubrutalism features section`, `neubrutalism how it works`, `3 steps section ui`
@@ -758,7 +763,7 @@ Write these in `context/screenshots/notes.md` as you go:
 - [x] **Stage A:** § 2 Foundations (palette hex and font names in `notes.md`) and § 3 Layout → "foundations ready"
 - [x] **Stage B:** § 4 Game screen (desktop **and** phone) → "game ready" (specs B1–B3 in `context/features/redesign-b*.md`)
 - [x] **Stage C:** § 5 Play → "play ready" (specs C1–C2 in `context/features/redesign-c*.md`)
-- [ ] **Stage D:** § 6 Home → "home ready"
+- [x] **Stage D:** § 6 Home → "home ready" (specs D1–D2 in `context/features/redesign-d*.md`)
 - [ ] **Stage E:** § 7 Duel → "duel ready"
 - [ ] **Stage F:** § 8 Profile → "profile ready"
 - [ ] **Stage G:** § 9 Archive → "archive ready"

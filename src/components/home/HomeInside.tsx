@@ -9,7 +9,7 @@ import { useCatalogOverview } from '@/hooks/use-catalog-overview';
 import { useEntrance } from '@/hooks/use-entrance';
 import { TOP_CLUBS_MAX } from '@/lib/api/schemas/catalog';
 import { highlightFigures, landingCompetitions } from '@/lib/landing';
-import { SITE_CONTAINER } from '@/styles/classes';
+import { HOME_BAND, SITE_CONTAINER } from '@/styles/classes';
 import { LANDING_TIGHT_STAGGER_MS } from '@/styles/motion';
 import type { CatalogOverview } from '@/types/catalog';
 import { SKELETON } from '@/components/ui/skeleton';
@@ -116,7 +116,7 @@ export function InsideBand({ overview, isLoading }: InsideBandProps) {
   if (!overview && !isLoading) return null;
 
   return (
-    <section aria-labelledby="home-inside" className="border-t border-line">
+    <section aria-labelledby="home-inside" className={HOME_BAND}>
       <div className={`${SITE_CONTAINER} py-16`}>
         <h2 id="home-inside" className="mb-8 font-display text-24 font-bold">
           What&apos;s inside

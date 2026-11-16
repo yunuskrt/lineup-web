@@ -6,7 +6,7 @@ import { LandingSkeleton } from '@/components/home/LandingSkeleton';
 import { useCatalogOverview } from '@/hooks/use-catalog-overview';
 import { useEntrance } from '@/hooks/use-entrance';
 import { archiveFigures } from '@/lib/landing';
-import { SITE_CONTAINER } from '@/styles/classes';
+import { HOME_BAND, SITE_CONTAINER } from '@/styles/classes';
 import type { CatalogOverview } from '@/types/catalog';
 import { SKELETON } from '@/components/ui/skeleton';
 
@@ -75,7 +75,7 @@ export function ArchiveBand({ overview, isLoading }: ArchiveBandProps) {
   if (!overview && !isLoading) return null;
 
   return (
-    <section aria-labelledby="home-archive" className="border-t border-line">
+    <section aria-labelledby="home-archive" className={HOME_BAND}>
       <div className={`${SITE_CONTAINER} py-16`}>
         <h2 id="home-archive" className="sr-only">
           The archive

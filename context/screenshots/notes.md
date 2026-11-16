@@ -79,6 +79,12 @@ Decided 2026-11-14, close to the other-01 heading. Both are Google Fonts the app
 - play/00-mobile-a: phone stacking (section labels, then rows with an ink outline and a small hard shadow, toggles at the right)
 - play/01-mode-cards-a: layout only (big option cards: heavy title, one line, a small badge; the picked one in a solid colour); dark and 3D characters, so no images: a Lucide icon instead
 
+- landing/00-page-a: layout only (Chat.hi): full-width colour bands divided by ink lines, headline words on tilted sticker blocks, app screens as floating outlined frames, three columns split by ink rules, a chip marquee band; not the photos or the email field
+- landing/01-hero-a: layout only (Boostudy): headline and line left, large button with a hard shadow, outlined visual right with a sticker tile on its corner; not the stars, blobs or photo
+- landing/02-demo-frame-a: layout only (kirim.in): the product in an outlined browser window on a coloured tile with a sticker beside it; its 10K / 50K number tiles also suit the archive figures
+- landing/03-stats-tiles-a: white tiles with a hard shadow on a lavender band, an icon sticker overlapping each tile's top-left corner; our icons are Lucide in an outlined tile, not illustrations
+- landing/04-how-it-works-a: layout only (Shaytoon): three numbered colour blocks for the rules, an ink marquee band, the framed demo with a "LIVE" sticker; not the mascot or the dark parts
+
 Decided 2026-11-15 for stage B: mint turf #A7E3C4 with ink lines; clock warning amber + thicker ring, critical red + thicker + pulse; RevealCard and LivesCard designed without references (see the guide § 4)
 
 ## Dislikes
