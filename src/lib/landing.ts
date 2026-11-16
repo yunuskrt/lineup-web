@@ -52,21 +52,6 @@ export function archiveFigures({ counts }: CatalogOverview): Figure[] {
   ];
 }
 
-export function highlightFigures({ highlights }: CatalogOverview): Figure[] {
-  return [
-    figure('finals', highlights.finals, { one: 'final', other: 'finals' }),
-    figure('shootouts', highlights.shootouts, {
-      one: 'penalty shootout',
-      other: 'penalty shootouts',
-    }),
-    figure('extraTime', highlights.extraTime, {
-      one: 'went to extra time',
-      other: 'went to extra time',
-    }),
-    figure('goals', highlights.goals, { one: 'goal', other: 'goals' }),
-  ];
-}
-
 // Leagues, then European cups, then international
 export function landingCompetitions(
   overview: CatalogOverview,

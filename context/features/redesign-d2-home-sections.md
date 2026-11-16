@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -50,3 +50,16 @@ None. The band fills and block colours above are defaults; change them in review
   - a screen reader hears each logo list once.
 - **Dev server:** the dev cache is off (`next.config.ts`), so `npm run build` can run while the user's dev server is up.
 - **With D2 done, stage D is complete.** The next collection is stage E (`/play/duel`, guide § 7).
+
+- **Deviations recorded during implementation:**
+  - **Marquee as a motion effect:** `marquee` joins `MOTION_EFFECTS` as movement (`drop` on reduced motion), sorted in `motion.test.ts`; one pass takes `MOTION_DURATION_MS.marqueeLoop` (40 s), set inline so `motion.ts` stays the one source. A single `marquee` keyframe (`translateX(0)` to `-100%`) sits in `globals.css`'s `@theme`; two tracks in a row make the loop seamless, so the registry's second keyframe isn't needed.
+  - **Loops only in view:** the strip pauses with `animation-play-state` when it leaves the viewport (`useInView`), and stays paused off-screen.
+  - **Logo tiles:** competitions as white pills (logo and name, so dark logos and lesser-known names stay readable), clubs as white crest tiles (`ClubCrest` size `row`).
+  - **Screen-reader lists:** the two existing lists stay as `sr-only` lists under the "What's inside" heading; the strip itself is `aria-hidden`. The heading now renders in every state, so `aria-labelledby` never points at nothing while loading.
+  - **Entrances on the logos dropped:** the staggered logo and crest entrances in `HomeInside` gave way to the strip; `LANDING_TIGHT_STAGGER_MS` and the entrance helper stay (used elsewhere and in tests).
+  - **Archive tiles:** the butter icon tiles overlap each tile's top-left corner, so the phone grid's row gap grows to `gap-y-8`; the old lavender bar above each number is gone (the icon took its place). Numbers now use `TYPE_NUMBER`.
+  - **Rule blocks:** the number and its mark share one row (number left, mark right); the line uses `text-on-accent` on the fills (tested pairs). The slots mark is drawn in ink (`stroke-line`) instead of the pale sage marking colour, which vanished on lavender.
+  - **Shared classes:** `ICON_TILE` and `ACTOR_BAR` in `classes.ts`, used by the `/play` mode cards and the home mode cards.
+  - **Closing band:** the `statement` footer's ink rule is 2px (was the soft 1px rule) to match the bands; its text uses `text-on-accent` on butter.
+  - **"What's inside" figures removed (user request, 2026-11-16):** the visible heading and the four highlight figures (finals, penalty shootouts, extra time, goals) are gone from `/`; the band is now just the logo strip, between the mint modes band and the butter closing band. "What's inside" stays as an `sr-only` `h2` naming the section, with the two `sr-only` logo lists. `highlightFigures` (only used there) and its test are deleted; the `highlights` field stays in the catalog schema, since it is the backend's contract. The strip has no bottom rule of its own, as the closing band's rule sits under it. This supersedes the goal line "the 'What's inside' heading and highlight figures stay under the strip".
+  - **Checked:** loading and loaded bands have the same heights at 1280px (archive 310, strip 78; inside 78 after the figures were removed) and 360px (archive 442); the `down` state still hides both.

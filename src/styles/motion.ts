@@ -25,6 +25,8 @@ export const MOTION_DURATION_MS = {
   // Landing sections: one quiet entrance each
   landingRise: 320,
   landingArcDraw: 600,
+  // One pass of the home logo strip
+  marqueeLoop: 40000,
 } as const;
 
 // Motion takes seconds
@@ -95,6 +97,7 @@ export const MOTION_EFFECTS = [
   'countUp',
   'demoLoop',
   'landingEntrance',
+  'marquee',
 ] as const;
 
 export type MotionEffect = (typeof MOTION_EFFECTS)[number];
@@ -129,6 +132,7 @@ export const REDUCED_MOTION_POLICY: Record<MotionEffect, ReducedMotion> = {
   countUp: 'drop',
   demoLoop: 'drop',
   landingEntrance: 'drop',
+  marquee: 'drop',
 };
 
 // Null before the preference is read: animate

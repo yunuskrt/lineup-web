@@ -57,7 +57,7 @@ export function SlotsMark({ isShown, delayMs }: MarkProps) {
           cy={point.y}
           r={SLOT_RADIUS}
           strokeWidth={2.5}
-          className="fill-none stroke-marking"
+          className="fill-none stroke-line"
           initial={animates ? { opacity: 0 } : false}
           animate={{ opacity: !animates || isShown ? 1 : 0 }}
           transition={

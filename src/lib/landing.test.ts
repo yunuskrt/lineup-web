@@ -3,7 +3,6 @@ import { overviewFrom } from '@/lib/api/mock/overview';
 import {
   archiveFigures,
   formatCount,
-  highlightFigures,
   landingCompetitions,
   showcaseCaption,
   showcaseFound,
@@ -40,17 +39,6 @@ describe('archiveFigures', () => {
     const labels = archiveFigures({ ...OVERVIEW, counts }).map((f) => f.label);
     expect(labels).toContain('real match');
     expect(labels).toContain('season');
-  });
-});
-
-describe('highlightFigures', () => {
-  it('keeps the four highlights in order', () => {
-    expect(highlightFigures(OVERVIEW).map((f) => f.label)).toEqual([
-      'finals',
-      'penalty shootouts',
-      'went to extra time',
-      'goals',
-    ]);
   });
 });
 

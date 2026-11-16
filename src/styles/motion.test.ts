@@ -91,6 +91,7 @@ const MOVING = [
   'countUp',
   'demoLoop',
   'landingEntrance',
+  'marquee',
 ] as const;
 
 const CUES = [
