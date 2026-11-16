@@ -1,28 +1,61 @@
 import { useId } from 'react';
 import {
-  PANEL_HEADER,
-  PROFILE_PANEL,
+  LETTER_TILE,
   RECORD_BAR,
+  RECORD_BLOCK,
+  RECORD_HEADER,
   RECORD_NUMERAL,
 } from '@/components/profile/styles';
 import { duelCountLabel, duelRecord, recordShares } from '@/lib/profile';
+import { cn } from '@/lib/utils';
 import type { UserStats } from '@/types/profile';
+
+type Tile = 'win' | 'draw' | 'loss';
+
+const TILE_LETTERS: Record<Tile, string> = { win: 'W', draw: 'D', loss: 'L' };
+
+const TILE_FILLS: Record<Exclude<Tile, 'draw'>, string> = {
+  win: 'bg-you',
+  loss: 'bg-danger',
+};
+
+// Decorative: the label beside it is read
+function LetterTile({ tile, isMuted }: { tile: Tile; isMuted: boolean }) {
+  const letter = TILE_LETTERS[tile];
+  if (isMuted) {
+    return (
+      <span aria-hidden="true" className={cn(LETTER_TILE, 'bg-surface-card')}>
+        {letter}
+      </span>
+    );
+  }
+  // A draw is shared, so it shows both colours
+  if (tile === 'draw') {
+    return (
+      <span aria-hidden="true" className={LETTER_TILE}>
+        <span className="absolute inset-y-0 left-0 w-1/2 bg-you" />
+        <span className="absolute inset-y-0 right-0 w-1/2 bg-opponent" />
+        <span className="relative">{letter}</span>
+      </span>
+    );
+  }
+  return (
+    <span aria-hidden="true" className={cn(LETTER_TILE, TILE_FILLS[tile])}>
+      {letter}
+    </span>
+  );
+}
 
 export function DuelRecord({ stats }: { stats: UserStats }) {
   const headingId = useId();
   const record = duelRecord(stats);
   const shares = recordShares(stats);
   const hasDuels = record.total > 0;
-  // Coloured zeros would read as a result
-  const counts = [
-    { label: 'Won', value: record.wins, tone: 'text-you-text' },
-    { label: 'Drawn', value: record.draws, tone: 'text-fg' },
-    { label: 'Lost', value: record.losses, tone: 'text-danger-text' },
-  ].map((count) => ({
-    ...count,
-    tone: hasDuels ? count.tone : 'text-fg-dim',
-  }));
-  // A draw is shared, so it shows both colours
+  const counts: { label: string; value: number; tile: Tile }[] = [
+    { label: 'Won', value: record.wins, tile: 'win' },
+    { label: 'Drawn', value: record.draws, tile: 'draw' },
+    { label: 'Lost', value: record.losses, tile: 'loss' },
+  ];
   const segments = [
     { key: 'wins', share: shares.wins, fill: 'bg-you' },
     { key: 'draws-you', share: shares.draws / 2, fill: 'bg-you' },
@@ -31,32 +64,35 @@ export function DuelRecord({ stats }: { stats: UserStats }) {
   ].filter(({ share }) => share > 0);
 
   return (
-    <section
-      aria-labelledby={headingId}
-      className={`${PROFILE_PANEL} flex flex-col gap-6 p-4 sm:p-6 lg:col-span-7`}
-    >
-      <div className={PANEL_HEADER}>
+    <section aria-labelledby={headingId} className={RECORD_BLOCK}>
+      <div className={RECORD_HEADER}>
         <h2 id={headingId} className="text-14 leading-5 font-semibold">
           Duel record
         </h2>
-        <p className="text-14 leading-5 text-fg-muted tabular-nums">
+        <p className="text-14 leading-5 tabular-nums">
           {duelCountLabel(record.total)}
         </p>
       </div>
       <dl className="grid grid-cols-3 gap-4">
-        {counts.map(({ label, value, tone }) => (
-          <div
-            key={label}
-            className="flex flex-col-reverse items-center gap-1 sm:items-start"
-          >
-            <dt className="text-12 leading-4 font-medium text-fg-muted">
+        {counts.map(({ label, value, tile }) => (
+          <div key={label} className="flex min-w-0 flex-col gap-2">
+            <dt className="flex items-center gap-1.5 text-12 leading-4 font-medium uppercase">
+              <LetterTile tile={tile} isMuted={!hasDuels} />
               {label}
             </dt>
-            <dd className={`${RECORD_NUMERAL} ${tone}`}>{value}</dd>
+            <dd className={RECORD_NUMERAL}>{value}</dd>
           </div>
         ))}
       </dl>
-      <div aria-hidden="true" className={`mt-auto ${RECORD_BAR}`}>
+      {/* Ink gaps split the segments; none yet is white */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          'mt-auto',
+          RECORD_BAR,
+          hasDuels ? 'bg-line' : 'bg-surface-card',
+        )}
+      >
         {segments.map(({ key, share, fill }) => (
           <span
             key={key}
