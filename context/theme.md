@@ -136,6 +136,7 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Start          | Next from Filters                | A summary (mode, competition, club, era) with Edit mode and Edit filters, then Start with its label, the cap line and the archive line. Duel adds Create room under Start |
 | Step indicator | Always                           | Three numbered steps; the current one is marked, filled ones show a check and their choice. A step opens once every earlier one is filled |
 | Fallback       | A later step with no mode        | Step 1, nothing picked                                                                                                          |
+| Entry links    | Where the player comes from      | A fresh start (nav, home fold, footer, 404, profile, after sign-in) opens step 1. The home page's Play solo and Find a duel open step 2; Play a friend opens step 1 at the join row. Back to play from a game, gate, queue or result opens step 3 with the choices kept; Change filters opens step 2 |
 
 ### Lobby & matchmaking
 
@@ -147,11 +148,11 @@ The duel screen is almost never at rest. These are the conditions it can actuall
 | Filters — coin flip     | Both submitted      | **Name whose filters won, explicitly.** Without this, the player whose filters lost assumes the app ignored them |
 | Match retrieved         | Squad resolved      | Match header in full: both crests and names, the score, the competition and the date. The named side is emphasised and the other side is muted |
 | No opponent             | Queue timeout       | Offer solo with the same filters. Never a dead end                                                               |
-| Cancelled               | You leave the queue | Back to `/play`, filters preserved                                                                               |
+| Cancelled               | You leave the queue | Back to step 3 of `/play`, mode and filters preserved                                                            |
 | Room waiting            | Your room is open   | The code is the most prominent thing, easy to read aloud. Copy code and Copy link confirm in place ("Copied"). A quiet "Closes in 9:41" and the room's filters. **No countdown clock**: nothing is lost while you wait |
 | Room filters            | A friend joins      | The coin-flip result, named for the room: "Playing your room" or "Playing {creator}'s room". No coin-flip wording |
 | Joining                 | A code is sent      | "Joining room K7QM2X…" with an ambient waiting state and Cancel                                                  |
-| Join refused            | Wrong, full or own  | Say which, and Back to play with the code kept in the box. Never "something went wrong"                          |
+| Join refused            | Wrong, full or own  | Say which, and Back to play: step 1 of `/play`, Duel picked, the code kept in the box. Never "something went wrong" |
 | Hosting locked          | Free, split on      | Create room shown locked, with "Pro hosts rooms. Anyone can join." and See Pro; the code box and Join stay live. A refused create says "Hosting a room needs Pro", with Back to play and See Pro. After a room game, Back to play leads and New room is locked |
 | Room expired            | 10 minutes, no one  | "No one joined", Create a new room. Never a dead end                                                             |
 
