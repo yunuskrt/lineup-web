@@ -337,6 +337,8 @@ type GameCanvasProps = {
   onQuit?: () => void;
   onPlayAgain?: () => void;
   onChangeFilters?: () => void;
+  // Back to play; Change filters when unset
+  onBackToPlay?: () => void;
   // Solo at its daily cap: Play a duel instead
   onPlayDuel?: () => void;
   onRevealMissed?: () => void;
@@ -354,6 +356,7 @@ export function GameCanvas({
   onQuit,
   onPlayAgain = () => {},
   onChangeFilters = () => {},
+  onBackToPlay,
   onPlayDuel = () => {},
   onRevealMissed = () => {},
   onLobbyAction = () => {},
@@ -462,6 +465,7 @@ export function GameCanvas({
                     isPractice={view.mode === 'solo' && view.isPractice}
                     onPlayAgain={onPlayAgain}
                     onChangeFilters={onChangeFilters}
+                    onBackToPlay={onBackToPlay}
                     onPlayDuel={onPlayDuel}
                     onRevealMissed={onRevealMissed}
                   />
@@ -474,6 +478,7 @@ export function GameCanvas({
                     }
                     onPlayAgain={onPlayAgain}
                     onChangeFilters={onChangeFilters}
+                    onBackToPlay={onBackToPlay}
                     isPrivate={view.mode === 'duel' && view.isPrivate}
                     hostAccess={
                       view.mode === 'duel' ? view.hostAccess : undefined

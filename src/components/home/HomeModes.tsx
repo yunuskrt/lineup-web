@@ -1,6 +1,6 @@
 import { type LucideIcon, Swords, User } from 'lucide-react';
 import Link from 'next/link';
-import { FILTER_PARAMS } from '@/lib/filters';
+import { JOIN_ROW_ID, playPath } from '@/lib/play-steps';
 import {
   ACTOR_BAR,
   DUEL_ACTOR_BG,
@@ -13,7 +13,9 @@ import {
 } from '@/styles/classes';
 import type { DuelActor } from '@/types/duel';
 
-const DUEL = `/play?${FILTER_PARAMS.mode}=duel`;
+// The mode is chosen here, so filters come next
+const SOLO_PARAMS = new URLSearchParams('mode=solo');
+const DUEL_PARAMS = new URLSearchParams('mode=duel');
 
 type ModeLink = { label: string; href: string; isPrimary: boolean };
 
@@ -32,7 +34,7 @@ const MODES: {
     links: [
       {
         label: 'Play solo',
-        href: `/play?${FILTER_PARAMS.mode}=solo`,
+        href: playPath(SOLO_PARAMS, 'filters'),
         isPrimary: true,
       },
     ],
@@ -43,10 +45,14 @@ const MODES: {
     players: ['you', 'opponent'],
     line: 'Live 1v1 on one shared XI. Spend the easy names before they do.',
     links: [
-      { label: 'Find a duel', href: DUEL, isPrimary: true },
+      {
+        label: 'Find a duel',
+        href: playPath(DUEL_PARAMS, 'filters'),
+        isPrimary: true,
+      },
       {
         label: 'Play a friend',
-        href: `${DUEL}#play-a-friend`,
+        href: playPath(DUEL_PARAMS, 'mode', JOIN_ROW_ID),
         isPrimary: false,
       },
     ],

@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -50,3 +50,11 @@ Follows **Play Steps A**. Every link into `/play` now opens a step. Each one ope
   - the cap gate (`NEXT_PUBLIC_MOCK_TIER=free` with the mock API, the user's step);
   - Back in the browser from a game route to `/play`;
   - 320 and 1280px; `npm run build`.
+
+- **Deviations recorded during implementation:**
+  - **Change filters opens step 2, Back to play step 3.** The result's two buttons shared one callback; `onBackToPlay` (through `GameCanvas`, `RunSummary`, `DuelResultPanel`, `ResultActions`, falling back to `onChangeFilters`) splits them, so each lands where its name says. A picked run's Back to the archive is unchanged.
+  - **Builder:** `playPath(params, step, hash?)` and `JOIN_ROW_ID` in `lib/play-steps.ts`, tested; the home page uses it too, so no hand-written `/play` query strings are left.
+  - **`replaceQuery` keeps the hash**, so `#play-a-friend` stays in the URL when the page tidies it.
+  - **The hosting line** shows whenever the join row does, under its hint and error.
+  - **Focus on arrival** from another page stays at the page start, as on every route change; the step heading takes focus only on a step change inside `/play`.
+  - **Not checked in the browser:** the cap gate (the user's step, `NEXT_PUBLIC_MOCK_TIER=free` with the mock API); the room gates and a room game's Back to play (no second player); signed in (checked as a guest).

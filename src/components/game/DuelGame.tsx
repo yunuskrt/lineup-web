@@ -15,6 +15,7 @@ import {
   keepsJoinCode,
 } from '@/lib/duel-session';
 import { withMode, withoutParams, withQuery } from '@/lib/filters';
+import { JOIN_ROW_ID, playPath } from '@/lib/play-steps';
 import { ROOM_PARAM } from '@/lib/room-code';
 import type { LobbyAction } from '@/types/duel-lobby';
 import type { PlayMode } from '@/types/play';
@@ -64,25 +65,37 @@ export function DuelGame() {
     return withMode(withoutParams(params, leftovers), mode);
   }
 
-  async function goTo(path: string, mode: PlayMode) {
+  async function goTo(href: string) {
     await leave();
-    router.push(withQuery(path, leavingParams(mode)));
+    router.push(href);
   }
 
-  function backToFilters() {
-    void goTo('/play', 'duel');
+  // A refused code goes back to its box
+  function playHref(): string {
+    const back = leavingParams('duel');
+    return keepsJoinCode(state)
+      ? playPath(back, 'mode', JOIN_ROW_ID)
+      : playPath(back, 'start');
+  }
+
+  function backToPlay() {
+    void goTo(playHref());
+  }
+
+  function changeFilters() {
+    void goTo(playPath(leavingParams('duel'), 'filters'));
   }
 
   function handleLobbyAction(action: LobbyAction) {
     switch (action) {
       case 'cancel':
-        backToFilters();
+        backToPlay();
         return;
       case 'lock':
         void lockFilters();
         return;
       case 'solo':
-        void goTo('/play/solo', 'solo');
+        void goTo(withQuery('/play/solo', leavingParams('solo')));
         return;
       case 'searchAgain':
         searchAgain();
@@ -105,7 +118,7 @@ export function DuelGame() {
         return;
       }
       case 'leave':
-        backToFilters();
+        backToPlay();
         return;
       case 'retry':
         follow(retry());
@@ -119,7 +132,7 @@ export function DuelGame() {
   // A result away, on the profile
   async function handleGateSecondaryAction() {
     if (state.phase !== 'endedAway') {
-      backToFilters();
+      backToPlay();
       return;
     }
     await leave();
@@ -128,7 +141,7 @@ export function DuelGame() {
 
   function handleQuit() {
     if (isForfeitAllowed) setIsForfeitOpen(true);
-    else backToFilters();
+    else backToPlay();
   }
 
   async function confirmForfeit() {
@@ -142,9 +155,7 @@ export function DuelGame() {
   }
 
   if (state.phase === 'refused') {
-    return (
-      <ProtocolRefused backHref={withQuery('/play', leavingParams('duel'))} />
-    );
+    return <ProtocolRefused backHref={playHref()} />;
   }
 
   return (
@@ -159,7 +170,8 @@ export function DuelGame() {
         onGateSecondaryAction={() => void handleGateSecondaryAction()}
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
-        onChangeFilters={backToFilters}
+        onChangeFilters={changeFilters}
+        onBackToPlay={backToPlay}
         onLobbyAction={handleLobbyAction}
       />
       <QuitDialog

@@ -9,6 +9,7 @@ import {
 import { useRoomEntry } from '@/hooks/use-room-entry';
 import { ROOM_CODE_LENGTH } from '@/lib/api/schemas/duel';
 import { authErrorMessageOf } from '@/lib/auth';
+import { JOIN_ROW_ID } from '@/lib/play-steps';
 import {
   hasLookAlike,
   isRoomCode,
@@ -50,7 +51,7 @@ export function JoinRoom({ filterParams, initialCode }: JoinRoomProps) {
 
   return (
     <section
-      id="play-a-friend"
+      id={JOIN_ROW_ID}
       aria-labelledby={headingId}
       className={`scroll-mt-6 ${BOARD_SECTION}`}
     >
@@ -103,6 +104,9 @@ export function JoinRoom({ filterParams, initialCode }: JoinRoomProps) {
           {authErrorMessageOf(error)}
         </p>
       ) : null}
+      <p className="text-14 text-pretty text-fg-muted">
+        To host, choose your filters and create a room at the last step.
+      </p>
     </section>
   );
 }

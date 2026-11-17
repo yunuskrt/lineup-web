@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { withoutPickedMatch } from '@/lib/archive';
+import { withMode } from '@/lib/filters';
 import {
   isStepFilled,
   isStepReachable,
   modeOptionFrom,
   playModeOf,
+  playPath,
   playStepFrom,
   withModeOption,
   withStep,
@@ -126,5 +129,41 @@ describe('step progress', () => {
     expect(isStepReachable('filters', loading)).toBe(true);
     expect(isStepReachable('start', loading)).toBe(false);
     expect(isStepReachable('start', ready)).toBe(true);
+  });
+});
+
+describe('playPath', () => {
+  it('links a step with what the params carry', () => {
+    const params = new URLSearchParams('mode=solo&club=a&step=filters');
+    expect(playPath(params, 'start')).toBe('/play?mode=solo&club=a&step=start');
+    expect(playPath(params, 'mode')).toBe('/play?mode=solo&club=a');
+  });
+
+  it('adds a hash when asked', () => {
+    const params = new URLSearchParams('mode=duel&room=K7QM2X');
+    expect(playPath(params, 'mode', 'play-a-friend')).toBe(
+      '/play?mode=duel&room=K7QM2X#play-a-friend',
+    );
+  });
+
+  it('is bare /play with nothing to carry', () => {
+    expect(playPath(new URLSearchParams(), 'mode')).toBe('/play');
+  });
+});
+
+describe('leaving a game for /play', () => {
+  it('takes a solo run back to Start with its choices', () => {
+    const run = new URLSearchParams('competition=c&practice=1&match=m1');
+    const href = playPath(withMode(withoutPickedMatch(run), 'solo'), 'start');
+    expect(href).toBe('/play?competition=c&practice=1&mode=solo&step=start');
+    const back = new URLSearchParams(href.split('?')[1]);
+    expect(modeOptionFrom(back)).toBe('practice');
+    expect(playStepFrom(back)).toBe('start');
+  });
+
+  it('takes a refused join back to step 1 at the join row', () => {
+    const duel = new URLSearchParams('club=a&room=K7QM2X');
+    const href = playPath(withMode(duel, 'duel'), 'mode', 'play-a-friend');
+    expect(href).toBe('/play?club=a&room=K7QM2X&mode=duel#play-a-friend');
   });
 });

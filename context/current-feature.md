@@ -114,3 +114,4 @@ Not Started
 - Redesign H1 Sign In: open sections, pill switch, icon errors, form Alert.
 - Redesign H2 Pro and System: Pro table, 404 page, update notice.
 - Fix Play Steps A: /play stepper, step in URL, join on 1, summary on 3.
+- Fix Play Steps B: entry links by origin, Change filters to 2, join row.

@@ -8,7 +8,13 @@ import { usePlayerDirectory } from '@/hooks/use-player-directory';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoloRun } from '@/hooks/use-solo-run';
 import { sideSchema } from '@/lib/api/schemas/common';
-import { FILTER_PARAMS, withoutParams, withQuery } from '@/lib/filters';
+import {
+  FILTER_PARAMS,
+  withMode,
+  withoutParams,
+  withQuery,
+} from '@/lib/filters';
+import { type PlayStep, playPath } from '@/lib/play-steps';
 import {
   ARCHIVE_PATH,
   PICKED_MATCH_PARAM,
@@ -43,8 +49,13 @@ export function SoloGame() {
     state.session?.status === 'active' &&
     state.summary === null;
 
+  // Back on /play with this run's choices
+  function backTo(step: PlayStep) {
+    router.push(playPath(withMode(withoutPickedMatch(params), 'solo'), step));
+  }
+
   function leave() {
-    router.push(withQuery('/play', withoutPickedMatch(params)));
+    backTo('start');
   }
 
   function backToArchive() {
@@ -124,7 +135,10 @@ export function SoloGame() {
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
         // A picked run, practice or not, goes back
-        onChangeFilters={state.pickedMatchId ? backToArchive : leave}
+        onChangeFilters={
+          state.pickedMatchId ? backToArchive : () => backTo('filters')
+        }
+        onBackToPlay={leave}
         onPlayDuel={playDuel}
         onRevealMissed={revealMissed}
       />
