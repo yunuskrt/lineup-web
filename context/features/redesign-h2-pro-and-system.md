@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -40,3 +40,11 @@ The second part of redesign stage H (`/pro` and the system states, `context/docs
 - **Check:** `/pro` as Free and as Pro with the split on (`NEXT_PUBLIC_MOCK_TIER=free`, the user's step) and the 404 with the split off; any unknown URL for the 404; `/play/duel?scenario=protocolRefused` (the mock duel refuses the handshake) for update required; `/play/solo?state=rate-limited` and the `empty-pool-*` states; 320, 768 and 1280px; keyboard order; screen-reader names for the table.
 - **Dev server:** the dev cache is off (`next.config.ts`), so `npm run build` can run while the user's dev server is up.
 - That ends the redesign's stages; the motion pass comes after.
+
+- **Deviations recorded during implementation:**
+  - **Open questions:** the "Off the pitch" butter sticker (default); the line is "Can not find the page" (user, 2026-11-17), in place of the default "That page isn't in the game.".
+  - **404 page:** `app/not-found.tsx` at the root (one root layout, so no `global-not-found`); it renders above the site layout, so it brings `SiteNav` and the inline `SiteFooter` itself. It serves unknown URLs (status 404, title "Not found · Lineup") and `/pro`'s `notFound()`. The "404" is 64px on phones, 72 from `sm`.
+  - **`/pro` page:** `ProView` is the open column (`BOARD`) with three ruled sections; the Pro column and its header are lavender with ink text; dashes are a Lucide `Minus` (still "Not included" for readers). `PROFILE_PANEL` and `PROFILE_HEADING` went from `profile/styles.ts`, as nothing used them any more.
+  - **Update required:** built from the `ui/empty` parts (`StateNotice` can't take the heading's focus ref), with a butter `RefreshCw` tile; Back to Play is the large secondary Button, beside Reload.
+  - **Rate limited and empty filter result:** checked, no change needed: the reason line is already in the warning tone, and the widen gate already has the B3 look.
+  - **Not checked in the browser:** the real `/pro` page and the update-required screen: the dev server runs against the real backend (the split off, so `/pro` 404s; the mock `?scenario=protocolRefused` doesn't apply). `ProView` was checked on `/dev/pro` in all three plans (the slot stays 76px); the update-required screen needs the mock API or an outdated client.

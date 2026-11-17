@@ -1,4 +1,4 @@
-import { PROFILE_PANEL } from '@/components/profile/styles';
+import { Check, Minus } from 'lucide-react';
 
 // The Free vs Pro rows of project-overview.md
 const ROWS: { feature: string; free: string | null; pro: string | null }[] = [
@@ -17,30 +17,47 @@ const ROWS: { feature: string; free: string | null; pro: string | null }[] = [
 
 const CELL = 'px-3 py-3 align-top text-14 leading-5 sm:px-6';
 
-function Value({ value }: { value: string | null }) {
-  if (value !== null) return value;
+// The Pro column, filled so it reads as the offer
+const PRO_CELL = `${CELL} bg-block-lavender text-on-accent`;
+
+// Marks beside the words; the words carry the meaning
+function Value({ value, isPro }: { value: string | null; isPro: boolean }) {
+  if (value === null) {
+    return (
+      <>
+        <Minus aria-hidden="true" className="size-4" strokeWidth={2.5} />
+        <span className="sr-only">Not included</span>
+      </>
+    );
+  }
   return (
-    <>
-      <span aria-hidden="true">—</span>
-      <span className="sr-only">Not included</span>
-    </>
+    <span className="flex items-start gap-1.5">
+      {isPro ? (
+        <Check
+          aria-hidden="true"
+          className="mt-0.5 size-4 shrink-0"
+          strokeWidth={3}
+        />
+      ) : null}
+      <span>{value}</span>
+    </span>
   );
 }
 
 export function ProPlanTable() {
   return (
-    <div className={PROFILE_PANEL}>
+    <div className="overflow-hidden rounded-lg border-2 border-line bg-surface-card">
       <table className="w-full table-fixed border-collapse text-left">
         <caption className="sr-only">Free and Pro compared</caption>
         <thead>
-          <tr className="border-b border-line">
+          <tr className="border-b-2 border-line">
             <th scope="col" className={`${CELL} w-[38%] font-normal`}>
               <span className="sr-only">Feature</span>
             </th>
             <th scope="col" className={`${CELL} font-semibold text-fg-muted`}>
               Free
             </th>
-            <th scope="col" className={`${CELL} font-semibold text-fg`}>
+            <th scope="col" className={`${PRO_CELL} font-semibold`}>
               Pro
             </th>
           </tr>
@@ -49,16 +66,16 @@ export function ProPlanTable() {
           {ROWS.map((row) => (
             <tr
               key={row.feature}
-              className="border-b border-line last:border-b-0"
+              className="border-b-2 border-line last:border-b-0"
             >
               <th scope="row" className={`${CELL} font-medium text-fg`}>
                 {row.feature}
               </th>
               <td className={`${CELL} text-fg-muted`}>
-                <Value value={row.free} />
+                <Value value={row.free} isPro={false} />
               </td>
-              <td className={`${CELL} text-fg`}>
-                <Value value={row.pro} />
+              <td className={PRO_CELL}>
+                <Value value={row.pro} isPro />
               </td>
             </tr>
           ))}
