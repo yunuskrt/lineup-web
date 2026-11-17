@@ -1,11 +1,6 @@
 import { cn } from '@/lib/utils';
 import { BOARD_SECTION, TYPE_NUMBER } from '@/styles/classes';
 
-// The /pro plan table's panel
-export const PROFILE_PANEL = 'rounded-lg border border-line bg-surface-raised';
-
-export const PROFILE_HEADING = 'font-display text-32 leading-10 font-bold';
-
 // The record and stats section of the page
 export const PROFILE_FIGURES = cn(BOARD_SECTION, 'grid gap-6 lg:grid-cols-12');
 

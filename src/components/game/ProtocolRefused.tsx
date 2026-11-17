@@ -2,7 +2,16 @@
 
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
-import { PRIMARY_BUTTON_LARGE, TEXT_LINK } from '@/styles/classes';
+import { RefreshCw } from 'lucide-react';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
+import { PRIMARY_BUTTON_LARGE, SECONDARY_BUTTON_LARGE } from '@/styles/classes';
 
 export const PROTOCOL_REFUSED_COPY = {
   title: 'Update Lineup to keep playing',
@@ -26,21 +35,23 @@ export function ProtocolRefused({ backHref }: ProtocolRefusedProps) {
   }, []);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 items-center">
-      <div className="flex max-w-xl flex-col items-start gap-6">
-        <div className="flex flex-col gap-3">
-          <h1
+    <div className="mx-auto flex w-full max-w-xl flex-1 items-center">
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia>
+            <RefreshCw />
+          </EmptyMedia>
+          <EmptyTitle
             ref={headingRef}
+            level={1}
             tabIndex={-1}
-            className="font-display text-32 leading-tight font-bold text-balance font-stretch-expanded outline-none sm:text-48"
+            className="outline-none"
           >
             {PROTOCOL_REFUSED_COPY.title}
-          </h1>
-          <p className="text-16 leading-6 text-fg-muted">
-            {PROTOCOL_REFUSED_COPY.detail}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-6">
+          </EmptyTitle>
+          <EmptyDescription>{PROTOCOL_REFUSED_COPY.detail}</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
           <button
             type="button"
             className={PRIMARY_BUTTON_LARGE}
@@ -48,11 +59,11 @@ export function ProtocolRefused({ backHref }: ProtocolRefusedProps) {
           >
             {PROTOCOL_REFUSED_COPY.reload}
           </button>
-          <Link href={backHref} className={`text-14 ${TEXT_LINK}`}>
+          <Link href={backHref} className={SECONDARY_BUTTON_LARGE}>
             {PROTOCOL_REFUSED_COPY.back}
           </Link>
-        </div>
-      </div>
+        </EmptyContent>
+      </Empty>
     </div>
   );
 }
