@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { AuthPanel } from '@/components/auth/AuthPanel';
 import { authModeFrom } from '@/lib/auth';
-import { SITE_CONTAINER } from '@/styles/classes';
+import { BOARD, SITE_CONTAINER } from '@/styles/classes';
 
 export const metadata: Metadata = {
   title: 'Sign in',
@@ -14,7 +14,7 @@ export default async function SignInPage({
 
   return (
     <div className={`${SITE_CONTAINER} py-12`}>
-      <div className="flex max-w-md flex-col gap-8">
+      <div className={BOARD}>
         <AuthPanel mode={mode} />
       </div>
     </div>

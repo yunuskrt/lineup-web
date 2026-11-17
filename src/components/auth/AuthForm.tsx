@@ -2,7 +2,9 @@
 
 import { useId, useRef, useState, type FormEvent } from 'react';
 import type { z } from 'zod';
+import { TriangleAlert } from 'lucide-react';
 import { AuthField, type AuthFieldConfig } from '@/components/auth/AuthField';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { authErrorMessageOf, authFieldErrors } from '@/lib/auth';
 import { PRIMARY_BUTTON_LARGE } from '@/styles/classes';
 import type {
@@ -73,15 +75,16 @@ export function AuthForm<S extends z.ZodType>({
         />
       ))}
       {error && !isPending ? (
-        <p role="alert" className="text-14 text-danger-text">
-          {authErrorMessageOf(error)}
-        </p>
+        <Alert role="alert">
+          <TriangleAlert aria-hidden="true" />
+          <AlertDescription>{authErrorMessageOf(error)}</AlertDescription>
+        </Alert>
       ) : null}
       <div>
         <button
           type="submit"
           disabled={isPending}
-          className={PRIMARY_BUTTON_LARGE}
+          className={`w-full sm:w-auto ${PRIMARY_BUTTON_LARGE}`}
         >
           {isPending ? pendingLabel : submitLabel}
         </button>

@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { TriangleAlert } from 'lucide-react';
 import { AuthSkeleton } from '@/components/auth/AuthSkeleton';
 import { ContinueAsGuest } from '@/components/auth/ContinueAsGuest';
@@ -7,9 +8,10 @@ import { ModeSwitch } from '@/components/auth/ModeSwitch';
 import { SignedInPanel } from '@/components/auth/SignedInPanel';
 import { SignInForm } from '@/components/auth/SignInForm';
 import { SignUpForm } from '@/components/auth/SignUpForm';
+import { AUTH_FORM } from '@/components/auth/styles';
 import { useSession } from '@/hooks/use-auth';
 import { authErrorMessageOf } from '@/lib/auth';
-import { SECONDARY_BUTTON } from '@/styles/classes';
+import { BOARD_SECTION, SECONDARY_BUTTON, TYPE_TITLE } from '@/styles/classes';
 import type { AuthMode } from '@/types/auth';
 import { StateNotice } from '@/components/shell/StateNotice';
 
@@ -23,8 +25,13 @@ const HEADINGS = {
   'signed-in': 'Signed in',
 } as const;
 
-function Heading({ children }: { children: string }) {
-  return <h1 className="font-display text-32 font-bold">{children}</h1>;
+function Header({ title, children }: { title: string; children?: ReactNode }) {
+  return (
+    <header className={BOARD_SECTION}>
+      <h1 className={TYPE_TITLE}>{title}</h1>
+      {children}
+    </header>
+  );
 }
 
 export function AuthPanel({ mode }: AuthPanelProps) {
@@ -34,7 +41,7 @@ export function AuthPanel({ mode }: AuthPanelProps) {
   if (session.isPending) {
     return (
       <>
-        <Heading>{HEADINGS[mode]}</Heading>
+        <Header title={HEADINGS[mode]} />
         <AuthSkeleton mode={mode} />
       </>
     );
@@ -43,20 +50,22 @@ export function AuthPanel({ mode }: AuthPanelProps) {
   if (session.isError) {
     return (
       <>
-        <Heading>{HEADINGS[mode]}</Heading>
-        <StateNotice
-          tone="error"
-          icon={TriangleAlert}
-          message={authErrorMessageOf(session.error)}
-        >
-          <button
-            type="button"
-            onClick={() => session.refetch()}
-            className={SECONDARY_BUTTON}
+        <Header title={HEADINGS[mode]} />
+        <div className={BOARD_SECTION}>
+          <StateNotice
+            tone="error"
+            icon={TriangleAlert}
+            message={authErrorMessageOf(session.error)}
           >
-            Try again
-          </button>
-        </StateNotice>
+            <button
+              type="button"
+              onClick={() => session.refetch()}
+              className={SECONDARY_BUTTON}
+            >
+              Try again
+            </button>
+          </StateNotice>
+        </div>
       </>
     );
   }
@@ -65,16 +74,17 @@ export function AuthPanel({ mode }: AuthPanelProps) {
   if (user && !user.isGuest) {
     return (
       <>
-        <Heading>{HEADINGS['signed-in']}</Heading>
-        <SignedInPanel handle={user.handle} />
+        <Header title={HEADINGS['signed-in']} />
+        <div className={BOARD_SECTION}>
+          <SignedInPanel handle={user.handle} />
+        </div>
       </>
     );
   }
 
   return (
     <>
-      <Heading>{HEADINGS[mode]}</Heading>
-      <div className="flex flex-col gap-8">
+      <Header title={HEADINGS[mode]}>
         {user ? (
           <p className="text-16 text-fg-muted">
             You&apos;re playing as{' '}
@@ -84,10 +94,18 @@ export function AuthPanel({ mode }: AuthPanelProps) {
               : " Signing in to another account leaves this guest's games behind."}
           </p>
         ) : null}
-        <ModeSwitch mode={mode} />
-        {mode === 'sign-in' ? <SignInForm /> : <SignUpForm />}
-        {user ? null : <ContinueAsGuest />}
+      </Header>
+      <div className={BOARD_SECTION}>
+        <div className={AUTH_FORM}>
+          <ModeSwitch mode={mode} />
+          {mode === 'sign-in' ? <SignInForm /> : <SignUpForm />}
+        </div>
       </div>
+      {user ? null : (
+        <div className={BOARD_SECTION}>
+          <ContinueAsGuest />
+        </div>
+      )}
     </>
   );
 }

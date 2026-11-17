@@ -1,4 +1,5 @@
 import type { Ref } from 'react';
+import { AuthError } from '@/components/auth/AuthError';
 import { TEXT_INPUT } from '@/styles/classes';
 import type { AuthField as AuthFieldName } from '@/types/auth';
 
@@ -36,7 +37,7 @@ export function AuthField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="text-14 font-medium">
+      <label htmlFor={inputId} className="text-14 font-semibold">
         {field.label}
       </label>
       <input
@@ -57,11 +58,7 @@ export function AuthField({
           {field.hint}
         </p>
       ) : null}
-      {error ? (
-        <p id={errorId} className="text-14 text-danger-text">
-          {error}
-        </p>
-      ) : null}
+      {error ? <AuthError id={errorId}>{error}</AuthError> : null}
     </div>
   );
 }
