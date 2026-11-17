@@ -67,7 +67,7 @@ A contract change is therefore three pieces of work in sequence: change the back
 - Code should be self-explanatory through clear naming and structure — don't narrate the implementation.
 - Add a comment only when it's genuinely necessary for readability (e.g. a non-obvious business rule, workaround, or edge case) — not as a default habit.
 - When a comment is needed, use a short single-line `//` comment. Keep it brief — no multi-line or paragraph-style comments.
-- For a single statement, a comment should not exceed one line or 50 characters.
+- For a single statement, a comment should not exceed one line or 75 characters.
 
 ## Naming
 

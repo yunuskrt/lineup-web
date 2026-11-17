@@ -7,7 +7,7 @@ argument-hint: run|check
 Review the codebase for cleanup tasks:
 
 1. Make sure that the history in @context/current-feature.md is in order from oldest to newest
-2. Find long comment blocks for a statement (more than 1 line or 50 characters)
+2. Find long comment blocks for a statement (more than 1 line or 75 characters)
 3. Find unnecessary console.log statements in src/
 4. Find unused imports
 5. Check for stale TODO comments

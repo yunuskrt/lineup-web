@@ -57,8 +57,10 @@ Nothing in the code changes until you approve it.
     - `/`;
     - `/play`, `/play?mode=solo&step=filters`, `/play?mode=duel&step=start`;
     - `/profile`, `/archive`, `/sign-in`, `/sign-in?mode=sign-up`, `/pro`, `/nope` (404);
-  - **game states at 320 and 1280px:** every state linked from `/dev/canvas`;
-  - **dev previews at 1280px:** every page under `/dev/`.
+  - **profile and archive dev states at 320 and 1280px:** every `/profile?state=…` (10) and `/archive?state=…` (8);
+  - **game states at 320 and 1280px:** every state linked from `/dev/canvas` (75);
+  - **dev previews at 1280px:** every page under `/dev/` (13);
+  - **conditions:** reduced motion on (`prefers-reduced-motion: reduce`), full-page shots, mock API. Every comparison must use the same conditions.
 
 **0.5 Rules commit**
 - ⌨️ `Phase 0.5: write the rules changes.`
@@ -81,7 +83,7 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 | **B2** | ⌨️ `/feature start` | A branch, and the changes made |
 | **B3** | ⌨️ `/feature review` | Goals met, and any issues |
 | **B4** | ⌨️ `/feature test` | Unit tests for changed `lib/` code, with `npm test` green |
-| **B5** | ⌨️ `Use the ui-reviewer agent to compare the routes this batch touched against context/screenshots/_baseline/ at the same widths, Tab through each page, and report every difference.` | "No differences", or a list |
+| **B5** | ⌨️ `Use the ui-reviewer agent to compare the routes this batch touched against context/screenshots/_baseline/ at the same widths, with reduced motion on and full-page shots, Tab through each page, and report every difference.` | "No differences", or a list |
 | **B6** | ⌨️ `/code-review medium` | Findings ranked by severity, or none |
 | **B7** | Only if B5 or B6 found something: ⌨️ `Fix items <numbers>.` Then repeat B5 and B6. | A clean B5 and B6 |
 | **B8** | Look at one or two touched pages yourself in the browser | Your OK |

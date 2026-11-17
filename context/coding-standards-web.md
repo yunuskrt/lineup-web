@@ -75,11 +75,15 @@ const ComponentName = ({}: Props) => {};
 ```
 
 - Keep the `Props` type even when the component currently has no props.
+- In a client component, `'use client'` stays the first line and `import React from 'react'` follows it.
+- **One component per file.** A component used only by its parent moves into a subfolder named after the parent in kebab-case: `duel/LobbyPanel.tsx` stays, and its parts go to `duel/lobby-panel/Searching.tsx`, `duel/lobby-panel/RoomWaiting.tsx`…
+- **Exempt:** `src/components/ui/` (copied kit parts such as `Card`, `CardHeader`), `src/components/dev/` and `src/app/dev/` may keep several components in one file. Each still follows the template (arrow const and a `Props` type) but uses **named** exports, as a file can have only one default.
+- Non-component exports (constants, types) stay named exports, beside the component's default export.
 - Replace `ComponentName` with the actual component name.
 - Use the component's actual CSS module only when custom CSS is required.
 - Do not import a CSS module if the component does not use custom CSS.
 
-Because `type Props = {}` would otherwise be rejected by `@typescript-eslint/no-empty-object-type`, that rule is configured with `allowObjectTypes: "always"` in `eslint.config.mjs`. Don't "fix" the empty `Props` type to satisfy a linter — the template wins.
+Because `type Props = {}` would otherwise be rejected by `@typescript-eslint/no-empty-object-type`, that rule is configured with `allowObjectTypes: "always"` in `eslint.config.mjs`. The `react-jsx` transform doesn't need `import React`, so `@typescript-eslint/no-unused-vars` ignores that one name (`varsIgnorePattern: "^React$"`). Don't "fix" the empty `Props` type or drop the `React` import to satisfy a linter — the template wins.
 
 ## Next.js
 
