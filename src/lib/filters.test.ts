@@ -10,7 +10,6 @@ import {
   filtersToParams,
   fitEra,
   pickedCompetition,
-  playModeFrom,
   searchClubs,
   searchKey,
   seasonLabel,
@@ -466,20 +465,11 @@ describe('toggleId', () => {
 });
 
 describe('withMode', () => {
-  it('writes duel and leaves solo out as the default', () => {
+  it('writes either mode explicitly', () => {
     const params = new URLSearchParams('club=club-a&mode=duel');
-    expect(withMode(params, 'solo').toString()).toBe('club=club-a');
+    expect(withMode(params, 'solo').toString()).toBe('club=club-a&mode=solo');
     expect(withMode(params, 'duel').toString()).toBe('club=club-a&mode=duel');
     expect(params.toString()).toBe('club=club-a&mode=duel');
-  });
-});
-
-describe('playModeFrom', () => {
-  it('reads duel and defaults everything else to solo', () => {
-    expect(playModeFrom('duel')).toBe('duel');
-    expect(playModeFrom('solo')).toBe('solo');
-    expect(playModeFrom('DUEL')).toBe('solo');
-    expect(playModeFrom(null)).toBe('solo');
   });
 });
 
