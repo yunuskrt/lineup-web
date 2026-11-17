@@ -1,75 +1,69 @@
 'use client';
 
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { TriangleAlert } from 'lucide-react';
-import { FilterPanel } from '@/components/play/FilterPanel';
-import { FilterSkeleton } from '@/components/play/FilterSkeleton';
-import { ModeChoice } from '@/components/play/ModeChoice';
-import { PlayStart } from '@/components/play/PlayStart';
-import { RoomControls } from '@/components/play/RoomControls';
+import { FiltersStep } from '@/components/play/FiltersStep';
+import { ModeStep } from '@/components/play/ModeStep';
+import { PlaySteps } from '@/components/play/PlaySteps';
 import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
+import { StartStep } from '@/components/play/StartStep';
 import { useFilterOptions } from '@/hooks/use-filter-options';
 import { useProAccess } from '@/hooks/use-pro';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoundUnlock } from '@/hooks/use-sound';
-import { ARCHIVE_PATH } from '@/lib/archive';
-import { authErrorMessageOf } from '@/lib/auth';
 import {
-  FILTER_PARAMS,
   filtersFromParams,
   filtersToParams,
-  playModeFrom,
   replaceQuery,
-  withMode,
   withQuery,
 } from '@/lib/filters';
 import {
+  MODE_OPTION_NAMES,
+  modeOptionFrom,
+  type PlayStep,
+  playStepFrom,
+  withModeOption,
+  withStep,
+} from '@/lib/play-steps';
+import {
   hasOpenRun,
-  isPracticeFrom,
   modeOf,
-  modeOptionOf,
   PRACTICE_OVER_RUN_COPY,
   withPractice,
 } from '@/lib/practice';
 import { joinCodeFrom } from '@/lib/room-code';
 import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
-import {
-  BOARD,
-  BOARD_SECTION,
-  SECONDARY_BUTTON,
-  SECTION_LABEL,
-  TEXT_LINK,
-  TYPE_CARD_TITLE,
-} from '@/styles/classes';
+import { BOARD, BOARD_SECTION } from '@/styles/classes';
 import type { Filters } from '@/types/filters';
-import type { ModeOption, PlayMode } from '@/types/play';
-import { StateNotice } from '@/components/shell/StateNotice';
+import type { ModeOption } from '@/types/play';
 
 export function PlayScreen() {
-  // Page props go stale after replaceState; this won't
+  // Live, for the step; Back and Forward change it
   const searchParams = useSearchParams();
+  // A snapshot: the state holds the rest
   const [params] = useState(() => new URLSearchParams(searchParams));
-  const [mode, setMode] = useState(() =>
-    playModeFrom(params.get(FILTER_PARAMS.mode)),
-  );
+  const [picked, setPicked] = useState(() => modeOptionFrom(params));
   const [edited, setEdited] = useState<Filters | null>(null);
   const options = useFilterOptions();
+  // Practice is Pro (R14); the server still checks
+  const practiceAccess = useProAccess();
+  // A locked practice pick shows as Solo
+  const option: ModeOption | null =
+    picked === 'practice' && practiceAccess !== 'open' ? 'solo' : picked;
+  const mode = option ? modeOf(option).mode : null;
+  const isPractice = option === 'practice';
   // The server's count; nothing while unlimited
   const allowance = useSoloAllowance();
   const allowanceId = useId();
-  // Practice is Pro (R14); the server still checks
-  const practiceAccess = useProAccess();
-  const [practice, setPractice] = useState(() => isPracticeFrom(params));
-  const isPractice = mode === 'solo' && practice && practiceAccess === 'open';
   // Practice never counts toward the cap
-  const soloAllowance =
-    mode === 'solo' && !isPractice ? (allowance.data ?? null) : null;
+  const soloAllowance = option === 'solo' ? (allowance.data ?? null) : null;
   const soloLine = allowanceLine(soloAllowance);
   const isCapped = isSoloCapped(soloAllowance);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const startRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
   // The Start click unlocks sound for the game
   useSoundUnlock();
 
@@ -77,83 +71,124 @@ export function PlayScreen() {
     edited ?? (options.data ? filtersFromParams(params, options.data) : null);
   const filterParams =
     filters && options.data ? filtersToParams(filters, options.data) : null;
+  const step = playStepFrom(searchParams, picked !== null);
+  // Filled once seen; Any is valid but unchosen
+  const [hasSeenFilters, setHasSeenFilters] = useState(false);
+  const progress = {
+    hasMode: picked !== null,
+    hasFilters: filters !== null && (hasSeenFilters || step !== 'mode'),
+  };
 
-  // The URL keeps filters, mode and practice
-  function syncUrl(base: URLSearchParams, nextMode: PlayMode, on: boolean) {
-    replaceQuery(withPractice(withMode(base, nextMode), on));
+  function queryFor(
+    nextStep: PlayStep,
+    nextPicked = picked,
+    base = filterParams ?? params,
+  ): URLSearchParams {
+    return withStep(withModeOption(base, nextPicked), nextStep);
   }
 
-  // Practice is a card, so a pick sets both
+  // Back or Forward: the entry takes the state
+  const stateQuery = queryFor(step).toString();
+  useEffect(() => {
+    if (searchParams.toString() !== stateQuery) {
+      replaceQuery(new URLSearchParams(stateQuery));
+    }
+  }, [searchParams, stateQuery]);
+
+  // Focus follows the step, never on first load
+  const shownStep = useRef(step);
+  useEffect(() => {
+    if (shownStep.current === step) return;
+    shownStep.current = step;
+    headingRef.current?.focus({ preventScroll: true });
+    // The steps above the heading come into view too
+    topRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [step]);
+
+  function goTo(nextStep: PlayStep) {
+    if (nextStep === step) return;
+    if (nextStep !== 'mode') setHasSeenFilters(true);
+    window.history.pushState(
+      null,
+      '',
+      withQuery(window.location.pathname, queryFor(nextStep)),
+    );
+  }
+
   function changeOption(next: ModeOption) {
-    const picked = modeOf(next);
-    setMode(picked.mode);
-    setPractice(picked.practice);
-    syncUrl(filterParams ?? params, picked.mode, picked.practice);
-  }
-
-  // Its button goes; Start enables after it
-  function playDuelInstead() {
-    flushSync(() => changeOption('duel'));
-    startRef.current?.focus();
+    setPicked(next);
+    replaceQuery(queryFor(step, next));
   }
 
   function changeFilters(next: Filters) {
     if (!options.data) return;
     setEdited(next);
-    syncUrl(filtersToParams(next, options.data), mode, practice);
+    replaceQuery(queryFor(step, picked, filtersToParams(next, options.data)));
   }
 
+  // Its button goes; focus moves to what's next
+  function playDuelInstead() {
+    flushSync(() => changeOption('duel'));
+    (step === 'start' ? startRef : nextRef).current?.focus();
+  }
+
+  const allowanceNote = soloLine ? (
+    <SoloAllowanceNote
+      id={allowanceId}
+      line={soloLine}
+      isCapped={isCapped}
+      onPlayDuel={playDuelInstead}
+    />
+  ) : null;
   const startParams = filterParams && withPractice(filterParams, isPractice);
 
   return (
     <div className={BOARD}>
-      <div className={BOARD_SECTION}>
-        <ModeChoice
-          option={modeOptionOf(mode, isPractice)}
-          onChange={changeOption}
-          practiceAccess={practiceAccess}
+      <div ref={topRef} className={`scroll-mt-6 ${BOARD_SECTION}`}>
+        <PlaySteps
+          current={step}
+          progress={progress}
+          choices={{
+            mode: option ? MODE_OPTION_NAMES[option] : undefined,
+            filters: 'Your filters',
+          }}
+          onGo={goTo}
         />
       </div>
-      <section aria-labelledby="play-filters" className={BOARD_SECTION}>
-        <div>
-          <h2 id="play-filters" className={TYPE_CARD_TITLE}>
-            Match filters
-          </h2>
-          <p className="mt-2 text-14 text-fg-muted">
-            Choose where the match comes from. Leave a group on Any to include
-            all of it.
-          </p>
-        </div>
-        {/* A failed background refetch keeps its data */}
-        {filters && options.data ? (
-          <FilterPanel
-            options={options.data}
-            filters={filters}
-            onChange={changeFilters}
-          />
-        ) : options.isError ? (
-          <StateNotice
-            tone="error"
-            icon={TriangleAlert}
-            message={authErrorMessageOf(options.error)}
-          >
-            <button
-              type="button"
-              onClick={() => options.refetch()}
-              className={SECONDARY_BUTTON}
-            >
-              Try again
-            </button>
-          </StateNotice>
-        ) : (
-          <FilterSkeleton />
-        )}
-      </section>
-      <div className={BOARD_SECTION}>
-        <p className={SECTION_LABEL}>Start</p>
-        <PlayStart
-          ref={startRef}
+      {step === 'mode' ? (
+        <ModeStep
+          headingRef={headingRef}
+          nextRef={nextRef}
+          option={option}
+          onChange={changeOption}
+          practiceAccess={practiceAccess}
+          allowance={allowanceNote}
+          filterParams={filterParams}
+          initialCode={joinCodeFrom(params)}
+          onNext={() => goTo('filters')}
+        />
+      ) : null}
+      {step === 'filters' ? (
+        <FiltersStep
+          headingRef={headingRef}
+          filters={filters}
+          options={options.data ?? null}
+          onChange={changeFilters}
+          error={options.isError ? options.error : null}
+          onRetry={() => void options.refetch()}
+          onBack={() => goTo('mode')}
+          onNext={() => goTo('start')}
+        />
+      ) : null}
+      {step === 'start' && option && mode ? (
+        <StartStep
+          headingRef={headingRef}
+          startRef={startRef}
+          option={option}
           mode={mode}
+          filters={filters}
+          options={options.data ?? null}
+          filterParams={filterParams}
           href={startParams ? withQuery(`/play/${mode}`, startParams) : null}
           isCapped={isCapped}
           describedBy={soloLine ? allowanceId : undefined}
@@ -161,29 +196,8 @@ export function PlayScreen() {
           warningFor={() =>
             isPractice && hasOpenRun() ? PRACTICE_OVER_RUN_COPY : null
           }
-        >
-          {soloLine ? (
-            <SoloAllowanceNote
-              id={allowanceId}
-              line={soloLine}
-              isCapped={isCapped}
-              onPlayDuel={playDuelInstead}
-            />
-          ) : null}
-          {mode === 'solo' && !isCapped ? (
-            <p className="text-14 text-fg-muted">
-              Or pick the exact match from{' '}
-              <Link href={ARCHIVE_PATH} className={TEXT_LINK}>
-                the archive
-              </Link>
-            </p>
-          ) : null}
-        </PlayStart>
-      </div>
-      {mode === 'duel' ? (
-        <RoomControls
-          filterParams={filterParams}
-          initialCode={joinCodeFrom(params)}
+          allowance={allowanceNote}
+          onGo={goTo}
         />
       ) : null}
     </div>

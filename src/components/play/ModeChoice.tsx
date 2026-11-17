@@ -15,10 +15,13 @@ import type { ModeOption } from '@/types/play';
 import type { ProAccess } from '@/types/pro';
 
 type ModeChoiceProps = {
-  option: ModeOption;
+  // Null: nothing picked yet
+  option: ModeOption | null;
   onChange: (option: ModeOption) => void;
   // Practice is Pro (R14); shown locked, never hidden
   practiceAccess: ProAccess;
+  // A step heading already names the group
+  isLegendHidden?: boolean;
 };
 
 type ModeCard = {
@@ -123,13 +126,16 @@ export function ModeChoice({
   option,
   onChange,
   practiceAccess,
+  isLegendHidden = false,
 }: ModeChoiceProps) {
   // One group per instance, as the dev preview has three
   const name = useId();
 
   return (
     <fieldset>
-      <legend className={`mb-4 ${SECTION_LABEL}`}>Mode</legend>
+      <legend className={isLegendHidden ? 'sr-only' : `mb-4 ${SECTION_LABEL}`}>
+        Mode
+      </legend>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {MODES.map((card) => {
           if (card.option === 'practice' && practiceAccess !== 'open') {

@@ -10,9 +10,9 @@ import {
 } from 'react';
 import { flushSync } from 'react-dom';
 import { QuitDialog, type QuitDialogCopy } from '@/components/game/QuitDialog';
+import { STEP_ACTIONS, STEP_NEXT } from '@/components/play/styles';
 import { useEnsureSession } from '@/hooks/use-auth';
 import { authErrorMessageOf } from '@/lib/auth';
-import { PRIMARY_BUTTON_LARGE } from '@/styles/classes';
 import type { PlayMode } from '@/types/play';
 
 type PlayStartProps = {
@@ -29,6 +29,8 @@ type PlayStartProps = {
   warningFor?: () => QuitDialogCopy | null;
   // The Start button, for focus from the screen
   ref?: RefObject<HTMLButtonElement | null>;
+  // Before the button in its row, as Back
+  leading?: ReactNode;
 };
 
 const START_LABELS: Record<PlayMode, string> = {
@@ -45,6 +47,7 @@ export function PlayStart({
   label,
   warningFor,
   ref,
+  leading,
 }: PlayStartProps) {
   const router = useRouter();
   const ensureSession = useEnsureSession();
@@ -79,16 +82,19 @@ export function PlayStart({
 
   return (
     <div className="flex flex-col items-start gap-3">
-      <button
-        ref={buttonRef}
-        type="button"
-        disabled={!href || isStarting || isCapped}
-        aria-describedby={describedBy}
-        onClick={handleClick}
-        className={PRIMARY_BUTTON_LARGE}
-      >
-        {isStarting ? 'Starting…' : (label ?? START_LABELS[mode])}
-      </button>
+      <div className={STEP_ACTIONS}>
+        {leading}
+        <button
+          ref={buttonRef}
+          type="button"
+          disabled={!href || isStarting || isCapped}
+          aria-describedby={describedBy}
+          onClick={handleClick}
+          className={STEP_NEXT}
+        >
+          {isStarting ? 'Starting…' : (label ?? START_LABELS[mode])}
+        </button>
+      </div>
       {children}
       {ensureSession.error && !isStarting ? (
         <p role="alert" className="text-14 text-danger-text">

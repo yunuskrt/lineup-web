@@ -297,17 +297,13 @@ export function toggleId(
     .map((option) => option.id);
 }
 
-export function playModeFrom(param: string | null): PlayMode {
-  return param === 'duel' ? 'duel' : 'solo';
-}
-
+// Explicit: on /play no mode means none picked
 export function withMode(
   params: URLSearchParams,
   mode: PlayMode,
 ): URLSearchParams {
   const next = new URLSearchParams(params);
-  next.delete(FILTER_PARAMS.mode);
-  if (mode === 'duel') next.set(FILTER_PARAMS.mode, mode);
+  next.set(FILTER_PARAMS.mode, mode);
   return next;
 }
 
