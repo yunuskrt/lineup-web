@@ -113,3 +113,4 @@ Not Started
 - Redesign G1 Archive: open sections, fixture rows, filter count, Pro lock.
 - Redesign H1 Sign In: open sections, pill switch, icon errors, form Alert.
 - Redesign H2 Pro and System: Pro table, 404 page, update notice.
+- Fix Play Steps A: /play stepper, step in URL, join on 1, summary on 3.
