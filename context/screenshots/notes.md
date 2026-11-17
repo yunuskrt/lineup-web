@@ -98,6 +98,9 @@ Decided 2026-11-14, close to the other-01 heading. Both are Google Fonts the app
 - archive/03-row-b: layout only (Werder Bremen): one match, one action under it; not the photo, the gradients or the sideways scroll
 - archive/03-row-c: the phone row: name, crest, score, crest, name on one line with the score centred and a small line under it; white rows, no inner rules; not the grouping by competition
 
+- sign-in/00-page-a: the desktop layout: one outlined card split in two, a bold colour panel on one side and the form on a mint block on the other, a heavy title, outlined fields, a chunky submit; not the geometric pattern (ours is a flat panel with the tagline), the 3D shapes and sparkles, the pink fields, the social buttons or the "Already have an account?" link
+- sign-in/00-page-b: the phone layout: the form alone on one colour block, a heavy title, bold labels above white fields, one full-width primary button; not the back-arrow tile, the checkmarks in the fields, the field shadows or the coral
+
 Decided 2026-11-15 for stage B: mint turf #A7E3C4 with ink lines; clock warning amber + thicker ring, critical red + thicker + pulse; RevealCard and LivesCard designed without references (see the guide § 4)
 
 ## Dislikes

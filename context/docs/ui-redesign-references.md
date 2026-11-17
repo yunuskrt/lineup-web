@@ -715,7 +715,8 @@ The duel uses the game screen from § 4, plus these.
 
 ## § 10. Page: Sign in `/sign-in`
 
-- **Whole page (Must):** sign-in pages you like, with or without a coloured panel beside the form. The one layout still open: the form alone on the open page, or the form beside a lavender or mint block with the tagline. Desktop and phone.
+- **Whole page:** ✅ **Collected** (layout only). `sign-in/00-page-a` (desktop: one card, a colour panel beside the form on a mint block) and `00-page-b` (phone: the form alone on one colour block).
+- **Changed (2026-11-17, user):** no card and no tagline panel; the page is the open column with ruled sections, like `/profile` and `/archive` (`context/features/redesign-h1-sign-in.md`).
 - **Save to:** `sign-in/00-page-a.png`
 - **Search:** Dribbble `neubrutalism login`, `neubrutalism sign up`; Pinterest `neubrutalism login page`; Gumroad: its log-in page
 
@@ -815,4 +816,4 @@ Write these in `context/screenshots/notes.md` as you go:
 - [x] **Stage E:** § 7 Duel → "duel ready" (specs E1–E2 in `context/features/redesign-e*.md`)
 - [x] **Stage F:** § 8 Profile → "profile ready" (specs F1–F2 in `context/features/redesign-f*.md`)
 - [x] **Stage G:** § 9 Archive → "archive ready" (spec G1 in `context/features/redesign-g1-archive.md`)
-- [ ] **Stage H:** § 10 Sign in, § 11 Pro and § 12 System → "rest ready"
+- [x] **Stage H:** § 10 Sign in, § 11 Pro and § 12 System → "rest ready" (specs H1–H2 in `context/features/redesign-h*.md`)
