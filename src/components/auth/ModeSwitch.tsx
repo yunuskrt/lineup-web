@@ -13,7 +13,10 @@ const MODES: { mode: AuthMode; label: string; href: string }[] = [
 
 export function ModeSwitch({ mode }: ModeSwitchProps) {
   return (
-    <nav aria-label="Account" className="flex gap-6 border-b border-line">
+    <nav
+      aria-label="Account"
+      className="flex gap-1 rounded-md border-2 border-line bg-surface-card p-1"
+    >
       {MODES.map((item) => {
         const isActive = item.mode === mode;
         return (
@@ -21,10 +24,10 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
             key={item.mode}
             href={item.href}
             aria-current={isActive ? 'page' : undefined}
-            className={`-mb-px rounded-t-sm border-b-2 pb-3 text-14 font-semibold ${
+            className={`flex-auto rounded-sm px-3 py-2 text-center text-14 leading-5 font-semibold whitespace-nowrap ${
               isActive
-                ? 'border-fg text-fg'
-                : 'border-transparent text-fg-muted hover:text-fg'
+                ? 'bg-brand text-on-accent'
+                : 'text-fg-muted hover:bg-surface hover:text-fg'
             } ${FOCUS_RING}`}
           >
             {item.label}

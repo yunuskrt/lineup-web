@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { AuthError } from '@/components/auth/AuthError';
 import { useContinueAsGuest } from '@/hooks/use-auth';
 import { authErrorMessageOf } from '@/lib/auth';
 import { SECONDARY_BUTTON } from '@/styles/classes';
@@ -19,12 +20,12 @@ export function ContinueAsGuest() {
   }
 
   return (
-    <div className="flex flex-col items-start gap-3 border-t border-line pt-6">
+    <div className="flex flex-col items-start gap-3">
       <p className="text-14 text-fg-muted">No account needed to play.</p>
       {continueAsGuest.error && !continueAsGuest.isPending ? (
-        <p role="alert" className="text-14 text-danger-text">
+        <AuthError role="alert">
           {authErrorMessageOf(continueAsGuest.error)}
-        </p>
+        </AuthError>
       ) : null}
       <button
         type="button"
