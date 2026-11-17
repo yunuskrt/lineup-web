@@ -10,6 +10,8 @@ import type { ProAccess } from '@/types/pro';
 export type ResultActionsProps = {
   onPlayAgain: () => void;
   onChangeFilters: () => void;
+  // Back to play; Change filters when unset
+  onBackToPlay?: () => void;
   // A room game: New room and Back to play
   isPrivate?: boolean;
   // Hosting is Pro (R10); open when unset
@@ -44,6 +46,7 @@ const SECONDARY_LABELS: Record<
 export function ResultActions({
   onPlayAgain,
   onChangeFilters,
+  onBackToPlay = onChangeFilters,
   isPrivate = false,
   hostAccess = 'open',
   capLine,
@@ -60,7 +63,7 @@ export function ResultActions({
   });
   const onPrimary =
     primary === 'backToPlay'
-      ? onChangeFilters
+      ? onBackToPlay
       : primary === 'playDuel'
         ? onPlayDuel
         : onPlayAgain;
@@ -91,7 +94,7 @@ export function ResultActions({
       ) : (
         <button
           type="button"
-          onClick={onChangeFilters}
+          onClick={secondary === 'backToPlay' ? onBackToPlay : onChangeFilters}
           className={`w-full ${SECONDARY_BUTTON_LARGE}`}
         >
           {SECONDARY_LABELS[secondary]}

@@ -150,6 +150,7 @@ export function RunSummary({
   end,
   onPlayAgain,
   onChangeFilters,
+  onBackToPlay,
   capLine,
   onPlayDuel,
   isPicked,
@@ -193,6 +194,7 @@ export function RunSummary({
         <ResultActions
           onPlayAgain={onPlayAgain}
           onChangeFilters={onChangeFilters}
+          onBackToPlay={onBackToPlay}
           capLine={capLine}
           onPlayDuel={onPlayDuel}
           isPicked={isPicked}

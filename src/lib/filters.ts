@@ -335,6 +335,7 @@ export function replaceQuery(params: URLSearchParams): void {
   window.history.replaceState(
     null,
     '',
-    withQuery(window.location.pathname, params),
+    // An anchor, such as the join row, stays
+    withQuery(window.location.pathname, params) + window.location.hash,
   );
 }

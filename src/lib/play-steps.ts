@@ -1,8 +1,13 @@
-import { FILTER_PARAMS } from '@/lib/filters';
+import { FILTER_PARAMS, withQuery } from '@/lib/filters';
 import { isPracticeFrom, modeOf, PRACTICE_PARAM } from '@/lib/practice';
 import type { ModeOption, PlayMode } from '@/types/play';
 
 export const STEP_PARAM = 'step';
+
+const PLAY_PATH = '/play';
+
+// Step 1's join row, as a link target
+export const JOIN_ROW_ID = 'play-a-friend';
 
 export type PlayStep = 'mode' | 'filters' | 'start';
 
@@ -84,4 +89,14 @@ export function isStepReachable(
   return PLAY_STEPS.slice(0, index).every((earlier) =>
     isStepFilled(earlier, progress),
   );
+}
+
+// A step of /play, carrying what's chosen
+export function playPath(
+  params: URLSearchParams,
+  step: PlayStep,
+  hash?: string,
+): string {
+  const path = withQuery(PLAY_PATH, withStep(params, step));
+  return hash ? `${path}#${hash}` : path;
 }

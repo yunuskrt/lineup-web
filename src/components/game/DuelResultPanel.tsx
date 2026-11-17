@@ -134,6 +134,7 @@ export function DuelResultPanel({
   isConnectionLost = false,
   onPlayAgain,
   onChangeFilters,
+  onBackToPlay,
   isPrivate,
   hostAccess,
 }: DuelResultPanelProps) {
@@ -169,6 +170,7 @@ export function DuelResultPanel({
         <ResultActions
           onPlayAgain={onPlayAgain}
           onChangeFilters={onChangeFilters}
+          onBackToPlay={onBackToPlay}
           isPrivate={isPrivate}
           hostAccess={hostAccess}
         />
