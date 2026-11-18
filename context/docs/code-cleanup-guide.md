@@ -27,7 +27,7 @@ Nothing in the code changes until you approve it.
 | `code-scanner` agent | "Use the code-scanner agent …" | 1.2 |
 | `refactor-scanner` agent | "Use the refactor-scanner agent …" | 2.1 |
 | `convention-auditor` agent | "Use the convention-auditor agent …" | 3.1 |
-| `ui-reviewer` agent | "Use the ui-reviewer agent …" | every batch, step B5 |
+| B5 visual check | "Phase B5: …" (run by Claude in the main session) | every batch, step B5 |
 | `/code-review` skill | `/code-review medium` | every batch, step B6 |
 | `/feature` skill | `/feature load …`, `start`, `review`, `test`, `complete` | every batch |
 
@@ -83,13 +83,22 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 | **B2** | ⌨️ `/feature start` | A branch, and the changes made |
 | **B3** | ⌨️ `/feature review` | Goals met, and any issues |
 | **B4** | ⌨️ `/feature test` | Unit tests for changed `lib/` code, with `npm test` green |
-| **B5** | ⌨️ `Use the ui-reviewer agent to compare the routes this batch touched against context/screenshots/_baseline/ at the same widths, with reduced motion on and full-page shots, Tab through each page, and report every difference.` | "No differences", or a list |
+| **B5** | ⌨️ `Phase B5: compare the routes this batch touched against the baseline and Tab through them.` | A table per route and width, and the focus order |
 | **B6** | ⌨️ `/code-review medium` | Findings ranked by severity, or none |
 | **B7** | Only if B5 or B6 found something: ⌨️ `Fix items <numbers>.` Then repeat B5 and B6. | A clean B5 and B6 |
 | **B8** | Look at one or two touched pages yourself in the browser | Your OK |
 | **B9** | ⌨️ `/feature complete` | Merged into `main`, pushed, branch deleted |
 
-**Hard stop:** any visual difference in B5 that you didn't ask for means the batch doesn't complete.
+**B7 scope:** fix only findings inside the batch's goals. A finding that would grow the batch (new behaviour, a refactor, code the goals don't name) goes into the spec's Notes as a follow-up for a later phase, unfixed. A docs-only batch stays docs-only.
+
+**How B5 runs:** Claude runs it in the main session. `ui-reviewer` can browse (re-tested 2026-11-18), but it has no shell for the hash and pixel compare.
+- Same conditions as the baseline: reduced motion on, height 900, full page, mock API.
+- **Identical file hash:** pass.
+- **Hash differs:** take the same shot up to 3 more times. If any re-take matches the baseline hash, the first was a one-off rendering artifact: pass.
+- **Still differs every time:** a pixel diff in the browser counts and locates the changed pixels, and Claude crops, enlarges and shows every changed area. It passes only if every change is text anti-aliasing (the same glyphs, shapes, colours, sizes and positions). Any other change, however few pixels (a focus ring, an icon stroke, a 1px border), is a visual difference.
+- **Keyboard:** Tab order and a visible focus ring on each touched page at 1280px.
+
+**Hard stop:** any visual difference in B5 that you didn't ask for, meaning anything beyond text anti-aliasing, means the batch doesn't complete.
 
 ---
 
@@ -173,7 +182,7 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 - ⏸️ No High findings.
 
 **F.2**
-- ⌨️ `Use the ui-reviewer agent to compare every baseline route against context/screenshots/_baseline/.`
+- ⌨️ `Phase B5 on every baseline route.`
 - ⏸️ No differences.
 
 **F.3 (your step)**

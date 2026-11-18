@@ -56,8 +56,7 @@ function isMatchSwitch(prev: CanvasView, next: CanvasView): boolean {
   );
 }
 
-// Players arriving with the match, or several
-// at once, are a resume snapshot
+// A reveal with the match, or several at once, is a resume snapshot
 function revealCue(prev: CanvasView, next: CanvasView): SoundCue | null {
   if (prev.match === null) return null;
   if (next.found.length !== prev.found.length + 1) return null;

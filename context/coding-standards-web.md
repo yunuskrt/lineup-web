@@ -12,8 +12,7 @@ src/
   components/[feature]/       components
   hooks/                      custom hooks
   lib/api/                    the API client — the only place fetch() appears
-  lib/socket/                 the Socket.IO client
-  stores/                     Zustand stores
+  lib/api/socket/             the Socket.IO duel client
   types/[feature].ts          repo-local types
   styles/                     globals.css, theme
 ```
@@ -32,7 +31,7 @@ Everything the app knows about the backend lives in `src/lib/api/`.
 ## Data Fetching
 
 - **TanStack Query** for all server data — caching, retries, invalidation and loading states.
-- **Zustand** for live duel session state, which arrives by socket rather than by request.
+- **A reducer hook** for live duel session state, which arrives by socket rather than by request: `useDuel` over the pure reducer in `src/lib/duel-session.ts`. No store library.
 - Server Components may fetch for marketing and SEO surfaces (`/`). Authenticated game data is fetched client-side, because the session cookie and the socket both live in the browser.
 - **Server Actions are not used for game logic.** They are a web-only transport; the same logic has to serve mobile, so it lives behind the API client instead.
 - Never poll for state the socket already pushes.
@@ -98,9 +97,9 @@ Because `type Props = {}` would otherwise be rejected by `@typescript-eslint/no-
 - Tailwind CSS v4 is the primary styling solution.
 - Do not create `tailwind.config.ts` or `tailwind.config.js`.
 - Configure Tailwind v4 through CSS and `@theme` in `src/app/globals.css`.
-- Use shadcn/ui components where applicable.
-- No inline styles.
-- Use CSS Modules for component-specific custom CSS when Tailwind/shadcn is insufficient.
+- Use the kit in `src/components/ui/` where applicable: Base UI parts copied from neobrutalism.dev (shadcn-style) and restyled to the theme.
+- No inline styles. Exception: a value known only at run time, or a Motion animation value, may use `style=` (for example `DuelRecord`'s shares, `CountdownRing`'s arc opacity). Anything static goes in classes.
+- Use CSS Modules for component-specific custom CSS when Tailwind and the kit are insufficient.
 - CSS Modules must be colocated with the component.
 
 Example v4 configuration:
@@ -141,9 +140,9 @@ with kebab-case.
 
 ## Realtime
 
-- `socket.io-client` in `src/lib/socket/`, connected once and held for the duel session.
+- `socket.io-client` in `src/lib/api/socket/`, connected once and held for the duel session.
 - The handshake sends the session token and this repo's `PROTOCOL_VERSION` constant.
-- Events are parsed with shared schemas on arrival. An unrecognised event is logged and ignored, never guessed at.
+- Events are parsed on arrival with this repo's own schemas (`src/lib/api/schemas/`). An unrecognised event is logged and ignored, never guessed at.
 - The countdown is rendered from the server's start timestamp. The client never decides that time ran out — it renders the backend saying so.
 
 ## Testing

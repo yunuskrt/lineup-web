@@ -1,7 +1,7 @@
 ---
 name: ui-reviewer
 description: Reviews UI for visual issues, responsiveness, and accessibility
-tools: "Read, Glob, Grep, mcp\_\_playwright\_\_*"
+tools: Read, Glob, Grep, mcp__playwright__browser_navigate, mcp__playwright__browser_resize, mcp__playwright__browser_emulate_media, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_snapshot, mcp__playwright__browser_press_key, mcp__playwright__browser_click, mcp__playwright__browser_wait_for, mcp__playwright__browser_type, mcp__playwright__browser_fill_form, mcp__playwright__browser_hover, mcp__playwright__browser_console_messages, mcp__playwright__browser_navigate_back, mcp__playwright__browser_tabs, mcp__playwright__browser_close
 model: sonnet
 ---
 

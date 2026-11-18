@@ -133,8 +133,7 @@ export const FILTER_CHIP = `rounded-full border-2 border-line bg-surface-card px
 
 export const SELECT_TRIGGER = `inline-flex items-center justify-between gap-2 rounded-md border-2 border-line bg-surface-card px-3 py-1.75 text-14 text-fg tabular-nums hover:bg-surface data-popup-open:shadow-hard-sm data-disabled:cursor-not-allowed data-disabled:opacity-70 ${FOCUS_RING}`;
 
-// 16px on phones stops iOS zooming on focus
-// Room for the search icon on the left
+// 16px on phones stops iOS zooming on focus; room for the search icon
 export const FILTER_SEARCH = `w-full rounded-md border-2 border-line bg-surface-card py-1.25 pr-3 pl-9 text-16 text-fg placeholder:text-fg-dim sm:text-14 ${FOCUS_RING}`;
 
 // 24px hit area around a small dot (WCAG 2.5.8)

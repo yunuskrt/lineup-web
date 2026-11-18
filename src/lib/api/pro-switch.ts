@@ -11,7 +11,7 @@ export function isSwitchOffIn(body: unknown): boolean {
   return parsed.success && parsed.data.success && !parsed.data.data.proEnabled;
 }
 
-// Server only: a failed fetch is never a 404
+// Server only: a failed fetch or a bad body keeps the split on, not a 404
 export async function isProSwitchOff(): Promise<boolean> {
   if (API_MODE === 'mock') return !MOCK_PRO_ENABLED;
   try {

@@ -121,7 +121,6 @@ export function withOneClub(previous: Filters, next: Filters): Filters {
   return { ...next, clubIds: (added.length ? added : next.clubIds).slice(-1) };
 }
 
-// Null when every filter is on Any
 // The filter groups not left on Any
 function activeFilterValues(
   filters: Filters,
@@ -132,6 +131,7 @@ function activeFilterValues(
     .filter((value) => value !== 'Any' && value !== 'Any season');
 }
 
+// Null when every filter is on Any
 export function activeFiltersLabel(
   filters: Filters,
   options: FilterOptions,
