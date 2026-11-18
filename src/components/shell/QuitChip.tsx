@@ -1,14 +1,15 @@
+import React from 'react';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 import { QUIT_CHIP } from '@/styles/classes';
 
-type QuitChipProps = {
+type Props = {
   // Without a handler the chip just leaves
   onQuit?: () => void;
 };
 
 // The icon waits for sm: phones lack the room
-export function QuitChip({ onQuit }: QuitChipProps) {
+const QuitChip = ({ onQuit }: Props) => {
   if (onQuit) {
     return (
       <button type="button" onClick={onQuit} className={QUIT_CHIP}>
@@ -32,4 +33,6 @@ export function QuitChip({ onQuit }: QuitChipProps) {
       Quit
     </Link>
   );
-}
+};
+
+export default QuitChip;

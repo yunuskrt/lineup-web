@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import {
   Empty,
   EmptyContent,
@@ -18,7 +18,7 @@ const TILE: Record<StateNoticeTone, string> = {
   info: 'bg-block-mint',
 };
 
-type StateNoticeProps = {
+type Props = {
   tone: StateNoticeTone;
   icon: LucideIcon;
   message: ReactNode;
@@ -30,7 +30,7 @@ type StateNoticeProps = {
 };
 
 // Empty and error states: icon tile, words, action
-export function StateNotice({
+const StateNotice = ({
   tone,
   icon: Icon,
   message,
@@ -38,7 +38,7 @@ export function StateNotice({
   titleLevel,
   isCompact = false,
   children,
-}: StateNoticeProps) {
+}: Props) => {
   const isAlert = tone === 'error';
 
   return (
@@ -58,4 +58,6 @@ export function StateNotice({
       {children ? <EmptyContent>{children}</EmptyContent> : null}
     </Empty>
   );
-}
+};
+
+export default StateNotice;

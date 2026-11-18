@@ -1,6 +1,6 @@
 import React, { type ReactNode } from 'react';
 import { TriangleAlert } from 'lucide-react';
-import { StateNotice } from '@/components/shell/StateNotice';
+import StateNotice from '@/components/shell/StateNotice';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 
 type Props = {

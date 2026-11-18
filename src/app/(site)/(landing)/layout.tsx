@@ -1,4 +1,4 @@
-import { SiteFooter } from '@/components/shell/SiteFooter';
+import SiteFooter from '@/components/shell/SiteFooter';
 
 export default function LandingLayout({ children }: LayoutProps<'/'>) {
   return (

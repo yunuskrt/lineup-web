@@ -18,6 +18,12 @@ Nothing in the code changes until you approve it.
 | Exempt files | Keep their several components; each one still uses arrow const + `Props`. They keep **named** exports, as a file can have only one default. |
 | Split files | Go in a subfolder named after the parent: `duel/LobbyPanel.tsx` stays, and its parts go to `duel/lobby-panel/Searching.tsx`… |
 | Comments | One line, at most **75 characters** (was 50). |
+| Shared constants after a split (user, 2026-11-19) | Class constants used by several split parts go to a sibling `styles.ts` in the new subfolder (e.g. `duel/lobby-panel/styles.ts`), never imported back from the parent. |
+| A file left with no component (user, 2026-11-19) | Its constants move into the subfolder (`home/rule-marks/marks.ts`) and the empty `.tsx` is deleted. |
+| Several components in an exempt file (user, 2026-11-19) | Each keeps its own `<Name>Props`; a bare `Props` only in single-component files. |
+| Exported props types (user, 2026-11-19) | Types other files import (`ResultActionsProps`, `NamedOrderProps`, `MarkProps`) stay exported, with a local `type Props = <thatType>`. |
+| Union or generic props (user, 2026-11-19) | Keep the single `props` parameter (NamedOrder, SquadSlot, FilterPanel, ProfileNotice); AuthForm's arrow carries `<S extends z.ZodType>`. |
+| JSX comments (user, 2026-11-19) | Single-line `{/* … */}` stay; only the 75-character limit applies. |
 
 ## Tools
 
@@ -98,7 +104,7 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 - **Identical file hash:** pass.
 - **Hash differs:** take the same shot up to 3 more times. If any re-take matches the baseline hash, the first was a one-off rendering artifact: pass.
 - **Still differs every time:** a pixel diff in the browser counts and locates the changed pixels, and Claude crops, enlarges and shows every changed area. It passes only if every change is text anti-aliasing (the same glyphs, shapes, colours, sizes and positions). Any other change, however few pixels (a focus ring, an icon stroke, a 1px border), is a visual difference.
-- **A live clock, or any shot that never matches the baseline:** the browser clock is frozen at one time (`page.clock.setFixedTime`) and the branch is shot against `main` (changes stashed, then restored). It passes if the branch's shots are byte-identical to `main`'s, or, for a page that flips between renders even on `main`, if the branch gives only renders `main` also gives.
+- **A live clock, or any shot that never matches the baseline:** the browser clock is frozen at one time (`page.clock.setFixedTime`) and the branch is shot against `main` (changes stashed, then restored). It passes if the branch's shots are byte-identical to `main`'s, or, for a page that flips between renders even on `main`, if the branch gives only renders `main` also gives. After each stash or restore, load the pages once and discard those shots: the dev server recompiles, and the first loads catch half-rendered pages.
 - **Keyboard:** Tab order and a visible focus ring on each touched page at 1280px.
 
 **Hard stop:** any visual difference in B5 that you didn't ask for, meaning anything beyond text anti-aliasing, means the batch doesn't complete.
@@ -162,10 +168,14 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 | conventions-d | `components/profile` | 13 |
 | conventions-e | `components/archive`, `components/pro` | 10 |
 | conventions-f | `components/pitch` | 5 |
-| conventions-g | `components/play` | 14 |
+| conventions-g1 | `components/play`: the filter family (FilterChipImage, FilterSkeleton, FilterPanel, FiltersStep) | 4 |
+| conventions-g2 | `components/play`: the rest | 10 |
 | conventions-h | `components/duel` | 1 (LobbyPanel, 15 parts) |
-| conventions-i | `components/game` | 26 |
-| conventions-j | `components/ui`, `components/dev`: template only, no split | 31 |
+| conventions-i1 | `components/game`: leaf display parts | 12 |
+| conventions-i2 | `components/game`: input, dialogs and results | 10 |
+| conventions-i3 | `components/game`: assembly (GameCanvas, LivesCard, SoloGame, DuelGame) | 4 |
+| conventions-j1 | `components/ui`: template only, no split | 16 |
+| conventions-j2 | `components/dev`: template only, no split | 15 |
 | conventions-k | `src/app` pages and layouts | — |
 
 **3.3**

@@ -1,12 +1,15 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/hooks/use-auth';
 import { NAV_LINK } from '@/styles/classes';
 import { SKELETON } from '@/components/ui/skeleton';
 
-export function NavAccount() {
+type Props = {};
+
+const NavAccount = ({}: Props) => {
   const pathname = usePathname();
   const session = useSession();
 
@@ -47,4 +50,6 @@ export function NavAccount() {
       Sign in
     </Link>
   );
-}
+};
+
+export default NavAccount;

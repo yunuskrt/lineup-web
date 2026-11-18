@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { UserRound } from 'lucide-react';
 import { PRIMARY_BUTTON_LARGE, SECONDARY_BUTTON_LARGE } from '@/styles/classes';
 import RetryNotice from '@/components/shell/RetryNotice';
-import { StateNotice } from '@/components/shell/StateNotice';
+import StateNotice from '@/components/shell/StateNotice';
 
 type ProfileNoticeProps =
   | { kind: 'signedOut' }

@@ -6,7 +6,7 @@ import { HistoryMore } from '@/components/profile/HistoryMore';
 import { HistoryRow } from '@/components/profile/HistoryRow';
 import { History } from 'lucide-react';
 import { HISTORY_LIST } from '@/components/profile/styles';
-import { StateNotice } from '@/components/shell/StateNotice';
+import StateNotice from '@/components/shell/StateNotice';
 import { useToday } from '@/hooks/use-today';
 import { PRIMARY_BUTTON, TYPE_SECTION } from '@/styles/classes';
 import type { HistoryEntry } from '@/types/profile';

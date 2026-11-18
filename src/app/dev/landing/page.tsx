@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { LandingStatePreview } from '@/components/dev/LandingStatePreview';
-import { SiteFooter } from '@/components/shell/SiteFooter';
+import SiteFooter from '@/components/shell/SiteFooter';
 import {
   DEFAULT_LANDING_STATE,
   LANDING_STATES,

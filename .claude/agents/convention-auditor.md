@@ -30,7 +30,7 @@ You audit `lineup-web` against its house conventions. You **never edit files**. 
 
    Next special files (`page`, `layout`, `not-found`, `error`, `loading`) also keep their required default export. Non-component exports (constants, types) may stay named.
 
-   **Exempt files** (`src/components/ui/`, `src/components/dev/`, `src/app/dev/`) keep several components. Each still uses arrow const + `Props`, with **named** exports, as a file can have only one default.
+   **Exempt files** (`src/components/ui/`, `src/components/dev/`, `src/app/dev/`) keep several components. Each still uses an arrow const and a props type (`<Name>Props` where a file holds several components), with **named** exports, as a file can have only one default. Union or generic props keep a single `props` parameter; exported props types stay with a local `type Props` alias (see `coding-standards-web.md`).
 3. **Comments:** a single line `//`, at most 75 characters including `// `, no block comments, and no comment that only narrates the code.
 4. **Imports:** `@/` only, never relative. List every file that imports a component whose export style changes; those imports must be updated.
 

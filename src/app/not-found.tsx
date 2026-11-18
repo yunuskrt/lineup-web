@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { NOT_FOUND_TITLE, NotFoundView } from '@/components/shell/NotFoundView';
-import { SiteNav } from '@/components/shell/SiteNav';
+import NotFoundView, { NOT_FOUND_TITLE } from '@/components/shell/NotFoundView';
+import SiteNav from '@/components/shell/SiteNav';
 
 export const metadata: Metadata = {
   title: NOT_FOUND_TITLE,

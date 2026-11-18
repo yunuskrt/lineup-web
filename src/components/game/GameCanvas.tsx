@@ -25,7 +25,7 @@ import { SidePickCard } from '@/components/game/SidePickCard';
 import { SoundToggle } from '@/components/game/SoundToggle';
 import { SquadGrid } from '@/components/pitch/SquadGrid';
 import { useGameSounds } from '@/hooks/use-game-sounds';
-import { QuitChip } from '@/components/shell/QuitChip';
+import QuitChip from '@/components/shell/QuitChip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { activeRing, clockLabel } from '@/lib/canvas';

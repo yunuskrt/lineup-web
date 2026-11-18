@@ -1,5 +1,6 @@
+import React from 'react';
 import Link from 'next/link';
-import { SiteFooter } from '@/components/shell/SiteFooter';
+import SiteFooter from '@/components/shell/SiteFooter';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import {
@@ -14,8 +15,10 @@ import {
 
 export const NOT_FOUND_TITLE = 'Not found';
 
+type Props = {};
+
 // The 404 body and footer; the nav comes from the caller
-export function NotFoundView() {
+const NotFoundView = ({}: Props) => {
   return (
     <>
       <main className="flex flex-1 flex-col">
@@ -50,4 +53,6 @@ export function NotFoundView() {
       <SiteFooter variant="inline" />
     </>
   );
-}
+};
+
+export default NotFoundView;

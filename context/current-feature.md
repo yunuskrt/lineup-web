@@ -122,3 +122,4 @@ Not Started
 - Fix Refactor C: shared withToast and applyFeedback for solo and duel.
 - Fix Refactor D: useStartNavigation, StartError, RetryNotice, no room hook.
 - Fix Refactor E: useCooldownEnd replaces the solo and duel unlock timers.
+- Fix Conventions A: shell and provider components on the template.

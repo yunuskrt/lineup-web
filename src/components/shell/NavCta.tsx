@@ -1,10 +1,13 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { PRIMARY_BUTTON } from '@/styles/classes';
 
-export function NavCta() {
+type Props = {};
+
+const NavCta = ({}: Props) => {
   const pathname = usePathname();
 
   // One primary action per view on /play
@@ -15,4 +18,6 @@ export function NavCta() {
       Play
     </Link>
   );
-}
+};
+
+export default NavCta;

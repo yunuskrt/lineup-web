@@ -30,7 +30,7 @@ import type { ArchiveView as ArchiveViewModel } from '@/types/archive';
 import type { Filters } from '@/types/filters';
 import type { MatchIdentity } from '@/types/match';
 import { SKELETON } from '@/components/ui/skeleton';
-import { StateNotice } from '@/components/shell/StateNotice';
+import StateNotice from '@/components/shell/StateNotice';
 
 const LOCKED_LINE =
   'Every match in the game, searchable. Pick one and play it.';

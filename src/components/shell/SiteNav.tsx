@@ -1,10 +1,13 @@
+import React from 'react';
 import Link from 'next/link';
-import { NavAccount } from '@/components/shell/NavAccount';
-import { NavArchive } from '@/components/shell/NavArchive';
-import { NavCta } from '@/components/shell/NavCta';
+import NavAccount from '@/components/shell/NavAccount';
+import NavArchive from '@/components/shell/NavArchive';
+import NavCta from '@/components/shell/NavCta';
 import { FOCUS_RING, SITE_CONTAINER } from '@/styles/classes';
 
-export function SiteNav() {
+type Props = {};
+
+const SiteNav = ({}: Props) => {
   return (
     <header className="border-b-2 border-line">
       <nav
@@ -25,4 +28,6 @@ export function SiteNav() {
       </nav>
     </header>
   );
-}
+};
+
+export default SiteNav;

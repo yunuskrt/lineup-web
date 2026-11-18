@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Archivo, Inter } from 'next/font/google';
-import { QueryProvider } from '@/components/providers/QueryProvider';
+import QueryProvider from '@/components/providers/QueryProvider';
 import './globals.css';
 
 const inter = Inter({

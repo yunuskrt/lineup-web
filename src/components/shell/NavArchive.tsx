@@ -1,12 +1,15 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ARCHIVE_PATH } from '@/lib/archive';
 import { NAV_LINK } from '@/styles/classes';
 
+type Props = {};
+
 // For everyone: the page itself shows any lock
-export function NavArchive() {
+const NavArchive = ({}: Props) => {
   const pathname = usePathname();
 
   return (
@@ -18,4 +21,6 @@ export function NavArchive() {
       Archive
     </Link>
   );
-}
+};
+
+export default NavArchive;

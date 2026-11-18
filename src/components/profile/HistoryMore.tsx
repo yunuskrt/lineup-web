@@ -5,7 +5,7 @@ import { TriangleAlert } from 'lucide-react';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { HistoryMoreState } from '@/types/profile-screen';
-import { StateNotice } from '@/components/shell/StateNotice';
+import StateNotice from '@/components/shell/StateNotice';
 
 type HistoryMoreProps = {
   more: HistoryMoreState;

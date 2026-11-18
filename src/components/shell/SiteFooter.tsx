@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import {
   PRIMARY_BUTTON_LARGE,
@@ -5,11 +6,11 @@ import {
   TYPE_SECTION,
 } from '@/styles/classes';
 
-type SiteFooterProps = {
+type Props = {
   variant: 'statement' | 'inline';
 };
 
-export function SiteFooter({ variant }: SiteFooterProps) {
+const SiteFooter = ({ variant }: Props) => {
   if (variant === 'statement') {
     return (
       <footer className="border-t-2 border-line bg-block-butter text-on-accent">
@@ -32,4 +33,6 @@ export function SiteFooter({ variant }: SiteFooterProps) {
       </p>
     </footer>
   );
-}
+};
+
+export default SiteFooter;
