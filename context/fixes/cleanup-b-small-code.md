@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -37,6 +37,17 @@ Phase 1 of `context/docs/code-cleanup-guide.md`, batch cleanup-b. Items approved
 - **Constraints:** `@/` imports; no `any`; comments at most 75 characters.
 - **Verification:**
   - `npm run lint`, `npx tsc --noEmit`, `npm test` (with the new class test) and `npm run build`;
-  - **B5:** `ui-reviewer` against the baseline for `/`, `/dev/ring`, `/dev/lives` and two game states (`/play/solo?state=warning`, `/play/duel?state=opponent-reconnecting`);
+  - **B5 (run by Claude in the main session, as the guide says):** against the baseline for `/`, `/dev/ring`, `/dev/lives` and two game states (`/play/solo?state=warning`, `/play/duel?state=opponent-reconnecting`);
   - **B8, the user, with reduced motion off:** the home page marquee scrolls at the same speed as before and pauses when scrolled out of view (the baseline was taken with reduced motion on, so it can't show this);
   - `/dev/ring`'s live ring still runs 15 seconds.
+
+- **Deviations recorded during implementation:**
+  - **Item 12–13, one more user:** `src/lib/dev/canvas-states.ts` also imported `ROUND_MS` from `@/lib/canvas`; it now takes it from `@/lib/api/schemas/common`, merged into its `SQUAD_SIZE` import.
+  - **Item 12–13 comment:** the duel cap's comment ("A duel caps elapsed time at one round") moved from `player.ts` to `elapsedMs` in `duelNamedPlayerSchema`, where the cap now is.
+  - **Item 14 check:** with reduced motion off, both marquee tracks compute to `40s` and read `paused` out of view and `running` in view, as before (`animate-marquee` sets no duration, so the class wins).
+  - **B5 on live clocks:** `/dev/ring` and the two game states show a running clock, so no shot matches the baseline, nor even its own re-take. They were shot with the browser clock frozen, branch against `main` (changes stashed): all six byte-identical. The guide's B5 now says so.
+  - **Mock round length:** `lib/api/mock/clock.ts` keeps its own `ROUND_DURATION_MS = 15_000` on purpose, like the reconnect window: the mock stands in for the backend and stays independent of the client's copy.
+  - **`ROUND_MS` comment:** it names the constant as the client's copy of the server's round (ring, cues, duel cap), not the server's clock (review).
+  - **Follow-ups, not this batch:**
+    - the duel `elapsedMs` cap is exactly `ROUND_MS`, but a guess can land in the ~400 ms grace window; check with the backend contract whether it clamps `elapsedMs` to 15,000 (unchanged here: the cap was 15,000 before).
+    - the marquee classes beat the `animate-marquee` shorthand by Tailwind's output order; putting the duration in `--animate-marquee` would remove that dependency.

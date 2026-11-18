@@ -1,4 +1,4 @@
-import { SQUAD_SIZE } from '@/lib/api/schemas/common';
+import { ROUND_MS, SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { TURN_LABELS } from '@/lib/duel-status';
 import type {
   ActiveRing,
@@ -11,8 +11,6 @@ import type {
 import type { DuelActor } from '@/types/duel';
 import type { RoundTiming } from '@/types/game';
 import type { FoundPlayer } from '@/types/player';
-
-export const ROUND_MS = 15_000;
 
 export const ROUND_CLOCK_LABEL = 'Round clock';
 

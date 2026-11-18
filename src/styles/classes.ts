@@ -145,6 +145,9 @@ export const DEV_PREVIEW_BUTTON = `rounded-md border-2 border-line bg-surface-ca
 export const LIFE_LOST_FILL_SHIFT =
   'transition-[fill] duration-480 ease-[ease]';
 
+// Literal for Tailwind; checked against motion.ts
+export const MARQUEE_LOOP_DURATION = '[animation-duration:40000ms]';
+
 // A stage change, never the sweep
 export const TIMER_COLOR_SHIFT =
   'transition-[stroke,stroke-width,color] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)]';

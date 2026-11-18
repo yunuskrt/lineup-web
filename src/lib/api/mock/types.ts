@@ -213,7 +213,6 @@ export const mockFixtureSchema = z
 export type MockSquadEntry = z.infer<typeof mockSquadEntrySchema>;
 export type MockSquad = z.infer<typeof mockSquadSchema>;
 export type MockPlayer = z.infer<typeof mockPlayerSchema>;
-export type MockLineupEntry = z.infer<typeof mockLineupEntrySchema>;
 export type MockSide = z.infer<typeof mockSideSchema>;
 export type MockFixtureRecord = z.infer<typeof mockFixtureRecordSchema>;
 export type MockFixture = z.infer<typeof mockFixtureSchema>;

@@ -5,14 +5,13 @@ import { LifeLostFlash } from '@/components/game/LifeLostFlash';
 import { Lives } from '@/components/game/Lives';
 import { DuelLivesCard, LivesCard } from '@/components/game/LivesCard';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
+import { RECONNECT_WINDOW_MS } from '@/lib/duel-session';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
 import type { ConnectionState, DuelActor, DuelPlayer } from '@/types/duel';
 import type { Lives as LivesCount } from '@/types/game';
 
 const OWNERS: DuelActor[] = ['you', 'opponent'];
 const COUNTS: LivesCount[] = [3, 2, 1, 0];
-
-const RECONNECT_WINDOW_MS = 20_000;
 
 const PLAYERS: Record<DuelActor, DuelPlayer> = {
   you: { id: 'preview-you', handle: 'northgate_no9', lives: MAX_LIVES },

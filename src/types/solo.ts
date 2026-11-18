@@ -5,12 +5,10 @@ import type {
   soloGuessResponseSchema,
   soloMatchOfferSchema,
   soloSessionSchema,
-  soloSessionStatusSchema,
   soloStartRequestSchema,
   soloSummarySchema,
 } from '@/lib/api/schemas/solo';
 
-export type SoloSessionStatus = z.infer<typeof soloSessionStatusSchema>;
 export type SoloMatchOffer = z.infer<typeof soloMatchOfferSchema>;
 export type SoloSession = z.infer<typeof soloSessionSchema>;
 export type SoloGuessRequest = z.infer<typeof soloGuessRequestSchema>;

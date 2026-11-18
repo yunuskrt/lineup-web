@@ -1,5 +1,5 @@
+import { ROUND_MS, SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
-import { ROUND_MS } from '@/lib/canvas';
 import {
   SAMPLE_FILTER_OPTIONS,
   SAMPLE_FILTERS,
@@ -23,7 +23,6 @@ import {
   soloRunReducer,
 } from '@/lib/solo-run';
 import { emptyPoolGate, reconnectingGate } from '@/lib/system-states';
-import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import type { ApiError, EmptyPoolReason } from '@/types/api';
 import type {
   CanvasGateView,

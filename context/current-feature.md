@@ -116,3 +116,4 @@ Not Started
 - Fix Play Steps A: /play stepper, step in URL, join on 1, summary on 3.
 - Fix Play Steps B: entry links by origin, Change filters to 2, join row.
 - Fix Cleanup A: one-line comments, web standards, agents, B5 and B7 rules.
+- Fix Cleanup B: unused types, one ROUND_MS, reconnect import, marquee class.

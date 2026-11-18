@@ -1,4 +1,4 @@
-import { ROUND_MS } from '@/lib/canvas';
+import { ROUND_MS } from '@/lib/api/schemas/common';
 import {
   FINAL_BEEP_FROM,
   OPPONENT_TICK_GAIN,

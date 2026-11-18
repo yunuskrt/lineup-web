@@ -9,6 +9,7 @@ import {
   FILTER_SEARCH,
   FOCUS_RING,
   LIFE_LOST_FILL_SHIFT,
+  MARQUEE_LOOP_DURATION,
   NAV_LINK,
   PRIMARY_BUTTON,
   PRIMARY_BUTTON_LARGE,
@@ -36,6 +37,12 @@ describe('transition classes', () => {
     ['timer colour', TIMER_COLOR_SHIFT, MOTION_DURATION_MS.timerColorShift],
   ])('keeps the %s duration in step with motion.ts', (_, classes, ms) => {
     expect(classes.split(' ')).toContain(`duration-${ms}`);
+  });
+
+  it('keeps the marquee loop in step with motion.ts', () => {
+    expect(MARQUEE_LOOP_DURATION).toBe(
+      `[animation-duration:${MOTION_DURATION_MS.marqueeLoop}ms]`,
+    );
   });
 
   it('uses the timer colour curve from motion.ts', () => {

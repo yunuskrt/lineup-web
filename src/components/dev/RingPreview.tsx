@@ -2,12 +2,11 @@
 
 import { type ReactNode, useState, useSyncExternalStore } from 'react';
 import { CountdownRing } from '@/components/game/CountdownRing';
+import { ROUND_MS } from '@/lib/api/schemas/common';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
 import type { RingMode } from '@/types/countdown';
 import type { DuelActor } from '@/types/duel';
 import type { RoundTiming } from '@/types/game';
-
-const ROUND_MS = 15_000;
 
 const subscribe = () => () => {};
 let pageOpenedAt: number | null = null;

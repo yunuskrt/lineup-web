@@ -22,9 +22,6 @@ export const revealedPlayerSchema = z.object({
   directoryKey: directoryKeySchema,
 });
 
-// A duel caps elapsed time at one round
-export const NAMED_ELAPSED_MAX_MS = 15_000;
-
 // End-of-game only: when, and how fast, it was named
 export const namedPlayerSchema = revealedPlayerSchema.extend({
   order: z.number().int().min(1).max(SQUAD_SIZE),

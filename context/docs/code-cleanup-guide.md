@@ -96,6 +96,7 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 - **Identical file hash:** pass.
 - **Hash differs:** take the same shot up to 3 more times. If any re-take matches the baseline hash, the first was a one-off rendering artifact: pass.
 - **Still differs every time:** a pixel diff in the browser counts and locates the changed pixels, and Claude crops, enlarges and shows every changed area. It passes only if every change is text anti-aliasing (the same glyphs, shapes, colours, sizes and positions). Any other change, however few pixels (a focus ring, an icon stroke, a 1px border), is a visual difference.
+- **A live clock** (the ring, the round seconds, a reconnect countdown) changes every shot, so its hash never matches. Instead, the browser clock is frozen at one time (`page.clock.setFixedTime`) and the branch is shot against `main` (changes stashed, then restored). Byte-identical passes.
 - **Keyboard:** Tab order and a visible focus ring on each touched page at 1280px.
 
 **Hard stop:** any visual difference in B5 that you didn't ask for, meaning anything beyond text anti-aliasing, means the batch doesn't complete.

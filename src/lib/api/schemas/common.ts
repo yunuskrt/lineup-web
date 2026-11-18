@@ -4,6 +4,9 @@ export const FIRST_SEASON_START = 2000;
 export const LAST_SEASON_START = 2025;
 export const SQUAD_SIZE = 11;
 
+// Client copy of the server's 15 s round: the ring, cues and duel cap
+export const ROUND_MS = 15_000;
+
 export const idSchema = z.string().min(1);
 
 // Opaque, never a player id: ids sort by teammate

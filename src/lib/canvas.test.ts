@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { ROUND_MS } from '@/lib/api/schemas/common';
 import {
   activeRing,
   clockLabel,
   foundCountLabel,
   ROUND_CLOCK_LABEL,
-  ROUND_MS,
   UNSTARTED_ROUND,
 } from '@/lib/canvas';
 import { displaySeconds, remainingMs, sweepFraction } from '@/lib/countdown';
