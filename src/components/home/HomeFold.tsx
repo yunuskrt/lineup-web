@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import type { ReactNode } from 'react';
-import { HomeShowcase } from '@/components/home/ShowcaseFrame';
+import React, { type ReactNode } from 'react';
+import HomeShowcase from '@/components/home/home-fold/HomeShowcase';
 import { cn } from '@/lib/utils';
 import {
   PRIMARY_BUTTON_LARGE,
@@ -16,12 +16,12 @@ const STATEMENT = cn(
   'text-28 leading-none sm:text-34 md:text-64 lg:text-40 xl:text-48',
 );
 
-type HomeFoldProps = {
+type Props = {
   // Dev snapshots pass a fixed frame
   showcase?: ReactNode;
 };
 
-export function HomeFold({ showcase = <HomeShowcase /> }: HomeFoldProps) {
+const HomeFold = ({ showcase = <HomeShowcase /> }: Props) => {
   return (
     <section
       aria-labelledby="home-statement"
@@ -60,4 +60,6 @@ export function HomeFold({ showcase = <HomeShowcase /> }: HomeFoldProps) {
       </div>
     </section>
   );
-}
+};
+
+export default HomeFold;

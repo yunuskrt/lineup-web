@@ -123,3 +123,4 @@ Not Started
 - Fix Refactor D: useStartNavigation, StartError, RetryNotice, no room hook.
 - Fix Refactor E: useCooldownEnd replaces the solo and duel unlock timers.
 - Fix Conventions A: shell and provider components on the template.
+- Fix Conventions B: home on the template, 16 parts split, RuleMarks gone.

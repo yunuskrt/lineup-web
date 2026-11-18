@@ -1,3 +1,4 @@
+import React from 'react';
 import { type LucideIcon, Swords, User } from 'lucide-react';
 import Link from 'next/link';
 import { JOIN_ROW_ID, playPath } from '@/lib/play-steps';
@@ -59,7 +60,9 @@ const MODES: {
   },
 ];
 
-export function HomeModes() {
+type Props = {};
+
+const HomeModes = ({}: Props) => {
   return (
     <section
       aria-labelledby="home-modes"
@@ -117,4 +120,6 @@ export function HomeModes() {
       </div>
     </section>
   );
-}
+};
+
+export default HomeModes;

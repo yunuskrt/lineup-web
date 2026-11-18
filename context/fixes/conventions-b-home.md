@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -36,3 +36,12 @@ Phase 3 of `context/docs/code-cleanup-guide.md`, batch conventions-b. Items appr
   - a search finds no named import left for a component this batch made default;
   - B5: `/` at 320, 768 and 1280 (reduced motion on), `/dev/landing` and its `?state=` views; B8: the home page with reduced motion off (demo loop, count-up, marquee).
 - **B7 scope:** only findings inside these goals are fixed; anything else is a follow-up note.
+
+- **Deviations recorded during implementation:**
+  - **17, `marks.ts`:** it holds only what several marks share (`STILL`, `MarkProps`, `staggered`). `SLOTS` and `PIPS` are each used by one mark, so they stay in `SlotsMark` and `PipsMark`, with `SLOT_RADIUS`, `ARC_RADIUS` and `ARC_SWEEP`; the spec had listed them as shared.
+  - **18, shared non-class values:** `NO_SUGGESTIONS` and `STILL_STAGE` go to `showcase-frame/shared.ts`, beside `styles.ts` (`FIGURE`), since the decision covers class constants only.
+  - **`'use client'` (review):** only parts that use hooks keep it (`ArchiveTiles`, `ShowcaseDemo`, `Stage`, the three marks, `HomeShowcase`). Nine pure-markup parts dropped it, as the standards ask (`Caption`, `WindowBar`, `ShowcaseStill`, `InsideLists`, `StripSkeleton`, `LogoStrip`, `ArchiveSkeleton`, `ArchiveBand`, `InsideBand`); every importer is a client component, so nothing moves to the server.
+  - **`HomeShowcase` (review):** it wraps `ShowcaseFrame` and only `HomeFold` uses it, so it lives in `home/home-fold/HomeShowcase.tsx`, not `showcase-frame/`.
+  - **`Stage` (review):** it destructures its props like every other component; its props are neither a union nor generic.
+  - **Recheck after the review fixes:** `/` at three widths, `/dev/landing` and its `still` and `loading` states match `main` byte for byte (loading after six retakes); lint, types, 1,678 tests and the build pass.
+  - **Unchanged-code check:** all 38 component bodies, helpers and constants of the old files, and all their comments, appear verbatim (whitespace aside) in the new files.

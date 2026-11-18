@@ -1,13 +1,15 @@
 'use client';
 
 import { animate, useInView } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { formatCount } from '@/lib/landing';
 import { MOTION_EASING, MOTION_SECONDS } from '@/styles/motion';
 
+type Props = { value: number };
+
 // Presentation only; readers get the final value
-export function CountUp({ value }: { value: number }) {
+const CountUp = ({ value }: Props) => {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.6 });
   const runs = useMotionPolicy();
@@ -32,4 +34,6 @@ export function CountUp({ value }: { value: number }) {
       <span className="sr-only">{formatCount(value)}</span>
     </>
   );
-}
+};
+
+export default CountUp;

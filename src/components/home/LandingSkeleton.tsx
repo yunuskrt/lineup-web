@@ -1,12 +1,14 @@
 'use client';
 
 import { motion } from 'motion/react';
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 
+type Props = { children: ReactNode };
+
 // Flat blocks at the loaded size; opacity pulse only
-export function LandingSkeleton({ children }: { children: ReactNode }) {
+const LandingSkeleton = ({ children }: Props) => {
   const runs = useMotionPolicy();
   const isPulsing = runs('skeletonPulse');
 
@@ -20,4 +22,6 @@ export function LandingSkeleton({ children }: { children: ReactNode }) {
       {children}
     </motion.div>
   );
-}
+};
+
+export default LandingSkeleton;

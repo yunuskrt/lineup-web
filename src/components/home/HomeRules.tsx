@@ -1,13 +1,11 @@
 'use client';
 
 import { motion } from 'motion/react';
-import type { ComponentType } from 'react';
-import {
-  ArcMark,
-  type MarkProps,
-  PipsMark,
-  SlotsMark,
-} from '@/components/home/RuleMarks';
+import React, { type ComponentType } from 'react';
+import ArcMark from '@/components/home/rule-marks/ArcMark';
+import type { MarkProps } from '@/components/home/rule-marks/marks';
+import PipsMark from '@/components/home/rule-marks/PipsMark';
+import SlotsMark from '@/components/home/rule-marks/SlotsMark';
 import { useEntrance } from '@/hooks/use-entrance';
 import { HOME_BAND, SITE_CONTAINER, TYPE_NUMBER } from '@/styles/classes';
 import { LANDING_STAGGER_MS } from '@/styles/motion';
@@ -38,7 +36,9 @@ const RULES: {
   },
 ];
 
-export function HomeRules() {
+type Props = {};
+
+const HomeRules = ({}: Props) => {
   const { ref, item, isShown } = useEntrance<HTMLDListElement>();
 
   return (
@@ -75,4 +75,6 @@ export function HomeRules() {
       </div>
     </section>
   );
-}
+};
+
+export default HomeRules;
