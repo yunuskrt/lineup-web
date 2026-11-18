@@ -3,7 +3,7 @@ import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { authErrorMessage } from '@/lib/auth';
 import { isYourForfeit } from '@/lib/duel-result';
-import { guessFeedback } from '@/lib/feedback';
+import { applyFeedback, guessFeedback, withToast } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
 import {
   COOLDOWN_OVER_DETAIL,
@@ -179,10 +179,6 @@ export function canResume(state: DuelSessionState): boolean {
   return isLive(state);
 }
 
-function withToast(state: DuelSessionState, message: string): DuelSessionState {
-  return { ...state, toast: { id: (state.toast?.id ?? 0) + 1, message } };
-}
-
 // A lockout speaks through the input, not a toast
 function rejectGuess(
   state: DuelSessionState,
@@ -322,23 +318,12 @@ function resolveGuess(
   if (!isLive(state)) return state;
 
   const feedback = guessFeedback(result);
-  let next: DuelSessionState = {
+  const next: DuelSessionState = {
     ...state,
     isGuessing: false,
     clearKey: state.clearKey + (feedback.clearInput ? 1 : 0),
   };
-  if (feedback.toast) next = withToast(next, feedback.toast);
-  if (feedback.shakeInput) next = { ...next, shakeKey: next.shakeKey + 1 };
-  if (feedback.pulsePlayerId) {
-    next = {
-      ...next,
-      pulse: {
-        playerId: feedback.pulsePlayerId,
-        key: (state.pulse?.key ?? 0) + 1,
-      },
-    };
-  }
-  return next;
+  return applyFeedback(next, feedback);
 }
 
 type LobbyEvent = Extract<

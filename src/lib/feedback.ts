@@ -1,4 +1,8 @@
-import type { GuessFeedback } from '@/types/feedback';
+import type {
+  FeedbackState,
+  GuessFeedback,
+  ToastState,
+} from '@/types/feedback';
 import type { GuessResult } from '@/types/game';
 
 export const FEEDBACK_MESSAGES = {
@@ -34,4 +38,28 @@ export function guessFeedback(result: GuessResult): GuessFeedback {
       return unhandled;
     }
   }
+}
+
+export function withToast<S extends ToastState>(state: S, message: string): S {
+  return { ...state, toast: { id: (state.toast?.id ?? 0) + 1, message } };
+}
+
+// Solo and duel share it; each step builds on the one before
+export function applyFeedback<S extends FeedbackState>(
+  state: S,
+  feedback: GuessFeedback,
+): S {
+  let next = state;
+  if (feedback.toast) next = withToast(next, feedback.toast);
+  if (feedback.shakeInput) next = { ...next, shakeKey: next.shakeKey + 1 };
+  if (feedback.pulsePlayerId) {
+    next = {
+      ...next,
+      pulse: {
+        playerId: feedback.pulsePlayerId,
+        key: (next.pulse?.key ?? 0) + 1,
+      },
+    };
+  }
+  return next;
 }

@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -27,3 +27,12 @@ Phase 2 of `context/docs/code-cleanup-guide.md`, batch refactor-c. Item approved
   - `solo-run.test.ts` and `duel-session.test.ts` pass unchanged; new `feedback.test.ts` cases for `withToast` and `applyFeedback` (toast only, shake only, pulse only, none);
   - B5: `?state=already-found` and `?state=not-in-xi` on `/play/solo` and `/play/duel` (frozen-clock rule).
 - **B7 scope:** only findings inside these goals are fixed; anything else is a follow-up note.
+
+- **Deviations recorded during implementation:**
+  - **Pulse key (review):** `applyFeedback` counts the pulse on from `next`, like the shake, so every step builds on the one before.
+  - **Tests:** seven new cases in `feedback.test.ts`, two of them the real two-channel verdicts (not in XI: toast and shake; already named: toast and pulse); `solo-run.test.ts` and `duel-session.test.ts` are unchanged and pass. `ToastState` and `FeedbackState` live in `src/types/feedback.ts` (review), and the fixture uses `FeedbackState` from there.
+  - **Comment (review):** it says each step builds on the one before, not that the order matters.
+  - **Follow-ups, not this batch (review):**
+    - solo clears its input through `use-solo-run.ts` calling `guessFeedback` again and `SoloGame` clearing it; duel uses the reducer's `clearKey`. A `clearKey` in `applyFeedback` would end the split (hooks were out of scope).
+    - `/dev/feedback` (`FeedbackPreview`) and `/dev/guess` (`GuessPreview`) still map feedback with their own code instead of `applyFeedback`.
+    - `FeedbackState`'s three fields are still declared by hand in `types/solo-run.ts`, `types/duel-session.ts` and `types/canvas.ts`; those state types could be built from it.

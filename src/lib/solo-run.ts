@@ -2,7 +2,7 @@ import type { GuessInputStatus } from '@/components/game/GuessInput';
 import type { QuitDialogCopy } from '@/components/game/QuitDialog';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { authErrorMessage } from '@/lib/auth';
-import { guessFeedback } from '@/lib/feedback';
+import { applyFeedback, guessFeedback, withToast } from '@/lib/feedback';
 import { PRACTICE_QUIT_COPY } from '@/lib/practice';
 import { isDailyCap } from '@/lib/solo-allowance';
 import {
@@ -98,10 +98,6 @@ function resumedPhase(state: SoloRunState): SoloRunPhase {
   return state.offer ? 'choosing' : 'finding';
 }
 
-function withToast(state: SoloRunState, message: string): SoloRunState {
-  return { ...state, toast: { id: (state.toast?.id ?? 0) + 1, message } };
-}
-
 // Notices a drop the server reported
 function applySession(state: SoloRunState, session: SoloSession): SoloRunState {
   const hasLostLife = !!state.session && session.lives < state.session.lives;
@@ -123,24 +119,11 @@ function resolveGuess(
   state: SoloRunState,
   event: Extract<SoloRunEvent, { type: 'guessResolved' }>,
 ): SoloRunState {
-  const feedback = guessFeedback(event.response.result);
-  let next = applySession(
+  const next = applySession(
     { ...state, isGuessing: false },
     event.response.session,
   );
-
-  if (feedback.toast) next = withToast(next, feedback.toast);
-  if (feedback.shakeInput) next = { ...next, shakeKey: next.shakeKey + 1 };
-  if (feedback.pulsePlayerId) {
-    next = {
-      ...next,
-      pulse: {
-        playerId: feedback.pulsePlayerId,
-        key: (state.pulse?.key ?? 0) + 1,
-      },
-    };
-  }
-  return next;
+  return applyFeedback(next, guessFeedback(event.response.result));
 }
 
 export function soloRunReducer(

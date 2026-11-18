@@ -119,3 +119,4 @@ Not Started
 - Fix Cleanup B: unused types, one ROUND_MS, reconnect import, marquee class.
 - Fix Refactor A: pluralOf, utcDateLabel, wait, seconds copy, config max-age.
 - Fix Refactor B: SECTION_LABEL, ICON_TILE reuse, BOARD_LIST, actor fills.
+- Fix Refactor C: shared withToast and applyFeedback for solo and duel.
