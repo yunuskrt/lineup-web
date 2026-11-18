@@ -11,6 +11,7 @@ import {
 } from '@/components/game/ResultActions';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
+import { pluralOf } from '@/lib/plural';
 import { accuracyLabel, summaryTitle } from '@/lib/summary';
 import { RAIL_SECTION, TYPE_NUMBER } from '@/styles/classes';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
@@ -60,7 +61,7 @@ function Outcome({ summary, titleId, titleRef }: OutcomeProps) {
         <p className="flex shrink-0 flex-col items-end">
           <span className={`text-48 leading-none ${TYPE_NUMBER}`}>{lives}</span>
           <span className="text-12 leading-4 font-medium">
-            {lives === 1 ? 'life left' : 'lives left'}
+            {pluralOf(lives, 'life left', 'lives left')}
           </span>
         </p>
       ) : (

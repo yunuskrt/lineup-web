@@ -1,9 +1,11 @@
-import { API_MODE, apiUrl, MOCK_PRO_ENABLED } from '@/lib/api/config';
+import {
+  API_MODE,
+  apiUrl,
+  CONFIG_MAX_AGE_SECONDS,
+  MOCK_PRO_ENABLED,
+} from '@/lib/api/config';
 import { appConfigSchema } from '@/lib/api/schemas/config';
 import { apiResultSchema } from '@/lib/api/schemas/result';
-
-// The backend's own max-age on GET /config
-export const CONFIG_REVALIDATE_SECONDS = 300;
 
 // Off only when the server says so; unknown is not off
 export function isSwitchOffIn(body: unknown): boolean {
@@ -16,7 +18,7 @@ export async function isProSwitchOff(): Promise<boolean> {
   if (API_MODE === 'mock') return !MOCK_PRO_ENABLED;
   try {
     const response = await fetch(`${apiUrl()}/config`, {
-      next: { revalidate: CONFIG_REVALIDATE_SECONDS },
+      next: { revalidate: CONFIG_MAX_AGE_SECONDS },
     });
     return isSwitchOffIn(await response.json());
   } catch {

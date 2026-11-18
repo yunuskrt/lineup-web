@@ -117,3 +117,4 @@ Not Started
 - Fix Play Steps B: entry links by origin, Change filters to 2, join row.
 - Fix Cleanup A: one-line comments, web standards, agents, B5 and B7 rules.
 - Fix Cleanup B: unused types, one ROUND_MS, reconnect import, marquee class.
+- Fix Refactor A: pluralOf, utcDateLabel, wait, seconds copy, config max-age.

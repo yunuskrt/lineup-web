@@ -1,4 +1,5 @@
 import { normalizeName } from '@/lib/normalize';
+import { pluralOf } from '@/lib/plural';
 import type { DirectoryPlayer } from '@/types/catalog';
 
 export const MIN_SUGGESTION_LETTERS = 3;
@@ -86,5 +87,5 @@ export function stepHighlight(
 }
 
 export function suggestionCountLabel(count: number): string {
-  return count === 1 ? '1 suggestion' : `${count} suggestions`;
+  return `${count} ${pluralOf(count, 'suggestion', 'suggestions')}`;
 }

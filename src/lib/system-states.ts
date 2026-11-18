@@ -1,3 +1,4 @@
+import { pluralOf } from '@/lib/plural';
 import type { ApiError, EmptyPoolReason } from '@/types/api';
 import type { CanvasGateView } from '@/types/canvas';
 import type { ConnectionState } from '@/types/duel';
@@ -72,18 +73,23 @@ export function cooldownLabel(msLeft: number): string {
   return `Too many guesses. Try again in ${cooldownSecondsLeft(msLeft)}s`;
 }
 
+export function secondsPhrase(seconds: number): string {
+  return `${seconds} ${pluralOf(seconds, 'second', 'seconds')}`;
+}
+
+export function tooManyAttemptsMessage(seconds: number): string {
+  return `Too many attempts. Try again in ${secondsPhrase(seconds)}.`;
+}
+
 export function cooldownAnnouncement(msLeft: number): string {
   const seconds = cooldownSecondsLeft(msLeft);
-  const unit = seconds === 1 ? 'second' : 'seconds';
-  return `Too many guesses. Try again in ${seconds} ${unit}.`;
+  return `Too many guesses. Try again in ${secondsPhrase(seconds)}.`;
 }
 
 export const COOLDOWN_OVER_DETAIL = 'Too many attempts. You can try again now.';
 
 export function cooldownGateDetail(secondsLeft: number): string {
-  const seconds = Math.max(1, secondsLeft);
-  const unit = seconds === 1 ? 'second' : 'seconds';
-  return `Too many attempts. Try again in ${seconds} ${unit}.`;
+  return tooManyAttemptsMessage(Math.max(1, secondsLeft));
 }
 
 export const RECONNECTING_TITLE = 'Reconnecting';

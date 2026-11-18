@@ -14,6 +14,7 @@ import {
   parseEvent,
   refusalOf,
 } from '@/lib/api/socket/messages';
+import { wait } from '@/lib/wait';
 import type { ApiError, ApiErrorCode, ApiResult } from '@/types/api';
 import type { GatewayToken } from '@/types/auth';
 
@@ -36,10 +37,6 @@ type Attempt = { result: ApiResult<void>; isRefusal: boolean };
 
 function failed(error: ApiError): ApiResult<void> {
   return { success: false, error };
-}
-
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function createSocketDuelClient(

@@ -26,6 +26,7 @@ import { prepareGuess } from '@/lib/guess';
 import { CREATE_ROOM, roomIntentFrom, withRoom } from '@/lib/room-code';
 import { createRoundTrip, serverClock } from '@/lib/server-clock';
 import { widenReasonOf } from '@/lib/system-states';
+import { wait } from '@/lib/wait';
 import type { Filters } from '@/types/filters';
 import type { RoomIntent } from '@/types/room';
 
@@ -33,10 +34,6 @@ type Run = { isCancelled: boolean };
 
 // A room to create or join, else the queue
 type Plan = { intent: RoomIntent | null; filters?: Filters };
-
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 export function useDuel(params: URLSearchParams) {
   const queryClient = useQueryClient();

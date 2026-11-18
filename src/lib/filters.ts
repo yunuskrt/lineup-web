@@ -251,15 +251,12 @@ export function withFilters(
   filters: Filters,
   options: FilterOptions,
 ): URLSearchParams {
-  const next = new URLSearchParams(params);
-  for (const key of [
+  const next = withoutParams(params, [
     FILTER_PARAMS.competition,
     FILTER_PARAMS.club,
     FILTER_PARAMS.from,
     FILTER_PARAMS.to,
-  ]) {
-    next.delete(key);
-  }
+  ]);
   for (const [key, value] of filtersToParams(filters, options)) {
     next.append(key, value);
   }

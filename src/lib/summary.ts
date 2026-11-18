@@ -1,3 +1,4 @@
+import { utcDateLabel } from '@/lib/date-label';
 import type { SoloEndView } from '@/types/canvas';
 import type { SoloEndReason } from '@/types/game';
 import type { MatchIdentity } from '@/types/match';
@@ -31,8 +32,7 @@ export function scoreline(
 }
 
 export function matchDateLabel(isoDate: string): string {
-  const [year, month, day] = isoDate.split('-').map(Number);
-  return MATCH_DATE.format(Date.UTC(year, month - 1, day));
+  return utcDateLabel(MATCH_DATE, isoDate);
 }
 
 // "Crown League final", or the competition alone

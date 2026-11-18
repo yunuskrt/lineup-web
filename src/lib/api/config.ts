@@ -3,6 +3,9 @@ import type { Tier } from '@/types/user';
 
 export type ApiMode = 'mock' | 'real';
 
+// The backend's own max-age on GET /config
+export const CONFIG_MAX_AGE_SECONDS = 300;
+
 // Names a mode, never a secret: safe to ship
 export const API_MODE: ApiMode =
   process.env.NEXT_PUBLIC_API_MODE === 'real' ? 'real' : 'mock';

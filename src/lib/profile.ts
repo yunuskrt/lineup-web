@@ -1,5 +1,6 @@
 import { ApiRequestError } from '@/lib/api/unwrap';
 import { authErrorMessageOf } from '@/lib/auth';
+import { pluralOf } from '@/lib/plural';
 import { accuracyLabel, summaryTitle } from '@/lib/summary';
 import type { DuelOutcome } from '@/types/game';
 import type { HistoryEntry, UserStats } from '@/types/profile';
@@ -57,7 +58,7 @@ export function recordShares(stats: UserStats): RecordShares {
 
 export function duelCountLabel(total: number): string {
   if (total === 0) return 'No duels yet';
-  return total === 1 ? '1 duel' : `${total} duels`;
+  return `${total} ${pluralOf(total, 'duel', 'duels')}`;
 }
 
 // `played` counts duels too; see the W24a notes

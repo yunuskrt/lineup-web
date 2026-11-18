@@ -6,6 +6,10 @@ import {
   MIN_PASSWORD_LENGTH,
 } from '@/lib/api/schemas/auth';
 import { ApiRequestError } from '@/lib/api/unwrap';
+import {
+  cooldownSecondsLeft,
+  tooManyAttemptsMessage,
+} from '@/lib/system-states';
 import type { ApiError } from '@/types/api';
 import type {
   AuthField,
@@ -53,9 +57,7 @@ export function authErrorMessageOf(error: unknown): string {
 function rateLimitedMessage(retryAfterMs: number | null): string {
   if (retryAfterMs === null) return AUTH_ERROR_MESSAGES.rateLimitedSoon;
 
-  const seconds = Math.max(1, Math.ceil(retryAfterMs / 1000));
-  const unit = seconds === 1 ? 'second' : 'seconds';
-  return `Too many attempts. Try again in ${seconds} ${unit}.`;
+  return tooManyAttemptsMessage(cooldownSecondsLeft(retryAfterMs));
 }
 
 export function authFieldErrors(

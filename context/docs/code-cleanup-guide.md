@@ -89,6 +89,8 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 | **B8** | Look at one or two touched pages yourself in the browser | Your OK |
 | **B9** | ⌨️ `/feature complete` | Merged into `main`, pushed, branch deleted |
 
+**B6 reruns:** after a B7 fix, B6 runs again only if the fix changed runtime code. If a rerun brings only repeats, design points or out-of-scope findings, they become follow-up notes and the batch goes straight to B8; B6 isn't run again.
+
 **B7 scope:** fix only findings inside the batch's goals. A finding that would grow the batch (new behaviour, a refactor, code the goals don't name) goes into the spec's Notes as a follow-up for a later phase, unfixed. A docs-only batch stays docs-only.
 
 **How B5 runs:** Claude runs it in the main session. `ui-reviewer` can browse (re-tested 2026-11-18), but it has no shell for the hash and pixel compare.
@@ -96,7 +98,7 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 - **Identical file hash:** pass.
 - **Hash differs:** take the same shot up to 3 more times. If any re-take matches the baseline hash, the first was a one-off rendering artifact: pass.
 - **Still differs every time:** a pixel diff in the browser counts and locates the changed pixels, and Claude crops, enlarges and shows every changed area. It passes only if every change is text anti-aliasing (the same glyphs, shapes, colours, sizes and positions). Any other change, however few pixels (a focus ring, an icon stroke, a 1px border), is a visual difference.
-- **A live clock** (the ring, the round seconds, a reconnect countdown) changes every shot, so its hash never matches. Instead, the browser clock is frozen at one time (`page.clock.setFixedTime`) and the branch is shot against `main` (changes stashed, then restored). Byte-identical passes.
+- **A live clock, or any shot that never matches the baseline:** the browser clock is frozen at one time (`page.clock.setFixedTime`) and the branch is shot against `main` (changes stashed, then restored). It passes if the branch's shots are byte-identical to `main`'s, or, for a page that flips between renders even on `main`, if the branch gives only renders `main` also gives.
 - **Keyboard:** Tab order and a visible focus ring on each touched page at 1280px.
 
 **Hard stop:** any visual difference in B5 that you didn't ask for, meaning anything beyond text anti-aliasing, means the batch doesn't complete.

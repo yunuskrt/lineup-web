@@ -1,4 +1,5 @@
 import { competitionGroups } from '@/lib/filters';
+import { pluralOf } from '@/lib/plural';
 import { matchDateLabel } from '@/lib/summary';
 import type { CatalogOverview, Showcase } from '@/types/catalog';
 import type { CompetitionRef } from '@/types/match';
@@ -29,12 +30,8 @@ export function formatCount(value: number): string {
   return COUNT_FORMAT.format(value);
 }
 
-function labelFor(value: number, plural: Plural): string {
-  return value === 1 ? plural.one : plural.other;
-}
-
 function figure(key: string, value: number, plural: Plural): Figure {
-  return { key, value, label: labelFor(value, plural) };
+  return { key, value, label: pluralOf(value, plural.one, plural.other) };
 }
 
 export function archiveFigures({ counts }: CatalogOverview): Figure[] {

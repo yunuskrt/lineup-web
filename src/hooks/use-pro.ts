@@ -1,19 +1,17 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useSession } from '@/hooks/use-auth';
 import { getApiClient } from '@/lib/api';
+import { CONFIG_MAX_AGE_SECONDS } from '@/lib/api/config';
 import { unwrap } from '@/lib/api/unwrap';
 import { proAccess } from '@/lib/pro';
 import type { ProAccess } from '@/types/pro';
 
 export const APP_CONFIG_QUERY_KEY = ['app-config'] as const;
 
-// The backend's own max-age for /config
-const APP_CONFIG_STALE_TIME_MS = 5 * 60_000;
-
 const appConfigQuery = queryOptions({
   queryKey: APP_CONFIG_QUERY_KEY,
   queryFn: async () => unwrap(await getApiClient().config.getConfig()),
-  staleTime: APP_CONFIG_STALE_TIME_MS,
+  staleTime: CONFIG_MAX_AGE_SECONDS * 1000,
 });
 
 export function useAppConfig() {

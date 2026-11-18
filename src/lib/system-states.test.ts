@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   cooldownAnnouncement,
+  cooldownGateDetail,
   cooldownLabel,
   cooldownUntil,
   emptyPoolGate,
   heldCooldown,
   reconnectingDetail,
   reconnectingGate,
+  secondsPhrase,
+  tooManyAttemptsMessage,
   widenReasonOf,
 } from '@/lib/system-states';
 import type { ApiError, EmptyPoolReason } from '@/types/api';
@@ -124,6 +127,23 @@ describe('cooldown copy', () => {
     );
     expect(cooldownAnnouncement(800)).toBe(
       'Too many guesses. Try again in 1 second.',
+    );
+  });
+
+  it('names the seconds with their unit', () => {
+    expect(secondsPhrase(1)).toBe('1 second');
+    expect(secondsPhrase(3)).toBe('3 seconds');
+    expect(tooManyAttemptsMessage(3)).toBe(
+      'Too many attempts. Try again in 3 seconds.',
+    );
+  });
+
+  it('never counts the gate below one second', () => {
+    expect(cooldownGateDetail(2)).toBe(
+      'Too many attempts. Try again in 2 seconds.',
+    );
+    expect(cooldownGateDetail(0)).toBe(
+      'Too many attempts. Try again in 1 second.',
     );
   });
 });

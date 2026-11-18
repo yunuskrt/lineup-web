@@ -1,7 +1,14 @@
 import { ARCHIVE_SEARCH_MAX } from '@/lib/api/schemas/catalog';
 import { authErrorMessageOf } from '@/lib/auth';
-import { filtersFromParams, filtersToParams, withQuery } from '@/lib/filters';
+import { utcDateLabel } from '@/lib/date-label';
+import {
+  filtersFromParams,
+  filtersToParams,
+  withoutParams,
+  withQuery,
+} from '@/lib/filters';
 import { filterSummary } from '@/lib/lobby';
+import { pluralOf } from '@/lib/plural';
 import { withPractice } from '@/lib/practice';
 import type { ArchiveStatus, ArchiveView } from '@/types/archive';
 import type { ArchivePage, ArchiveQuery, FilterOptions } from '@/types/catalog';
@@ -27,8 +34,7 @@ const ARCHIVE_DATE = new Intl.DateTimeFormat('en-GB', {
 const COUNT = new Intl.NumberFormat('en-GB');
 
 export function archiveDateLabel(isoDate: string): string {
-  const [year, month, day] = isoDate.split('-').map(Number);
-  return ARCHIVE_DATE.format(Date.UTC(year, month - 1, day));
+  return utcDateLabel(ARCHIVE_DATE, isoDate);
 }
 
 export function archiveSearchText(text: string): string {
@@ -47,9 +53,7 @@ export function pickedMatchPath(matchId: string, practice = false): string {
 
 // Back to /play: the filters stay, the pick goes
 export function withoutPickedMatch(params: URLSearchParams): URLSearchParams {
-  const next = new URLSearchParams(params);
-  next.delete(PICKED_MATCH_PARAM);
-  return next;
+  return withoutParams(params, [PICKED_MATCH_PARAM]);
 }
 
 export function pickedMatchFrom(params: URLSearchParams): string | null {
@@ -148,7 +152,7 @@ export function activeFilterCount(
 }
 
 export function archiveTotalLine(total: number): string {
-  const noun = total === 1 ? 'match' : 'matches';
+  const noun = pluralOf(total, 'match', 'matches');
   return `${COUNT.format(total)} ${noun}. Search by club, competition or season.`;
 }
 

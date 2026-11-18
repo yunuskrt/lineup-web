@@ -22,6 +22,7 @@ import {
   selectCompetition,
   toggleId,
 } from '@/lib/filters';
+import { pluralOf } from '@/lib/plural';
 import { FILTER_CHIP, FILTER_SEARCH } from '@/styles/classes';
 import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
@@ -142,7 +143,7 @@ function CompetitionFilter({ options, filters, onChange }: FilterPanelProps) {
 }
 
 function countLabel(count: number): string {
-  return count === 1 ? '1 club found' : `${count} clubs found`;
+  return `${count} ${pluralOf(count, 'club', 'clubs')} found`;
 }
 
 // Keyed by competition: a new pick clears it
