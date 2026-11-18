@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { TriangleAlert } from 'lucide-react';
 import { AuthSkeleton } from '@/components/auth/AuthSkeleton';
 import { ContinueAsGuest } from '@/components/auth/ContinueAsGuest';
 import { ModeSwitch } from '@/components/auth/ModeSwitch';
@@ -11,9 +10,9 @@ import { SignUpForm } from '@/components/auth/SignUpForm';
 import { AUTH_FORM } from '@/components/auth/styles';
 import { useSession } from '@/hooks/use-auth';
 import { authErrorMessageOf } from '@/lib/auth';
-import { BOARD_SECTION, SECONDARY_BUTTON, TYPE_TITLE } from '@/styles/classes';
+import { BOARD_SECTION, TYPE_TITLE } from '@/styles/classes';
 import type { AuthMode } from '@/types/auth';
-import { StateNotice } from '@/components/shell/StateNotice';
+import RetryNotice from '@/components/shell/RetryNotice';
 
 type AuthPanelProps = {
   mode: AuthMode;
@@ -52,19 +51,10 @@ export function AuthPanel({ mode }: AuthPanelProps) {
       <>
         <Header title={HEADINGS[mode]} />
         <div className={BOARD_SECTION}>
-          <StateNotice
-            tone="error"
-            icon={TriangleAlert}
+          <RetryNotice
             message={authErrorMessageOf(session.error)}
-          >
-            <button
-              type="button"
-              onClick={() => session.refetch()}
-              className={SECONDARY_BUTTON}
-            >
-              Try again
-            </button>
-          </StateNotice>
+            onRetry={() => session.refetch()}
+          />
         </div>
       </>
     );

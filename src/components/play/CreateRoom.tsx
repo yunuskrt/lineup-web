@@ -3,8 +3,9 @@
 import { useId } from 'react';
 import { ProLockButton, ProLockCaption } from '@/components/pro/ProLock';
 import { useProAccess } from '@/hooks/use-pro';
-import { useRoomEntry } from '@/hooks/use-room-entry';
-import { authErrorMessageOf } from '@/lib/auth';
+import StartError from '@/components/play/StartError';
+import { useStartNavigation } from '@/hooks/use-start-navigation';
+import { withQuery } from '@/lib/filters';
 import { CREATE_ROOM, withRoom } from '@/lib/room-code';
 import {
   BOARD_SECTION,
@@ -18,14 +19,15 @@ type CreateRoomProps = {
 };
 
 export function CreateRoom({ filterParams }: CreateRoomProps) {
-  const { go, isBusy, error } = useRoomEntry();
+  const { go, isBusy, error } = useStartNavigation();
   // Hosting is Pro (R10); joining is for anyone
   const hostAccess = useProAccess();
   const headingId = useId();
   const lockId = useId();
 
   function create() {
-    if (filterParams) void go(withRoom(filterParams, CREATE_ROOM));
+    if (!filterParams) return;
+    void go(withQuery('/play/duel', withRoom(filterParams, CREATE_ROOM)));
   }
 
   return (
@@ -55,11 +57,7 @@ export function CreateRoom({ filterParams }: CreateRoomProps) {
             caption="Pro hosts rooms. Anyone can join."
           />
         ) : null}
-        {error && !isBusy ? (
-          <p role="alert" className="text-14 text-danger-text">
-            {authErrorMessageOf(error)}
-          </p>
-        ) : null}
+        <StartError error={error} isBusy={isBusy} />
       </div>
     </section>
   );

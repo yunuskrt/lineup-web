@@ -6,9 +6,10 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
-import { useRoomEntry } from '@/hooks/use-room-entry';
+import StartError from '@/components/play/StartError';
+import { useStartNavigation } from '@/hooks/use-start-navigation';
 import { ROOM_CODE_LENGTH } from '@/lib/api/schemas/duel';
-import { authErrorMessageOf } from '@/lib/auth';
+import { withQuery } from '@/lib/filters';
 import { JOIN_ROW_ID } from '@/lib/play-steps';
 import {
   hasLookAlike,
@@ -35,7 +36,7 @@ const CODE_SLOTS = Array.from(
 );
 
 export function JoinRoom({ filterParams, initialCode }: JoinRoomProps) {
-  const { go, isBusy, error } = useRoomEntry();
+  const { go, isBusy, error } = useStartNavigation();
   const [code, setCode] = useState(() => roomCodeInput(initialCode));
   const headingId = useId();
   const inputId = useId();
@@ -46,7 +47,8 @@ export function JoinRoom({ filterParams, initialCode }: JoinRoomProps) {
   function join(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isValid) return;
-    void go(withRoom(filterParams ?? new URLSearchParams(), code));
+    const params = withRoom(filterParams ?? new URLSearchParams(), code);
+    void go(withQuery('/play/duel', params));
   }
 
   return (
@@ -99,11 +101,7 @@ export function JoinRoom({ filterParams, initialCode }: JoinRoomProps) {
           {ROOM_CODE_HINT}
         </p>
       ) : null}
-      {error && !isBusy ? (
-        <p role="alert" className="text-14 text-danger-text">
-          {authErrorMessageOf(error)}
-        </p>
-      ) : null}
+      <StartError error={error} isBusy={isBusy} />
       <p className="text-14 text-pretty text-fg-muted">
         To host, choose your filters and create a room at the last step.
       </p>

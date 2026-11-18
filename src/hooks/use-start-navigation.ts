@@ -3,20 +3,20 @@
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { useEnsureSession } from '@/hooks/use-auth';
-import { withQuery } from '@/lib/filters';
 
-// A guest is made first, as Start does
-export function useRoomEntry() {
+// A guest is made first; go reports false if that failed
+export function useStartNavigation() {
   const router = useRouter();
   const ensureSession = useEnsureSession();
   const [isNavigating, startNavigation] = useTransition();
 
-  async function go(params: URLSearchParams) {
+  async function go(href: string): Promise<boolean> {
     try {
       await ensureSession.mutateAsync();
-      startNavigation(() => router.push(withQuery('/play/duel', params)));
+      startNavigation(() => router.push(href));
+      return true;
     } catch {
-      // Shown through error
+      return false;
     }
   }
 

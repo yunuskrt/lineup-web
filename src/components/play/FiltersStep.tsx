@@ -1,4 +1,3 @@
-import { TriangleAlert } from 'lucide-react';
 import type { RefObject } from 'react';
 import { FilterPanel } from '@/components/play/FilterPanel';
 import { FilterSkeleton } from '@/components/play/FilterSkeleton';
@@ -9,9 +8,9 @@ import {
   STEP_HEADING,
   STEP_INTRO,
 } from '@/components/play/styles';
-import { StateNotice } from '@/components/shell/StateNotice';
+import RetryNotice from '@/components/shell/RetryNotice';
 import { authErrorMessageOf } from '@/lib/auth';
-import { BOARD_SECTION, SECONDARY_BUTTON } from '@/styles/classes';
+import { BOARD_SECTION } from '@/styles/classes';
 import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
 
@@ -61,19 +60,7 @@ export function FiltersStep({
             onChange={onChange}
           />
         ) : error ? (
-          <StateNotice
-            tone="error"
-            icon={TriangleAlert}
-            message={authErrorMessageOf(error)}
-          >
-            <button
-              type="button"
-              onClick={onRetry}
-              className={SECONDARY_BUTTON}
-            >
-              Try again
-            </button>
-          </StateNotice>
+          <RetryNotice message={authErrorMessageOf(error)} onRetry={onRetry} />
         ) : (
           <FilterSkeleton />
         )}

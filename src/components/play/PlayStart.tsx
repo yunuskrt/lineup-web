@@ -1,18 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import {
-  type ReactNode,
-  type RefObject,
-  useRef,
-  useState,
-  useTransition,
-} from 'react';
+import { type ReactNode, type RefObject, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { QuitDialog, type QuitDialogCopy } from '@/components/game/QuitDialog';
+import StartError from '@/components/play/StartError';
 import { STEP_ACTIONS, STEP_NEXT } from '@/components/play/styles';
-import { useEnsureSession } from '@/hooks/use-auth';
-import { authErrorMessageOf } from '@/lib/auth';
+import { useStartNavigation } from '@/hooks/use-start-navigation';
 import type { PlayMode } from '@/types/play';
 
 type PlayStartProps = {
@@ -49,23 +42,14 @@ export function PlayStart({
   ref,
   leading,
 }: PlayStartProps) {
-  const router = useRouter();
-  const ensureSession = useEnsureSession();
-  const [isNavigating, startNavigation] = useTransition();
+  const { go, isBusy: isStarting, error } = useStartNavigation();
   const [warning, setWarning] = useState<QuitDialogCopy | null>(null);
-  const isStarting = ensureSession.isPending || isNavigating;
   const ownRef = useRef<HTMLButtonElement>(null);
   const buttonRef = ref ?? ownRef;
 
   async function start() {
     if (!href || isCapped) return;
-    try {
-      await ensureSession.mutateAsync();
-      startNavigation(() => router.push(href));
-    } catch {
-      setWarning(null);
-      // Shown through ensureSession.error
-    }
+    if (!(await go(href))) setWarning(null);
   }
 
   // Removing the open dialog drops focus to body
@@ -96,11 +80,7 @@ export function PlayStart({
         </button>
       </div>
       {children}
-      {ensureSession.error && !isStarting ? (
-        <p role="alert" className="text-14 text-danger-text">
-          {authErrorMessageOf(ensureSession.error)}
-        </p>
-      ) : null}
+      <StartError error={error} isBusy={isStarting} />
       {warning ? (
         <QuitDialog
           isOpen

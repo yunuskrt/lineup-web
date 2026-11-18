@@ -11,6 +11,7 @@ import { ArchiveSkeletonRows } from '@/components/archive/ArchiveSkeleton';
 import { ARCHIVE_LIST } from '@/components/archive/styles';
 import { HistoryMore } from '@/components/profile/HistoryMore';
 import { ProLock } from '@/components/pro/ProLock';
+import RetryNotice from '@/components/shell/RetryNotice';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Empty, EmptyHeader, EmptyMedia } from '@/components/ui/empty';
@@ -116,17 +117,7 @@ function Results({
         </>
       );
     case 'error':
-      return (
-        <StateNotice
-          tone="error"
-          icon={TriangleAlert}
-          message={view.errorMessage}
-        >
-          <button type="button" onClick={onRetry} className={SECONDARY_BUTTON}>
-            Try again
-          </button>
-        </StateNotice>
-      );
+      return <RetryNotice message={view.errorMessage} onRetry={onRetry} />;
     case 'empty':
       return (
         <StateNotice

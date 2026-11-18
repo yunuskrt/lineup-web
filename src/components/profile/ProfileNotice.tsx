@@ -1,10 +1,7 @@
 import Link from 'next/link';
-import { TriangleAlert, UserRound } from 'lucide-react';
-import {
-  PRIMARY_BUTTON_LARGE,
-  SECONDARY_BUTTON,
-  SECONDARY_BUTTON_LARGE,
-} from '@/styles/classes';
+import { UserRound } from 'lucide-react';
+import { PRIMARY_BUTTON_LARGE, SECONDARY_BUTTON_LARGE } from '@/styles/classes';
+import RetryNotice from '@/components/shell/RetryNotice';
 import { StateNotice } from '@/components/shell/StateNotice';
 
 type ProfileNoticeProps =
@@ -14,21 +11,12 @@ type ProfileNoticeProps =
 export function ProfileNotice(props: ProfileNoticeProps) {
   if (props.kind === 'error') {
     return (
-      <StateNotice
-        tone="error"
-        icon={TriangleAlert}
+      <RetryNotice
         title="Couldn't load your profile"
         titleLevel={1}
         message={props.message}
-      >
-        <button
-          type="button"
-          onClick={props.onRetry}
-          className={SECONDARY_BUTTON}
-        >
-          Try again
-        </button>
-      </StateNotice>
+        onRetry={props.onRetry}
+      />
     );
   }
 

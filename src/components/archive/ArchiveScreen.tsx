@@ -1,13 +1,13 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useEffectEvent, useState, useTransition } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { ArchiveView } from '@/components/archive/ArchiveView';
 import { QuitDialog } from '@/components/game/QuitDialog';
 import { useArchive } from '@/hooks/use-archive';
-import { useEnsureSession } from '@/hooks/use-auth';
 import { useFilterOptions } from '@/hooks/use-filter-options';
 import { useProAccess } from '@/hooks/use-pro';
+import { useStartNavigation } from '@/hooks/use-start-navigation';
 import {
   ARCHIVE_SEARCH_DELAY_MS,
   archiveParams,
@@ -34,16 +34,13 @@ export function ArchiveScreen() {
   const [search, setSearch] = useState(() => archiveSearchFrom(params));
   const [q, setQ] = useState(search);
   const [edited, setEdited] = useState<Filters | null>(null);
-  const router = useRouter();
-  const ensureSession = useEnsureSession();
-  const [isNavigating, startNavigation] = useTransition();
+  const { go, isBusy: isStarting, error: startError } = useStartNavigation();
   const [picked, setPicked] = useState<{
     id: string;
     kind: 'play' | 'practice';
   } | null>(null);
   // A practice start held by the open-run warning
   const [warnedMatch, setWarnedMatch] = useState<MatchIdentity | null>(null);
-  const isStarting = ensureSession.isPending || isNavigating;
 
   const filters =
     edited ?? (options.data ? filtersFromParams(params, options.data) : null);
@@ -119,13 +116,9 @@ export function ArchiveScreen() {
     void archive.fetchNextPage();
   }
 
-  // A guest is made first, as Start does
   async function start(match: MatchIdentity, practice: boolean) {
     setPicked({ id: match.id, kind: practice ? 'practice' : 'play' });
-    try {
-      await ensureSession.mutateAsync();
-      startNavigation(() => router.push(pickedMatchPath(match.id, practice)));
-    } catch {
+    if (!(await go(pickedMatchPath(match.id, practice)))) {
       setPicked(null);
       setWarnedMatch(null);
     }
@@ -154,9 +147,7 @@ export function ArchiveScreen() {
         onPlay={play}
         starting={isStarting ? picked : null}
         playError={
-          ensureSession.error && !isStarting
-            ? authErrorMessageOf(ensureSession.error)
-            : null
+          startError && !isStarting ? authErrorMessageOf(startError) : null
         }
       />
       {warnedMatch ? (

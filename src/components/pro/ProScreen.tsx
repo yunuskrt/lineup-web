@@ -1,13 +1,11 @@
 'use client';
 
 import { notFound } from 'next/navigation';
-import { TriangleAlert } from 'lucide-react';
 import { type ProPlan, ProView } from '@/components/pro/ProView';
 import { useSession } from '@/hooks/use-auth';
 import { useAppConfig } from '@/hooks/use-pro';
 import { authErrorMessageOf } from '@/lib/auth';
-import { SECONDARY_BUTTON } from '@/styles/classes';
-import { StateNotice } from '@/components/shell/StateNotice';
+import RetryNotice from '@/components/shell/RetryNotice';
 
 export function ProScreen() {
   const config = useAppConfig();
@@ -15,21 +13,12 @@ export function ProScreen() {
 
   if (config.isError && !config.data) {
     return (
-      <StateNotice
-        tone="error"
-        icon={TriangleAlert}
+      <RetryNotice
         title="Couldn't load this page"
         titleLevel={1}
         message={authErrorMessageOf(config.error)}
-      >
-        <button
-          type="button"
-          onClick={() => config.refetch()}
-          className={SECONDARY_BUTTON}
-        >
-          Try again
-        </button>
-      </StateNotice>
+        onRetry={() => config.refetch()}
+      />
     );
   }
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -29,3 +29,10 @@ Phase 2 of `context/docs/code-cleanup-guide.md`, batch refactor-d. Items approve
   - B5 on `/play` (all three steps, the join row), `/archive`, `/sign-in`, `/pro` and `/profile`, including each page's error state where a `?state=` or mock scenario reaches it;
   - by hand in mock mode: Start a solo run, Create a room, Join by code and Play from the archive each make a guest and navigate; a forced auth error shows the same line.
 - **B7 scope:** only findings inside these goals are fixed; anything else is a follow-up note.
+
+- **Deviations recorded during implementation:**
+  - **4a, `ArchiveScreen`:** it has one `start` function, not two places; the scanner counted its setup lines and that function. Its error stays a derived string passed to `ArchiveView` (out of scope).
+  - **4b:** the show condition was `error && !isBusy` at all three sites, so it moved into `StartError` (`isBusy` prop), as the goal allows when identical.
+  - **New files follow the template:** `StartError` and `RetryNotice` are the first components with `import React`, `type Props`, an arrow const and a default export. `useStartNavigation` is a hook, so it keeps a named export.
+  - **B5 reach:** the filters, sign-in and `/pro` error notices have no `?state=` or mock scenario, so B5 covered `RetryNotice` through `archive?state=error` (no title) and `profile?state=error` (with title). The hand checks ran through the app (guest first, then clicks), as a fresh load locks Create room and `archive?state=open` is a static snapshot.
+  - **Review fixes:** one `react` import in `RetryNotice`; `ArchiveScreen`'s comment that repeated the hook's removed; `RetryNotice`'s import in `ArchiveView` moved beside the other components.

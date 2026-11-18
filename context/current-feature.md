@@ -120,3 +120,4 @@ Not Started
 - Fix Refactor A: pluralOf, utcDateLabel, wait, seconds copy, config max-age.
 - Fix Refactor B: SECTION_LABEL, ICON_TILE reuse, BOARD_LIST, actor fills.
 - Fix Refactor C: shared withToast and applyFeedback for solo and duel.
+- Fix Refactor D: useStartNavigation, StartError, RetryNotice, no room hook.
