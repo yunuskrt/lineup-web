@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useReducer, useRef, useState } from 'react';
 import { failureOf, useEnsureSession, useSession } from '@/hooks/use-auth';
+import { useCooldownEnd } from '@/hooks/use-cooldown-end';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
 import { getApiClient } from '@/lib/api';
 import { getDuelClient, type Unsubscribe } from '@/lib/api/duel-client';
@@ -322,15 +323,9 @@ export function useDuel(params: URLSearchParams) {
     return () => clearTimeout(timer);
   }, [state.phase]);
 
-  // The server set the time; this only unlocks
-  useEffect(() => {
-    if (state.cooldownUntil === null) return;
-    const timer = setTimeout(
-      () => dispatch({ type: 'cooldownEnded' }),
-      Math.max(0, state.cooldownUntil - Date.now()),
-    );
-    return () => clearTimeout(timer);
-  }, [state.cooldownUntil]);
+  useCooldownEnd(state.cooldownUntil, () =>
+    dispatch({ type: 'cooldownEnded' }),
+  );
 
   async function lockFilters(filters: Filters | null = state.filters) {
     if (!canLockFilters(state) || !filters || isLocking.current) return;

@@ -121,3 +121,4 @@ Not Started
 - Fix Refactor B: SECTION_LABEL, ICON_TILE reuse, BOARD_LIST, actor fills.
 - Fix Refactor C: shared withToast and applyFeedback for solo and duel.
 - Fix Refactor D: useStartNavigation, StartError, RetryNotice, no room hook.
+- Fix Refactor E: useCooldownEnd replaces the solo and duel unlock timers.

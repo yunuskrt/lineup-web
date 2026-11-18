@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useReducer, useRef } from 'react';
 import { failureOf, useEnsureSession } from '@/hooks/use-auth';
+import { useCooldownEnd } from '@/hooks/use-cooldown-end';
 import { filterOptionsQuery } from '@/hooks/use-filter-options';
 import {
   refreshSoloAllowance,
@@ -168,15 +169,9 @@ export function useSoloRun(params: URLSearchParams) {
     };
   }, [isPlaying, state.isGuessing, sessionId, startedAt, endsAt, queryClient]);
 
-  // The server set the time; this only unlocks
-  useEffect(() => {
-    if (state.cooldownUntil === null) return;
-    const timer = setTimeout(
-      () => dispatch({ type: 'cooldownEnded' }),
-      Math.max(0, state.cooldownUntil - Date.now()),
-    );
-    return () => clearTimeout(timer);
-  }, [state.cooldownUntil]);
+  useCooldownEnd(state.cooldownUntil, () =>
+    dispatch({ type: 'cooldownEnded' }),
+  );
 
   // Not cancelled on cleanup: StrictMode would drop it
   useEffect(() => {
