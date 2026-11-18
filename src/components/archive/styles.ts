@@ -1,12 +1,10 @@
-import { FOCUS_RING } from '@/styles/classes';
+import { BOARD_LIST, FOCUS_RING } from '@/styles/classes';
 
 // Weights, not caps: a capped track starves fr ones
 export const ARCHIVE_ROW =
   'grid h-26 grid-cols-[minmax(0,1fr)_3rem_minmax(0,1fr)] content-center items-center gap-x-2 gap-y-1.5 px-4 sm:h-20 sm:grid-cols-[minmax(0,1fr)_3.5rem_minmax(0,1fr)] sm:gap-x-3 xl:h-16 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_3.5rem_minmax(0,1fr)_auto] xl:gap-y-0';
 
-// White, outlined, ink rules between rows
-export const ARCHIVE_LIST =
-  'divide-y-2 divide-line overflow-hidden rounded-lg border-2 border-line bg-surface-card';
+export const ARCHIVE_LIST = BOARD_LIST;
 
 // Phones: meta, then actions; sm: side by side
 export const ARCHIVE_ROW_FOOT =

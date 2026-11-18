@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { BOARD_SECTION, TYPE_NUMBER } from '@/styles/classes';
+import { BOARD_LIST, BOARD_SECTION, TYPE_NUMBER } from '@/styles/classes';
 
 // The record and stats section of the page
 export const PROFILE_FIGURES = cn(BOARD_SECTION, 'grid gap-6 lg:grid-cols-12');
@@ -33,8 +33,7 @@ export const STAT_TILE =
 export const STAT_LABEL =
   'text-12 leading-4 font-medium text-fg-muted uppercase';
 
-export const HISTORY_LIST =
-  'divide-y-2 divide-line overflow-hidden rounded-lg border-2 border-line bg-surface-card';
+export const HISTORY_LIST = BOARD_LIST;
 
 // Two lines on phones, one from sm; lg adds pips
 export const HISTORY_ROW =

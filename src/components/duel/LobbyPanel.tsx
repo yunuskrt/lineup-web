@@ -17,6 +17,7 @@ import {
   ICON_TILE,
   PRIMARY_BUTTON,
   SECONDARY_BUTTON,
+  SECTION_LABEL,
   TYPE_ROOM_CODE,
 } from '@/styles/classes';
 import {
@@ -198,10 +199,7 @@ function RoomWaiting({ lobby, onAction }: RoomWaitingProps) {
     <div className="flex flex-col gap-5">
       <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-line bg-surface-card p-4">
         {/* The code below names itself, letter by letter */}
-        <span
-          aria-hidden="true"
-          className="text-12 font-medium text-fg-muted uppercase"
-        >
+        <span aria-hidden="true" className={SECTION_LABEL}>
           Room code
         </span>
         <p

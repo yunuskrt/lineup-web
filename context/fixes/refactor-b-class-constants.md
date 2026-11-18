@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -27,3 +27,9 @@ A site where the swap would add, drop or change any class keeps its literal.
   - `npm run lint`, `npx tsc --noEmit`, `npm test` and `npm run build`;
   - B5: `/`, `/play` (Practice card), `/play/solo?state=warning`, `/play/duel?state=opponent-reconnecting` (live clocks: the frozen-clock rule), a lobby state, `/profile` and `/archive`.
 - **B7 scope:** only findings inside these goals are fixed; anything else is a follow-up note.
+
+- **Deviations recorded during implementation:**
+  - **8c:** `ARCHIVE_LIST` and `HISTORY_LIST` stay, as `= BOARD_LIST`, so their four users (`ArchiveView`, `ArchiveSkeleton`, `HistoryList`, `ProfileSkeleton`) keep their imports. The "White, outlined, ink rules between rows" comment moved to `BOARD_LIST`.
+  - **Class-set check:** old and new class strings compared as sets for every site: all identical.
+  - **Follow-up, not this batch (review):** `profile/styles.ts` `STAT_LABEL` is `SECTION_LABEL` plus `leading-4`, and the same classes are typed out in `DuelResultPanel.tsx` and `RunSummary.tsx` (`<dt>` labels); not a pure swap, as `leading-4` is extra.
+  - **`BOARD_LIST` comment (review):** it describes the style, not its current users.

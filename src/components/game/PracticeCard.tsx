@@ -1,5 +1,5 @@
 import { TimerOff } from 'lucide-react';
-import { RAIL_SECTION, TYPE_CARD_TITLE } from '@/styles/classes';
+import { ICON_TILE, RAIL_SECTION, TYPE_CARD_TITLE } from '@/styles/classes';
 
 // Where the ring and the lives sit in a timed run
 export function PracticeCard() {
@@ -10,7 +10,7 @@ export function PracticeCard() {
     >
       <span
         aria-hidden="true"
-        className="flex size-10 shrink-0 items-center justify-center rounded-md border-2 border-line bg-block-mint"
+        className={`size-10 shrink-0 bg-block-mint ${ICON_TILE}`}
       >
         <TimerOff strokeWidth={2.5} className="size-5" />
       </span>

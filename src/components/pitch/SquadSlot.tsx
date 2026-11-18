@@ -6,6 +6,7 @@ import {
 import { PERSON_PATH } from '@/components/pitch/person';
 import { SKELETON } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { DUEL_ACTOR_BG } from '@/styles/classes';
 import type { DuelActor } from '@/types/duel';
 import type { PositionGroup } from '@/types/player';
 
@@ -24,8 +25,7 @@ const FINDER_NAMES: Record<DuelActor, string> = {
 // Solo labels stay white; the flash says "correct"
 const LABEL_FILL: Record<DuelActor | 'solo', string> = {
   solo: 'bg-surface-card',
-  you: 'bg-you',
-  opponent: 'bg-opponent',
+  ...DUEL_ACTOR_BG,
 };
 
 // Disc on top: SquadGrid anchors its foot to the spot

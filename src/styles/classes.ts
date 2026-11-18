@@ -26,6 +26,10 @@ export const HOME_BAND = 'border-t-2 border-line';
 export const ICON_TILE =
   'flex items-center justify-center rounded-md border-2 border-line';
 
+// A board list: white, outlined, with ink rules between its rows
+export const BOARD_LIST =
+  'divide-y-2 divide-line overflow-hidden rounded-lg border-2 border-line bg-surface-card';
+
 // A you / opponent colour bar
 export const ACTOR_BAR = 'h-2.5 w-10 rounded-full border-2 border-line';
 

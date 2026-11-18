@@ -20,7 +20,7 @@ import {
   suggestionCountLabel,
 } from '@/lib/suggestions';
 import { cooldownAnnouncement, cooldownLabel } from '@/lib/system-states';
-import { FOCUS_RING } from '@/styles/classes';
+import { FOCUS_RING, SECTION_LABEL } from '@/styles/classes';
 import { MOTION_SECONDS } from '@/styles/motion';
 
 export type GuessInputStatus = 'live' | 'pending' | 'locked' | 'cooldown';
@@ -220,10 +220,7 @@ export function GuessInput({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-4">
-        <label
-          htmlFor={inputId}
-          className="text-12 font-medium text-fg-muted uppercase"
-        >
+        <label htmlFor={inputId} className={SECTION_LABEL}>
           Guess a player
         </label>
         <span aria-hidden="true" className="text-12 text-fg-muted">

@@ -5,7 +5,7 @@ import { CompetitionLogo } from '@/components/game/CompetitionLogo';
 import { LandingSkeleton } from '@/components/home/LandingSkeleton';
 import { useCatalogOverview } from '@/hooks/use-catalog-overview';
 import { landingCompetitions } from '@/lib/landing';
-import { HOME_BAND } from '@/styles/classes';
+import { HOME_BAND, ICON_TILE } from '@/styles/classes';
 import type { CatalogOverview } from '@/types/catalog';
 import { Marquee } from '@/components/ui/marquee';
 import { SKELETON } from '@/components/ui/skeleton';
@@ -16,8 +16,7 @@ const SKELETON_TILES = 10;
 const STRIP = 'bg-scoreboard py-4';
 const PILL =
   'flex h-11 shrink-0 items-center gap-2 rounded-full border-2 border-line bg-surface-card px-3 text-14 font-medium whitespace-nowrap text-fg';
-const CREST_TILE =
-  'flex size-11 shrink-0 items-center justify-center rounded-md border-2 border-line bg-surface-card';
+const CREST_TILE = `size-11 shrink-0 bg-surface-card ${ICON_TILE}`;
 
 function StripSkeleton() {
   return (

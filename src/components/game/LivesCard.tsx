@@ -11,7 +11,12 @@ import {
   shownLivesActor,
 } from '@/lib/duel-status';
 import { Badge } from '@/components/ui/badge';
-import { DOT_BUTTON, DUEL_ACTOR_BG, TYPE_NUMBER } from '@/styles/classes';
+import {
+  DOT_BUTTON,
+  DUEL_ACTOR_BG,
+  SECTION_LABEL,
+  TYPE_NUMBER,
+} from '@/styles/classes';
 import {
   MOTION_DURATION_MS,
   MOTION_EASING,
@@ -49,10 +54,7 @@ function CardFrame({ hint, chip, footer, children }: CardFrameProps) {
   return (
     <section aria-labelledby={labelId} className="flex flex-col gap-2">
       <div className="flex h-6 items-center justify-between gap-2">
-        <span
-          id={labelId}
-          className="text-12 font-medium text-fg-muted uppercase"
-        >
+        <span id={labelId} className={SECTION_LABEL}>
           Lives
         </span>
         {chip}
