@@ -9,7 +9,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { LOBBY_GATE_SIZE, LobbyPanel } from '@/components/duel/LobbyPanel';
+import LobbyPanel, { LOBBY_GATE_SIZE } from '@/components/duel/LobbyPanel';
 import { CanvasGate, type GateSize } from '@/components/game/CanvasGate';
 import { CountdownRing } from '@/components/game/CountdownRing';
 import { DuelResultPanel } from '@/components/game/DuelResultPanel';
