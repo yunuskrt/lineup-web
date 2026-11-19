@@ -1,7 +1,5 @@
 # Current Feature
 
-<!-- Feature Name -->
-
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
@@ -124,3 +122,4 @@ Not Started
 - Fix Refactor E: useCooldownEnd replaces the solo and duel unlock timers.
 - Fix Conventions A: shell and provider components on the template.
 - Fix Conventions B: home on the template, 16 parts split, RuleMarks gone.
+- Fix Conventions C: auth to pitch on template, 14 parts out, React first.

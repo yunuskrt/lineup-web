@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   ARCHIVE_PLAY_BUTTON,
   ARCHIVE_ROW,
@@ -17,7 +18,7 @@ const ROW_ACTIONS = [
   { kind: 'practice', verb: 'Practise' },
 ] as const;
 
-type ArchiveRowProps = {
+type Props = {
   match: MatchIdentity;
   // `practice` starts it with no clock (R14)
   onPlay: (match: MatchIdentity, practice: boolean) => void;
@@ -28,12 +29,12 @@ type ArchiveRowProps = {
 };
 
 // Phones drop the crests; one line from xl, meta first
-export function ArchiveRow({
+const ArchiveRow = ({
   match,
   onPlay,
   starting = null,
   isDisabled = false,
-}: ArchiveRowProps) {
+}: Props) => {
   const date = archiveDateLabel(match.date);
   const event = matchEvent(match);
 
@@ -120,4 +121,6 @@ export function ArchiveRow({
       </div>
     </li>
   );
-}
+};
+
+export default ArchiveRow;

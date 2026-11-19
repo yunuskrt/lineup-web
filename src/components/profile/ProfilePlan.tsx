@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { useAppConfig } from '@/hooks/use-pro';
@@ -7,8 +8,10 @@ import { PRO_PATH, showsPro } from '@/lib/pro';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { Tier } from '@/types/user';
 
+type Props = { tier: Tier };
+
 // Shown only while the Free/Pro split is on
-export function ProfilePlan({ tier }: { tier: Tier }) {
+const ProfilePlan = ({ tier }: Props) => {
   const config = useAppConfig();
   if (!showsPro(config.data ?? null)) return null;
   const isPro = tier === 'pro';
@@ -30,4 +33,6 @@ export function ProfilePlan({ tier }: { tier: Tier }) {
       </div>
     </>
   );
-}
+};
+
+export default ProfilePlan;

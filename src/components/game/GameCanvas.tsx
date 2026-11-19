@@ -23,7 +23,7 @@ import { PracticeCard } from '@/components/game/PracticeCard';
 import { RunSummary } from '@/components/game/RunSummary';
 import { SidePickCard } from '@/components/game/SidePickCard';
 import { SoundToggle } from '@/components/game/SoundToggle';
-import { SquadGrid } from '@/components/pitch/SquadGrid';
+import SquadGrid from '@/components/pitch/SquadGrid';
 import { useGameSounds } from '@/hooks/use-game-sounds';
 import QuitChip from '@/components/shell/QuitChip';
 import { Alert, AlertDescription } from '@/components/ui/alert';

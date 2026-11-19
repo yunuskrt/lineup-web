@@ -1,8 +1,10 @@
-import { useId } from 'react';
+import React, { useId } from 'react';
 import { PRIMARY_BUTTON_LARGE } from '@/styles/classes';
 
+type Props = {};
+
 // The one place checkout plugs in, with payments
-export function GetProButton() {
+const GetProButton = ({}: Props) => {
   const noteId = useId();
 
   return (
@@ -20,4 +22,6 @@ export function GetProButton() {
       </p>
     </div>
   );
-}
+};
+
+export default GetProButton;

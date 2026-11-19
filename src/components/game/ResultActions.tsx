@@ -1,4 +1,4 @@
-import { ProLock } from '@/components/pro/ProLock';
+import ProLock from '@/components/pro/ProLock';
 import {
   type ResultPrimary,
   type ResultSecondary,

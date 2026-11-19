@@ -1,4 +1,5 @@
-import { Check, Minus } from 'lucide-react';
+import React from 'react';
+import Value from '@/components/pro/pro-plan-table/Value';
 
 // The Free vs Pro rows of project-overview.md
 const ROWS: { feature: string; free: string | null; pro: string | null }[] = [
@@ -20,31 +21,9 @@ const CELL = 'px-3 py-3 align-top text-14 leading-5 sm:px-6';
 // The Pro column, filled so it reads as the offer
 const PRO_CELL = `${CELL} bg-block-lavender text-on-accent`;
 
-// Marks beside the words; the words carry the meaning
-function Value({ value, isPro }: { value: string | null; isPro: boolean }) {
-  if (value === null) {
-    return (
-      <>
-        <Minus aria-hidden="true" className="size-4" strokeWidth={2.5} />
-        <span className="sr-only">Not included</span>
-      </>
-    );
-  }
-  return (
-    <span className="flex items-start gap-1.5">
-      {isPro ? (
-        <Check
-          aria-hidden="true"
-          className="mt-0.5 size-4 shrink-0"
-          strokeWidth={3}
-        />
-      ) : null}
-      <span>{value}</span>
-    </span>
-  );
-}
+type Props = {};
 
-export function ProPlanTable() {
+const ProPlanTable = ({}: Props) => {
   return (
     <div className="overflow-hidden rounded-lg border-2 border-line bg-surface-card">
       <table className="w-full table-fixed border-collapse text-left">
@@ -83,4 +62,6 @@ export function ProPlanTable() {
       </table>
     </div>
   );
-}
+};
+
+export default ProPlanTable;

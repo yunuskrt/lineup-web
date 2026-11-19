@@ -21,7 +21,7 @@ You audit `lineup-web` against its house conventions. You **never edit files**. 
 
 ## Rules to check
 
-1. **One component per file.** A component is a function or arrow const that returns JSX and is named in PascalCase. Report every extra one, with the subfolder it moves to: `<parent-kebab>/<Name>.tsx` beside the parent, for example `duel/lobby-panel/Searching.tsx`.
+1. **One component per file.** A component is a function or arrow const that returns JSX and is named in PascalCase. Report every extra one, with the subfolder it moves to: `<parent-kebab>/<Name>.tsx` beside the parent, for example `duel/lobby-panel/Searching.tsx`. A component other files also import moves top-level in the same folder instead (`pro/ProLockButton.tsx`).
 2. **The template.** Each component or page file has:
    - `import React from 'react'` (after `'use client'` when present);
    - `type Props = {...}`, even when empty;

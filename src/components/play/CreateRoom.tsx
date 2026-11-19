@@ -1,7 +1,8 @@
 'use client';
 
 import { useId } from 'react';
-import { ProLockButton, ProLockCaption } from '@/components/pro/ProLock';
+import ProLockCaption from '@/components/pro/ProLockCaption';
+import ProLockButton from '@/components/pro/ProLockButton';
 import { useProAccess } from '@/hooks/use-pro';
 import StartError from '@/components/play/StartError';
 import { useStartNavigation } from '@/hooks/use-start-navigation';

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
-import { ArchiveScreen } from '@/components/archive/ArchiveScreen';
+import ArchiveScreen from '@/components/archive/ArchiveScreen';
 import { ArchiveStatePreview } from '@/components/dev/ArchiveStatePreview';
 import { devOnlyParam } from '@/lib/dev/route';
 import { SITE_CONTAINER } from '@/styles/classes';

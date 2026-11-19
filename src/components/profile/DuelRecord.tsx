@@ -1,6 +1,8 @@
-import { useId } from 'react';
+import React, { useId } from 'react';
+import LetterTile, {
+  type Tile,
+} from '@/components/profile/duel-record/LetterTile';
 import {
-  LETTER_TILE,
   RECORD_BAR,
   RECORD_BLOCK,
   RECORD_HEADER,
@@ -10,43 +12,9 @@ import { duelCountLabel, duelRecord, recordShares } from '@/lib/profile';
 import { cn } from '@/lib/utils';
 import type { UserStats } from '@/types/profile';
 
-type Tile = 'win' | 'draw' | 'loss';
+type Props = { stats: UserStats };
 
-const TILE_LETTERS: Record<Tile, string> = { win: 'W', draw: 'D', loss: 'L' };
-
-const TILE_FILLS: Record<Exclude<Tile, 'draw'>, string> = {
-  win: 'bg-you',
-  loss: 'bg-danger',
-};
-
-// Decorative: the label beside it is read
-function LetterTile({ tile, isMuted }: { tile: Tile; isMuted: boolean }) {
-  const letter = TILE_LETTERS[tile];
-  if (isMuted) {
-    return (
-      <span aria-hidden="true" className={cn(LETTER_TILE, 'bg-surface-card')}>
-        {letter}
-      </span>
-    );
-  }
-  // A draw is shared, so it shows both colours
-  if (tile === 'draw') {
-    return (
-      <span aria-hidden="true" className={LETTER_TILE}>
-        <span className="absolute inset-y-0 left-0 w-1/2 bg-you" />
-        <span className="absolute inset-y-0 right-0 w-1/2 bg-opponent" />
-        <span className="relative">{letter}</span>
-      </span>
-    );
-  }
-  return (
-    <span aria-hidden="true" className={cn(LETTER_TILE, TILE_FILLS[tile])}>
-      {letter}
-    </span>
-  );
-}
-
-export function DuelRecord({ stats }: { stats: UserStats }) {
+const DuelRecord = ({ stats }: Props) => {
   const headingId = useId();
   const record = duelRecord(stats);
   const shares = recordShares(stats);
@@ -104,4 +72,6 @@ export function DuelRecord({ stats }: { stats: UserStats }) {
       </div>
     </section>
   );
-}
+};
+
+export default DuelRecord;

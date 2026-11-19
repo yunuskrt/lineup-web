@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArchiveView } from '@/components/archive/ArchiveView';
+import ArchiveView from '@/components/archive/ArchiveView';
 import { resolveArchiveState } from '@/lib/dev/archive-states';
 import { SAMPLE_FILTER_OPTIONS, SAMPLE_OPEN_FILTERS } from '@/lib/dev/samples';
 

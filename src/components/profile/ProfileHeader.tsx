@@ -1,4 +1,5 @@
-import { ProfilePlan } from '@/components/profile/ProfilePlan';
+import React from 'react';
+import ProfilePlan from '@/components/profile/ProfilePlan';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { handleInitial } from '@/lib/profile';
@@ -6,7 +7,9 @@ import { cn } from '@/lib/utils';
 import { TYPE_TITLE } from '@/styles/classes';
 import type { User } from '@/types/user';
 
-export function ProfileHeader({ user }: { user: User }) {
+type Props = { user: User };
+
+const ProfileHeader = ({ user }: Props) => {
   return (
     <header className="flex flex-col items-start gap-3 sm:flex-row sm:gap-4">
       {/* The h1 names the handle; the letter is decoration */}
@@ -33,4 +36,6 @@ export function ProfileHeader({ user }: { user: User }) {
       </div>
     </header>
   );
-}
+};
+
+export default ProfileHeader;

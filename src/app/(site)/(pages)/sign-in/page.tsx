@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { AuthPanel } from '@/components/auth/AuthPanel';
+import AuthPanel from '@/components/auth/AuthPanel';
 import { authModeFrom } from '@/lib/auth';
 import { BOARD, SITE_CONTAINER } from '@/styles/classes';
 

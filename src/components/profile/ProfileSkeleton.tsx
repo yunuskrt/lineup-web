@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'motion/react';
 import {
   HISTORY_LIST,
@@ -20,8 +21,10 @@ import { SKELETON } from '@/components/ui/skeleton';
 const STAT_TILES = 4;
 const HISTORY_ROWS = 3;
 
+type Props = { isGuest: boolean };
+
 // Same classes as the loaded panels, so nothing shifts
-export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
+const ProfileSkeleton = ({ isGuest }: Props) => {
   const runs = useMotionPolicy();
   const isPulsing = runs('skeletonPulse');
 
@@ -105,4 +108,6 @@ export function ProfileSkeleton({ isGuest }: { isGuest: boolean }) {
       </motion.div>
     </>
   );
-}
+};
+
+export default ProfileSkeleton;

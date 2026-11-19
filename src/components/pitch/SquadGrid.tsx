@@ -1,24 +1,15 @@
 'use client';
 
+import React, { useState } from 'react';
 import { motion, type Transition } from 'motion/react';
-import { useState } from 'react';
-import { Pitch } from '@/components/pitch/Pitch';
-import { RevealCard } from '@/components/pitch/RevealCard';
-import { SquadSlot } from '@/components/pitch/SquadSlot';
+import Pitch from '@/components/pitch/Pitch';
+import GridSlot from '@/components/pitch/squad-grid/GridSlot';
+import { INSTANT } from '@/components/pitch/squad-grid/shared';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { parseFormation, slotLayout } from '@/lib/formation';
-import {
-  MISSED_REVEAL_STAGGER_MS,
-  MOTION_SECONDS,
-  SKELETON_PULSE,
-  SKELETON_PULSE_OPACITY,
-} from '@/styles/motion';
+import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 import type { GridPulse } from '@/types/feedback';
-import type {
-  FoundPlayer,
-  PositionGroup,
-  RevealedPlayer,
-} from '@/types/player';
+import type { FoundPlayer, RevealedPlayer } from '@/types/player';
 
 // Each width stays under slotLayout's line spacing
 const SLOT_WIDTH_BY_WIDEST_LINE: Record<number, string> = {
@@ -41,7 +32,6 @@ export function discSizeClass(formation: string): string {
 }
 
 const SETTLE: Transition = { duration: 0.2 };
-const INSTANT: Transition = { duration: 0 };
 
 export function slotWidthClass(formation: string): string {
   const widestLine = Math.max(...(parseFormation(formation) ?? []));
@@ -49,65 +39,7 @@ export function slotWidthClass(formation: string): string {
   return SLOT_WIDTH_BY_WIDEST_LINE[widestLine] ?? 'w-[14%]';
 }
 
-// One by one, in squad order, as the player reveals
-function missedEntrance(rank: number): Transition {
-  return {
-    duration: MOTION_SECONDS.missedReveal,
-    ease: 'easeOut',
-    delay: (rank * MISSED_REVEAL_STAGGER_MS) / 1000,
-  };
-}
-
-type GridSlotProps = {
-  position: PositionGroup;
-  player: FoundPlayer | undefined;
-  missedPlayer: RevealedPlayer | undefined;
-  // Null when the reveal doesn't animate
-  missedRank: number | null;
-  isLoading: boolean;
-  isNew: boolean;
-  pulseKey: number | undefined;
-};
-
-function GridSlot({
-  position,
-  player,
-  missedPlayer,
-  missedRank,
-  isLoading,
-  isNew,
-  pulseKey,
-}: GridSlotProps) {
-  if (isLoading) return <SquadSlot state="loading" position={position} />;
-  if (!player && missedPlayer) {
-    return (
-      <motion.div
-        initial={missedRank === null ? false : { opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={missedRank === null ? INSTANT : missedEntrance(missedRank)}
-      >
-        <SquadSlot
-          state="missed"
-          position={position}
-          name={missedPlayer.name}
-          imageUrl={missedPlayer.imageUrl}
-        />
-      </motion.div>
-    );
-  }
-  if (!player) return <SquadSlot state="empty" position={position} />;
-
-  return (
-    <RevealCard
-      player={player}
-      position={position}
-      isNew={isNew}
-      pulseKey={pulseKey}
-    />
-  );
-}
-
-type SquadGridProps = {
+type Props = {
   formation: string;
   revealed: FoundPlayer[];
   // Pro only, and only once the player reveals
@@ -116,13 +48,13 @@ type SquadGridProps = {
   isLoading?: boolean;
 };
 
-export function SquadGrid({
+const SquadGrid = ({
   formation,
   revealed,
   missed,
   pulse,
   isLoading = false,
-}: SquadGridProps) {
+}: Props) => {
   const runs = useMotionPolicy();
   const [previousRevealed, setPreviousRevealed] = useState(revealed);
   const [wasLoading, setWasLoading] = useState(isLoading);
@@ -229,4 +161,6 @@ export function SquadGrid({
       </div>
     </div>
   );
-}
+};
+
+export default SquadGrid;

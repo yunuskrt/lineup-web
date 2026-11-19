@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'motion/react';
 import React, { type ReactNode } from 'react';
+import { motion } from 'motion/react';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { SKELETON_PULSE, SKELETON_PULSE_OPACITY } from '@/styles/motion';
 

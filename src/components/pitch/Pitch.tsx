@@ -1,11 +1,6 @@
-// Ink at 2px whatever the pitch's rendered size
-const STROKE = {
-  className: 'fill-none stroke-line',
-  strokeWidth: 2,
-  vectorEffect: 'non-scaling-stroke',
-} as const;
-
-const SPOT = 'fill-line';
+import React from 'react';
+import PitchEnd from '@/components/pitch/pitch/PitchEnd';
+import { SPOT, STROKE } from '@/components/pitch/pitch/styles';
 
 // Mown checks inside the lines, as game/02-pitch-b
 const CHECK_COLUMNS = 8;
@@ -33,48 +28,11 @@ const CORNER_ARCS = [
   `M ${NEAR} 118 A ${CORNER_RADIUS} ${CORNER_RADIUS} 0 0 0 2 ${FAR_Y}`,
 ];
 
-type PitchEndProps = {
-  goalLineY: number;
-  direction: 1 | -1;
-};
-
-function PitchEnd({ goalLineY, direction }: PitchEndProps) {
-  const penaltyEdge = goalLineY + direction * 18;
-  const goalAreaEdge = goalLineY + direction * 6;
-  const spotY = goalLineY + direction * 12;
-  // The arc bulges away from the goal
-  const sweep = direction === 1 ? 0 : 1;
-
-  return (
-    <>
-      <rect
-        x={22}
-        y={Math.min(goalLineY, penaltyEdge)}
-        width={56}
-        height={18}
-        {...STROKE}
-      />
-      <rect
-        x={37}
-        y={Math.min(goalLineY, goalAreaEdge)}
-        width={26}
-        height={6}
-        {...STROKE}
-      />
-      <path
-        d={`M 42 ${penaltyEdge} A 10 10 0 0 ${sweep} 58 ${penaltyEdge}`}
-        {...STROKE}
-      />
-      <circle cx={50} cy={spotY} r={0.8} className={SPOT} />
-    </>
-  );
-}
-
-type PitchProps = {
+type Props = {
   className?: string;
 };
 
-export function Pitch({ className = '' }: PitchProps) {
+const Pitch = ({ className = '' }: Props) => {
   return (
     <svg
       viewBox="0 0 100 120"
@@ -104,4 +62,6 @@ export function Pitch({ className = '' }: PitchProps) {
       <PitchEnd goalLineY={118} direction={-1} />
     </svg>
   );
-}
+};
+
+export default Pitch;

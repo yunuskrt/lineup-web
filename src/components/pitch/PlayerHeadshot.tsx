@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { initials } from '@/lib/initials';
 import { cn } from '@/lib/utils';
@@ -13,7 +14,7 @@ const INITIALS_ON_PITCH = 'text-[length:calc(var(--disc)*0.36)]';
 // Initials wait this long for a photo, so none flash in
 const PHOTO_GRACE_MS = 300;
 
-type PlayerHeadshotProps = {
+type Props = {
   name: string;
   imageUrl: string | null;
   // Duel only: fills the disc in the finder's colour
@@ -23,13 +24,13 @@ type PlayerHeadshotProps = {
   className?: string;
 };
 
-export function PlayerHeadshot({
+const PlayerHeadshot = ({
   name,
   imageUrl,
   foundBy,
   sizeClass = HEADSHOT_SIZE,
   className = '',
-}: PlayerHeadshotProps) {
+}: Props) => {
   return (
     <Avatar
       aria-hidden="true"
@@ -48,4 +49,6 @@ export function PlayerHeadshot({
       </AvatarFallback>
     </Avatar>
   );
-}
+};
+
+export default PlayerHeadshot;

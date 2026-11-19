@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { ProLock } from '@/components/pro/ProLock';
+import ProLock from '@/components/pro/ProLock';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { SoloSummary } from '@/types/solo';
 

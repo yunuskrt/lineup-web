@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { CanvasGate } from '@/components/game/CanvasGate';
 import { GuessInput } from '@/components/game/GuessInput';
-import { SquadGrid } from '@/components/pitch/SquadGrid';
+import SquadGrid from '@/components/pitch/SquadGrid';
 import { samplePlayer } from '@/lib/dev/samples';
 import { LOADING_FORMATION } from '@/lib/formation';
 import { DEV_PREVIEW_BUTTON, PRIMARY_BUTTON } from '@/styles/classes';

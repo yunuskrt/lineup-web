@@ -1,8 +1,9 @@
+import React from 'react';
 import Link from 'next/link';
 import { FOCUS_RING } from '@/styles/classes';
 import type { AuthMode } from '@/types/auth';
 
-type ModeSwitchProps = {
+type Props = {
   mode: AuthMode;
 };
 
@@ -11,7 +12,7 @@ const MODES: { mode: AuthMode; label: string; href: string }[] = [
   { mode: 'sign-up', label: 'Create account', href: '/sign-in?mode=sign-up' },
 ];
 
-export function ModeSwitch({ mode }: ModeSwitchProps) {
+const ModeSwitch = ({ mode }: Props) => {
   return (
     <nav
       aria-label="Account"
@@ -36,4 +37,6 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
       })}
     </nav>
   );
-}
+};
+
+export default ModeSwitch;

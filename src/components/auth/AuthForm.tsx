@@ -1,9 +1,9 @@
 'use client';
 
-import { useId, useRef, useState, type FormEvent } from 'react';
+import React, { useId, useRef, useState, type FormEvent } from 'react';
 import type { z } from 'zod';
 import { TriangleAlert } from 'lucide-react';
-import { AuthField, type AuthFieldConfig } from '@/components/auth/AuthField';
+import AuthField, { type AuthFieldConfig } from '@/components/auth/AuthField';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { authErrorMessageOf, authFieldErrors } from '@/lib/auth';
 import { PRIMARY_BUTTON_LARGE } from '@/styles/classes';
@@ -13,7 +13,7 @@ import type {
   AuthFieldValues,
 } from '@/types/auth';
 
-type AuthFormProps<S extends z.ZodType> = {
+type Props<S extends z.ZodType> = {
   schema: S;
   fields: AuthFieldConfig[];
   submitLabel: string;
@@ -23,15 +23,16 @@ type AuthFormProps<S extends z.ZodType> = {
   onSubmit: (request: z.output<S>) => void;
 };
 
-export function AuthForm<S extends z.ZodType>({
-  schema,
-  fields,
-  submitLabel,
-  pendingLabel,
-  isPending,
-  error,
-  onSubmit,
-}: AuthFormProps<S>) {
+const AuthForm = <S extends z.ZodType>(props: Props<S>) => {
+  const {
+    schema,
+    fields,
+    submitLabel,
+    pendingLabel,
+    isPending,
+    error,
+    onSubmit,
+  } = props;
   const formId = useId();
   const [values, setValues] = useState<AuthFieldValues>({});
   const [errors, setErrors] = useState<AuthFieldErrors>({});
@@ -91,4 +92,6 @@ export function AuthForm<S extends z.ZodType>({
       </div>
     </form>
   );
-}
+};
+
+export default AuthForm;

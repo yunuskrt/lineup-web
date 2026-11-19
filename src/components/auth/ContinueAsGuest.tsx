@@ -1,12 +1,15 @@
 'use client';
 
+import React from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthError } from '@/components/auth/AuthError';
+import AuthError from '@/components/auth/AuthError';
 import { useContinueAsGuest } from '@/hooks/use-auth';
 import { authErrorMessageOf } from '@/lib/auth';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 
-export function ContinueAsGuest() {
+type Props = {};
+
+const ContinueAsGuest = ({}: Props) => {
   const router = useRouter();
   const continueAsGuest = useContinueAsGuest();
 
@@ -37,4 +40,6 @@ export function ContinueAsGuest() {
       </button>
     </div>
   );
-}
+};
+
+export default ContinueAsGuest;

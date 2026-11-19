@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import React, { useId } from 'react';
 import {
   STAT_LABEL,
   STAT_TILE,
@@ -8,7 +8,9 @@ import { accuracyStat, soloRunCount } from '@/lib/profile';
 import { TYPE_NUMBER } from '@/styles/classes';
 import type { UserStats } from '@/types/profile';
 
-export function ProfileStats({ stats }: { stats: UserStats }) {
+type Props = { stats: UserStats };
+
+const ProfileStats = ({ stats }: Props) => {
   const headingId = useId();
   const tiles = [
     { label: 'Solo runs', value: String(soloRunCount(stats)) },
@@ -32,4 +34,6 @@ export function ProfileStats({ stats }: { stats: UserStats }) {
       </dl>
     </section>
   );
-}
+};
+
+export default ProfileStats;

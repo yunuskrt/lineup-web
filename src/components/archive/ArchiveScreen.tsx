@@ -1,8 +1,8 @@
 'use client';
 
+import React, { useEffect, useEffectEvent, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useEffectEvent, useState } from 'react';
-import { ArchiveView } from '@/components/archive/ArchiveView';
+import ArchiveView from '@/components/archive/ArchiveView';
 import { QuitDialog } from '@/components/game/QuitDialog';
 import { useArchive } from '@/hooks/use-archive';
 import { useFilterOptions } from '@/hooks/use-filter-options';
@@ -25,7 +25,9 @@ import { isStaleCursor } from '@/lib/profile';
 import type { Filters } from '@/types/filters';
 import type { MatchIdentity } from '@/types/match';
 
-export function ArchiveScreen() {
+type Props = {};
+
+const ArchiveScreen = ({}: Props) => {
   // Read once; the page keeps the URL in step after
   const searchParams = useSearchParams();
   const [params] = useState(() => new URLSearchParams(searchParams));
@@ -161,4 +163,6 @@ export function ArchiveScreen() {
       ) : null}
     </>
   );
-}
+};
+
+export default ArchiveScreen;

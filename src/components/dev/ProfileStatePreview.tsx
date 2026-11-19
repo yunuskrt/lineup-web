@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ProfileView } from '@/components/profile/ProfileView';
+import ProfileView from '@/components/profile/ProfileView';
 import { resolveProfileState } from '@/lib/dev/profile-states';
 
 type ProfileStatePreviewProps = {

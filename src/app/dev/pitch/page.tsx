@@ -1,5 +1,5 @@
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
-import { SquadGrid } from '@/components/pitch/SquadGrid';
+import SquadGrid from '@/components/pitch/SquadGrid';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 import { samplePlayer } from '@/lib/dev/samples';
 import { slotLayout } from '@/lib/formation';

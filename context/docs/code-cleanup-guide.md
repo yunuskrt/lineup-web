@@ -160,26 +160,26 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 - ⌨️ `Approve <numbers>.`
 - ⏸️ One spec per batch, in this order:
 
-| Batch | Folder | `.tsx` files |
+| Batch | Folder | Spec |
 | --- | --- | --- |
-| conventions-a | `components/shell`, `components/providers` | 9 |
-| conventions-b | `components/home` | 9 |
-| conventions-c | `components/auth` | 10 |
-| conventions-d | `components/profile` | 13 |
-| conventions-e | `components/archive`, `components/pro` | 10 |
-| conventions-f | `components/pitch` | 5 |
-| conventions-g1 | `components/play`: the filter family (FilterChipImage, FilterSkeleton, FilterPanel, FiltersStep) | 4 |
-| conventions-g2 | `components/play`: the rest | 10 |
-| conventions-h | `components/duel` | 1 (LobbyPanel, 15 parts) |
-| conventions-i1 | `components/game`: leaf display parts | 12 |
-| conventions-i2 | `components/game`: input, dialogs and results | 10 |
-| conventions-i3 | `components/game`: assembly (GameCanvas, LivesCard, SoloGame, DuelGame) | 4 |
-| conventions-j1 | `components/ui`: template only, no split | 16 |
-| conventions-j2 | `components/dev`: template only, no split | 15 |
-| conventions-k | `src/app` pages and layouts | — |
+| conventions-a | `components/shell`, `components/providers` | done |
+| conventions-b | `components/home` | done |
+| conventions-c | `components/auth`, `profile`, `archive`, `pro`, `pitch`, plus the React-import order in six earlier files | `conventions-c-auth-profile-archive-pitch.md` |
+| conventions-g | `components/play` | `conventions-g-play.md` |
+| conventions-h | `components/duel` (LobbyPanel, 14 parts) | `conventions-h-duel.md` |
+| conventions-i | `components/game` | `conventions-i-game.md` |
+| conventions-j | `components/ui`, `components/dev` (template only) and `src/app` pages and layouts | `conventions-j-ui-dev-app.md` |
+
+**Merged batches (user, 2026-11-19):** the thirteen planned batches after b became five (c+d+e+f, g1+g2, h, i1+i2+i3, j1+j2+k), since the work is mechanical and the automatic checks carry it.
 
 **3.3**
-- Run the **batch loop** for each spec, in order.
+- Run the **short loop** for each spec, in order:
+  1. ⌨️ `/feature load <spec>`
+  2. ⌨️ `/feature start`: Claude implements, then runs the review and test checks itself (B3, B4) and the script check that every moved body, constant and comment is verbatim, and reports once.
+  3. ⌨️ `Phase B5: …` (automatic, one combined run).
+  4. ⌨️ `/code-review medium` once. Repeats, design points and out-of-scope findings become follow-ups; it runs again only if a fix changed running code.
+  5. B8: your quick look.
+  6. ⌨️ `/feature complete`.
 - **The work is mechanical:**
   - move each component to its own file, unchanged;
   - convert it to the template;

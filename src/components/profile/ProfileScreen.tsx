@@ -1,11 +1,14 @@
 'use client';
 
-import { ProfileView } from '@/components/profile/ProfileView';
+import React from 'react';
+import ProfileView from '@/components/profile/ProfileView';
 import { useSession } from '@/hooks/use-auth';
 import { useHistory, useProfile } from '@/hooks/use-profile';
 import { isStaleCursor, profileScreenView } from '@/lib/profile';
 
-export function ProfileScreen() {
+type Props = {};
+
+const ProfileScreen = ({}: Props) => {
   const session = useSession();
   const profile = useProfile();
   const history = useHistory();
@@ -33,4 +36,6 @@ export function ProfileScreen() {
   }
 
   return <ProfileView view={view} onRetry={retry} onShowMore={showMore} />;
-}
+};
+
+export default ProfileScreen;

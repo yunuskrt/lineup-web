@@ -1,43 +1,24 @@
 'use client';
 
-import { type SubmitEvent, useId, useRef } from 'react';
-import { Archive, Search, SearchX, TriangleAlert } from 'lucide-react';
-import {
+import React, { type SubmitEvent, useId, useRef } from 'react';
+import { Archive, Search, TriangleAlert } from 'lucide-react';
+import ArchiveFilters, {
   type ArchiveFilterState,
-  ArchiveFilters,
 } from '@/components/archive/ArchiveFilters';
-import { ArchiveRow } from '@/components/archive/ArchiveRow';
-import { ArchiveSkeletonRows } from '@/components/archive/ArchiveSkeleton';
-import { ARCHIVE_LIST } from '@/components/archive/styles';
-import { HistoryMore } from '@/components/profile/HistoryMore';
-import { ProLock } from '@/components/pro/ProLock';
-import RetryNotice from '@/components/shell/RetryNotice';
+import Header from '@/components/archive/archive-view/Header';
+import Results from '@/components/archive/archive-view/Results';
+import ArchiveSkeletonRows from '@/components/archive/ArchiveSkeleton';
+import ProLock from '@/components/pro/ProLock';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Empty, EmptyHeader, EmptyMedia } from '@/components/ui/empty';
-import { useAppConfig } from '@/hooks/use-pro';
 import { ARCHIVE_SEARCH_MAX } from '@/lib/api/schemas/catalog';
-import { archiveTotalLine } from '@/lib/archive';
-import { showsPro } from '@/lib/pro';
 import { cn } from '@/lib/utils';
-import {
-  BOARD_SECTION,
-  SECONDARY_BUTTON,
-  TEXT_INPUT,
-  TYPE_TITLE,
-} from '@/styles/classes';
+import { BOARD_SECTION, TEXT_INPUT } from '@/styles/classes';
 import type { ArchiveView as ArchiveViewModel } from '@/types/archive';
 import type { Filters } from '@/types/filters';
 import type { MatchIdentity } from '@/types/match';
-import { SKELETON } from '@/components/ui/skeleton';
-import StateNotice from '@/components/shell/StateNotice';
 
-const LOCKED_LINE =
-  'Every match in the game, searchable. Pick one and play it.';
-
-const LINE = 'text-16 leading-6 text-fg-muted';
-
-type ArchiveViewProps = {
+export type ArchiveViewProps = {
   view: ArchiveViewModel;
   search: string;
   filterState: ArchiveFilterState | null;
@@ -56,115 +37,9 @@ type ArchiveViewProps = {
   playError?: string | null;
 };
 
-function Header({ view }: { view: ArchiveViewModel }) {
-  const isLocked = view.status === 'locked';
-  const config = useAppConfig();
+type Props = ArchiveViewProps;
 
-  return (
-    <header className={cn(BOARD_SECTION, 'gap-2')}>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h1 className={TYPE_TITLE}>Archive</h1>
-        {/* No word "Pro" while the split is off */}
-        {showsPro(config.data ?? null) ? (
-          <Badge variant="sticker" tone="brand">
-            Pro
-          </Badge>
-        ) : null}
-      </div>
-      {isLocked ? (
-        <p className={LINE}>{LOCKED_LINE}</p>
-      ) : view.total !== null ? (
-        <p aria-live="polite" className={LINE}>
-          {archiveTotalLine(view.total)}
-        </p>
-      ) : (
-        // The line's own height while the total loads
-        <div aria-hidden="true" className="flex h-6 items-center">
-          <span className={`h-4 w-full max-w-md ${SKELETON}`} />
-        </div>
-      )}
-    </header>
-  );
-}
-
-function Results({
-  view,
-  clearLabel,
-  onClear,
-  onRetry,
-  onShowMore,
-  onPlay,
-  starting,
-}: Pick<
-  ArchiveViewProps,
-  | 'view'
-  | 'clearLabel'
-  | 'onClear'
-  | 'onRetry'
-  | 'onShowMore'
-  | 'onPlay'
-  | 'starting'
->) {
-  const listRef = useRef<HTMLUListElement>(null);
-  switch (view.status) {
-    case 'loading':
-      return (
-        <>
-          <p role="status" className="sr-only">
-            Loading matches
-          </p>
-          <ArchiveSkeletonRows />
-        </>
-      );
-    case 'error':
-      return <RetryNotice message={view.errorMessage} onRetry={onRetry} />;
-    case 'empty':
-      return (
-        <StateNotice
-          tone="empty"
-          icon={SearchX}
-          message="No match fits. Try fewer words or a wider filter."
-        >
-          <button type="button" onClick={onClear} className={SECONDARY_BUTTON}>
-            {clearLabel}
-          </button>
-        </StateNotice>
-      );
-    case 'list':
-      return (
-        <div className="flex flex-col gap-6">
-          <ul
-            ref={listRef}
-            aria-label="Matches, newest first"
-            aria-busy={view.isRefreshing}
-            className={cn(ARCHIVE_LIST, view.isRefreshing && 'opacity-60')}
-          >
-            {view.entries.map((match) => (
-              <ArchiveRow
-                key={match.id}
-                match={match}
-                onPlay={onPlay}
-                starting={starting?.id === match.id ? starting.kind : null}
-                isDisabled={starting !== null && starting.id !== match.id}
-              />
-            ))}
-          </ul>
-          <HistoryMore
-            more={view.more}
-            count={view.entries.length}
-            onShowMore={onShowMore}
-            listRef={listRef}
-            noun="matches"
-          />
-        </div>
-      );
-    case 'pending':
-    case 'locked':
-      return null;
-  }
-}
-
-export function ArchiveView({
+const ArchiveView = ({
   view,
   search,
   filterState,
@@ -178,7 +53,7 @@ export function ArchiveView({
   onPlay,
   starting,
   playError = null,
-}: ArchiveViewProps) {
+}: Props) => {
   const searchId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -274,4 +149,6 @@ export function ArchiveView({
       </section>
     </div>
   );
-}
+};
+
+export default ArchiveView;

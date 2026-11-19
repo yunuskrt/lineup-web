@@ -10,7 +10,7 @@ import {
 } from '@/components/game/GuessInput';
 import { MatchHeader } from '@/components/game/MatchHeader';
 import WindowBar from '@/components/home/showcase-frame/WindowBar';
-import { SquadGrid } from '@/components/pitch/SquadGrid';
+import SquadGrid from '@/components/pitch/SquadGrid';
 import { Badge } from '@/components/ui/badge';
 import { LOADING_FORMATION } from '@/lib/formation';
 import type { Suggestion } from '@/lib/suggestions';

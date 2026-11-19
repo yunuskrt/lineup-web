@@ -1,3 +1,4 @@
+import React from 'react';
 import { SHIRT_PATH } from '@/components/game/shirt';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import type { Lives } from '@/types/game';
@@ -8,8 +9,10 @@ export function livesLeftLabel(lives: Lives): string {
   return `${lives} of ${MAX_LIVES} lives left`;
 }
 
+type Props = { lives: Lives };
+
 // Static: a past game's lives never change
-export function LivesLeft({ lives }: { lives: Lives }) {
+const LivesLeft = ({ lives }: Props) => {
   return (
     <span
       role="img"
@@ -36,4 +39,6 @@ export function LivesLeft({ lives }: { lives: Lives }) {
       ))}
     </span>
   );
-}
+};
+
+export default LivesLeft;

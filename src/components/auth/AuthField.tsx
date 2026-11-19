@@ -1,5 +1,5 @@
-import type { Ref } from 'react';
-import { AuthError } from '@/components/auth/AuthError';
+import React, { type Ref } from 'react';
+import AuthError from '@/components/auth/AuthError';
 import { TEXT_INPUT } from '@/styles/classes';
 import type { AuthField as AuthFieldName } from '@/types/auth';
 
@@ -11,7 +11,7 @@ export type AuthFieldConfig = {
   hint?: string;
 };
 
-type AuthFieldProps = {
+type Props = {
   field: AuthFieldConfig;
   formId: string;
   value: string;
@@ -21,7 +21,7 @@ type AuthFieldProps = {
   onChange: (value: string) => void;
 };
 
-export function AuthField({
+const AuthField = ({
   field,
   formId,
   value,
@@ -29,7 +29,7 @@ export function AuthField({
   isReadOnly,
   inputRef,
   onChange,
-}: AuthFieldProps) {
+}: Props) => {
   const inputId = `${formId}-${field.name}`;
   const hintId = field.hint ? `${inputId}-hint` : undefined;
   const errorId = error ? `${inputId}-error` : undefined;
@@ -61,4 +61,6 @@ export function AuthField({
       {error ? <AuthError id={errorId}>{error}</AuthError> : null}
     </div>
   );
-}
+};
+
+export default AuthField;

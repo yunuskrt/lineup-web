@@ -1,7 +1,8 @@
 'use client';
 
+import React from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthForm } from '@/components/auth/AuthForm';
+import AuthForm from '@/components/auth/AuthForm';
 import type { AuthFieldConfig } from '@/components/auth/AuthField';
 import { useSignUp } from '@/hooks/use-auth';
 import { signUpRequestSchema } from '@/lib/api/schemas/auth';
@@ -24,7 +25,9 @@ export const SIGN_UP_FIELDS: AuthFieldConfig[] = [
   },
 ];
 
-export function SignUpForm() {
+type Props = {};
+
+const SignUpForm = ({}: Props) => {
   const router = useRouter();
   const signUp = useSignUp();
 
@@ -48,4 +51,6 @@ export function SignUpForm() {
       onSubmit={handleSubmit}
     />
   );
-}
+};
+
+export default SignUpForm;

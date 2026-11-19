@@ -1,5 +1,6 @@
-import { GetProButton } from '@/components/pro/GetProButton';
-import { ProPlanTable } from '@/components/pro/ProPlanTable';
+import React from 'react';
+import GetProButton from '@/components/pro/GetProButton';
+import ProPlanTable from '@/components/pro/ProPlanTable';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BOARD, BOARD_SECTION, TYPE_TITLE } from '@/styles/classes';
@@ -7,7 +8,9 @@ import { BOARD, BOARD_SECTION, TYPE_TITLE } from '@/styles/classes';
 // Pending: the session isn't known yet
 export type ProPlan = 'pending' | 'free' | 'pro';
 
-export function ProView({ plan }: { plan: ProPlan }) {
+type Props = { plan: ProPlan };
+
+const ProView = ({ plan }: Props) => {
   return (
     <div className={BOARD}>
       <header className={cn(BOARD_SECTION, 'gap-2')}>
@@ -32,4 +35,6 @@ export function ProView({ plan }: { plan: ProPlan }) {
       </div>
     </div>
   );
-}
+};
+
+export default ProView;

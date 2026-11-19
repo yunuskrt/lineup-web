@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'motion/react';
 import React, { type ComponentType } from 'react';
+import { motion } from 'motion/react';
 import ArcMark from '@/components/home/rule-marks/ArcMark';
 import type { MarkProps } from '@/components/home/rule-marks/marks';
 import PipsMark from '@/components/home/rule-marks/PipsMark';

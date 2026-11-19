@@ -74,13 +74,14 @@ const ComponentName = ({}: Props) => {};
 ```
 
 - Keep the `Props` type even when the component currently has no props.
-- In a client component, `'use client'` stays the first line and `import React from 'react'` follows it.
-- **One component per file.** A component used only by its parent moves into a subfolder named after the parent in kebab-case: `duel/LobbyPanel.tsx` stays, and its parts go to `duel/lobby-panel/Searching.tsx`, `duel/lobby-panel/RoomWaiting.tsx`…
+- In a client component, `'use client'` stays the first line and `import React from 'react'` follows it. In every file `React` is the first import, and any other `react` names join it: `import React, { useState, type ReactNode } from 'react'`.
+- `'use client'` stays only on files that need it (hooks, events, browser APIs, `motion` components); a split part with plain markup only drops it.
+- **One component per file.** A component used only by its parent moves into a subfolder named after the parent in kebab-case: `duel/LobbyPanel.tsx` stays, and its parts go to `duel/lobby-panel/Searching.tsx`, `duel/lobby-panel/RoomWaiting.tsx`… A component other files also use stays top-level in the folder as its own file (`pro/ProLockButton.tsx`).
 - **Exempt:** `src/components/ui/` (copied kit parts such as `Card`, `CardHeader`), `src/components/dev/` and `src/app/dev/` may keep several components in one file. Each still follows the template (arrow const and a props type) but uses **named** exports, as a file can have only one default. A bare `Props` can't repeat in one file, so where a file holds several components each names its own `<Name>Props`; a single-component file uses `Props`.
 - Non-component exports (constants, types) stay named exports, beside the component's default export.
 - **Props types other files import** (`ResultActionsProps`, `NamedOrderProps`, `MarkProps`) stay exported under their name, and the file adds `type Props = <thatType>`.
 - **Union or generic props** keep a single `props` parameter instead of destructuring, as destructuring a union loses narrowing (`NamedOrder`, `SquadSlot`, `FilterPanel`, `ProfileNotice`). A generic component carries its parameter on the arrow: `const AuthForm = <S extends z.ZodType>(props: Props<S>) => …`.
-- **Split parts share class constants** through a sibling `styles.ts` in the parts' subfolder (`duel/lobby-panel/styles.ts`), never by importing them back from the parent. A file left with no component after a split moves its constants into that subfolder and is deleted.
+- **Split parts share class constants** through a sibling `styles.ts` in the parts' subfolder (`duel/lobby-panel/styles.ts`), never by importing them back from the parent. Shared values that aren't classes (a transition, a stage config) go to a sibling `shared.ts`, and a value only one file uses stays in that file. A file left with no component after a split moves its constants into that subfolder and is deleted.
 - **JSX comments:** single-line `{/* … */}` are fine inside markup; the 75-character limit still applies.
 - Replace `ComponentName` with the actual component name.
 - Use the component's actual CSS module only when custom CSS is required.

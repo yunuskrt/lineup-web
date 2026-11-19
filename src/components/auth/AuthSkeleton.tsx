@@ -1,24 +1,15 @@
+import React from 'react';
+import FieldSkeleton from '@/components/auth/auth-skeleton/FieldSkeleton';
 import { AUTH_FORM } from '@/components/auth/styles';
 import { BOARD_SECTION } from '@/styles/classes';
 import type { AuthMode } from '@/types/auth';
 import { SKELETON } from '@/components/ui/skeleton';
 
-type AuthSkeletonProps = {
+type Props = {
   mode: AuthMode;
 };
 
-// Heights mirror the real switch, fields and buttons
-function FieldSkeleton({ hasHint }: { hasHint: boolean }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className={`h-5.25 w-20 ${SKELETON}`} />
-      <div className={`h-11.5 w-full ${SKELETON}`} />
-      {hasHint ? <div className={`h-4.5 w-32 ${SKELETON}`} /> : null}
-    </div>
-  );
-}
-
-export function AuthSkeleton({ mode }: AuthSkeletonProps) {
+const AuthSkeleton = ({ mode }: Props) => {
   const isSignUp = mode === 'sign-up';
 
   return (
@@ -45,4 +36,6 @@ export function AuthSkeleton({ mode }: AuthSkeletonProps) {
       </div>
     </>
   );
-}
+};
+
+export default AuthSkeleton;

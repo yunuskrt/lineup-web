@@ -1,18 +1,19 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
-import { AuthError } from '@/components/auth/AuthError';
+import AuthError from '@/components/auth/AuthError';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useSignOut } from '@/hooks/use-auth';
 import { handleInitial } from '@/lib/profile';
 import { authErrorMessageOf } from '@/lib/auth';
 import { PRIMARY_BUTTON_LARGE, SECONDARY_BUTTON } from '@/styles/classes';
 
-type SignedInPanelProps = {
+type Props = {
   handle: string;
 };
 
-export function SignedInPanel({ handle }: SignedInPanelProps) {
+const SignedInPanel = ({ handle }: Props) => {
   const signOut = useSignOut();
 
   return (
@@ -47,4 +48,6 @@ export function SignedInPanel({ handle }: SignedInPanelProps) {
       </div>
     </div>
   );
-}
+};
+
+export default SignedInPanel;

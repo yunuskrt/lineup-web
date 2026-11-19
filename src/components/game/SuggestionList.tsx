@@ -1,6 +1,6 @@
 'use client';
 
-import { PlayerHeadshot } from '@/components/pitch/PlayerHeadshot';
+import PlayerHeadshot from '@/components/pitch/PlayerHeadshot';
 import { Badge } from '@/components/ui/badge';
 import type { Suggestion } from '@/lib/suggestions';
 

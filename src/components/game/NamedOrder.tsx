@@ -1,6 +1,6 @@
 import { CircleCheck } from 'lucide-react';
 import { useId } from 'react';
-import { PlayerHeadshot } from '@/components/pitch/PlayerHeadshot';
+import PlayerHeadshot from '@/components/pitch/PlayerHeadshot';
 import { findTimeLabel, namedOrder, namedTotalsLabel } from '@/lib/summary';
 import { DUEL_ACTOR_BG, DUEL_ACTOR_TEXT } from '@/styles/classes';
 import type { DuelNamedPlayer } from '@/types/duel';

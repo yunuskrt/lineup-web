@@ -1,89 +1,19 @@
+import React from 'react';
+import ModeTag from '@/components/profile/history-row/ModeTag';
+import Outcome from '@/components/profile/history-row/Outcome';
 import { HISTORY_ROW } from '@/components/profile/styles';
-import { LivesLeft, livesLeftLabel } from '@/components/profile/LivesLeft';
-import { Badge } from '@/components/ui/badge';
+import LivesLeft, { livesLeftLabel } from '@/components/profile/LivesLeft';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
-import { historyOutcomeLabel, historyTone, playedAtLabel } from '@/lib/profile';
+import { playedAtLabel } from '@/lib/profile';
 import { matchSubtitle, scoreline } from '@/lib/summary';
 import type { HistoryEntry } from '@/types/profile';
-import type { HistoryTone } from '@/types/profile-screen';
 
-const TONE_TEXT: Record<HistoryTone, string> = {
-  win: 'text-you-text',
-  loss: 'text-danger-text',
-  draw: 'text-fg',
-  clear: 'text-found-text',
-  neutral: 'text-fg-muted',
-};
-
-const MODE_LABELS: Record<HistoryEntry['mode'], string> = {
-  solo: 'Solo',
-  duel: 'Duel',
-};
-
-type ModeKind = 'solo' | 'duel' | 'friend';
-
-// Neither side's colour: a mode is not a side
-const MODE_TONES = {
-  solo: 'mint',
-  duel: 'purple',
-  friend: 'butter',
-} as const;
-
-function modeKind(entry: HistoryEntry): ModeKind {
-  if (entry.mode === 'solo') return 'solo';
-  return entry.isPrivate ? 'friend' : 'duel';
-}
-
-// A private room's duel; the column fits one word
-function ModeTag({ entry }: { entry: HistoryEntry }) {
-  const kind = modeKind(entry);
-  return (
-    <Badge
-      variant="sticker"
-      tone={MODE_TONES[kind]}
-      tilt="none"
-      // Narrow, so the phone row keeps its scoreline
-      className="px-1.5 font-stretch-normal sm:col-start-1 sm:row-start-1 sm:justify-self-start"
-    >
-      {kind === 'friend' ? (
-        <>
-          <span aria-hidden="true">Friend</span>
-          <span className="sr-only">Duel with a friend</span>
-        </>
-      ) : (
-        MODE_LABELS[entry.mode]
-      )}
-    </Badge>
-  );
-}
-
-function Outcome({ entry }: { entry: HistoryEntry }) {
-  const tone = historyTone(entry);
-
-  return (
-    <span
-      className={`flex shrink-0 items-center gap-1.5 text-14 leading-5 font-semibold whitespace-nowrap sm:col-start-2 sm:row-start-1 ${TONE_TEXT[tone]}`}
-    >
-      {tone === 'draw' ? (
-        <span
-          aria-hidden="true"
-          className="flex h-3 overflow-hidden rounded-sm"
-        >
-          <span className="w-1 bg-you" />
-          <span className="w-1 bg-opponent" />
-        </span>
-      ) : null}
-      {historyOutcomeLabel(entry)}
-    </span>
-  );
-}
-
-type HistoryRowProps = {
+type Props = {
   entry: HistoryEntry;
   today: Date | null;
 };
 
-export function HistoryRow({ entry, today }: HistoryRowProps) {
+const HistoryRow = ({ entry, today }: Props) => {
   const subtitle = matchSubtitle(entry.match);
 
   return (
@@ -119,4 +49,6 @@ export function HistoryRow({ entry, today }: HistoryRowProps) {
       </span>
     </li>
   );
-}
+};
+
+export default HistoryRow;

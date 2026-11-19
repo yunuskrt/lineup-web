@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SquadGrid } from '@/components/pitch/SquadGrid';
+import SquadGrid from '@/components/pitch/SquadGrid';
 import { SAMPLE_NAMES, samplePlayer } from '@/lib/dev/samples';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
 import type { DuelActor } from '@/types/duel';

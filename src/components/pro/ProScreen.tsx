@@ -1,13 +1,16 @@
 'use client';
 
+import React from 'react';
 import { notFound } from 'next/navigation';
-import { type ProPlan, ProView } from '@/components/pro/ProView';
+import ProView, { type ProPlan } from '@/components/pro/ProView';
 import { useSession } from '@/hooks/use-auth';
 import { useAppConfig } from '@/hooks/use-pro';
 import { authErrorMessageOf } from '@/lib/auth';
 import RetryNotice from '@/components/shell/RetryNotice';
 
-export function ProScreen() {
+type Props = {};
+
+const ProScreen = ({}: Props) => {
   const config = useAppConfig();
   const session = useSession();
 
@@ -34,4 +37,6 @@ export function ProScreen() {
       : 'free';
 
   return <ProView plan={plan} />;
-}
+};
+
+export default ProScreen;

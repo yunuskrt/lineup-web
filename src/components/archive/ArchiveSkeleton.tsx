@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'motion/react';
 import {
   ARCHIVE_LIST,
@@ -13,8 +14,10 @@ import { SKELETON } from '@/components/ui/skeleton';
 
 const ROWS = 8;
 
+type Props = {};
+
 // The rows' own grid: nothing shifts on arrival
-export function ArchiveSkeletonRows() {
+const ArchiveSkeletonRows = ({}: Props) => {
   const runs = useMotionPolicy();
   const isPulsing = runs('skeletonPulse');
 
@@ -50,4 +53,6 @@ export function ArchiveSkeletonRows() {
       ))}
     </motion.div>
   );
-}
+};
+
+export default ArchiveSkeletonRows;

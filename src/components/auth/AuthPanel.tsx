@@ -1,20 +1,21 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { AuthSkeleton } from '@/components/auth/AuthSkeleton';
-import { ContinueAsGuest } from '@/components/auth/ContinueAsGuest';
-import { ModeSwitch } from '@/components/auth/ModeSwitch';
-import { SignedInPanel } from '@/components/auth/SignedInPanel';
-import { SignInForm } from '@/components/auth/SignInForm';
-import { SignUpForm } from '@/components/auth/SignUpForm';
+import React from 'react';
+import Header from '@/components/auth/auth-panel/Header';
+import AuthSkeleton from '@/components/auth/AuthSkeleton';
+import ContinueAsGuest from '@/components/auth/ContinueAsGuest';
+import ModeSwitch from '@/components/auth/ModeSwitch';
+import SignedInPanel from '@/components/auth/SignedInPanel';
+import SignInForm from '@/components/auth/SignInForm';
+import SignUpForm from '@/components/auth/SignUpForm';
 import { AUTH_FORM } from '@/components/auth/styles';
 import { useSession } from '@/hooks/use-auth';
 import { authErrorMessageOf } from '@/lib/auth';
-import { BOARD_SECTION, TYPE_TITLE } from '@/styles/classes';
+import { BOARD_SECTION } from '@/styles/classes';
 import type { AuthMode } from '@/types/auth';
 import RetryNotice from '@/components/shell/RetryNotice';
 
-type AuthPanelProps = {
+type Props = {
   mode: AuthMode;
 };
 
@@ -24,16 +25,7 @@ const HEADINGS = {
   'signed-in': 'Signed in',
 } as const;
 
-function Header({ title, children }: { title: string; children?: ReactNode }) {
-  return (
-    <header className={BOARD_SECTION}>
-      <h1 className={TYPE_TITLE}>{title}</h1>
-      {children}
-    </header>
-  );
-}
-
-export function AuthPanel({ mode }: AuthPanelProps) {
+const AuthPanel = ({ mode }: Props) => {
   const session = useSession();
 
   // Forms wait for the session: sign-up reads it
@@ -98,4 +90,6 @@ export function AuthPanel({ mode }: AuthPanelProps) {
       )}
     </>
   );
-}
+};
+
+export default AuthPanel;

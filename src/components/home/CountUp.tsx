@@ -1,7 +1,7 @@
 'use client';
 
-import { animate, useInView } from 'motion/react';
 import React, { useEffect, useRef, useState } from 'react';
+import { animate, useInView } from 'motion/react';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { formatCount } from '@/lib/landing';
 import { MOTION_EASING, MOTION_SECONDS } from '@/styles/motion';

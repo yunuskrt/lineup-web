@@ -1,8 +1,8 @@
 'use client';
 
+import React, { useState } from 'react';
 import { motion, type Transition } from 'motion/react';
-import { useState } from 'react';
-import { SquadSlot } from '@/components/pitch/SquadSlot';
+import SquadSlot from '@/components/pitch/SquadSlot';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MOTION_SECONDS, REVEAL_SPRING } from '@/styles/motion';
@@ -30,19 +30,14 @@ const PULSE: Transition = {
   ease: 'easeInOut',
 };
 
-type RevealCardProps = {
+type Props = {
   player: FoundPlayer;
   position: PositionGroup;
   isNew: boolean;
   pulseKey?: number;
 };
 
-export function RevealCard({
-  player,
-  position,
-  isNew,
-  pulseKey,
-}: RevealCardProps) {
+const RevealCard = ({ player, position, isNew, pulseKey }: Props) => {
   const runs = useMotionPolicy();
   // Only the mounting render decides if it animates
   const [isRevealing] = useState(isNew);
@@ -100,4 +95,6 @@ export function RevealCard({
       />
     </motion.div>
   );
-}
+};
+
+export default RevealCard;

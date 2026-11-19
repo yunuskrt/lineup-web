@@ -6,7 +6,7 @@ import {
   GuessInput,
   type GuessInputStatus,
 } from '@/components/game/GuessInput';
-import { SquadGrid } from '@/components/pitch/SquadGrid';
+import SquadGrid from '@/components/pitch/SquadGrid';
 import { GUESS_OUTCOME_OPTIONS, samplePlayer } from '@/lib/dev/samples';
 import { guessFeedback } from '@/lib/feedback';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';

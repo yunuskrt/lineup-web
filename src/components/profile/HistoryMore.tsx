@@ -1,13 +1,13 @@
 'use client';
 
-import { type RefObject, useLayoutEffect, useRef } from 'react';
+import React, { type RefObject, useLayoutEffect, useRef } from 'react';
 import { TriangleAlert } from 'lucide-react';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { HistoryMoreState } from '@/types/profile-screen';
 import StateNotice from '@/components/shell/StateNotice';
 
-type HistoryMoreProps = {
+type Props = {
   more: HistoryMoreState;
   count: number;
   onShowMore: () => void;
@@ -28,13 +28,13 @@ function focusRow(row: Element | undefined) {
   (control ?? row).focus();
 }
 
-export function HistoryMore({
+const HistoryMore = ({
   more,
   count,
   onShowMore,
   listRef,
   noun = 'games',
-}: HistoryMoreProps) {
+}: Props) => {
   const hasAppended = useChangedSinceMount(count);
   const isLoading = more === 'loading';
   // The row count when Show more was pressed
@@ -86,4 +86,6 @@ export function HistoryMore({
       ) : null}
     </div>
   );
-}
+};
+
+export default HistoryMore;

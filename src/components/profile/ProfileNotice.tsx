@@ -1,14 +1,15 @@
+import React from 'react';
 import Link from 'next/link';
 import { UserRound } from 'lucide-react';
 import { PRIMARY_BUTTON_LARGE, SECONDARY_BUTTON_LARGE } from '@/styles/classes';
 import RetryNotice from '@/components/shell/RetryNotice';
 import StateNotice from '@/components/shell/StateNotice';
 
-type ProfileNoticeProps =
+type Props =
   | { kind: 'signedOut' }
   | { kind: 'error'; message: string; onRetry: () => void };
 
-export function ProfileNotice(props: ProfileNoticeProps) {
+const ProfileNotice = (props: Props) => {
   if (props.kind === 'error') {
     return (
       <RetryNotice
@@ -36,4 +37,6 @@ export function ProfileNotice(props: ProfileNoticeProps) {
       </Link>
     </StateNotice>
   );
-}
+};
+
+export default ProfileNotice;

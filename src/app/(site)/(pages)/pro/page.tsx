@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ProScreen } from '@/components/pro/ProScreen';
+import ProScreen from '@/components/pro/ProScreen';
 import { isProSwitchOff } from '@/lib/api/pro-switch';
 import { SITE_CONTAINER } from '@/styles/classes';
 

@@ -1,6 +1,6 @@
 import { Check, Dumbbell, type LucideIcon, Swords, User } from 'lucide-react';
 import { useId } from 'react';
-import { ProLockCaption } from '@/components/pro/ProLock';
+import ProLockCaption from '@/components/pro/ProLockCaption';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import {

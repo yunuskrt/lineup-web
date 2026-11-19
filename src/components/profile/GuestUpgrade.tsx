@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import { UserRound } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -5,7 +6,9 @@ import { PRIMARY_BUTTON } from '@/styles/classes';
 
 const GUEST_UPGRADE_HREF = '/sign-in?mode=sign-up';
 
-export function GuestUpgrade() {
+type Props = {};
+
+const GuestUpgrade = ({}: Props) => {
   return (
     <Alert tone="neutral">
       <UserRound aria-hidden="true" />
@@ -23,4 +26,6 @@ export function GuestUpgrade() {
       </AlertDescription>
     </Alert>
   );
-}
+};
+
+export default GuestUpgrade;

@@ -1,21 +1,22 @@
-import { DuelRecord } from '@/components/profile/DuelRecord';
-import { GuestUpgrade } from '@/components/profile/GuestUpgrade';
-import { HistoryList } from '@/components/profile/HistoryList';
-import { ProfileHeader } from '@/components/profile/ProfileHeader';
-import { ProfileNotice } from '@/components/profile/ProfileNotice';
-import { ProfileSkeleton } from '@/components/profile/ProfileSkeleton';
-import { ProfileStats } from '@/components/profile/ProfileStats';
+import React from 'react';
+import DuelRecord from '@/components/profile/DuelRecord';
+import GuestUpgrade from '@/components/profile/GuestUpgrade';
+import HistoryList from '@/components/profile/HistoryList';
+import ProfileHeader from '@/components/profile/ProfileHeader';
+import ProfileNotice from '@/components/profile/ProfileNotice';
+import ProfileSkeleton from '@/components/profile/ProfileSkeleton';
+import ProfileStats from '@/components/profile/ProfileStats';
 import { PROFILE_FIGURES } from '@/components/profile/styles';
 import { BOARD, BOARD_SECTION } from '@/styles/classes';
 import type { ProfileScreenView } from '@/types/profile-screen';
 
-type ProfileViewProps = {
+type Props = {
   view: ProfileScreenView;
   onRetry: () => void;
   onShowMore: () => void;
 };
 
-export function ProfileView({ view, onRetry, onShowMore }: ProfileViewProps) {
+const ProfileView = ({ view, onRetry, onShowMore }: Props) => {
   switch (view.status) {
     case 'loading':
       return <ProfileSkeleton isGuest={view.isGuest} />;
@@ -48,4 +49,6 @@ export function ProfileView({ view, onRetry, onShowMore }: ProfileViewProps) {
       );
     }
   }
-}
+};
+
+export default ProfileView;

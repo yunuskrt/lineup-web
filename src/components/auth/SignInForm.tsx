@@ -1,7 +1,8 @@
 'use client';
 
+import React from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthForm } from '@/components/auth/AuthForm';
+import AuthForm from '@/components/auth/AuthForm';
 import type { AuthFieldConfig } from '@/components/auth/AuthField';
 import { useSignIn } from '@/hooks/use-auth';
 import { signInRequestSchema } from '@/lib/api/schemas/auth';
@@ -17,7 +18,9 @@ export const SIGN_IN_FIELDS: AuthFieldConfig[] = [
   },
 ];
 
-export function SignInForm() {
+type Props = {};
+
+const SignInForm = ({}: Props) => {
   const router = useRouter();
   const signIn = useSignIn();
 
@@ -41,4 +44,6 @@ export function SignInForm() {
       onSubmit={handleSubmit}
     />
   );
-}
+};
+
+export default SignInForm;

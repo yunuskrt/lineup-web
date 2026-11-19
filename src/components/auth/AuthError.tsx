@@ -1,14 +1,14 @@
+import React, { type ReactNode } from 'react';
 import { CircleAlert } from 'lucide-react';
-import type { ReactNode } from 'react';
 
-type AuthErrorProps = {
+type Props = {
   id?: string;
   role?: 'alert';
   children: ReactNode;
 };
 
 // The icon says it too, not the colour alone
-export function AuthError({ id, role, children }: AuthErrorProps) {
+const AuthError = ({ id, role, children }: Props) => {
   return (
     <p
       id={id}
@@ -22,4 +22,6 @@ export function AuthError({ id, role, children }: AuthErrorProps) {
       <span>{children}</span>
     </p>
   );
-}
+};
+
+export default AuthError;

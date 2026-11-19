@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import React, { useId, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 import { FilterPanel } from '@/components/play/FilterPanel';
 import { FilterSkeleton } from '@/components/play/FilterSkeleton';
@@ -15,14 +15,14 @@ export type ArchiveFilterState = {
   filters: Filters;
 };
 
-type ArchiveFiltersProps = {
+type Props = {
   // Null while the options load
   state: ArchiveFilterState | null;
   onChange: (filters: Filters) => void;
 };
 
 // Folded: on an index, the list is the page
-export function ArchiveFilters({ state, onChange }: ArchiveFiltersProps) {
+const ArchiveFilters = ({ state, onChange }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const panelId = useId();
   const active = state
@@ -71,4 +71,6 @@ export function ArchiveFilters({ state, onChange }: ArchiveFiltersProps) {
       </div>
     </div>
   );
-}
+};
+
+export default ArchiveFilters;

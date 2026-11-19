@@ -1,9 +1,8 @@
-import type { ReactNode } from 'react';
-import {
+import React, { type ReactNode } from 'react';
+import PlayerHeadshot, {
   HEADSHOT_SIZE,
-  PlayerHeadshot,
 } from '@/components/pitch/PlayerHeadshot';
-import { PERSON_PATH } from '@/components/pitch/person';
+import EmptyDisc from '@/components/pitch/squad-slot/EmptyDisc';
 import { SKELETON } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { DUEL_ACTOR_BG } from '@/styles/classes';
@@ -39,7 +38,7 @@ const NAME = 'line-clamp-2 break-words hyphens-auto';
 
 const POSITION_PILL = `${LABEL} rounded-full px-1.5 font-semibold uppercase`;
 
-type SquadSlotProps = {
+type Props = {
   position: PositionGroup;
 } & (
   | { state: 'loading' }
@@ -56,20 +55,7 @@ type SquadSlotProps = {
     }
 );
 
-function EmptyDisc() {
-  return (
-    <span
-      aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-full border-2 border-line bg-surface-card ${HEADSHOT_SIZE}`}
-    >
-      <svg viewBox="0 0 24 24" focusable="false" className="size-3/5">
-        <path d={PERSON_PATH} className="fill-fg-muted" />
-      </svg>
-    </span>
-  );
-}
-
-export function SquadSlot(props: SquadSlotProps) {
+const SquadSlot = (props: Props) => {
   const { position } = props;
   const positionName = POSITION_NAMES[position];
 
@@ -142,4 +128,6 @@ export function SquadSlot(props: SquadSlotProps) {
       </span>
     </div>
   );
-}
+};
+
+export default SquadSlot;
