@@ -1,9 +1,9 @@
 'use client';
 
 import { type ReactNode, useId, useState } from 'react';
-import { PlayStart } from '@/components/play/PlayStart';
-import { ModeChoice } from '@/components/play/ModeChoice';
-import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
+import PlayStart from '@/components/play/PlayStart';
+import ModeChoice from '@/components/play/ModeChoice';
+import SoloAllowanceNote from '@/components/play/SoloAllowanceNote';
 import ProLock, { type ProLockSize } from '@/components/pro/ProLock';
 import ProView, { type ProPlan } from '@/components/pro/ProView';
 import { sampleAllowance } from '@/lib/dev/samples';

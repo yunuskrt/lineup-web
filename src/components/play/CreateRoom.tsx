@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import React, { useId } from 'react';
 import ProLockCaption from '@/components/pro/ProLockCaption';
 import ProLockButton from '@/components/pro/ProLockButton';
 import { useProAccess } from '@/hooks/use-pro';
@@ -14,12 +14,12 @@ import {
   SECTION_LABEL,
 } from '@/styles/classes';
 
-type CreateRoomProps = {
+type Props = {
   // Null while the filters load
   filterParams: URLSearchParams | null;
 };
 
-export function CreateRoom({ filterParams }: CreateRoomProps) {
+const CreateRoom = ({ filterParams }: Props) => {
   const { go, isBusy, error } = useStartNavigation();
   // Hosting is Pro (R10); joining is for anyone
   const hostAccess = useProAccess();
@@ -62,4 +62,6 @@ export function CreateRoom({ filterParams }: CreateRoomProps) {
       </div>
     </section>
   );
-}
+};
+
+export default CreateRoom;

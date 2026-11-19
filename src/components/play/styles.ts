@@ -20,3 +20,10 @@ export const STEP_BACK = cn(SECONDARY_BUTTON_LARGE, 'px-4 sm:px-5');
 export const STEP_NEXT = cn(PRIMARY_BUTTON_LARGE, 'max-sm:px-6');
 
 export const STEP_EDIT = `shrink-0 text-14 ${TEXT_LINK}`;
+
+export const FILTER_ROW =
+  'grid gap-3 border-t border-rule py-5 last:pb-0 md:grid-cols-[8rem_1fr] md:gap-6';
+
+export const FILTER_LABEL = 'text-14 font-medium md:py-1.5';
+
+export const FILTER_NOTE = 'text-14 text-fg-muted';

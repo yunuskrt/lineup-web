@@ -1,6 +1,6 @@
-import type { RefObject } from 'react';
-import { FilterPanel } from '@/components/play/FilterPanel';
-import { FilterSkeleton } from '@/components/play/FilterSkeleton';
+import React, { type RefObject } from 'react';
+import FilterPanel from '@/components/play/FilterPanel';
+import FilterSkeleton from '@/components/play/FilterSkeleton';
 import {
   STEP_ACTIONS,
   STEP_NEXT,
@@ -14,7 +14,7 @@ import { BOARD_SECTION } from '@/styles/classes';
 import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
 
-type FiltersStepProps = {
+type Props = {
   headingRef: RefObject<HTMLHeadingElement | null>;
   filters: Filters | null;
   options: FilterOptions | null;
@@ -25,7 +25,7 @@ type FiltersStepProps = {
   onNext: () => void;
 };
 
-export function FiltersStep({
+const FiltersStep = ({
   headingRef,
   filters,
   options,
@@ -34,7 +34,7 @@ export function FiltersStep({
   onRetry,
   onBack,
   onNext,
-}: FiltersStepProps) {
+}: Props) => {
   return (
     <>
       <section aria-labelledby="play-step-filters" className={BOARD_SECTION}>
@@ -82,4 +82,6 @@ export function FiltersStep({
       </div>
     </>
   );
-}
+};
+
+export default FiltersStep;

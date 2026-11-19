@@ -75,7 +75,7 @@ const ComponentName = ({}: Props) => {};
 
 - Keep the `Props` type even when the component currently has no props.
 - In a client component, `'use client'` stays the first line and `import React from 'react'` follows it. In every file `React` is the first import, and any other `react` names join it: `import React, { useState, type ReactNode } from 'react'`.
-- `'use client'` stays only on files that need it (hooks, events, browser APIs, `motion` components); a split part with plain markup only drops it.
+- `'use client'` stays only on files that need it (hooks, events, browser APIs, `motion` components); a split part with plain markup only drops it. It marks a client boundary, so a file that only client components import needs none, and a split part never gains a directive its parent didn't have (`FilterPanel`, `ModeChoice`).
 - **One component per file.** A component used only by its parent moves into a subfolder named after the parent in kebab-case: `duel/LobbyPanel.tsx` stays, and its parts go to `duel/lobby-panel/Searching.tsx`, `duel/lobby-panel/RoomWaiting.tsx`… A component other files also use stays top-level in the folder as its own file (`pro/ProLockButton.tsx`).
 - **Exempt:** `src/components/ui/` (copied kit parts such as `Card`, `CardHeader`), `src/components/dev/` and `src/app/dev/` may keep several components in one file. Each still follows the template (arrow const and a props type) but uses **named** exports, as a file can have only one default. A bare `Props` can't repeat in one file, so where a file holds several components each names its own `<Name>Props`; a single-component file uses `Props`.
 - Non-component exports (constants, types) stay named exports, beside the component's default export.

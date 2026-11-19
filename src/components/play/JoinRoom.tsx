@@ -1,6 +1,6 @@
 'use client';
 
-import { type SubmitEvent, useId, useState } from 'react';
+import React, { type SubmitEvent, useId, useState } from 'react';
 import {
   InputOTP,
   InputOTPGroup,
@@ -24,7 +24,7 @@ import {
   TYPE_ROOM_CODE,
 } from '@/styles/classes';
 
-type JoinRoomProps = {
+type Props = {
   // The URL's filters, if any; the creator's apply
   filterParams: URLSearchParams | null;
   initialCode: string;
@@ -35,7 +35,7 @@ const CODE_SLOTS = Array.from(
   (_, index) => index,
 );
 
-export function JoinRoom({ filterParams, initialCode }: JoinRoomProps) {
+const JoinRoom = ({ filterParams, initialCode }: Props) => {
   const { go, isBusy, error } = useStartNavigation();
   const [code, setCode] = useState(() => roomCodeInput(initialCode));
   const headingId = useId();
@@ -107,4 +107,6 @@ export function JoinRoom({ filterParams, initialCode }: JoinRoomProps) {
       </p>
     </section>
   );
-}
+};
+
+export default JoinRoom;

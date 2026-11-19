@@ -1,10 +1,7 @@
-import type { ReactNode } from 'react';
-import {
-  CLUB_HINT,
-  FILTER_LABEL,
-  FILTER_NOTE,
-  FILTER_ROW,
-} from '@/components/play/FilterPanel';
+import React from 'react';
+import { FILTER_NOTE } from '@/components/play/styles';
+import { CLUB_HINT } from '@/components/play/shared';
+import SkeletonRow from '@/components/play/filter-skeleton/SkeletonRow';
 import { SKELETON } from '@/components/ui/skeleton';
 
 const CHIP = `h-8.75 ${SKELETON}`;
@@ -20,25 +17,10 @@ const ANY_CLUB = 'w-[84.6px]';
 // From and to, then a season select each
 const SEASON_LABELS = ['w-[33.6px]', 'w-[12.8px]'];
 
-function SkeletonRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className={FILTER_ROW}>
-      <div className={FILTER_LABEL}>
-        <div className={`h-5.25 ${label} ${SKELETON}`} />
-      </div>
-      {children}
-    </div>
-  );
-}
+type Props = {};
 
 // Default view: no competition, no club chips
-export function FilterSkeleton() {
+const FilterSkeleton = ({}: Props) => {
   return (
     <div aria-hidden="true">
       <SkeletonRow label="w-24">
@@ -86,4 +68,6 @@ export function FilterSkeleton() {
       </SkeletonRow>
     </div>
   );
-}
+};
+
+export default FilterSkeleton;

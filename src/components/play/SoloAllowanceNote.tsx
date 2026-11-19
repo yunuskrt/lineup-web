@@ -1,8 +1,9 @@
+import React from 'react';
 import Link from 'next/link';
 import { PRO_PATH } from '@/lib/pro';
 import { SECONDARY_BUTTON, TEXT_LINK } from '@/styles/classes';
 
-type SoloAllowanceNoteProps = {
+type Props = {
   id: string;
   // The server's count, as allowanceLine words it
   line: string;
@@ -11,12 +12,7 @@ type SoloAllowanceNoteProps = {
 };
 
 // At 0 it never dead-ends: a duel, or Pro
-export function SoloAllowanceNote({
-  id,
-  line,
-  isCapped,
-  onPlayDuel,
-}: SoloAllowanceNoteProps) {
+const SoloAllowanceNote = ({ id, line, isCapped, onPlayDuel }: Props) => {
   return (
     <div className="flex flex-col items-start gap-3">
       <p id={id} className="text-14 text-pretty text-fg-muted">
@@ -38,4 +34,6 @@ export function SoloAllowanceNote({
       ) : null}
     </div>
   );
-}
+};
+
+export default SoloAllowanceNote;

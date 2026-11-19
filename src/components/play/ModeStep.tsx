@@ -1,6 +1,6 @@
-import type { ReactNode, RefObject } from 'react';
-import { JoinRoom } from '@/components/play/JoinRoom';
-import { ModeChoice } from '@/components/play/ModeChoice';
+import React, { type ReactNode, type RefObject } from 'react';
+import JoinRoom from '@/components/play/JoinRoom';
+import ModeChoice from '@/components/play/ModeChoice';
 import {
   STEP_ACTIONS,
   STEP_HEADING,
@@ -10,7 +10,7 @@ import { BOARD_SECTION } from '@/styles/classes';
 import type { ModeOption } from '@/types/play';
 import type { ProAccess } from '@/types/pro';
 
-type ModeStepProps = {
+type Props = {
   headingRef: RefObject<HTMLHeadingElement | null>;
   option: ModeOption | null;
   onChange: (option: ModeOption) => void;
@@ -23,7 +23,7 @@ type ModeStepProps = {
   nextRef: RefObject<HTMLButtonElement | null>;
 };
 
-export function ModeStep({
+const ModeStep = ({
   headingRef,
   option,
   onChange,
@@ -33,7 +33,7 @@ export function ModeStep({
   initialCode,
   onNext,
   nextRef,
-}: ModeStepProps) {
+}: Props) => {
   return (
     <>
       <section aria-labelledby="play-step-mode" className={BOARD_SECTION}>
@@ -72,4 +72,6 @@ export function ModeStep({
       </div>
     </>
   );
-}
+};
+
+export default ModeStep;

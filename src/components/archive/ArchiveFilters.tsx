@@ -2,8 +2,8 @@
 
 import React, { useId, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
-import { FilterPanel } from '@/components/play/FilterPanel';
-import { FilterSkeleton } from '@/components/play/FilterSkeleton';
+import FilterPanel from '@/components/play/FilterPanel';
+import FilterSkeleton from '@/components/play/FilterSkeleton';
 import { Badge } from '@/components/ui/badge';
 import { activeFilterCount, activeFiltersLabel } from '@/lib/archive';
 import { SECONDARY_BUTTON } from '@/styles/classes';

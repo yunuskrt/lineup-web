@@ -1,3 +1,4 @@
+import React from 'react';
 import { Check } from 'lucide-react';
 import {
   isStepFilled,
@@ -10,7 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 import { FOCUS_RING } from '@/styles/classes';
 
-type PlayStepsProps = {
+type Props = {
   current: PlayStep;
   progress: StepProgress;
   // What each filled step holds, shown from sm
@@ -21,12 +22,7 @@ type PlayStepsProps = {
 const DISC =
   'flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-line font-display text-14 font-extrabold tabular-nums sm:size-8';
 
-export function PlaySteps({
-  current,
-  progress,
-  choices,
-  onGo,
-}: PlayStepsProps) {
+const PlaySteps = ({ current, progress, choices, onGo }: Props) => {
   return (
     <nav aria-label="Play steps">
       <ol className="flex items-center gap-1.5 sm:gap-3">
@@ -86,4 +82,6 @@ export function PlaySteps({
       </ol>
     </nav>
   );
-}
+};
+
+export default PlaySteps;

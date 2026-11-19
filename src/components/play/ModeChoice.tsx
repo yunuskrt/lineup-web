@@ -1,20 +1,17 @@
-import { Check, Dumbbell, type LucideIcon, Swords, User } from 'lucide-react';
-import { useId } from 'react';
-import ProLockCaption from '@/components/pro/ProLockCaption';
+import React, { useId } from 'react';
+import { Check, Dumbbell, Swords, User } from 'lucide-react';
+import CardIcon from '@/components/play/mode-choice/CardIcon';
+import LockedCard from '@/components/play/mode-choice/LockedCard';
+import PlayerBars from '@/components/play/mode-choice/PlayerBars';
+import type { ModeCard } from '@/components/play/mode-choice/shared';
+import { CARD, LAST_CARD } from '@/components/play/mode-choice/styles';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import {
-  ACTOR_BAR,
-  DUEL_ACTOR_BG,
-  ICON_TILE,
-  SECTION_LABEL,
-  TYPE_TITLE,
-} from '@/styles/classes';
-import type { DuelActor } from '@/types/duel';
+import { SECTION_LABEL, TYPE_TITLE } from '@/styles/classes';
 import type { ModeOption } from '@/types/play';
 import type { ProAccess } from '@/types/pro';
 
-type ModeChoiceProps = {
+type Props = {
   // Null: nothing picked yet
   option: ModeOption | null;
   onChange: (option: ModeOption) => void;
@@ -22,14 +19,6 @@ type ModeChoiceProps = {
   practiceAccess: ProAccess;
   // A step heading already names the group
   isLegendHidden?: boolean;
-};
-
-type ModeCard = {
-  option: ModeOption;
-  title: string;
-  text: string;
-  icon: LucideIcon;
-  players: DuelActor[];
 };
 
 const MODES: ModeCard[] = [
@@ -56,78 +45,15 @@ const MODES: ModeCard[] = [
   },
 ];
 
-const PRACTICE_CAPTION =
-  'Practice is part of Pro: no clock, no lives, not saved.';
-
-const CARD =
-  'group flex flex-col gap-4 rounded-md border-2 border-line bg-surface-card p-5 sm:p-6';
-
-// Full width under Solo and Duel until lg
-const LAST_CARD = 'sm:col-span-2 lg:col-span-1';
-
 const PICKABLE =
   'cursor-pointer text-fg hover:bg-surface has-checked:bg-brand has-checked:text-on-accent has-checked:shadow-hard has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus';
 
-function CardIcon({ icon: Icon }: { icon: LucideIcon }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`size-12 bg-surface-raised ${ICON_TILE}`}
-    >
-      <Icon className="size-6" strokeWidth={2.25} />
-    </span>
-  );
-}
-
-function PlayerBars({ players }: { players: DuelActor[] }) {
-  return (
-    <span aria-hidden="true" className="mt-auto flex gap-1.5">
-      {players.map((player) => (
-        <span
-          key={player}
-          className={`${ACTOR_BAR} ${DUEL_ACTOR_BG[player]}`}
-        />
-      ))}
-    </span>
-  );
-}
-
-type LockedCardProps = { card: ModeCard; name: string; isPending: boolean };
-
-// Inert: a disabled radio, so arrows skip it
-function LockedCard({ card, name, isPending }: LockedCardProps) {
-  const titleId = useId();
-  const captionId = useId();
-
-  return (
-    <div className={cn(CARD, LAST_CARD, 'cursor-not-allowed text-fg-muted')}>
-      <input
-        type="radio"
-        name={name}
-        value={card.option}
-        disabled
-        aria-labelledby={titleId}
-        aria-describedby={isPending ? undefined : captionId}
-        className="sr-only"
-      />
-      <CardIcon icon={card.icon} />
-      <span id={titleId} className={TYPE_TITLE}>
-        {card.title}
-      </span>
-      {isPending ? null : (
-        <ProLockCaption id={captionId} caption={PRACTICE_CAPTION} />
-      )}
-      <PlayerBars players={card.players} />
-    </div>
-  );
-}
-
-export function ModeChoice({
+const ModeChoice = ({
   option,
   onChange,
   practiceAccess,
   isLegendHidden = false,
-}: ModeChoiceProps) {
+}: Props) => {
   // One group per instance, as the dev preview has three
   const name = useId();
 
@@ -192,4 +118,6 @@ export function ModeChoice({
       </div>
     </fieldset>
   );
-}
+};
+
+export default ModeChoice;

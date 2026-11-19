@@ -1,21 +1,18 @@
 'use client';
 
+import React, { type ReactNode } from 'react';
 import Image from 'next/image';
-import type { ReactNode } from 'react';
-import { CompetitionLogo } from '@/components/game/CompetitionLogo';
-import { SHIELD_PATH } from '@/components/play/filter-icons';
 import { useImageFallback } from '@/hooks/use-image-fallback';
-import type { ClubRef, CompetitionRef } from '@/types/match';
 
 // Box is 20px; 40 covers 2x screens
 const IMAGE_PX = 40;
 
-type FilterChipImageProps = {
+type Props = {
   src: string | null;
   fallback: ReactNode;
 };
 
-export function FilterChipImage({ src, fallback }: FilterChipImageProps) {
+const FilterChipImage = ({ src, fallback }: Props) => {
   const { showsImage, onError } = useImageFallback(src);
 
   return (
@@ -35,29 +32,6 @@ export function FilterChipImage({ src, fallback }: FilterChipImageProps) {
       )}
     </span>
   );
-}
+};
 
-export function ClubChipImage({ club }: { club: ClubRef }) {
-  return (
-    <FilterChipImage
-      src={club.crestUrl}
-      fallback={
-        // Lifts to muted on a pressed chip for contrast
-        <svg
-          viewBox="0 0 24 24"
-          className="size-full fill-current text-fg-dim group-aria-pressed:text-fg-muted"
-        >
-          <path d={SHIELD_PATH} />
-        </svg>
-      }
-    />
-  );
-}
-
-export function CompetitionChipImage({
-  competition,
-}: {
-  competition: CompetitionRef;
-}) {
-  return <CompetitionLogo competition={competition} className="size-5" />;
-}
+export default FilterChipImage;

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
-import { PlayScreen } from '@/components/play/PlayScreen';
+import PlayScreen from '@/components/play/PlayScreen';
 import { SITE_CONTAINER } from '@/styles/classes';
 
 export const metadata: Metadata = {

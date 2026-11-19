@@ -1,13 +1,13 @@
 'use client';
 
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useId, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { FiltersStep } from '@/components/play/FiltersStep';
-import { ModeStep } from '@/components/play/ModeStep';
-import { PlaySteps } from '@/components/play/PlaySteps';
-import { SoloAllowanceNote } from '@/components/play/SoloAllowanceNote';
-import { StartStep } from '@/components/play/StartStep';
+import FiltersStep from '@/components/play/FiltersStep';
+import ModeStep from '@/components/play/ModeStep';
+import PlaySteps from '@/components/play/PlaySteps';
+import SoloAllowanceNote from '@/components/play/SoloAllowanceNote';
+import StartStep from '@/components/play/StartStep';
 import { useFilterOptions } from '@/hooks/use-filter-options';
 import { useProAccess } from '@/hooks/use-pro';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
@@ -38,7 +38,9 @@ import { BOARD, BOARD_SECTION } from '@/styles/classes';
 import type { Filters } from '@/types/filters';
 import type { ModeOption } from '@/types/play';
 
-export function PlayScreen() {
+type Props = {};
+
+const PlayScreen = ({}: Props) => {
   // Live, for the step; Back and Forward change it
   const searchParams = useSearchParams();
   // A snapshot: the state holds the rest
@@ -202,4 +204,6 @@ export function PlayScreen() {
       ) : null}
     </div>
   );
-}
+};
+
+export default PlayScreen;

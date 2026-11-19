@@ -1,8 +1,8 @@
+import React, { type ReactNode, type RefObject } from 'react';
 import Link from 'next/link';
-import type { ReactNode, RefObject } from 'react';
-import { CreateRoom } from '@/components/play/CreateRoom';
-import { PlayStart } from '@/components/play/PlayStart';
-import { PlaySummary } from '@/components/play/PlaySummary';
+import CreateRoom from '@/components/play/CreateRoom';
+import PlayStart from '@/components/play/PlayStart';
+import PlaySummary from '@/components/play/PlaySummary';
 import { STEP_BACK, STEP_HEADING } from '@/components/play/styles';
 import type { QuitDialogCopy } from '@/components/game/QuitDialog';
 import { ARCHIVE_PATH } from '@/lib/archive';
@@ -12,7 +12,7 @@ import type { FilterOptions } from '@/types/catalog';
 import type { Filters } from '@/types/filters';
 import type { ModeOption, PlayMode } from '@/types/play';
 
-type StartStepProps = {
+type Props = {
   headingRef: RefObject<HTMLHeadingElement | null>;
   startRef: RefObject<HTMLButtonElement | null>;
   option: ModeOption;
@@ -30,7 +30,7 @@ type StartStepProps = {
   onGo: (step: PlayStep) => void;
 };
 
-export function StartStep({
+const StartStep = ({
   headingRef,
   startRef,
   option,
@@ -45,7 +45,7 @@ export function StartStep({
   warningFor,
   allowance,
   onGo,
-}: StartStepProps) {
+}: Props) => {
   return (
     <>
       <section aria-labelledby="play-step-start" className={BOARD_SECTION}>
@@ -97,4 +97,6 @@ export function StartStep({
       {mode === 'duel' ? <CreateRoom filterParams={filterParams} /> : null}
     </>
   );
-}
+};
+
+export default StartStep;

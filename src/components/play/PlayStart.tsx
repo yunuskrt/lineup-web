@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, type RefObject, useRef, useState } from 'react';
+import React, { type ReactNode, type RefObject, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { QuitDialog, type QuitDialogCopy } from '@/components/game/QuitDialog';
 import StartError from '@/components/play/StartError';
@@ -8,7 +8,7 @@ import { STEP_ACTIONS, STEP_NEXT } from '@/components/play/styles';
 import { useStartNavigation } from '@/hooks/use-start-navigation';
 import type { PlayMode } from '@/types/play';
 
-type PlayStartProps = {
+type Props = {
   mode: PlayMode;
   href: string | null;
   // Solo at its daily cap; the server still refuses
@@ -31,7 +31,7 @@ const START_LABELS: Record<PlayMode, string> = {
   duel: 'Find an opponent',
 };
 
-export function PlayStart({
+const PlayStart = ({
   mode,
   href,
   isCapped = false,
@@ -41,7 +41,7 @@ export function PlayStart({
   warningFor,
   ref,
   leading,
-}: PlayStartProps) {
+}: Props) => {
   const { go, isBusy: isStarting, error } = useStartNavigation();
   const [warning, setWarning] = useState<QuitDialogCopy | null>(null);
   const ownRef = useRef<HTMLButtonElement>(null);
@@ -92,4 +92,6 @@ export function PlayStart({
       ) : null}
     </div>
   );
-}
+};
+
+export default PlayStart;
