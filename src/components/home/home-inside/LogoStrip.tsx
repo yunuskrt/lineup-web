@@ -1,6 +1,6 @@
 import React from 'react';
-import { ClubCrest } from '@/components/game/ClubCrest';
-import { CompetitionLogo } from '@/components/game/CompetitionLogo';
+import ClubCrest from '@/components/game/ClubCrest';
+import CompetitionLogo from '@/components/game/CompetitionLogo';
 import { STRIP } from '@/components/home/home-inside/styles';
 import { landingCompetitions } from '@/lib/landing';
 import { ICON_TILE } from '@/styles/classes';

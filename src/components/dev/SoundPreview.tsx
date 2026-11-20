@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { SoundToggle } from '@/components/game/SoundToggle';
+import SoundToggle from '@/components/game/SoundToggle';
 import { useSound } from '@/hooks/use-sound';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
 import {

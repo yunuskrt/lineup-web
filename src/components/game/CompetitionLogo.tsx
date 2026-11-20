@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Image from 'next/image';
 import { COMPETITION_KIND_PATH } from '@/components/game/competition-kind';
 import { useImageFallback } from '@/hooks/use-image-fallback';
@@ -8,16 +9,13 @@ import type { CompetitionRef } from '@/types/match';
 // Box is 20px; 40 covers 2x screens
 const LOGO_PX = 40;
 
-type CompetitionLogoProps = {
+type Props = {
   competition: CompetitionRef;
   // Sets the box size
   className: string;
 };
 
-export function CompetitionLogo({
-  competition,
-  className,
-}: CompetitionLogoProps) {
+const CompetitionLogo = ({ competition, className }: Props) => {
   const { showsImage, onError } = useImageFallback(competition.logoUrl);
 
   return (
@@ -47,4 +45,6 @@ export function CompetitionLogo({
       )}
     </span>
   );
-}
+};
+
+export default CompetitionLogo;

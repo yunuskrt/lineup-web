@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 import {
   AlertDialog,
   AlertDialogClose,
@@ -36,7 +36,7 @@ export const DUEL_FORFEIT_COPY: QuitDialogCopy = {
   pendingLabel: 'Forfeiting…',
 };
 
-type QuitDialogProps = {
+type Props = {
   isOpen: boolean;
   isQuitting: boolean;
   copy?: QuitDialogCopy;
@@ -44,13 +44,13 @@ type QuitDialogProps = {
   onConfirm: () => void;
 };
 
-export function QuitDialog({
+const QuitDialog = ({
   isOpen,
   isQuitting,
   copy = SOLO_QUIT_COPY,
   onDismiss,
   onConfirm,
-}: QuitDialogProps) {
+}: Props) => {
   const popupRef = useRef<HTMLDivElement>(null);
 
   // Never pull focus back from the summary or Start
@@ -90,4 +90,6 @@ export function QuitDialog({
       </AlertDialogContent>
     </AlertDialog>
   );
-}
+};
+
+export default QuitDialog;

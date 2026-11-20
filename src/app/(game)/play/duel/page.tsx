@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { CanvasStatePreview } from '@/components/dev/CanvasStatePreview';
-import { DuelGame } from '@/components/game/DuelGame';
-import { ProtocolRefused } from '@/components/game/ProtocolRefused';
+import DuelGame from '@/components/game/DuelGame';
+import ProtocolRefused from '@/components/game/ProtocolRefused';
 import { devOnlyParam } from '@/lib/dev/route';
 import { playPath } from '@/lib/play-steps';
 

@@ -1,7 +1,7 @@
 'use client';
 
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
 import { RefreshCw } from 'lucide-react';
 import {
   Empty,
@@ -21,13 +21,13 @@ export const PROTOCOL_REFUSED_COPY = {
   back: 'Back to Play',
 } as const;
 
-type ProtocolRefusedProps = {
+type Props = {
   // `/play` with the filters kept
   backHref: string;
 };
 
 // A page, not a gate: there is no duel to show
-export function ProtocolRefused({ backHref }: ProtocolRefusedProps) {
+const ProtocolRefused = ({ backHref }: Props) => {
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -66,4 +66,6 @@ export function ProtocolRefused({ backHref }: ProtocolRefusedProps) {
       </Empty>
     </div>
   );
-}
+};
+
+export default ProtocolRefused;

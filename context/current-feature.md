@@ -125,3 +125,4 @@ Not Started
 - Fix Conventions C: auth to pitch on template, 14 parts out, React first.
 - Fix Conventions G: play on the template, 14 parts out, filter classes.
 - Fix Conventions H: lobby panel split into 14 parts, styles.ts, template.
+- Fix Conventions I: game on the template, 23 parts out, use-seconds-left.

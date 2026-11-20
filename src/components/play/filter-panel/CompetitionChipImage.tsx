@@ -1,5 +1,5 @@
 import React from 'react';
-import { CompetitionLogo } from '@/components/game/CompetitionLogo';
+import CompetitionLogo from '@/components/game/CompetitionLogo';
 import type { CompetitionRef } from '@/types/match';
 
 type Props = {

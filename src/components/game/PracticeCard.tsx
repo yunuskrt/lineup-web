@@ -1,8 +1,11 @@
+import React from 'react';
 import { TimerOff } from 'lucide-react';
 import { ICON_TILE, RAIL_SECTION, TYPE_CARD_TITLE } from '@/styles/classes';
 
+type Props = {};
+
 // Where the ring and the lives sit in a timed run
-export function PracticeCard() {
+const PracticeCard = ({}: Props) => {
   return (
     <section
       aria-label="Practice"
@@ -23,4 +26,6 @@ export function PracticeCard() {
       </div>
     </section>
   );
-}
+};
+
+export default PracticeCard;

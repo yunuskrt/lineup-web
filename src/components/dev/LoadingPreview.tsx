@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { CanvasGate } from '@/components/game/CanvasGate';
-import { GuessInput } from '@/components/game/GuessInput';
+import CanvasGate from '@/components/game/CanvasGate';
+import GuessInput from '@/components/game/GuessInput';
 import SquadGrid from '@/components/pitch/SquadGrid';
 import { samplePlayer } from '@/lib/dev/samples';
 import { LOADING_FORMATION } from '@/lib/formation';

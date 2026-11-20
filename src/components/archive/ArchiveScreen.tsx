@@ -3,7 +3,7 @@
 import React, { useEffect, useEffectEvent, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ArchiveView from '@/components/archive/ArchiveView';
-import { QuitDialog } from '@/components/game/QuitDialog';
+import QuitDialog from '@/components/game/QuitDialog';
 import { useArchive } from '@/hooks/use-archive';
 import { useFilterOptions } from '@/hooks/use-filter-options';
 import { useProAccess } from '@/hooks/use-pro';

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Image from 'next/image';
 import { useImageFallback } from '@/hooks/use-image-fallback';
 import type { ClubRef } from '@/types/match';
@@ -27,7 +28,7 @@ const FALLBACK_FILL = {
   raised: 'bg-surface-raised',
 } as const;
 
-type ClubCrestProps = {
+type Props = {
   club: ClubRef;
   // Rings the crest of the XI being named
   isNamed?: boolean;
@@ -35,12 +36,12 @@ type ClubCrestProps = {
   fallbackFill?: keyof typeof FALLBACK_FILL;
 };
 
-export function ClubCrest({
+const ClubCrest = ({
   club,
   isNamed = false,
   size = 'header',
   fallbackFill = 'card',
-}: ClubCrestProps) {
+}: Props) => {
   const { showsImage, onError } = useImageFallback(club.crestUrl);
 
   return (
@@ -70,4 +71,6 @@ export function ClubCrest({
       )}
     </span>
   );
-}
+};
+
+export default ClubCrest;

@@ -2,13 +2,12 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { FeedbackToast } from '@/components/game/FeedbackToast';
-import { FoundCount } from '@/components/game/FoundCount';
-import {
-  GuessInput,
+import FeedbackToast from '@/components/game/FeedbackToast';
+import FoundCount from '@/components/game/FoundCount';
+import GuessInput, {
   type GuessInputStatus,
 } from '@/components/game/GuessInput';
-import { MatchHeader } from '@/components/game/MatchHeader';
+import MatchHeader from '@/components/game/MatchHeader';
 import WindowBar from '@/components/home/showcase-frame/WindowBar';
 import SquadGrid from '@/components/pitch/SquadGrid';
 import { Badge } from '@/components/ui/badge';

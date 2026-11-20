@@ -1,8 +1,7 @@
 'use client';
 
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
-import {
-  GuessInput,
+import GuessInput, {
   type GuessInputStatus,
 } from '@/components/game/GuessInput';
 import {

@@ -1,7 +1,7 @@
 'use client';
 
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { useState } from 'react';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MOTION_SECONDS } from '@/styles/motion';
 import type { ToastMessage } from '@/types/feedback';
@@ -9,11 +9,11 @@ import type { ToastMessage } from '@/types/feedback';
 const RISE_PX = 4;
 const RISE_SECONDS = 0.2;
 
-type FeedbackToastProps = {
+type Props = {
   toast: ToastMessage | null;
 };
 
-export function FeedbackToast({ toast }: FeedbackToastProps) {
+const FeedbackToast = ({ toast }: Props) => {
   const runs = useMotionPolicy();
   const riseFrom = runs('toastRise') ? RISE_PX : 0;
   // Faded text must not linger for screen readers
@@ -42,4 +42,6 @@ export function FeedbackToast({ toast }: FeedbackToastProps) {
       ) : null}
     </div>
   );
-}
+};
+
+export default FeedbackToast;

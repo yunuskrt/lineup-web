@@ -1,9 +1,9 @@
 'use client';
 
+import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-import { GameCanvas } from '@/components/game/GameCanvas';
-import { QuitDialog } from '@/components/game/QuitDialog';
+import GameCanvas from '@/components/game/GameCanvas';
+import QuitDialog from '@/components/game/QuitDialog';
 import { usePlayerDirectory } from '@/hooks/use-player-directory';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoloRun } from '@/hooks/use-solo-run';
@@ -24,7 +24,9 @@ import { PRACTICE_PARAM } from '@/lib/practice';
 import { capLine } from '@/lib/solo-allowance';
 import { soloCanvasView, soloGateAction, soloQuitCopy } from '@/lib/solo-run';
 
-export function SoloGame() {
+type Props = {};
+
+const SoloGame = ({}: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [params, setParams] = useState(() => new URLSearchParams(searchParams));
@@ -152,4 +154,6 @@ export function SoloGame() {
       />
     </>
   );
-}
+};
+
+export default SoloGame;

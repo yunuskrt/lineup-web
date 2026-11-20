@@ -1,10 +1,11 @@
 'use client';
 
+import React from 'react';
 import PlayerHeadshot from '@/components/pitch/PlayerHeadshot';
 import { Badge } from '@/components/ui/badge';
 import type { Suggestion } from '@/lib/suggestions';
 
-type SuggestionListProps = {
+type Props = {
   id: string;
   suggestions: readonly Suggestion[];
   highlightedKey: string | null;
@@ -12,13 +13,13 @@ type SuggestionListProps = {
   onPick: (suggestion: Suggestion) => void;
 };
 
-export function SuggestionList({
+const SuggestionList = ({
   id,
   suggestions,
   highlightedKey,
   optionId,
   onPick,
-}: SuggestionListProps) {
+}: Props) => {
   return (
     <div className="absolute inset-x-0 bottom-full z-20 mb-2 overflow-hidden rounded-md border-2 border-line bg-surface-card shadow-hard">
       <ul
@@ -68,4 +69,6 @@ export function SuggestionList({
       </ul>
     </div>
   );
-}
+};
+
+export default SuggestionList;

@@ -1,10 +1,10 @@
 'use client';
 
+import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-import { GameCanvas } from '@/components/game/GameCanvas';
-import { ProtocolRefused } from '@/components/game/ProtocolRefused';
-import { DUEL_FORFEIT_COPY, QuitDialog } from '@/components/game/QuitDialog';
+import GameCanvas from '@/components/game/GameCanvas';
+import ProtocolRefused from '@/components/game/ProtocolRefused';
+import QuitDialog, { DUEL_FORFEIT_COPY } from '@/components/game/QuitDialog';
 import { useDuel } from '@/hooks/use-duel';
 import { usePlayerDirectory } from '@/hooks/use-player-directory';
 import { useProAccess } from '@/hooks/use-pro';
@@ -20,7 +20,9 @@ import { ROOM_PARAM } from '@/lib/room-code';
 import type { LobbyAction } from '@/types/duel-lobby';
 import type { PlayMode } from '@/types/play';
 
-export function DuelGame() {
+type Props = {};
+
+const DuelGame = ({}: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [params, setParams] = useState(() => new URLSearchParams(searchParams));
@@ -184,4 +186,6 @@ export function DuelGame() {
       />
     </>
   );
-}
+};
+
+export default DuelGame;

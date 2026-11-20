@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { GameCanvas } from '@/components/game/GameCanvas';
+import GameCanvas from '@/components/game/GameCanvas';
 import {
   AFTER_GATE_STATE,
   type CanvasFrame,

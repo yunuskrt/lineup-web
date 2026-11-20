@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { FeedbackToast } from '@/components/game/FeedbackToast';
-import {
-  GuessInput,
+import FeedbackToast from '@/components/game/FeedbackToast';
+import GuessInput, {
   type GuessInputStatus,
 } from '@/components/game/GuessInput';
 import SquadGrid from '@/components/pitch/SquadGrid';

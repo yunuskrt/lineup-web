@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { CanvasStatePreview } from '@/components/dev/CanvasStatePreview';
-import { SoloGame } from '@/components/game/SoloGame';
+import SoloGame from '@/components/game/SoloGame';
 import { devOnlyParam } from '@/lib/dev/route';
 
 export const metadata: Metadata = {

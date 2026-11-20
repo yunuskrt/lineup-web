@@ -1,9 +1,10 @@
 'use client';
 
 import { type ReactNode, useState } from 'react';
-import { LifeLostFlash } from '@/components/game/LifeLostFlash';
-import { Lives } from '@/components/game/Lives';
-import { DuelLivesCard, LivesCard } from '@/components/game/LivesCard';
+import LifeLostFlash from '@/components/game/LifeLostFlash';
+import Lives from '@/components/game/Lives';
+import DuelLivesCard from '@/components/game/DuelLivesCard';
+import LivesCard from '@/components/game/LivesCard';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
 import { RECONNECT_WINDOW_MS } from '@/lib/duel-session';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';

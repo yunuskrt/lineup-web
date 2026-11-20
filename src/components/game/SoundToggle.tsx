@@ -1,10 +1,13 @@
 'use client';
 
+import React from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useSound } from '@/hooks/use-sound';
 import { SOUND_TOGGLE } from '@/styles/classes';
 
-export function SoundToggle() {
+type Props = {};
+
+const SoundToggle = ({}: Props) => {
   const { isMuted, toggleMuted } = useSound();
 
   return (
@@ -22,4 +25,6 @@ export function SoundToggle() {
       )}
     </button>
   );
-}
+};
+
+export default SoundToggle;

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'motion/react';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
@@ -7,11 +8,11 @@ import { MOTION_SECONDS } from '@/styles/motion';
 
 const PEAK_OPACITY = 0.25;
 
-type LifeLostFlashProps = {
+type Props = {
   flashKey: number;
 };
 
-export function LifeLostFlash({ flashKey }: LifeLostFlashProps) {
+const LifeLostFlash = ({ flashKey }: Props) => {
   const runs = useMotionPolicy();
   const hasFlashed = useChangedSinceMount(flashKey);
 
@@ -31,4 +32,6 @@ export function LifeLostFlash({ flashKey }: LifeLostFlashProps) {
       }}
     />
   );
-}
+};
+
+export default LifeLostFlash;

@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -64,3 +64,19 @@ Phase 3 of `context/docs/code-cleanup-guide.md`, batch conventions-i (merged bat
   - B5 (Input, dialogs and results (was conventions-i2)): solo and duel states for side pick, pending, rate-limited, run over, perfect clear, practice summary, duel win/loss/draw/forfeit, protocol refused (frozen-clock rule), `/dev/guess`, `/dev/loading`, `/dev/components`; by hand: a solo run to the summary and Quit.
   - B5 (Assembly (was conventions-i3)): every `/dev/canvas` state at 320 and 1280 (frozen-clock rule); by hand: a full mock solo run and a mock duel to a result.
 - **B7 scope:** only findings inside these goals are fixed; anything else is a follow-up note.
+
+### Deviations recorded during implementation
+
+- **`OUTCOME_BOX` and `OUTCOME_TITLE`** go to a folder-level `game/styles.ts`, not `game/run-summary/styles.ts`: two parents use them (RunSummary's Outcome and SummarySkeleton, DuelResultPanel's Outcome), and batch G's review placed cross-parent constants at folder level. `STATS_BOX` (Stats and SummarySkeleton) goes to `run-summary/styles.ts`.
+- **LivesCard family:** DuelLivesCard goes top-level as the spec says. CardFrame and Tally then serve two files (LivesCard and DuelLivesCard), so they go top-level too (`game/CardFrame.tsx`, `game/Tally.tsx`) instead of `lives-card/`; Dot serves DuelLivesCard only, so it goes to `game/duel-lives-card/Dot.tsx`. The `useShownActor` hook, `Hold`, `ACTORS`, `ACTOR_LABELS` and `DUEL_HINT` move with DuelLivesCard, `DOT_LABELS` with Dot; `SOLO_HINT` stays in LivesCard.
+- **Shared non-class values:** SidePickCard's `ENTRANCE` transition goes to `side-pick-card/shared.ts`; GameCanvas's `useSecondsLeft` hook, `readClock` and `COUNTDOWN_TICK_MS` (GateCountdown and GateSeconds) go to `src/hooks/use-seconds-left.ts`, first placed in `game-canvas/shared.ts` and moved after code review 1 (a hook two files share belongs in `src/hooks/`). MatchHeader's `TEAM` classes (Team and the placeholder) go to `match-header/styles.ts`.
+- **Stays in the parent:** GameCanvas's `noticeParts` (a function, not a component) and `HEADINGS` (no part uses it); CanvasGate's `FOCUSABLE`; GuessInput's shake and status classes.
+- **Values used by one part only move with it:** `GATE_FADE`, `INSTANT`, `PANEL_SIZES` (GatePanel), `ROW` (Row), `SLIDE_PX`, `LIFT_PX`, `TILE_ENTER`, `TILE_CELL`, `CREST_VARIANTS` (Tile), `SPIN_SECONDS` (Spinner), `COOLDOWN_TICK_MS` (CooldownLine), `OUTCOME_TONES`, `TOP_BAND` (duel Outcome).
+- **Exported props types kept, with a local alias:** `ResultActionsProps`, `NamedOrderProps` (union, keeps `props`); GatePanel imports `GateSize` back from CanvasGate (type-only).
+- **`'use client'`:** LivesCard drops it (now markup only, imported by client components); parts keep it only where they use hooks, events or `motion`.
+
+### Follow-ups (code review, outside this batch)
+
+- **One countdown, twice:** ReconnectChip runs its own 250 ms `serverClock.now()` tick and `reconnectSecondsLeft`, nearly `useSecondsLeft({ clock: 'server', deadline })`; using the hook would keep the chip and the gate counting alike.
+- **`useShownActor` location:** the four-state presentation hook stays inside DuelLivesCard (its one user); moving it to `src/hooks/` would put it under Vitest coverage.
+- **Standards:** `coding-standards-web.md` now names folder-level `styles.ts`/`shared.ts` for constants two parents share (`game/styles.ts`) and `src/hooks/` for a hook two files share (code review 1, 5).

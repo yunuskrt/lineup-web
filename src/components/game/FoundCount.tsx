@@ -1,9 +1,12 @@
+import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { foundCountLabel } from '@/lib/canvas';
 import type { FoundPlayer } from '@/types/player';
 
+type Props = { found: FoundPlayer[] };
+
 // Sits on the pitch card's corner, over the turf
-export function FoundCount({ found }: { found: FoundPlayer[] }) {
+const FoundCount = ({ found }: Props) => {
   const count = foundCountLabel(found);
 
   return (
@@ -12,4 +15,6 @@ export function FoundCount({ found }: { found: FoundPlayer[] }) {
       <span className="sr-only">{count.spoken}</span>
     </Badge>
   );
-}
+};
+
+export default FoundCount;

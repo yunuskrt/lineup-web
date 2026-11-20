@@ -1,23 +1,19 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import ProLock from '@/components/pro/ProLock';
 import { SECONDARY_BUTTON } from '@/styles/classes';
 import type { SoloSummary } from '@/types/solo';
 
 const LABEL = 'Reveal the full XI';
 
-type MissedRevealProps = {
+type Props = {
   summary: SoloSummary;
   isRevealed: boolean;
   onReveal: () => void;
 };
 
-export function MissedReveal({
-  summary,
-  isRevealed,
-  onReveal,
-}: MissedRevealProps) {
+const MissedReveal = ({ summary, isRevealed, onReveal }: Props) => {
   const lineRef = useRef<HTMLParagraphElement>(null);
 
   // The button is gone; keep focus in the rail
@@ -60,4 +56,6 @@ export function MissedReveal({
       {LABEL}
     </button>
   );
-}
+};
+
+export default MissedReveal;

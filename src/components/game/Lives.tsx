@@ -1,7 +1,7 @@
 'use client';
 
+import React, { useState } from 'react';
 import { motion, type Variants } from 'motion/react';
-import { useState } from 'react';
 import { SHIRT_PATH } from '@/components/game/shirt';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MAX_LIVES } from '@/lib/api/schemas/game';
@@ -30,14 +30,14 @@ type Drop = { from: number; to: number };
 // A lost life is the shirt's dashed outline
 const LOST_DASH = '2.5 2';
 
-type LivesProps = {
+type Props = {
   lives: LivesCount;
   owner?: DuelActor;
   // The rail's larger shirts
   isLarge?: boolean;
 };
 
-export function Lives({ lives, owner = 'you', isLarge = false }: LivesProps) {
+const Lives = ({ lives, owner = 'you', isLarge = false }: Props) => {
   const runs = useMotionPolicy();
   const [previousLives, setPreviousLives] = useState(lives);
   const [drop, setDrop] = useState<Drop | null>(null);
@@ -94,4 +94,6 @@ export function Lives({ lives, owner = 'you', isLarge = false }: LivesProps) {
       })}
     </div>
   );
-}
+};
+
+export default Lives;

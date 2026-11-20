@@ -6,8 +6,8 @@ import {
   ARCHIVE_ROW_FOOT,
   TEAM_NAME,
 } from '@/components/archive/styles';
-import { ClubCrest } from '@/components/game/ClubCrest';
-import { CompetitionLogo } from '@/components/game/CompetitionLogo';
+import ClubCrest from '@/components/game/ClubCrest';
+import CompetitionLogo from '@/components/game/CompetitionLogo';
 import { archiveDateLabel, playMatchLabel } from '@/lib/archive';
 import { matchEvent } from '@/lib/summary';
 import { TYPE_NUMBER } from '@/styles/classes';

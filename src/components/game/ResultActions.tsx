@@ -1,3 +1,4 @@
+import React from 'react';
 import ProLock from '@/components/pro/ProLock';
 import {
   type ResultPrimary,
@@ -43,7 +44,9 @@ const SECONDARY_LABELS: Record<
   backToArchive: 'Back to the archive',
 };
 
-export function ResultActions({
+type Props = ResultActionsProps;
+
+const ResultActions = ({
   onPlayAgain,
   onChangeFilters,
   onBackToPlay = onChangeFilters,
@@ -53,7 +56,7 @@ export function ResultActions({
   onPlayDuel = () => {},
   isPicked = false,
   isPractice = false,
-}: ResultActionsProps) {
+}: Props) => {
   const { primary, secondary } = resultActionsLayout({
     isPrivate,
     hostAccess,
@@ -102,4 +105,6 @@ export function ResultActions({
       )}
     </div>
   );
-}
+};
+
+export default ResultActions;

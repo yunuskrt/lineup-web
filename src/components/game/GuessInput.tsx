@@ -1,7 +1,6 @@
 'use client';
 
-import { motion, useAnimate } from 'motion/react';
-import {
+import React, {
   type KeyboardEvent,
   type SubmitEvent,
   useEffect,
@@ -9,7 +8,11 @@ import {
   useRef,
   useState,
 } from 'react';
-import { SuggestionList } from '@/components/game/SuggestionList';
+import { motion, useAnimate } from 'motion/react';
+import CooldownAnnouncement from '@/components/game/guess-input/CooldownAnnouncement';
+import CooldownLine from '@/components/game/guess-input/CooldownLine';
+import Spinner from '@/components/game/guess-input/Spinner';
+import SuggestionList from '@/components/game/SuggestionList';
 import { useChangedSinceMount } from '@/hooks/use-changed-since-mount';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { MAX_GUESS_LENGTH } from '@/lib/api/schemas/common';
@@ -19,15 +22,12 @@ import {
   type Suggestion,
   suggestionCountLabel,
 } from '@/lib/suggestions';
-import { cooldownAnnouncement, cooldownLabel } from '@/lib/system-states';
 import { FOCUS_RING, SECTION_LABEL } from '@/styles/classes';
 import { MOTION_SECONDS } from '@/styles/motion';
 
 export type GuessInputStatus = 'live' | 'pending' | 'locked' | 'cooldown';
 
 const SHAKE_X = [0, -6, 6, -4, 4, 0];
-const SPIN_SECONDS = 0.8;
-const COOLDOWN_TICK_MS = 250;
 
 // Read-only keeps focus, so show a quieter ring
 const INERT_FOCUS_RING =
@@ -43,66 +43,7 @@ const STATUS_CLASSES: Record<GuessInputStatus, string> = {
 
 const REJECT_TINT_OPACITY = [1, 1, 0];
 
-// Static when spinning is off, so the busy cue stays
-function Spinner({ isSpinning }: { isSpinning: boolean }) {
-  return (
-    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-      <motion.svg
-        viewBox="0 0 16 16"
-        aria-hidden="true"
-        focusable="false"
-        className="size-4"
-        animate={isSpinning ? { rotate: 360 } : undefined}
-        transition={{
-          duration: SPIN_SECONDS,
-          ease: 'linear',
-          repeat: Infinity,
-        }}
-      >
-        <circle
-          cx="8"
-          cy="8"
-          r="6"
-          fill="none"
-          strokeWidth="2"
-          className="stroke-rule"
-        />
-        <path
-          d="M8 2a6 6 0 0 1 6 6"
-          fill="none"
-          strokeWidth="2"
-          strokeLinecap="round"
-          className="stroke-line"
-        />
-      </motion.svg>
-      <span className="sr-only">Checking</span>
-    </span>
-  );
-}
-
-// Ticks to the server's retry time; decides nothing
-function CooldownLine({ until }: { until: number }) {
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), COOLDOWN_TICK_MS);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <p aria-hidden="true" className="text-12 font-medium text-warning-text">
-      {cooldownLabel(until - now)}
-    </p>
-  );
-}
-
-// Keyed per lockout, so it is read once
-function CooldownAnnouncement({ until }: { until: number }) {
-  const [message] = useState(() => cooldownAnnouncement(until - Date.now()));
-  return message;
-}
-
-type GuessInputProps = {
+type Props = {
   status: GuessInputStatus;
   // Required for `cooldown`; the line counts to it
   cooldownUntil?: number;
@@ -118,7 +59,7 @@ type GuessInputProps = {
 
 const NO_SUGGESTIONS: readonly Suggestion[] = [];
 
-export function GuessInput({
+const GuessInput = ({
   status,
   cooldownUntil,
   value,
@@ -127,7 +68,7 @@ export function GuessInput({
   shakeKey,
   suggestions = NO_SUGGESTIONS,
   drivenHighlight,
-}: GuessInputProps) {
+}: Props) => {
   const inputId = useId();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -293,4 +234,6 @@ export function GuessInput({
       </p>
     </form>
   );
-}
+};
+
+export default GuessInput;

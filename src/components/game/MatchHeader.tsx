@@ -1,9 +1,11 @@
-import { ClubCrest } from '@/components/game/ClubCrest';
-import { CompetitionLogo } from '@/components/game/CompetitionLogo';
-import { type HeaderSide, matchHeaderView } from '@/lib/match-header';
+import React from 'react';
+import CompetitionLogo from '@/components/game/CompetitionLogo';
+import Team from '@/components/game/match-header/Team';
+import { TEAM } from '@/components/game/match-header/styles';
+import { matchHeaderView } from '@/lib/match-header';
 import { cn } from '@/lib/utils';
 import { TYPE_NUMBER } from '@/styles/classes';
-import type { MatchInPlay, Side } from '@/types/match';
+import type { MatchInPlay } from '@/types/match';
 
 // Stacked on phones, one row from sm
 const HEADER_BOX =
@@ -15,57 +17,19 @@ const CONTROLS_ROOM = 'max-sm:pr-18 sm:px-28';
 const SCORE_ROW =
   'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-5';
 
-// Phones: crest over name. From sm both pack toward the score
-const TEAM: Record<Side, string> = {
-  home: 'flex min-w-0 flex-col items-center gap-1 sm:flex-row-reverse sm:gap-3',
-  away: 'flex min-w-0 flex-col items-center gap-1 sm:flex-row sm:gap-3',
-};
-
 const CONTEXT_LINE =
   'flex h-5 min-w-0 items-center justify-center gap-3 text-12 leading-5 text-on-scoreboard/75 sm:text-14';
 
 const PLACEHOLDER = 'rounded-sm bg-on-scoreboard/15';
 
-type TeamProps = {
-  team: HeaderSide;
-  side: Side;
-};
-
-function Team({ team, side }: TeamProps) {
-  return (
-    <span className={TEAM[side]}>
-      {/* The named XI's crest gets the scoreboard's accent */}
-      <span
-        className={`flex shrink-0 rounded-md bg-surface-card ${
-          team.isNamed ? 'outline-2 outline-offset-2 outline-score-digits' : ''
-        }`}
-      >
-        <ClubCrest club={team.club} />
-      </span>
-      <span
-        className={`w-full truncate text-center text-14 leading-5 sm:w-auto sm:text-16 sm:leading-6 ${
-          team.isNamed ? 'font-bold' : 'font-medium text-on-scoreboard/70'
-        }`}
-      >
-        <span className="sm:hidden">{team.club.shortName}</span>
-        <span className="hidden sm:inline">{team.club.name}</span>
-      </span>
-    </span>
-  );
-}
-
-type MatchHeaderProps = {
+type Props = {
   match: MatchInPlay | null;
   // The game's quit and sound chips sit on the strip
   hasControls?: boolean;
   className?: string;
 };
 
-export function MatchHeader({
-  match,
-  hasControls = false,
-  className,
-}: MatchHeaderProps) {
+const MatchHeader = ({ match, hasControls = false, className }: Props) => {
   const box = cn(HEADER_BOX, hasControls && CONTROLS_ROOM, className);
 
   if (!match) {
@@ -125,4 +89,6 @@ export function MatchHeader({
       <p className="sr-only">{view.namingLabel}</p>
     </header>
   );
-}
+};
+
+export default MatchHeader;

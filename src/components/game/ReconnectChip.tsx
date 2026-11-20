@@ -1,15 +1,17 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import { WifiOff } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { reconnectSecondsLeft } from '@/lib/duel-status';
 import { serverClock } from '@/lib/server-clock';
 
 const RECONNECT_TICK_MS = 250;
 
+type Props = { deadline: number };
+
 // Ticks from the server deadline; decides nothing
-export function ReconnectChip({ deadline }: { deadline: number }) {
+const ReconnectChip = ({ deadline }: Props) => {
   const [now, setNow] = useState(() => serverClock.now());
 
   useEffect(() => {
@@ -30,4 +32,6 @@ export function ReconnectChip({ deadline }: { deadline: number }) {
       </span>
     </Badge>
   );
-}
+};
+
+export default ReconnectChip;

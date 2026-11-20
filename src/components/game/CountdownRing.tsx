@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useRef, useState } from 'react';
 import {
   motion,
   type TargetAndTransition,
@@ -7,7 +8,6 @@ import {
   useMotionValue,
   useTransform,
 } from 'motion/react';
-import { useRef, useState } from 'react';
 import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import {
   ARC_SPAN,
@@ -69,17 +69,13 @@ const ARC = {
   transform: `rotate(${ARC_START_DEGREES} 50 50)`,
 } as const;
 
-type CountdownRingProps = {
+type Props = {
   round: RoundTiming;
   mode: RingMode;
   owner?: DuelActor;
 };
 
-export function CountdownRing({
-  round,
-  mode,
-  owner = 'you',
-}: CountdownRingProps) {
+const CountdownRing = ({ round, mode, owner = 'you' }: Props) => {
   const runs = useMotionPolicy();
   const [seconds, setSeconds] = useState(() =>
     displaySeconds(roundDurationMs(round)),
@@ -155,4 +151,6 @@ export function CountdownRing({
       <span className="relative text-12 text-fg-muted">seconds</span>
     </div>
   );
-}
+};
+
+export default CountdownRing;

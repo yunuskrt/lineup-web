@@ -2,7 +2,7 @@
 
 import React, { type ReactNode, type RefObject, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { QuitDialog, type QuitDialogCopy } from '@/components/game/QuitDialog';
+import QuitDialog, { type QuitDialogCopy } from '@/components/game/QuitDialog';
 import StartError from '@/components/play/StartError';
 import { STEP_ACTIONS, STEP_NEXT } from '@/components/play/styles';
 import { useStartNavigation } from '@/hooks/use-start-navigation';

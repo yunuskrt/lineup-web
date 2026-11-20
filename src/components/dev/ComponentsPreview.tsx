@@ -2,9 +2,8 @@
 
 import { Lock, SearchX, Volume2, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
-import {
+import QuitDialog, {
   DUEL_FORFEIT_COPY,
-  QuitDialog,
   SOLO_QUIT_COPY,
   type QuitDialogCopy,
 } from '@/components/game/QuitDialog';
