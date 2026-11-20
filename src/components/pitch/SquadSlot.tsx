@@ -1,8 +1,7 @@
 import React, { type ReactNode } from 'react';
-import PlayerHeadshot, {
-  HEADSHOT_SIZE,
-} from '@/components/pitch/PlayerHeadshot';
+import PlayerHeadshot from '@/components/pitch/PlayerHeadshot';
 import EmptyDisc from '@/components/pitch/squad-slot/EmptyDisc';
+import { HEADSHOT_SIZE } from '@/components/pitch/styles';
 import { SKELETON } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { DUEL_ACTOR_BG } from '@/styles/classes';

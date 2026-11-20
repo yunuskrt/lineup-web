@@ -127,3 +127,4 @@ Not Started
 - Fix Conventions H: lobby panel split into 14 parts, styles.ts, template.
 - Fix Conventions I: game on the template, 23 parts out, use-seconds-left.
 - Fix Conventions J: ui, dev and app pages on the template, no splits.
+- Fix Audit F.1: HEADSHOT_SIZE moved to pitch/styles.ts.

@@ -1,13 +1,11 @@
 'use client';
 
 import React from 'react';
+import { HEADSHOT_SIZE } from '@/components/pitch/styles';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { initials } from '@/lib/initials';
 import { cn } from '@/lib/utils';
 import type { DuelActor } from '@/types/duel';
-
-// SquadGrid sets --disc from the formation's density
-export const HEADSHOT_SIZE = 'size-(--disc)';
 
 const INITIALS_ON_PITCH = 'text-[length:calc(var(--disc)*0.36)]';
 

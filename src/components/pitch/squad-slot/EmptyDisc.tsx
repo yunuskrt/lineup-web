@@ -1,5 +1,5 @@
 import React from 'react';
-import { HEADSHOT_SIZE } from '@/components/pitch/PlayerHeadshot';
+import { HEADSHOT_SIZE } from '@/components/pitch/styles';
 import { PERSON_PATH } from '@/components/pitch/person';
 
 type Props = {};
