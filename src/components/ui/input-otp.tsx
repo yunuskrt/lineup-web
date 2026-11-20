@@ -1,16 +1,18 @@
 'use client';
 
+import React, { type ComponentProps, useContext } from 'react';
 import { OTPInput, OTPInputContext } from 'input-otp';
-import { type ComponentProps, useContext } from 'react';
 import { cn } from '@/lib/utils';
 import { CODE_BOX } from '@/styles/classes';
 
+type InputOTPProps = ComponentProps<typeof OTPInput>;
+
 // neobrutalism.dev Input OTP: one real input, boxes drawn over it
-export function InputOTP({
+export const InputOTP = ({
   className,
   containerClassName,
   ...props
-}: ComponentProps<typeof OTPInput>) {
+}: InputOTPProps) => {
   return (
     <OTPInput
       data-slot="input-otp"
@@ -22,9 +24,11 @@ export function InputOTP({
       {...props}
     />
   );
-}
+};
 
-export function InputOTPGroup({ className, ...props }: ComponentProps<'div'>) {
+type InputOTPGroupProps = ComponentProps<'div'>;
+
+export const InputOTPGroup = ({ className, ...props }: InputOTPGroupProps) => {
   return (
     <div
       data-slot="input-otp-group"
@@ -32,13 +36,15 @@ export function InputOTPGroup({ className, ...props }: ComponentProps<'div'>) {
       {...props}
     />
   );
-}
+};
 
-export function InputOTPSlot({
+type InputOTPSlotProps = ComponentProps<'div'> & { index: number };
+
+export const InputOTPSlot = ({
   index,
   className,
   ...props
-}: ComponentProps<'div'> & { index: number }) {
+}: InputOTPSlotProps) => {
   const context = useContext(OTPInputContext);
   const { char, placeholderChar, hasFakeCaret, isActive } =
     context.slots[index] ?? {};
@@ -65,4 +71,4 @@ export function InputOTPSlot({
       ) : null}
     </div>
   );
-}
+};

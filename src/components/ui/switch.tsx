@@ -1,14 +1,13 @@
 'use client';
 
+import React, { type ComponentProps } from 'react';
 import { Switch as SwitchPrimitive } from '@base-ui/react/switch';
-import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import { FOCUS_RING } from '@/styles/classes';
 
-export function Switch({
-  className,
-  ...props
-}: ComponentProps<typeof SwitchPrimitive.Root>) {
+type Props = ComponentProps<typeof SwitchPrimitive.Root>;
+
+export const Switch = ({ className, ...props }: Props) => {
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
@@ -24,4 +23,4 @@ export function Switch({
       />
     </SwitchPrimitive.Root>
   );
-}
+};

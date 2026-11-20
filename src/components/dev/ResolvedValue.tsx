@@ -1,14 +1,14 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import React, { useSyncExternalStore } from 'react';
 
-type ResolvedValueProps = {
+type Props = {
   variable: string;
 };
 
 const subscribe = () => () => {};
 
-export function ResolvedValue({ variable }: ResolvedValueProps) {
+export const ResolvedValue = ({ variable }: Props) => {
   const value = useSyncExternalStore(
     subscribe,
     () =>
@@ -23,4 +23,4 @@ export function ResolvedValue({ variable }: ResolvedValueProps) {
       {value ?? '…'}
     </code>
   );
-}
+};

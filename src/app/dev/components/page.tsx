@@ -1,10 +1,13 @@
+import React from 'react';
 import { ComponentsPreview } from '@/components/dev/ComponentsPreview';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
 export const metadata = devMetadata('Components');
 
-export default function ComponentsPreviewPage() {
+type Props = {};
+
+const ComponentsPreviewPage = ({}: Props) => {
   requireDevEnv();
 
   return (
@@ -15,4 +18,6 @@ export default function ComponentsPreviewPage() {
       <ComponentsPreview />
     </DevPreviewShell>
   );
-}
+};
+
+export default ComponentsPreviewPage;

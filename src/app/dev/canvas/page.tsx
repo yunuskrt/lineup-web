@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { CANVAS_STATES } from '@/lib/dev/canvas-states';
@@ -12,7 +13,9 @@ const SECTIONS: { mode: CanvasMode; title: string; route: string }[] = [
   { mode: 'duel', title: 'Duel', route: '/play/duel' },
 ];
 
-export default function CanvasStatesPage() {
+type Props = {};
+
+const CanvasStatesPage = ({}: Props) => {
   requireDevEnv();
 
   return (
@@ -45,4 +48,6 @@ export default function CanvasStatesPage() {
       ))}
     </DevPreviewShell>
   );
-}
+};
+
+export default CanvasStatesPage;

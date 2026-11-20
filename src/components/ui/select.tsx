@@ -1,18 +1,17 @@
 'use client';
 
+import React, { type ComponentProps } from 'react';
 import { Select as SelectPrimitive } from '@base-ui/react/select';
 import { Check, ChevronDown } from 'lucide-react';
-import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import { SELECT_TRIGGER } from '@/styles/classes';
 
 // neobrutalism.dev Select on Base UI, in our roles
 export const Select = SelectPrimitive.Root;
 
-export function SelectLabel({
-  className,
-  ...props
-}: ComponentProps<typeof SelectPrimitive.Label>) {
+type SelectLabelProps = ComponentProps<typeof SelectPrimitive.Label>;
+
+export const SelectLabel = ({ className, ...props }: SelectLabelProps) => {
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
@@ -20,12 +19,11 @@ export function SelectLabel({
       {...props}
     />
   );
-}
+};
 
-export function SelectValue({
-  className,
-  ...props
-}: ComponentProps<typeof SelectPrimitive.Value>) {
+type SelectValueProps = ComponentProps<typeof SelectPrimitive.Value>;
+
+export const SelectValue = ({ className, ...props }: SelectValueProps) => {
   return (
     <SelectPrimitive.Value
       data-slot="select-value"
@@ -33,13 +31,15 @@ export function SelectValue({
       {...props}
     />
   );
-}
+};
 
-export function SelectTrigger({
+type SelectTriggerProps = ComponentProps<typeof SelectPrimitive.Trigger>;
+
+export const SelectTrigger = ({
   className,
   children,
   ...props
-}: ComponentProps<typeof SelectPrimitive.Trigger>) {
+}: SelectTriggerProps) => {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
@@ -52,13 +52,15 @@ export function SelectTrigger({
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
-}
+};
 
-export function SelectContent({
+type SelectContentProps = ComponentProps<typeof SelectPrimitive.Popup>;
+
+export const SelectContent = ({
   className,
   children,
   ...props
-}: ComponentProps<typeof SelectPrimitive.Popup>) {
+}: SelectContentProps) => {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Positioner
@@ -81,13 +83,15 @@ export function SelectContent({
       </SelectPrimitive.Positioner>
     </SelectPrimitive.Portal>
   );
-}
+};
 
-export function SelectItem({
+type SelectItemProps = ComponentProps<typeof SelectPrimitive.Item>;
+
+export const SelectItem = ({
   className,
   children,
   ...props
-}: ComponentProps<typeof SelectPrimitive.Item>) {
+}: SelectItemProps) => {
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
@@ -111,4 +115,4 @@ export function SelectItem({
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   );
-}
+};

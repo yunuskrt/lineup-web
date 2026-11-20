@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import ArchiveView from '@/components/archive/ArchiveView';
 import { resolveArchiveState } from '@/lib/dev/archive-states';
 import { SAMPLE_FILTER_OPTIONS, SAMPLE_OPEN_FILTERS } from '@/lib/dev/samples';
 
-type ArchiveStatePreviewProps = {
+type Props = {
   state?: string | string[];
 };
 
 // No server: only the box and panel are live
-export function ArchiveStatePreview({ state }: ArchiveStatePreviewProps) {
+export const ArchiveStatePreview = ({ state }: Props) => {
   const snapshot = resolveArchiveState(state);
   const [search, setSearch] = useState(snapshot.search);
   const [filters, setFilters] = useState(SAMPLE_OPEN_FILTERS);
@@ -31,4 +31,4 @@ export function ArchiveStatePreview({ state }: ArchiveStatePreviewProps) {
       starting={null}
     />
   );
-}
+};

@@ -164,11 +164,11 @@ Every approved batch in phases 1–3 goes through these steps. `<spec>` is the f
 | --- | --- | --- |
 | conventions-a | `components/shell`, `components/providers` | done |
 | conventions-b | `components/home` | done |
-| conventions-c | `components/auth`, `profile`, `archive`, `pro`, `pitch`, plus the React-import order in six earlier files | `conventions-c-auth-profile-archive-pitch.md` |
-| conventions-g | `components/play` | `conventions-g-play.md` |
-| conventions-h | `components/duel` (LobbyPanel, 14 parts) | `conventions-h-duel.md` |
-| conventions-i | `components/game` | `conventions-i-game.md` |
-| conventions-j | `components/ui`, `components/dev` (template only) and `src/app` pages and layouts | `conventions-j-ui-dev-app.md` |
+| conventions-c | `components/auth`, `profile`, `archive`, `pro`, `pitch`, plus the React-import order in six earlier files | done |
+| conventions-g | `components/play` | done |
+| conventions-h | `components/duel` (LobbyPanel, 14 parts) | done |
+| conventions-i | `components/game` | done |
+| conventions-j | `components/ui`, `components/dev` (template only) and `src/app` pages and layouts | done |
 
 **Merged batches (user, 2026-11-19):** the thirteen planned batches after b became five (c+d+e+f, g1+g2, h, i1+i2+i3, j1+j2+k), since the work is mechanical and the automatic checks carry it.
 

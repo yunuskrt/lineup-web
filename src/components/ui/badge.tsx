@@ -1,5 +1,5 @@
+import React, { type ComponentProps } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import { TYPE_STICKER } from '@/styles/classes';
 
@@ -40,15 +40,9 @@ const badgeVariants = cva(
   },
 );
 
-type BadgeProps = ComponentProps<'span'> & VariantProps<typeof badgeVariants>;
+type Props = ComponentProps<'span'> & VariantProps<typeof badgeVariants>;
 
-export function Badge({
-  className,
-  variant,
-  tone,
-  tilt,
-  ...props
-}: BadgeProps) {
+export const Badge = ({ className, variant, tone, tilt, ...props }: Props) => {
   const lean = tilt ?? (variant === 'sticker' ? 'left' : 'none');
 
   return (
@@ -58,4 +52,4 @@ export function Badge({
       {...props}
     />
   );
-}
+};

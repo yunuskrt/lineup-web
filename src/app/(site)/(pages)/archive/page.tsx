@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import ArchiveScreen from '@/components/archive/ArchiveScreen';
@@ -9,9 +10,9 @@ export const metadata: Metadata = {
   title: 'Archive',
 };
 
-export default async function ArchivePage({
-  searchParams,
-}: PageProps<'/archive'>) {
+type Props = PageProps<'/archive'>;
+
+const ArchivePage = async ({ searchParams }: Props) => {
   // Renders per request so the screen reads the URL
   await connection();
   const state = devOnlyParam((await searchParams).state);
@@ -25,4 +26,6 @@ export default async function ArchivePage({
       )}
     </div>
   );
-}
+};
+
+export default ArchivePage;

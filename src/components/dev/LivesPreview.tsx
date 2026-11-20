@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import React, { type ReactNode, useState } from 'react';
 import LifeLostFlash from '@/components/game/LifeLostFlash';
 import Lives from '@/components/game/Lives';
 import DuelLivesCard from '@/components/game/DuelLivesCard';
@@ -32,16 +32,18 @@ type SpecimenProps = {
   children: ReactNode;
 };
 
-function Specimen({ label, children }: SpecimenProps) {
+const Specimen = ({ label, children }: SpecimenProps) => {
   return (
     <figure className="flex flex-col items-start gap-2">
       {children}
       <figcaption className="text-12 text-fg-muted">{label}</figcaption>
     </figure>
   );
-}
+};
 
-export function LivesPreview() {
+type LivesPreviewProps = {};
+
+export const LivesPreview = ({}: LivesPreviewProps) => {
   const [flashKey, setFlashKey] = useState(0);
   const [soloLives, setSoloLives] = useState<LivesCount>(MAX_LIVES);
   const [duel, setDuel] = useState(PLAYERS);
@@ -204,4 +206,4 @@ export function LivesPreview() {
       </section>
     </div>
   );
-}
+};

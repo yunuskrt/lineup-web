@@ -1,10 +1,13 @@
+import React from 'react';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { ProPreview } from '@/components/dev/ProPreview';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
 export const metadata = devMetadata('Pro');
 
-export default function ProPreviewPage() {
+type Props = {};
+
+const ProPreviewPage = ({}: Props) => {
   requireDevEnv();
 
   return (
@@ -15,4 +18,6 @@ export default function ProPreviewPage() {
       <ProPreview />
     </DevPreviewShell>
   );
-}
+};
+
+export default ProPreviewPage;

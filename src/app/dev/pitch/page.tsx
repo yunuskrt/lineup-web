@@ -1,3 +1,4 @@
+import React from 'react';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import SquadGrid from '@/components/pitch/SquadGrid';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
@@ -33,7 +34,7 @@ type SpecimenProps = {
   revealed: RevealedPlayer[];
 };
 
-function Specimen({ label, formation, revealed }: SpecimenProps) {
+const Specimen = ({ label, formation, revealed }: SpecimenProps) => {
   return (
     <figure className="flex flex-col gap-2">
       <figcaption className="text-12 text-fg-muted">{label}</figcaption>
@@ -42,9 +43,11 @@ function Specimen({ label, formation, revealed }: SpecimenProps) {
       </div>
     </figure>
   );
-}
+};
 
-export default function PitchPreviewPage() {
+type PitchPreviewPageProps = {};
+
+const PitchPreviewPage = ({}: PitchPreviewPageProps) => {
   requireDevEnv();
 
   return (
@@ -78,4 +81,6 @@ export default function PitchPreviewPage() {
       </section>
     </DevPreviewShell>
   );
-}
+};
+
+export default PitchPreviewPage;

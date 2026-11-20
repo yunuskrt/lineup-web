@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import SquadGrid from '@/components/pitch/SquadGrid';
 import { SAMPLE_NAMES, samplePlayer } from '@/lib/dev/samples';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
@@ -27,7 +27,9 @@ function nextSlots(revealed: FoundPlayer[], count: number): number[] {
   return REVEAL_ORDER.filter((slot) => !taken.has(slot)).slice(0, count);
 }
 
-export function RevealPreview() {
+type Props = {};
+
+export const RevealPreview = ({}: Props) => {
   const [formation, setFormation] = useState(FORMATIONS[0]);
   const [revealed, setRevealed] = useState<FoundPlayer[]>([]);
   const [gridKey, setGridKey] = useState(0);
@@ -120,4 +122,4 @@ export function RevealPreview() {
       </div>
     </div>
   );
-}
+};

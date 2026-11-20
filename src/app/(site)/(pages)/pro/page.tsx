@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ProScreen from '@/components/pro/ProScreen';
@@ -8,8 +9,10 @@ export const metadata: Metadata = {
   title: 'Pro',
 };
 
+type Props = {};
+
 // A real 404 while the split is off (backend R9)
-export default async function ProPage() {
+const ProPage = async ({}: Props) => {
   if (await isProSwitchOff()) notFound();
 
   return (
@@ -17,4 +20,6 @@ export default async function ProPage() {
       <ProScreen />
     </div>
   );
-}
+};
+
+export default ProPage;

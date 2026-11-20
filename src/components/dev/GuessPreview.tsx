@@ -1,6 +1,6 @@
 'use client';
 
-import { useDeferredValue, useEffect, useRef, useState } from 'react';
+import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import GuessInput, {
   type GuessInputStatus,
 } from '@/components/game/GuessInput';
@@ -34,7 +34,9 @@ function verdictFor(outcome: GuessOutcome): GuessResult {
   return { outcome };
 }
 
-export function GuessPreview() {
+type Props = {};
+
+export const GuessPreview = ({}: Props) => {
   const [status, setStatus] = useState<GuessInputStatus>('live');
   const [value, setValue] = useState('');
   const [shakeKey, setShakeKey] = useState(0);
@@ -161,4 +163,4 @@ export function GuessPreview() {
       </div>
     </div>
   );
-}
+};

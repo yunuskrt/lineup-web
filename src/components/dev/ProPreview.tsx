@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useId, useState } from 'react';
+import React, { type ReactNode, useId, useState } from 'react';
 import PlayStart from '@/components/play/PlayStart';
 import ModeChoice from '@/components/play/ModeChoice';
 import SoloAllowanceNote from '@/components/play/SoloAllowanceNote';
@@ -15,22 +15,26 @@ import { SECONDARY_BUTTON, DEV_PREVIEW_BUTTON } from '@/styles/classes';
 const SIZES: ProLockSize[] = ['default', 'large'];
 const PLANS: ProPlan[] = ['free', 'pro', 'pending'];
 
-function Specimen({ label, children }: { label: string; children: ReactNode }) {
+type SpecimenProps = { label: string; children: ReactNode };
+
+const Specimen = ({ label, children }: SpecimenProps) => {
   return (
     <figure className="flex flex-col items-start gap-2">
       {children}
       <figcaption className="text-12 text-fg-muted">{label}</figcaption>
     </figure>
   );
-}
+};
 
 const ALLOWANCE_SAMPLES = [
   { used: 2, label: 'Free, 3 left' },
   { used: 5, label: 'Free, 0 left: Start disabled' },
 ];
 
+type SoloStartSampleProps = { used: number };
+
 // The real /play pieces on a fixed count
-function SoloStartSample({ used }: { used: number }) {
+const SoloStartSample = ({ used }: SoloStartSampleProps) => {
   const id = useId();
   const [now] = useState(() => Date.now());
   const allowance = sampleAllowance(used, now);
@@ -47,18 +51,22 @@ function SoloStartSample({ used }: { used: number }) {
       />
     </PlayStart>
   );
-}
+};
 
-function PracticeSample({ access }: { access: ProAccess }) {
+type PracticeSampleProps = { access: ProAccess };
+
+const PracticeSample = ({ access }: PracticeSampleProps) => {
   const [option, setOption] = useState<ModeOption>(
     access === 'open' ? 'practice' : 'solo',
   );
   return (
     <ModeChoice option={option} onChange={setOption} practiceAccess={access} />
   );
-}
+};
 
-export function ProPreview() {
+type ProPreviewProps = {};
+
+export const ProPreview = ({}: ProPreviewProps) => {
   const [plan, setPlan] = useState<ProPlan>('free');
 
   return (
@@ -148,4 +156,4 @@ export function ProPreview() {
       </section>
     </div>
   );
-}
+};

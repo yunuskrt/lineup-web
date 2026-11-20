@@ -1,13 +1,13 @@
+import React, { type ComponentProps } from 'react';
 import { Button as ButtonPrimitive } from '@base-ui/react/button';
 import type { VariantProps } from 'class-variance-authority';
-import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/styles/classes';
 
-type ButtonProps = ComponentProps<typeof ButtonPrimitive> &
+type Props = ComponentProps<typeof ButtonPrimitive> &
   VariantProps<typeof buttonVariants>;
 
-export function Button({ className, variant, size, ...props }: ButtonProps) {
+export const Button = ({ className, variant, size, ...props }: Props) => {
   return (
     <ButtonPrimitive
       data-slot="button"
@@ -19,4 +19,4 @@ export function Button({ className, variant, size, ...props }: ButtonProps) {
       {...props}
     />
   );
-}
+};

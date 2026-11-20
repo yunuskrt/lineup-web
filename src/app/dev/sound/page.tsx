@@ -1,10 +1,13 @@
+import React from 'react';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { SoundPreview } from '@/components/dev/SoundPreview';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
 export const metadata = devMetadata('Sound');
 
-export default function SoundPreviewPage() {
+type Props = {};
+
+const SoundPreviewPage = ({}: Props) => {
   requireDevEnv();
 
   return (
@@ -15,4 +18,6 @@ export default function SoundPreviewPage() {
       <SoundPreview />
     </DevPreviewShell>
   );
-}
+};
+
+export default SoundPreviewPage;

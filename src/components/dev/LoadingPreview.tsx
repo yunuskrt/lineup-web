@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import CanvasGate from '@/components/game/CanvasGate';
 import GuessInput from '@/components/game/GuessInput';
 import SquadGrid from '@/components/pitch/SquadGrid';
@@ -39,7 +39,9 @@ function snapshotPlayers(formation: string): FoundPlayer[] {
   }));
 }
 
-export function LoadingPreview() {
+type Props = {};
+
+export const LoadingPreview = ({}: Props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [formation, setFormation] = useState(LOADING_FORMATION);
   const [revealed, setRevealed] = useState<FoundPlayer[]>([]);
@@ -158,4 +160,4 @@ export function LoadingPreview() {
       </p>
     </div>
   );
-}
+};

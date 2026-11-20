@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import SoundToggle from '@/components/game/SoundToggle';
 import { useSound } from '@/hooks/use-sound';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
@@ -35,7 +35,9 @@ const FINAL_SECONDS = Array.from(
   (_, i) => FINAL_BEEP_FROM - i,
 );
 
-export function SoundPreview() {
+type Props = {};
+
+export const SoundPreview = ({}: Props) => {
   const { play } = useSound();
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -113,4 +115,4 @@ export function SoundPreview() {
       </section>
     </div>
   );
-}
+};

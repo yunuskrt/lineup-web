@@ -1,10 +1,13 @@
+import React from 'react';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { GuessPreview } from '@/components/dev/GuessPreview';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
 export const metadata = devMetadata('Guess');
 
-export default function GuessPreviewPage() {
+type Props = {};
+
+const GuessPreviewPage = ({}: Props) => {
   requireDevEnv();
 
   return (
@@ -15,4 +18,6 @@ export default function GuessPreviewPage() {
       <GuessPreview />
     </DevPreviewShell>
   );
-}
+};
+
+export default GuessPreviewPage;

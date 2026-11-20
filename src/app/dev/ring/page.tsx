@@ -1,10 +1,13 @@
+import React from 'react';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { RingPreview } from '@/components/dev/RingPreview';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
 export const metadata = devMetadata('Ring');
 
-export default function RingPreviewPage() {
+type Props = {};
+
+const RingPreviewPage = ({}: Props) => {
   requireDevEnv();
 
   return (
@@ -15,4 +18,6 @@ export default function RingPreviewPage() {
       <RingPreview />
     </DevPreviewShell>
   );
-}
+};
+
+export default RingPreviewPage;

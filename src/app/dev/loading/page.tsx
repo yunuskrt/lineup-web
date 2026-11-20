@@ -1,10 +1,13 @@
+import React from 'react';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { LoadingPreview } from '@/components/dev/LoadingPreview';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
 export const metadata = devMetadata('Loading');
 
-export default function LoadingPreviewPage() {
+type Props = {};
+
+const LoadingPreviewPage = ({}: Props) => {
   requireDevEnv();
 
   return (
@@ -15,4 +18,6 @@ export default function LoadingPreviewPage() {
       <LoadingPreview />
     </DevPreviewShell>
   );
-}
+};
+
+export default LoadingPreviewPage;

@@ -1,7 +1,7 @@
 'use client';
 
+import React, { useState, type ReactNode } from 'react';
 import { Lock, SearchX, Volume2, X } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
 import QuitDialog, {
   DUEL_FORFEIT_COPY,
   SOLO_QUIT_COPY,
@@ -64,20 +64,24 @@ const HEADSHOT = '/mock/players/headshot-1.svg';
 
 type SectionProps = { title: string; children: ReactNode };
 
-function Section({ title, children }: SectionProps) {
+const Section = ({ title, children }: SectionProps) => {
   return (
     <section className="flex flex-col gap-4">
       <h2 className="font-display text-20 font-semibold">{title}</h2>
       {children}
     </section>
   );
-}
+};
 
-function Row({ children }: { children: ReactNode }) {
+type RowProps = { children: ReactNode };
+
+const Row = ({ children }: RowProps) => {
   return <div className="flex flex-wrap items-center gap-4">{children}</div>;
-}
+};
 
-function ButtonsSection() {
+type ButtonsSectionProps = {};
+
+const ButtonsSection = ({}: ButtonsSectionProps) => {
   return (
     <Section title="Button">
       <Row>
@@ -106,9 +110,11 @@ function ButtonsSection() {
       </Row>
     </Section>
   );
-}
+};
 
-function InputsSection() {
+type InputsSectionProps = {};
+
+const InputsSection = ({}: InputsSectionProps) => {
   return (
     <Section title="Input and label">
       <div className="grid gap-4 sm:grid-cols-2">
@@ -140,9 +146,11 @@ function InputsSection() {
       </div>
     </Section>
   );
-}
+};
 
-function ControlsSection() {
+type ControlsSectionProps = {};
+
+const ControlsSection = ({}: ControlsSectionProps) => {
   const [isPractice, setIsPractice] = useState(false);
   const [isSoundOn, setIsSoundOn] = useState(true);
 
@@ -195,9 +203,11 @@ function ControlsSection() {
       </Row>
     </Section>
   );
-}
+};
 
-function CardsSection() {
+type CardsSectionProps = {};
+
+const CardsSection = ({}: CardsSectionProps) => {
   return (
     <Section title="Card">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -222,9 +232,11 @@ function CardsSection() {
       </div>
     </Section>
   );
-}
+};
 
-function BadgesSection() {
+type BadgesSectionProps = {};
+
+const BadgesSection = ({}: BadgesSectionProps) => {
   return (
     <Section title="Badge and sticker">
       <Row>
@@ -257,9 +269,11 @@ function BadgesSection() {
       </Row>
     </Section>
   );
-}
+};
 
-function AvatarsSection() {
+type AvatarsSectionProps = {};
+
+const AvatarsSection = ({}: AvatarsSectionProps) => {
   return (
     <Section title="Avatar">
       <Row>
@@ -285,9 +299,11 @@ function AvatarsSection() {
       </Row>
     </Section>
   );
-}
+};
 
-function DialogsSection() {
+type DialogsSectionProps = {};
+
+const DialogsSection = ({}: DialogsSectionProps) => {
   const [open, setOpen] = useState<QuitDialogCopy | null>(null);
   const [isPending, setIsPending] = useState(false);
 
@@ -316,9 +332,11 @@ function DialogsSection() {
       />
     </Section>
   );
-}
+};
 
-function LoadingAndEmptySection() {
+type LoadingAndEmptySectionProps = {};
+
+const LoadingAndEmptySection = ({}: LoadingAndEmptySectionProps) => {
   return (
     <Section title="Skeleton and empty">
       <div className="flex items-center gap-3">
@@ -344,9 +362,11 @@ function LoadingAndEmptySection() {
       </Empty>
     </Section>
   );
-}
+};
 
-export function ComponentsPreview() {
+type ComponentsPreviewProps = {};
+
+export const ComponentsPreview = ({}: ComponentsPreviewProps) => {
   return (
     <>
       <ButtonsSection />
@@ -359,4 +379,4 @@ export function ComponentsPreview() {
       <LoadingAndEmptySection />
     </>
   );
-}
+};

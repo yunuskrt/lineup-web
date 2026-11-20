@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import { Archivo, Inter } from 'next/font/google';
 import QueryProvider from '@/components/providers/QueryProvider';
@@ -19,7 +20,9 @@ export const metadata: Metadata = {
   description: 'Know the XI. Guess the Squad.',
 };
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+type Props = LayoutProps<'/'>;
+
+const RootLayout = ({ children }: Props) => {
   return (
     <html
       lang="en"
@@ -30,4 +33,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import ArchiveBand from '@/components/home/home-archive/ArchiveBand';
 import HomeFold from '@/components/home/HomeFold';
 import InsideBand from '@/components/home/home-inside/InsideBand';
@@ -9,15 +10,12 @@ import ShowcaseFrame from '@/components/home/ShowcaseFrame';
 import type { LandingState } from '@/lib/dev/landing-states';
 
 // The landing body on fixed data; no fetch
-type LandingStatePreviewProps = {
+type Props = {
   state: LandingState;
   frozenAtMs?: number;
 };
 
-export function LandingStatePreview({
-  state,
-  frozenAtMs,
-}: LandingStatePreviewProps) {
+export const LandingStatePreview = ({ state, frozenAtMs }: Props) => {
   const { overview, isLoading } = state;
   const playback =
     frozenAtMs === undefined
@@ -41,4 +39,4 @@ export function LandingStatePreview({
       <InsideBand overview={overview} isLoading={isLoading} />
     </>
   );
-}
+};

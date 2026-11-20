@@ -1,17 +1,21 @@
 'use client';
 
+import React, { type ComponentProps } from 'react';
 import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog';
-import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 
 export const AlertDialog = AlertDialogPrimitive.Root;
 
 export const AlertDialogClose = AlertDialogPrimitive.Close;
 
-export function AlertDialogContent({
+type AlertDialogContentProps = ComponentProps<
+  typeof AlertDialogPrimitive.Popup
+>;
+
+export const AlertDialogContent = ({
   className,
   ...props
-}: ComponentProps<typeof AlertDialogPrimitive.Popup>) {
+}: AlertDialogContentProps) => {
   return (
     <AlertDialogPrimitive.Portal>
       <AlertDialogPrimitive.Backdrop
@@ -28,12 +32,14 @@ export function AlertDialogContent({
       />
     </AlertDialogPrimitive.Portal>
   );
-}
+};
 
-export function AlertDialogTitle({
+type AlertDialogTitleProps = ComponentProps<typeof AlertDialogPrimitive.Title>;
+
+export const AlertDialogTitle = ({
   className,
   ...props
-}: ComponentProps<typeof AlertDialogPrimitive.Title>) {
+}: AlertDialogTitleProps) => {
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
@@ -41,12 +47,16 @@ export function AlertDialogTitle({
       {...props}
     />
   );
-}
+};
 
-export function AlertDialogDescription({
+type AlertDialogDescriptionProps = ComponentProps<
+  typeof AlertDialogPrimitive.Description
+>;
+
+export const AlertDialogDescription = ({
   className,
   ...props
-}: ComponentProps<typeof AlertDialogPrimitive.Description>) {
+}: AlertDialogDescriptionProps) => {
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
@@ -54,12 +64,14 @@ export function AlertDialogDescription({
       {...props}
     />
   );
-}
+};
 
-export function AlertDialogFooter({
+type AlertDialogFooterProps = ComponentProps<'div'>;
+
+export const AlertDialogFooter = ({
   className,
   ...props
-}: ComponentProps<'div'>) {
+}: AlertDialogFooterProps) => {
   return (
     <div
       data-slot="alert-dialog-footer"
@@ -67,4 +79,4 @@ export function AlertDialogFooter({
       {...props}
     />
   );
-}
+};

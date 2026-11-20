@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import { CanvasStatePreview } from '@/components/dev/CanvasStatePreview';
 import SoloGame from '@/components/game/SoloGame';
@@ -7,9 +8,9 @@ export const metadata: Metadata = {
   title: 'Solo',
 };
 
-export default async function SoloPage({
-  searchParams,
-}: PageProps<'/play/solo'>) {
+type Props = PageProps<'/play/solo'>;
+
+const SoloPage = async ({ searchParams }: Props) => {
   const state = devOnlyParam((await searchParams).state);
 
   if (state !== undefined) {
@@ -17,4 +18,6 @@ export default async function SoloPage({
   }
 
   return <SoloGame />;
-}
+};
+
+export default SoloPage;

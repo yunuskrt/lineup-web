@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { ResolvedValue } from '@/components/dev/ResolvedValue';
 import {
@@ -21,14 +21,14 @@ type SectionProps = {
   children: ReactNode;
 };
 
-function Section({ title, children }: SectionProps) {
+const Section = ({ title, children }: SectionProps) => {
   return (
     <section className="flex flex-col gap-4">
       <h2 className="font-display text-20 font-semibold">{title}</h2>
       {children}
     </section>
   );
-}
+};
 
 type SwatchProps = {
   className: string;
@@ -37,7 +37,7 @@ type SwatchProps = {
   variable: string;
 };
 
-function Swatch({ className, label, detail, variable }: SwatchProps) {
+const Swatch = ({ className, label, detail, variable }: SwatchProps) => {
   return (
     <div className="overflow-hidden rounded-md border-2 border-line bg-surface-card">
       <div className={`h-16 border-b-2 border-line ${className}`} />
@@ -48,9 +48,11 @@ function Swatch({ className, label, detail, variable }: SwatchProps) {
       </div>
     </div>
   );
-}
+};
 
-function PrimitivesSection() {
+type PrimitivesSectionProps = {};
+
+const PrimitivesSection = ({}: PrimitivesSectionProps) => {
   return (
     <Section title="Primitives">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -66,9 +68,11 @@ function PrimitivesSection() {
       </div>
     </Section>
   );
-}
+};
 
-function RolesSection() {
+type RolesSectionProps = {};
+
+const RolesSection = ({}: RolesSectionProps) => {
   return (
     <Section title="Roles">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -125,9 +129,11 @@ function RolesSection() {
       </div>
     </Section>
   );
-}
+};
 
-function TypeRolesSection() {
+type TypeRolesSectionProps = {};
+
+const TypeRolesSection = ({}: TypeRolesSectionProps) => {
   return (
     <Section title="Type roles">
       <div className="flex flex-col gap-6">
@@ -142,9 +148,11 @@ function TypeRolesSection() {
       </div>
     </Section>
   );
-}
+};
 
-function ShapeSection() {
+type ShapeSectionProps = {};
+
+const ShapeSection = ({}: ShapeSectionProps) => {
   return (
     <Section title="Outline and shadow">
       <div className="flex flex-wrap gap-6">
@@ -157,9 +165,11 @@ function ShapeSection() {
       </span>
     </Section>
   );
-}
+};
 
-function TypeSection() {
+type TypeSectionProps = {};
+
+const TypeSection = ({}: TypeSectionProps) => {
   return (
     <Section title="Type">
       <div className="flex flex-col gap-6">
@@ -207,9 +217,11 @@ function TypeSection() {
       </div>
     </Section>
   );
-}
+};
 
-function SpacingSection() {
+type SpacingSectionProps = {};
+
+const SpacingSection = ({}: SpacingSectionProps) => {
   return (
     <Section title="Spacing">
       <div className="flex flex-col gap-2">
@@ -224,9 +236,11 @@ function SpacingSection() {
       </div>
     </Section>
   );
-}
+};
 
-function RadiusSection() {
+type RadiusSectionProps = {};
+
+const RadiusSection = ({}: RadiusSectionProps) => {
   return (
     <Section title="Radius">
       <div className="flex flex-wrap gap-6">
@@ -244,9 +258,11 @@ function RadiusSection() {
       </div>
     </Section>
   );
-}
+};
 
-export default function ThemePreviewPage() {
+type ThemePreviewPageProps = {};
+
+const ThemePreviewPage = ({}: ThemePreviewPageProps) => {
   requireDevEnv();
 
   return (
@@ -264,4 +280,6 @@ export default function ThemePreviewPage() {
       <RadiusSection />
     </DevPreviewShell>
   );
-}
+};
+
+export default ThemePreviewPage;

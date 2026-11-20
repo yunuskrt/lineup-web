@@ -1,15 +1,14 @@
 'use client';
 
+import React, { type ComponentProps } from 'react';
 import { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox';
 import { Check } from 'lucide-react';
-import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import { FOCUS_RING } from '@/styles/classes';
 
-export function Checkbox({
-  className,
-  ...props
-}: ComponentProps<typeof CheckboxPrimitive.Root>) {
+type Props = ComponentProps<typeof CheckboxPrimitive.Root>;
+
+export const Checkbox = ({ className, ...props }: Props) => {
   return (
     <CheckboxPrimitive.Root
       data-slot="checkbox"
@@ -24,4 +23,4 @@ export function Checkbox({
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );
-}
+};

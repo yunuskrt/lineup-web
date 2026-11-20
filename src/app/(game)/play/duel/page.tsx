@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import { CanvasStatePreview } from '@/components/dev/CanvasStatePreview';
 import DuelGame from '@/components/game/DuelGame';
@@ -11,9 +12,9 @@ export const metadata: Metadata = {
   title: 'Duel',
 };
 
-export default async function DuelPage({
-  searchParams,
-}: PageProps<'/play/duel'>) {
+type Props = PageProps<'/play/duel'>;
+
+const DuelPage = async ({ searchParams }: Props) => {
   const state = devOnlyParam((await searchParams).state);
 
   // Not a canvas state: the refusal replaces it
@@ -27,4 +28,6 @@ export default async function DuelPage({
   }
 
   return <DuelGame />;
-}
+};
+
+export default DuelPage;

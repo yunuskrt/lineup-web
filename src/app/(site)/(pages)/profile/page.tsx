@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import { ProfileStatePreview } from '@/components/dev/ProfileStatePreview';
 import ProfileScreen from '@/components/profile/ProfileScreen';
@@ -8,9 +9,9 @@ export const metadata: Metadata = {
   title: 'Profile',
 };
 
-export default async function ProfilePage({
-  searchParams,
-}: PageProps<'/profile'>) {
+type Props = PageProps<'/profile'>;
+
+const ProfilePage = async ({ searchParams }: Props) => {
   const state = devOnlyParam((await searchParams).state);
 
   return (
@@ -22,4 +23,6 @@ export default async function ProfilePage({
       )}
     </div>
   );
-}
+};
+
+export default ProfilePage;

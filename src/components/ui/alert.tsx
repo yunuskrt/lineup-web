@@ -1,5 +1,5 @@
+import React, { type ComponentProps } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 
 // neobrutalism.dev Alert; no live role, callers add one
@@ -18,7 +18,7 @@ const alertVariants = cva(
 
 type AlertProps = ComponentProps<'div'> & VariantProps<typeof alertVariants>;
 
-export function Alert({ className, tone, ...props }: AlertProps) {
+export const Alert = ({ className, tone, ...props }: AlertProps) => {
   return (
     <div
       data-slot="alert"
@@ -26,12 +26,14 @@ export function Alert({ className, tone, ...props }: AlertProps) {
       {...props}
     />
   );
-}
+};
 
-export function AlertDescription({
+type AlertDescriptionProps = ComponentProps<'div'>;
+
+export const AlertDescription = ({
   className,
   ...props
-}: ComponentProps<'div'>) {
+}: AlertDescriptionProps) => {
   return (
     <div
       data-slot="alert-description"
@@ -39,4 +41,4 @@ export function AlertDescription({
       {...props}
     />
   );
-}
+};

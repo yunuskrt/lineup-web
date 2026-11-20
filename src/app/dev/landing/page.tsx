@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import { LandingStatePreview } from '@/components/dev/LandingStatePreview';
 import SiteFooter from '@/components/shell/SiteFooter';
@@ -11,9 +12,9 @@ import { SITE_CONTAINER, TEXT_LINK } from '@/styles/classes';
 
 export const metadata = devMetadata('Landing');
 
-export default async function LandingPreviewPage({
-  searchParams,
-}: PageProps<'/dev/landing'>) {
+type Props = PageProps<'/dev/landing'>;
+
+const LandingPreviewPage = async ({ searchParams }: Props) => {
   requireDevEnv();
   const { state, at } = await searchParams;
   const name = typeof state === 'string' ? state : DEFAULT_LANDING_STATE;
@@ -49,4 +50,6 @@ export default async function LandingPreviewPage({
       <SiteFooter variant="statement" />
     </div>
   );
-}
+};
+
+export default LandingPreviewPage;

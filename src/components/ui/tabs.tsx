@@ -1,14 +1,13 @@
 'use client';
 
+import React, { type ComponentProps } from 'react';
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs';
-import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import { FOCUS_RING } from '@/styles/classes';
 
-export function Tabs({
-  className,
-  ...props
-}: ComponentProps<typeof TabsPrimitive.Root>) {
+type TabsProps = ComponentProps<typeof TabsPrimitive.Root>;
+
+export const Tabs = ({ className, ...props }: TabsProps) => {
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
@@ -16,13 +15,12 @@ export function Tabs({
       {...props}
     />
   );
-}
+};
+
+type TabsListProps = ComponentProps<typeof TabsPrimitive.List>;
 
 // The segmented control: options in one pill
-export function TabsList({
-  className,
-  ...props
-}: ComponentProps<typeof TabsPrimitive.List>) {
+export const TabsList = ({ className, ...props }: TabsListProps) => {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
@@ -33,12 +31,11 @@ export function TabsList({
       {...props}
     />
   );
-}
+};
 
-export function TabsTrigger({
-  className,
-  ...props
-}: ComponentProps<typeof TabsPrimitive.Tab>) {
+type TabsTriggerProps = ComponentProps<typeof TabsPrimitive.Tab>;
+
+export const TabsTrigger = ({ className, ...props }: TabsTriggerProps) => {
   return (
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
@@ -49,12 +46,11 @@ export function TabsTrigger({
       {...props}
     />
   );
-}
+};
 
-export function TabsContent({
-  className,
-  ...props
-}: ComponentProps<typeof TabsPrimitive.Panel>) {
+type TabsContentProps = ComponentProps<typeof TabsPrimitive.Panel>;
+
+export const TabsContent = ({ className, ...props }: TabsContentProps) => {
   return (
     <TabsPrimitive.Panel
       data-slot="tabs-content"
@@ -62,4 +58,4 @@ export function TabsContent({
       {...props}
     />
   );
-}
+};

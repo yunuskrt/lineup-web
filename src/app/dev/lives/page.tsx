@@ -1,10 +1,13 @@
+import React from 'react';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { LivesPreview } from '@/components/dev/LivesPreview';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
 export const metadata = devMetadata('Lives');
 
-export default function LivesPreviewPage() {
+type Props = {};
+
+const LivesPreviewPage = ({}: Props) => {
   requireDevEnv();
 
   return (
@@ -15,4 +18,6 @@ export default function LivesPreviewPage() {
       <LivesPreview />
     </DevPreviewShell>
   );
-}
+};
+
+export default LivesPreviewPage;

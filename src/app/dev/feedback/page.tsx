@@ -1,10 +1,13 @@
+import React from 'react';
 import { DevPreviewShell } from '@/components/dev/DevPreviewShell';
 import { FeedbackPreview } from '@/components/dev/FeedbackPreview';
 import { devMetadata, requireDevEnv } from '@/lib/dev/route';
 
 export const metadata = devMetadata('Feedback');
 
-export default function FeedbackPreviewPage() {
+type Props = {};
+
+const FeedbackPreviewPage = ({}: Props) => {
   requireDevEnv();
 
   return (
@@ -15,4 +18,6 @@ export default function FeedbackPreviewPage() {
       <FeedbackPreview />
     </DevPreviewShell>
   );
-}
+};
+
+export default FeedbackPreviewPage;

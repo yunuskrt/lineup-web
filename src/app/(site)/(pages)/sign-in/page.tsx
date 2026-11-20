@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import AuthPanel from '@/components/auth/AuthPanel';
 import { authModeFrom } from '@/lib/auth';
@@ -7,9 +8,9 @@ export const metadata: Metadata = {
   title: 'Sign in',
 };
 
-export default async function SignInPage({
-  searchParams,
-}: PageProps<'/sign-in'>) {
+type Props = PageProps<'/sign-in'>;
+
+const SignInPage = async ({ searchParams }: Props) => {
   const mode = authModeFrom((await searchParams).mode);
 
   return (
@@ -19,4 +20,6 @@ export default async function SignInPage({
       </div>
     </div>
   );
-}
+};
+
+export default SignInPage;

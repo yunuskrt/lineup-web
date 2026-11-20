@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState, useSyncExternalStore } from 'react';
+import React, { type ReactNode, useState, useSyncExternalStore } from 'react';
 import CountdownRing from '@/components/game/CountdownRing';
 import { ROUND_MS } from '@/lib/api/schemas/common';
 import { DEV_PREVIEW_BUTTON } from '@/styles/classes';
@@ -47,16 +47,18 @@ type SpecimenProps = {
   children: ReactNode;
 };
 
-function Specimen({ label, children }: SpecimenProps) {
+const Specimen = ({ label, children }: SpecimenProps) => {
   return (
     <figure className="flex flex-col items-center gap-3">
       {children}
       <figcaption className="text-12 text-fg-muted">{label}</figcaption>
     </figure>
   );
-}
+};
 
-export function RingPreview() {
+type RingPreviewProps = {};
+
+export const RingPreview = ({}: RingPreviewProps) => {
   const openedAt = useSyncExternalStore(subscribe, getPageOpenedAt, () => null);
   const [restartedAt, setRestartedAt] = useState<number | null>(null);
   const [mode, setMode] = useState<RingMode>('running');
@@ -120,4 +122,4 @@ export function RingPreview() {
       </section>
     </div>
   );
-}
+};

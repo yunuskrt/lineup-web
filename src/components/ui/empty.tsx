@@ -1,8 +1,10 @@
-import type { ComponentProps } from 'react';
+import React, { type ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import { TYPE_CARD_TITLE } from '@/styles/classes';
 
-export function Empty({ className, ...props }: ComponentProps<'div'>) {
+type EmptyProps = ComponentProps<'div'>;
+
+export const Empty = ({ className, ...props }: EmptyProps) => {
   return (
     <div
       data-slot="empty"
@@ -13,9 +15,11 @@ export function Empty({ className, ...props }: ComponentProps<'div'>) {
       {...props}
     />
   );
-}
+};
 
-export function EmptyHeader({ className, ...props }: ComponentProps<'div'>) {
+type EmptyHeaderProps = ComponentProps<'div'>;
+
+export const EmptyHeader = ({ className, ...props }: EmptyHeaderProps) => {
   return (
     <div
       data-slot="empty-header"
@@ -23,10 +27,12 @@ export function EmptyHeader({ className, ...props }: ComponentProps<'div'>) {
       {...props}
     />
   );
-}
+};
+
+type EmptyMediaProps = ComponentProps<'div'>;
 
 // An icon in an outlined tile, in place of art
-export function EmptyMedia({ className, ...props }: ComponentProps<'div'>) {
+export const EmptyMedia = ({ className, ...props }: EmptyMediaProps) => {
   return (
     <div
       data-slot="empty-media"
@@ -38,18 +44,18 @@ export function EmptyMedia({ className, ...props }: ComponentProps<'div'>) {
       {...props}
     />
   );
-}
+};
 
 type EmptyTitleProps = ComponentProps<'h2'> & {
   // 1 when the notice is the page itself
   level?: 1 | 2 | 3;
 };
 
-export function EmptyTitle({
+export const EmptyTitle = ({
   className,
   level = 2,
   ...props
-}: EmptyTitleProps) {
+}: EmptyTitleProps) => {
   const Heading = (['h1', 'h2', 'h3'] as const)[level - 1];
 
   return (
@@ -59,9 +65,14 @@ export function EmptyTitle({
       {...props}
     />
   );
-}
+};
 
-export function EmptyDescription({ className, ...props }: ComponentProps<'p'>) {
+type EmptyDescriptionProps = ComponentProps<'p'>;
+
+export const EmptyDescription = ({
+  className,
+  ...props
+}: EmptyDescriptionProps) => {
   return (
     <p
       data-slot="empty-description"
@@ -69,9 +80,11 @@ export function EmptyDescription({ className, ...props }: ComponentProps<'p'>) {
       {...props}
     />
   );
-}
+};
 
-export function EmptyContent({ className, ...props }: ComponentProps<'div'>) {
+type EmptyContentProps = ComponentProps<'div'>;
+
+export const EmptyContent = ({ className, ...props }: EmptyContentProps) => {
   return (
     <div
       data-slot="empty-content"
@@ -82,4 +95,4 @@ export function EmptyContent({ className, ...props }: ComponentProps<'div'>) {
       {...props}
     />
   );
-}
+};

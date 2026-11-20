@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import FeedbackToast from '@/components/game/FeedbackToast';
 import GuessInput, {
   type GuessInputStatus,
@@ -26,7 +26,9 @@ const INITIAL_REVEALED = REVEAL_ORDER.slice(0, STARTING_REVEALED).map((slot) =>
   samplePlayer(FORMATION, slot),
 );
 
-export function FeedbackPreview() {
+type Props = {};
+
+export const FeedbackPreview = ({}: Props) => {
   const [revealed, setRevealed] = useState<FoundPlayer[]>(INITIAL_REVEALED);
   const [status, setStatus] = useState<GuessInputStatus>('live');
   const [value, setValue] = useState('');
@@ -137,4 +139,4 @@ export function FeedbackPreview() {
       </div>
     </div>
   );
-}
+};

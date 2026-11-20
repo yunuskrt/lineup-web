@@ -1,8 +1,8 @@
 'use client';
 
+import React, { type ComponentProps } from 'react';
 import { Avatar as AvatarPrimitive } from '@base-ui/react/avatar';
 import { cva, type VariantProps } from 'class-variance-authority';
-import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 
 const avatarVariants = cva(
@@ -28,7 +28,7 @@ const avatarVariants = cva(
 type AvatarProps = ComponentProps<typeof AvatarPrimitive.Root> &
   VariantProps<typeof avatarVariants>;
 
-export function Avatar({ className, size, tone, ...props }: AvatarProps) {
+export const Avatar = ({ className, size, tone, ...props }: AvatarProps) => {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
@@ -36,12 +36,11 @@ export function Avatar({ className, size, tone, ...props }: AvatarProps) {
       {...props}
     />
   );
-}
+};
 
-export function AvatarImage({
-  className,
-  ...props
-}: ComponentProps<typeof AvatarPrimitive.Image>) {
+type AvatarImageProps = ComponentProps<typeof AvatarPrimitive.Image>;
+
+export const AvatarImage = ({ className, ...props }: AvatarImageProps) => {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
@@ -49,12 +48,14 @@ export function AvatarImage({
       {...props}
     />
   );
-}
+};
 
-export function AvatarFallback({
+type AvatarFallbackProps = ComponentProps<typeof AvatarPrimitive.Fallback>;
+
+export const AvatarFallback = ({
   className,
   ...props
-}: ComponentProps<typeof AvatarPrimitive.Fallback>) {
+}: AvatarFallbackProps) => {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
@@ -65,4 +66,4 @@ export function AvatarFallback({
       {...props}
     />
   );
-}
+};

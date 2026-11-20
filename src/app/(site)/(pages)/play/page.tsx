@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import PlayScreen from '@/components/play/PlayScreen';
@@ -7,7 +8,9 @@ export const metadata: Metadata = {
   title: 'Play',
 };
 
-export default async function PlayPage() {
+type Props = {};
+
+const PlayPage = async ({}: Props) => {
   // Renders per request so the screen reads the URL
   await connection();
 
@@ -17,4 +20,6 @@ export default async function PlayPage() {
       <PlayScreen />
     </div>
   );
-}
+};
+
+export default PlayPage;

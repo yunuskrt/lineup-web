@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import GameCanvas from '@/components/game/GameCanvas';
 import {
   AFTER_GATE_STATE,
@@ -12,12 +12,12 @@ import {
 import { SAMPLE_SUGGESTION_INDEX } from '@/lib/dev/samples';
 import type { CanvasMode } from '@/types/canvas';
 
-type CanvasStatePreviewProps = {
+type Props = {
   mode: CanvasMode;
   state?: string | string[];
 };
 
-export function CanvasStatePreview({ mode, state }: CanvasStatePreviewProps) {
+export const CanvasStatePreview = ({ mode, state }: Props) => {
   // Rendered output never depends on `now`, so SSR matches
   const [snapshot, setSnapshot] = useState<CanvasSnapshot>(() =>
     resolveCanvasState(mode, state).build(Date.now()),
@@ -63,4 +63,4 @@ export function CanvasStatePreview({ mode, state }: CanvasStatePreviewProps) {
       onRevealMissed={revealMissed}
     />
   );
-}
+};
